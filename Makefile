@@ -10,7 +10,7 @@ info ::
 	@echo
 
 LATEXTARGET = parcompbook
-PDFFILENAME = EijkhoutIntroParComp
+PDFFILENAME = EijkhoutParComp
 REPONAME = pcse-book-and-course
 LATEX = pdflatex
 
@@ -157,8 +157,9 @@ include $(MAKEFILES_DIR)/Makefile.tex
 
 clean ::
 	rm -f *.{aux,bbl,blg,idx,log,out,svn,toc} *~ \
+	  comment.cut \
 	  chapter.pdf project.pdf tutorial.pdf exercises.pdf \
 	  exercises/*-ex*.tex exercises/*-nx.tex answers/*-an*.tex
-	for d in code/mpi ; do \
+	for d in code/mpi tutorials/debug_tutorial_files/c tutorials/debug_tutorial_files/f ; do \
 	  ( cd $$d ; make clean ) ; \
 	done
