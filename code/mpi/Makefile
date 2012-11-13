@@ -2,8 +2,14 @@ info ::
 	@echo "Do: make app (where app=${APPS})"
 APPS = helloworld helloworld-seq
 
+ifdef TACC_TAU_DIR
+  CC = tau_cc.sh
+else
+  CC = mpicc
+endif
+
 % : %.c
-	mpicc -o $@ $^
+	${CC} -o $@ $^
 
 info ::
 	@echo "    make clean"
