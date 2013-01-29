@@ -1,5 +1,5 @@
 info ::
-	@echo "Do: make pdf"
+	@echo "Do: make pdff"
 	@echo "to format the book"
 
 pdf :
