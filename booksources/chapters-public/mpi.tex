@@ -1,9 +1,56 @@
-The \acf{MPI} library has about 250 routines, many of which you may
+% -*- latex -*-
+
+In this chapter you will learn the use of the main tool for 
+distributed memory programming: the \acf{MPI} library.
+The \ac{MPI} library has about 250 routines, many of which you may
 never need. Since this is a textbook, not a reference manual, we will
 focus on the important concepts and give the important routines for
 each concept. What you learn here should be enough for most common
-purposes, but you are advised to keep a reference document handy, in
-case there is a specialized routine, just for you.
+purposes. You are advised to keep a reference document handy, in
+case there is a specialized routine, or to look up subtleties about
+the routines you use.
+
+\Level 0 {Distributed memory and message passing}
+
+In its simplest form, a distributed memory machine is a bunch of 
+single computers hooked up with network cables. In fact, this has a name:
+a \indexterm{Beowulf cluster}. As you recognize from that setup, 
+each processor will run an independent program, and has its own memory
+without direct access to other processors' memory. MPI is the magic
+that makes multiple instantiations of the same executable run
+so that they know about each other and can exchange data through the 
+network.
+
+One of the reasons that MPI is so successful as a tool for high
+performance on clusters is that it is very explicit: the programmer
+controls many details of the data motion between the processors.
+Consequently, a capable programmer can write very efficient code with MPI.
+Unfortunately, that programmer will have to spell things out
+in considerable detail. For this reason, people sometimes call MPI
+`the assembly language of parallel programming'. If that sounds scary,
+be assured that things are not that bad. You can get started 
+fairly quickly with MPI, using just the basics,
+and coming to the more sophisticated tools 
+only when necessary.
+
+Another reason that MPI was a big hit with programmers is that
+it does not ask you to learn a new language: it is a library that 
+can be interface to C/C++ or Fortran; there are even bindings to Python.
+A~related point is that it is easy to install: there are free implementations
+that you can download and install on any computer that has a Unix-like
+operating system, even if that is not a parallel machine.
+
+\Level 1 {History}
+
+Mid 1990s, many parties involved, big concensus. Many competing packages
+before, few after.
+
+\Level 1 {Basic model}
+
+Distributed: no master, but there is an \n{mpirun} program.
+\ac{SPMD} mode: all processors execute the same program.
+To first order, the network is symmetric. However, the truth is more 
+complicated (`topology-aware communication').
 
 \Level 0 {Basic concepts}
 
@@ -24,6 +71,8 @@ call MPI_Init(ierr)
 // your code
 call MPI_Finalize()
 \end{verbatim}
+(There is a call \indexmpishow{MPI_Abort} if you want to abort execution
+completely.)
 
 We make a few observations.
 \begin{itemize}
@@ -44,7 +93,22 @@ The commandline arguments \n{argc} and \n{argv} are only guaranteed to
 be passed to process zero, so the best way to pass commandline information
 is by a broadcast (section~\ref{sec:bcast}).
 
-\Level 1 {Running an MPI program}
+\Level 1 {Making and running an MPI program}
+
+MPI is a library, called from programs in ordinary programming languages
+such as C/C++ or Fortran. To compile such a program you use your regular
+compiler:
+\begin{verbatim}
+gcc -c my_mpi_prog.c -I/path/to/mpi.h
+gcc -o my_mpi_prog my_mpi_prog.o -L/path/to/mpi -lmpich
+\end{verbatim}
+However, MPI libraries may have different names between different
+architectures, making it hard to have a portable makefile. Therefore,
+MPI typically has shell scripts around your compiler call:
+\begin{verbatim}
+mpicc -c my_mpi_prog.c
+mpicc -o my_mpi_prog my_mpi_prog.o
+\end{verbatim}
 
 MPI programs can be run on many different architectures. Obviously it
 is your ambition (or at least your dream) to run your code on a
@@ -67,8 +131,8 @@ performance, but at least you can test your code for correctness.
 
 In the SPMD model you run the same executable on each of a set of processors; see section~\HPSCref{sec:spmd}. So how can you do anything useful if all processors run the same code? Here is where your first two MPI routines come in.
 
-With \indexmpi{MPI\_Comm\_size} a processor can query how many
-processes there are in total, and with \indexmpi{MPI\_Comm\_rank} it
+With \indexmpishow{MPI_Comm_size} a processor can query how many
+processes there are in total, and with \indexmpishow{MPI_Comm_rank} it
 can find out what its number is. This rank is a number from zero to
 the comm size minus~one. (Zero-based indexing is used even if you
 program in Fortran.)
@@ -99,9 +163,19 @@ data. We will go into three broad categories of operations: blocking
 and non-blocking two-sided communication, and the somewhat
 more tricky one-sided communication.
 
+Two-sided communication is a little like email: one party send data, 
+which needs to be specified, to another party. The other party can then
+be expecting a message from a specified sender or it can be open
+to receiving from any source, but in either case the receiver
+indicates that something is to be expected. 
+One-sided communication is very different in nature. Compare it to leaving your
+front-door open and people can bring things to your house, or take them,
+without you noticing.
+
 \Level 1 {Blocking communication}
-\index{two-sided communication|(}
-\index{blocking communication|(}
+\index{communication!two-sided|(}
+\index{communication!blocking|(}
+\commandref{sec:blocking}
 
 In two-sided communication, one process issues a send call and the
 other a receive call. Life would be easy if the send call put the data
@@ -187,20 +261,32 @@ the send call, but the last processor executes the receive call. Thus,
 the processor before the last one can do its send, and subsequently
 continue to its receive, which enables another send, et cetera.
 
-Thus, this code will terminate (instead of hanging forever on a
-deadlock) and do what you intended it to do. However, the execution
+In one way this code does what you intended to do:
+it will terminate (instead of hanging forever on a
+deadlock) and exchange data the right way. However, the execution
 now suffers from \indextermsub{unexpected}{sequentialization}: only
 one processor is active at any time, so what should have been a
-parallel operation becomes a sequential one.
+\begin{figure}[ht]
+\includegraphics[scale=.4]{graphics-public/linear-serial}
+\caption{Trace of a simple send-recv code}
+\label{fig:serialization}
+\end{figure}
+parallel operation becomes a sequential one. This is illustrated in
+figure~\ref{fig:serialization}.
+\begin{exercise}
+\label{ex:linear-sequential}
+  Modify your earlier code, run it and reproduce the trace output 
+  of figure~\ref{fig:serialization}.
+\end{exercise}
+It is possible to orchestrate your processes to get an efficient and
+deadlock-free execution, but doing so is a bit cumbersome.
+There are better solutions which we will
+explore next.
 
 \begin{exercise}
   Give pseudo-code for a solution that uses blocking operations, and is
-  parallel --~although maybe not optimally so.
+  parallel, although maybe not optimally so.
 \end{exercise}
-
-It is possible to orchestrate your processes to get an efficient and
-deadlock-free execution, but there are better solutions which we will
-now explore.
 
 \begin{exercise}
   There are rare circumstances where you actually want this serial
@@ -211,7 +297,60 @@ now explore.
   sequence.
 \end{exercise}
 
-\Level 2 {Blocking and small messages}
+Above, you saw a code fragment with a conditional send:
+\begin{verbatim}
+MPI_Comm_rank( .... &mytid );
+successor = mytid+1
+if ( /* I am not the last processor */ )
+  send(target=successor);
+\end{verbatim}
+MPI allows for the following variant which makes the code slightly 
+more homogeneous:
+\begin{verbatim}
+MPI_Comm_rank( .... &mytid );
+if ( /* I am not the last processor */ )
+  successor = mytid+1
+else
+  successor = MPI_PROC_NULL;
+send(target=successor);
+\end{verbatim}
+where the send call is executed by all processors; the target value
+of \indexmpishow{MPI_PROC_NULL} means that no actual send is done. 
+The null processor
+value is also of use with the \n{MPI_Sendrecv} call.
+
+\Level 2 {Deadlock-free blocking communication}
+
+Above you saw that with blocking sends the precise ordering of the
+send and receive calls is crucial. Use the wrong ordering and you get
+either deadlock, or something that is not efficient at all in
+parallel. MPI has a way out of this problem that is sufficient for
+many purposes: the combined send/recv call
+\begin{verbatim}
+MPI_Send_recv( /* send data */ ....
+               /* recv data */ .... );
+\end{verbatim}
+This call makes it easy to exchange data between two processors: both
+specify the other as both target and source. However, there need not
+be any such relation between target and source: it is possible to
+receive from a predecessor in some ordering, and send to a successor
+in that ordering.
+
+Above you saw some examples that had most processors doing both a send and
+a receive, but some only a send or only a receive. You can still use
+\n{MPI_Sendrecv} in this call if you use \n{MPI_PROC_NULL} for
+the unused source or target argument.
+
+\begin{exercise}
+\label{ex:linear-sendrecv}
+  Take your code from exercise~\ref{ex:linear-sequential}
+  and rewrite it to use the \n{MPI_Sendrecv} call. Run it and
+  produce a trace output. Do you see the serialization behaviour
+  of your earlier code?
+\end{exercise}
+
+
+\Level 2 {Subtleties with processor synchronization}
 
 Blocking communication involves a complicated dialog between the two
 processors involved. Processor one says `I~have this much data to
@@ -223,6 +362,9 @@ overhead. For this reason, network hardware will sometimes forgo the
 handshake for small messages, and just send them regardless, knowing
 that the other process has a small buffer for such occasions.
 
+%This behaviour is not dictated by the standard: it is up to the implementation
+%to make this optimization for small messages.
+
 One strange side-effect of this strategy is that a code that
 should \indexterm{deadlock} according to the MPI specification does
 not do so. In effect, you may be shielded from you own programming
@@ -230,28 +372,564 @@ mistake! Of course, if you then run a larger problem, and the small
 message becomes larger than the threshold, the deadlock will suddenly
 occur. So you find yourself in the situation that a bug only manifests
 itself on large problems, which are usually harder to debug. In this
-case, replacing every \n{MPI_Send} with a \indexmpi{MPI\_Ssend} will force the
+case, replacing every \n{MPI_Send} with a \indexmpishow{MPI_Ssend} will force the
 handshake, even for small messages.
 
-\index{blocking communication|)}
-\Level 1 {Non-blocking communication}
-\index{non-blocking communication|(}
+Conversely, you may sometimes wish to avoid the handshake on large
+messages. MPI as a solution for this: the \indexmpishow{MPI_Rsend} (`ready
+send') routine sends its data immediately, but it needs the receiver
+to be ready for this. How can you guarantee that the receiving process
+is ready? You could for instance do the following (this uses
+non-blocking routines, which are explained below in
+section~\ref{sec:nonblocking}):
+\begin{verbatim}
+if ( receiving ) {
+  MPI_Irecv()   // post non-blocking receive
+  MPI_Barrier() // synchronize
+else if ( sending ) {
+  MPI_Barrier() // synchronize
+  MPI_Rsend()   // send data fast
+\end{verbatim}
+When the barrier is reached, the receive has been posted, so it is safe 
+to do a ready send. However, global barriers are not a good idea.
+Instead you would just synchronize the two processes involved.
+\begin{exercise}
+  Give pseudo-code for a scheme where you synchronize the two
+  processes through the exchange of a blocking zero-size message.
+\end{exercise}
 
-figure~\ref{fig:send-blocking}.
+\index{communication!blocking|)}
+
+\Level 1 {Non-blocking communication}
+\commandref{sec:nonblocking}
+\index{communication!non-blocking|(}
+
+In the previous section you saw that blocking communication makes
+programming tricky if you want to avoid deadlock and performance
+problems. The main advantage of these routines is that you have full
+control about where the data is.  By contrast, \emph{non-blocking}
+communication routines are easier to use, but more wasteful of memory.
+
+The non-blocking calls \indexmpishow{MPI_Isend} and \indexmpishow{MPI_Irecv}
+do not wait for their counterpart: in effect they tell the runtime
+system `here is some data and please send it as follows' or `here is
+some buffer space, and expect such-and-such data to
+come'. 
+This is illustrated in figure~\ref{fig:send-nonblocking}.
+
+While the use of non-blocking routines prevents deadlock, it
+introduces two new problems:
+\begin{enumerate}
+\item When the send call returns, the send buffer may not be safe to
+  overwrite; when the recv call returns, you do not know for sure that
+  the expected data is in it. Thus, you need a mechanism to make sure
+  that data was actually sent or received.
+\item With a blocking send call, you could repeatedly fill the send
+  buffer and send it off. To send multiple messages with non-blocking calls
+  you have to allocate multiple buffers.
+\end{enumerate}
+
+For the first problem, MPI has two types of
+routines. The \indexmpishow{MPI_Wait...} calls are blocking: when you issue
+such a call, your execution will wait until the specified requests
+have been completed. A~typical way of using them is:
+\begin{verbatim}
+// start non-blocking communication
+MPI_Isend( ... ); MPI_Irecv( ... );
+// do work that does not depend on incoming data
+....
+// wait for the Isend/Irecv calls to finish
+MPI_Wait( ... );
+// now do the work that absolutely needs the incoming data
+....
+\end{verbatim}
+
+Figure~\ref{fig:jump-nonblock} shows the trace of a non-blocking execution
+using \n{MPI_Waitall}.
 \begin{figure}[ht]
 \includegraphics[scale=.1]{graphics-public/send-nonblocking}
 \caption{Illustration of a non-blocking communication: the sending processor immediately continues execution after issueing the send call}
 \label{fig:send-nonblocking}
 \end{figure}
+\begin{figure}[ht]
+\includegraphics[scale=.4]{graphics-public/linear-nonblock}
+\caption{A trace of a nonblocking send between neighbouring processors}
+\label{fig:jump-nonblock}
+\end{figure}
 
-\index{non-blocking communication|)}
-\index{two-sided communication|)}
+The \n{MPI_Test....} calls are themselves non-blocking: they
+test for whether one or more requests have been
+fullfilled. Here a typical idiom would be:
+\begin{verbatim}
+// start non-blocking communication
+for ( ... p ... ) {
+  MPI_Isend( .. p .. ); MPI_Irecv( .. p .. );
+}
+// wait for incoming data and process
+while ( .. there are still requests .. ) {
+  MPI_Test( ... );
+  p = message.source;
+  // process data from p
+}
+\end{verbatim}
+
+\begin{exercise}
+  Read section~\HPSCref{sec:pspmvp} and give pseudo-code for the
+    distributed sparse matrix-vector product using the above idiom for
+    using \n{MPI_Test...} calls. Discuss the advantages and
+    disadvantages of this approach. The answer is not going to be
+    black and white: discuss when you expect which approach to be
+    preferable.
+\end{exercise}
+
+Another scenario where \n{MPI_Wait} calls are convenient is in the
+\indexterm{master-worker model}. The master process creates tasks, and
+sends them to whichever worker process has finished its work:
+\begin{verbatim}
+while ( not done ) {
+  // create new inputs for a while
+  ....
+  // see if anyone has finished
+  MPI_Test( .... &index, &flag );
+  if ( flag ) {
+    // receive processed data and send new
+}
+\end{verbatim}
+
+\Level 2 {Overlap of computation and communication}
+
+Non-blocking routines have long held the promise of letting a
+program \emph{overlap its computation and
+communication}\index{communication!overlap with computation}.  The
+idea was that after posting the non-blocking calls the program could
+proceed to do non-communication work, while another part of the system
+would take care of the communication. Unfortunately, a~lot of this 
+communication involved activity in user space, so the solution would have
+been to let it be handled by a separate thread. Until recently, processors
+were not efficient at doing such multi-threading, so true overlap 
+stayed a promise for the future.
+
+\Level 2 {More about non-blocking}
+
+Above we used \n{MPI_Irecv}, but we could have used the \n{MPI_Recv}
+routine.  There is nothing special about a non-blocking or synchronous
+message once it arrives; the \n{MPI_Recv} call can match any of the
+send routines you have seen so far (but not \n{MPI_Sendrecv}).
+
+% MPI_Cancel( &request )
+
+% MPI_Probe
+
+\index{communication!non-blocking|)}
+\index{communication!two-sided|)}
 \Level 1 {One-sided communication}
-\index{one-sided communication|(}
-\index{one-sided communication|)}
+\commandref{sec:one-sided}
+\index{communication!one-sided|(}
+
+Above, you saw collectives and point-to-point operations. The latter
+type had in common that they require the co-operation of a sender and
+receiver. This co-operation could be loose: you can post a receive
+with \n{MPI_ANY_SOURCE} as sender, but there had to be both a send and
+receive call. On the other hand, in one-sided communication a process
+can do a `put' or `get' operation, writing data to or reading it from
+another processor, without that other processor's involvement.
+
+In one-sided MPI operations, also known as \acf{RDMA} or 
+\acf{RMA} operations, there
+are still two processes involved: the \indexterm{origin}, which is the
+process that originates the transfer, whether this is a `put' or a `get',
+and the \indexterm{target} whose
+memory is being accessed. On the target, you declare an area of
+user-space memory that is accessible to other processes. This is known
+as a \indexterm{window}. Windows limit how origin processes can access
+the target's memory: you can only `get' data from a window or `put' it
+into a window; all the other memory is not reachable from other processes.
+
+The alternative to having windows is to use \indexterm{distributed shared memory}
+or \indexterm{virtual shared memory}: memory is distributed but acts as if
+it shared. The so-called \acf{PGAS} languages such as \ac{UPC} use this model.
+The MPI \ac{RMA} model makes it possible to 
+lock a window which makes programming slightly more cumbersome, but the
+implementation more efficient.
+
+Within one-sided communication, MPI has two modes: active RMA and
+passive RMA. In \indextermsub{active}{RMA}, both parties are involved; the main advantage
+of this mode is that the origin program can perform many small transfers, which are
+aggregated behind the scenes. Active RMA acts much like asynchronous transfer with a
+concluding \n{Waitall}.
+
+In \indextermsub{passive}{RMA}, the target process is not involved. 
+(\ac{PGAS} languages such as \ac{UPC} are based on this model: data is 
+simply read or written at will.)
+While 
+intuitively it is attractive to be able to write to and read from arbitrary memory,
+there are practical problems. For instance, it requires a remote agent on the target,
+which may interfere with execution of the main thread, or conversely it may not be
+activated at the optimal time. Passive RMA is also very hard to debug and can lead
+to strange deadlocks.
+
+%% McLaren says use an info object
+
+\Level 2 {Windows and epochs}
+\commandref{sec:windows}
+\index{window|(}
+
+A window is a contiguous area of memory,
+\begin{figure}[ht]
+  \includegraphics[scale=.1]{graphics-public/one-sided-window}
+  \caption{Collective definition of a window for one-sided data access}
+  \label{fig:window}
+\end{figure}
+defined with respect to a communicator: each process specifies a
+memory area. Routine for creating and releasing windows
+are collective, so each process \emph{has} to
+call them; see figure~\ref{fig:window}. 
+\begin{verbatim}
+MPI_Info info;
+MPI_Win window;
+MPI_Win_create( /* size */, info, comm, &window );
+MPI_Win_free( window );
+\end{verbatim}
+However, each
+processor can specify its own window size, including zero, and even the type of the
+elements in it.
+
+With a two-sided operation it is clear when the message has been
+completed; with a one-sided operation this is not so clear. Therefore
+we need a mechanism to ensure successful completion. One possibility
+is to use a \indexterm{fence}.
+\begin{verbatim}
+MPI_WIN_FENCE (int assert, MPI_Win win, ierr)
+\end{verbatim}
+This is comparable to doing a barrier on the communicator on which the
+window was based, and it guarantees that all communication on the
+window is completed.
+
+Two fences delineate a so-called \indexterm{epoch}. 
+You can give various hints to the system about this epoch versus the ones
+before and after through the \n{assert} parameter.
+\begin{verbatim}
+MPI_Win_fence((MPI_MODE_NOPUT | MPI_MODE_NOPRECEDE), win);
+MPI_Get( /* operands */, win);
+MPI_Win_fence(MPI_MODE_NOSUCCEED, win);
+\end{verbatim}
+In between the two fences the window is exposed, and while it is you
+should not access it locally. If you absolutely need to access it
+locally, you can use an \ac{RMA} operation for that. Also, there can be only one
+remote process that does a \n{put}; multiple \n{accumulate} accesses are allowed.
+
+Assertions are an integer parameter: you can add or logical-or values.
+The value zero is always correct. There are two types of parameters.
+Local assertions are:
+\begin{itemize}
+  \item\indexmpishow{MPI_MODE_NOSTORE} The preceding epoch did not store
+    anything in this window.
+  \item\indexmpishow{MPI_MODE_NOPUT} The following epoch will not store
+    anything in this window.
+\end{itemize}
+Global assertions:
+\begin{itemize}
+  \item\indexmpishow{MPI_MODE_NOPRECEDE} This process made no \ac{RMA}
+    calls in the preceding epoch.  
+  \item\indexmpishow{MPI_MODE_NOSUCCEED} This process will make no
+    \ac{RMA} calls in the next epoch.
+\end{itemize}
+
+
+\index{window|)}
+
+\Level 2 {Put, get, accumulate}
+
+Window areas are 
+accessible to other processes in the communicator by specifying the
+process rank and an offset from the base of the window.
+\begin{verbatim}
+MPI_PUT (void *origin_addr, int origin_count, MPI_Datatype 
+origin_datatype, int target_rank, MPI_Aint target_disp, int 
+target_count, MPI_Datatype target_datatype, MPI_Win 
+window, ierr)
+\end{verbatim}
+The \n{MPI_Get} call is very similar; a third one-sided routine
+is \n{MPI_Accumulate} which does a reduction operation on the results
+that are being put:
+\begin{verbatim}
+MPI_ACCUMULATE (void *origin_addr, int
+origin_count, MPI_Datatype origin_datatype, 
+int target_rank, MPI_Aint target_disp, int
+target_count, MPI_Datatype
+target_datatype,MPI_Op op,MPI_Win 
+window,ierr)
+\end{verbatim}
+
+\begin{exercise}
+  Implement an `all-gather' operation using one-sided communication:
+  each processor stores a single number, and you want each processor
+  to build up an array that contains the values from all
+  processors. Note that you do not need a special case for a processor
+  collecting its own value: doing `communication' between a processor
+  and itself is perfectly legal.
+\end{exercise}
+
+Accumulate is a reduction with remote result. As with reduction, the 
+order is undefined. The same predefined operators are available, but no
+user-defined ones. One extra: \indexmpishow{MPI_REPLACE}.
+
+\Level 2 {Put vs Get}
+
+\begin{verbatim}
+while(!converged(A)){ 
+  update(A); 
+  MPI_Win_fence(MPI_MODE_NOPRECEDE, win); 
+  for(i=0; i < toneighbors; i++) 
+    MPI_Put(&frombuf[i], 1, fromtype[i], toneighbor[i], 
+                         todisp[i], 1, totype[i], win); 
+  MPI_Win_fence((MPI_MODE_NOSTORE | MPI_MODE_NOSUCCEED), win); 
+  } 
+\end{verbatim}
+\begin{verbatim}
+  while(!converged(A)){ 
+  update_boundary(A); 
+  MPI_Win_fence((MPI_MODE_NOPUT | MPI_MODE_NOPRECEDE), win); 
+  for(i=0; i < fromneighbors; i++) 
+    MPI_Get(&tobuf[i], 1, totype[i], fromneighbor[i], 
+                    fromdisp[i], 1, fromtype[i], win); 
+  update_core(A); 
+  MPI_Win_fence(MPI_MODE_NOSUCCEED, win); 
+  } 
+\end{verbatim}
+
+\Level 2 {Active and passive target synchronization}
+
+There are two more fine-grained ways of doing one-sided communication
+that are suitable if only a small number of processor pairs is
+involved.  In \indexterm{active target synchronization} both
+processors are involved through the calls \n{MPI_Win_start},
+\n{MPI_Win_complete}, \n{MPI_ Win_post}, \n{Win_wait}. What routine
+you use depends on whether the processor is an \indexterm{origin} or
+\indexterm{target}.
+
+If the current process is going to have the data in its window accessed,
+you define an \indextermsub{exposure}{epoch} by:
+\begin{verbatim}
+MPI_Win_post( /* group of origin processes */ )
+MPI_Win_wait()
+\end{verbatim}
+This turns the current processor into a target for access operations issued
+by a different process.
+
+If the current process is going to be issuing one-sided operations,
+you define an \indextermsub{access}{epoch} by:
+\begin{verbatim}
+MPI_Win_start()
+MPI_Win_complete()
+\end{verbatim}
+This turns the current process into the origin of a number of
+one-sided access operations.
+
+The `post' and `start' routines open the window to a
+\indextermbus{group of}{processors}; see section~\ref{sec:comm-group}
+for how to get such a group from a communicator.
+
+In \indexterm{passive target synchronization} only one processor
+is involved in the communication. This involves using
+a lock: one process can lock the window
+on another, specified, process.
+\begin{verbatim}
+MPI_WIN_LOCK (int locktype, int rank, int assert, MPI_Win win,ierr)
+MPI_WIN_UNLOCK (int rank, MPI_Win win, ierr)
+\end{verbatim}
+During an access epoch, a process can initiate and finish a one-sided
+transfer.
+\begin{verbatim}
+If (rank == 0) {
+  MPI_Win_lock (MPI_LOCK_SHARED, 1, 0, win);
+  MPI_Put (outbuf, n, MPI_INT, 1, 0, n, MPI_INT, win);
+  MPI_Win_unlock (1, win);
+}
+\end{verbatim}
+These routines make MPI behave like a shared memory system; the
+instructions between locking and unlocking the window effectively
+become \indexterm{atomic operations}.
+
+\Level 2 {Details}
+
+Sometimes an architecture has memory that is shared between processes,
+or that otherwise is fast for one-sided communication. To put a window
+in such memory, it can be placed in memory that is especially
+allocated:
+\begin{verbatim}
+MPI_Alloc_mem() and MPI_Free_mem()
+\end{verbatim}
+These calls reduce to \n{malloc} and \n{free} is there is no special
+memory area.
+
+\index{communication!one-sided|)}
 
 \Level 0 {Collectives}
+\index{collectives|(}
+\commandref{sec:collective}
+
+Collectives are operations that involve all processes in a
+communicator. The simplest example is a broadcast: one processor has
+some data and all others need to get a copy of it.  A~collective is a
+single call, and it blocks on all processors. That does not mean that
+all processors exit the call at the same time: because of network
+latency some processors can receive their data later than others.
+
+There are several variants of most collectives. For instance, the
+simplest type has a \indextermsub{root of the}{collective} where
+information originates or is collected. Then there is an `all' variant
+of operations such as the reduction, where the result is not left just
+on the root but everywhere. Finally, there are `v' variants where the
+amount of data coming from or going to each processor is variable.
+
+\Level 1 {Broadcast, reduce, scan}
 \label{sec:bcast}
+
+The simplest collective is the broadcast, where one process has some
+data that needs to be shared with all others. One scenario is that
+processor zero can parse the commandline arguments of the executable.
+The call has the following structure:
+\begin{verbatim}
+MPI_Bcast( data..., root , comm);
+\end{verbatim}
+The root is the process that is sending its data; see figure~\ref{fig:bcast-simple}.
+\begin{figure}[ht]
+  \includegraphics[scale=.08]{graphics-public/bcast-simple}
+  \caption{A simple broadcast}
+  \label{fig:bcast-simple}
+\end{figure}
+Typically, it will
+be the root of a broadcast tree. You see that there is no message tag,
+because collectives are blocking, so you can have only one active at a
+time. (In MPI~3 there are non-blocking collectives; see
+section~\ref{sec:mpi3collect}.)
+
+It is possible for the data to be an array; in that case MPI acts as if you did a 
+separate scalar broadcast on each array index.
+
+If a processor has only one outgoing connection, the broadcast in
+figure~\ref{fig:bcast-simple} would take a time proportional to the
+number of processors. One way to ameliorate that is to structure the
+broadcast in a tree-like fashion.
+\begin{figure}[ht]
+  \includegraphics[scale=.1]{graphics-public/bcast-tree}
+  \caption{A tree-based broadcast}
+  \label{fig:bcast-tree}
+\end{figure}
+This is depicted in figure~\ref{fig:bcast-tree}. How does the
+communication time now depend on the number of processors? The theory
+of the complexity of collectives is described in more detail in
+\HPSCref{sec:collective}; see also~\cite{Chan2007Collective}.
+
+The reverse of a broadcast is a reduction:
+\begin{verbatim}
+MPI_Reduce( senddata, recvdata..., operator,
+    root, comm ); 
+\end{verbatim}
+Now there is a separate buffer for outgoing data, on all processors,
+and incoming data, only relevant on the root. Also, you have to
+indicate how the data is to be combined. Popular choices are
+\indexmpishow{MPI_SUM}, \indexmpishow{MPI_PROD} and
+\indexmpishow{MPI_MAX}, but complicated operators such as finding the
+location of the maximum value exist. You can also define your own operators.
+
+On processes that are not the root, the receive buffer is ignored. On the root, 
+you have two buffers, but by specifying \indexmpishow{MPI_IN_PLACE}, the reduction call
+uses the value in the receive buffer as the root's contribution to the operation.
+On the \n{Allreduce} call, \n{MPI_IN_PLACE} can be used for the send buffer of
+every process.
+
+\Level 1 {Gather and scatter}
+
+In gather and scatter, the root collects information from, or conversely spreads it to,
+all other processes. The difference with reduce and broadcast is that it involves
+individual information from/to every process. Thus, the gather operation typically 
+has an array of items, one coming from each sending process, and scatter has an array,
+\begin{figure}[ht]
+  \includegraphics[scale=.12]{graphics-public/scatter-simple}
+  \caption{A scatter operation}
+  \label{fig:scatter}
+\end{figure}
+with an individual item for each receiving process; see figure~\ref{fig:scatter}.
+
+To make this more precise, consider, arbitrarily,
+the scatter operation. The root process specifies an out buffer:
+\begin{verbatim}
+outbuffer, outcount, outtype
+\end{verbatim}
+but the \n{outcount} is not the length of the buffer: it is the number
+of elements to send to each process.
+On the receiving processes other than the root the outbuffer arguments are irrelevant.
+
+\begin{exercise}
+  Extend your Mandelbrot code to use collectives, as outlined
+  in section~\ref{proj:mandel-collective}.
+\end{exercise}
+
+\Level 1 {Variable gather and scatter}
+
+In the gather and scatter call above each processor received or sent
+an identical number of items. In many cases this is appropriate, but
+sometimes each processor wants or contributes an individual number of
+items.
+
+Looking again at the scatter, nothing changes in the receive buffer,
+but now the send buffer on the root is more complicated. It now consists of:
+\begin{verbatim}
+outbuffer, array-of-outcounts, array-of-displacements, outtype
+\end{verbatim}
+
+\Level 1 {Non-blocking collectives}
+\label{sec:mpi3collect}
+
+MPI version~3 has non-blocking collectives.
+
+\index{collectives|)}
+
+\Level 0 {Data types}
+
+In many cases the data you send is a single element or an array of some 
+elementary type such as byte, int, or real. You pass the data by specifying
+the start address and the number of data elements.
+
+Since MPI is a library, and not a language, there is a possibility of 
+confusion here: you first declare your variable or array as, say, \n{double},
+and subsequently declare it to be \n{MPI_DOUBLE}. First of all, you
+can make errors, and the compiler will most likely not catch these.
+Secondly, the definition of datatypes is complicated; for instance there
+are 32-bit and 64-bit integers. How can you keep your code both 
+correct and portable then?
+
+\Level 1 {Elementary data types}
+
+C/C++:
+\begin{tabular}{ll}
+\n{MPI_CHAR}&only for text data, do not use for small integers\\
+\n{MPI_UNSIGNED_CHAR}\\
+\n{MPI_SIGNED_CHAR}\\
+\n{MPI_SHORT}\\
+\n{MPI_UNSIGNED_SHORT}\\
+\n{MPI_INT}\\
+\n{MPI_UNSIGNED}\\
+\n{MPI_LONG}\\
+\n{MPI_UNSIGNED_LONG}\\
+\n{MPI_FLOAT}\\
+\n{MPI_DOUBLE}\\
+\n{MPI_LONG_DOUBLE}
+\end{tabular}
+There is some, but not complete, support for \indexterm{C99} types.
+
+Fortran:
+\begin{tabular}{ll}
+\n{MPI_CHARACTER}&Character(Len=1)\\
+\n{MPI_LOGICAL}\\
+\n{MPI_INTEGER}\\
+\n{MPI_REAL}\\
+\n{MPI_DOUBLE_PRECISION}\\
+\n{MPI_COMPLEX}\\
+\n{MPI_DOUBLE_COMPLEX}&Complex(Kind=Kind(0.d0))\\
+\end{tabular}
 
 \Level 0 {Communicators}
 
@@ -268,6 +946,84 @@ independently of another subset. For example:
 \end{itemize}
 In this section we will see mechanisms for defining new communicators
 and sending messages between communicators.
+
+An important reason for using communicators is the development of
+software libraries. If the routines in a library use their own communicator
+(even if it is a duplicate of the `outside' communicator), there
+will never be a confusion between message tags inside and outside the 
+library.
+
+\Level 1 {Basics}
+
+There are three predefined communicators:
+\begin{itemize}
+\item \indexmpishow{MPI_COMM_WORLD} comprises all processes that were started 
+  together by \indexterm{mpirun} (or some related program).
+\item \indexmpishow{MPI_COMM_SELF} is the communicator that contains only
+   the current process.
+\item \indexmpishow{MPI_COMM_NULL} is the invalid communicator. Routines
+  that construct communicators can give this as result if an error occurs.
+\end{itemize}
+%Implementationally, communicators are integers, so you can use a 
+%simple test for equality.
+
+In some applications you will find yourself regularly creating new
+communicators, using the mechanisms described below. In that case, you
+should de-allocate communicators with \indexmpishow{MPI_Comm_free} when
+you're done with them.
+
+\Level 1 {Creating new communicators}
+
+The main mechanisms for making new communicators are the following:
+\begin{itemize}
+\item \indexmpishow{MPI_Comm_dup} makes an exact duplicate of a communicator.
+  This is useful for software libraries.
+\item \indexmpishow{MPI_Comm_split} takes a single communicator and splits it 
+  into multiple, disjoint, new ones. This uses a `colour':
+\begin{verbatim}
+MPI_Comm_split( old_comm, colour, new_comm, .... );
+\end{verbatim}
+  and all processes in the old communicator with the same colour
+  wind up in a new communicator together. The old communicator still exists,
+  so processes now have two different contexts in which to communicate.
+\item The more general mechanism is based on groups: you can extract the 
+  group from a communicator, combine different groups, and form a new
+  communicator from the resulting group.
+\end{itemize}
+
+Here is one example of communicator splitting. Suppose your processors
+are in a two-dimensional grid:
+\begin{verbatim}
+MPI_Comm_rank( &mytid );
+proc_i = mytid % proc_column_length;
+proc_j = mytid / proc_column_length;
+\end{verbatim}
+You can now create a communicator per column:
+\begin{verbatim}
+MPI_Comm column_comm;
+MPI_Comm_split( MPI_COMM_WORLD, proj_j, &column_comm );
+\end{verbatim}
+and do a broadcast in that column:
+\begin{verbatim}
+MPI_Bcast( data, /* tag: */ 0, column_comm );
+\end{verbatim}
+Because of the SPMD nature of the program, you are now doing in parallel
+a broadcast in every processor column. Such operations often appear
+in \indexterm{dense linear algebra}.
+
+The group mechanism is more involved. You get the group from a
+communicator, or conversely make a communicator from a group with
+\indexmpishow{MPI_Comm_group} and \indexmpishow{MPI_Comm_create}:
+\begin{verbatim}
+MPI_Comm_group( comm, &group);
+MPI_Comm_create( old_comm, group, &new_comm );
+\end{verbatim}
+and groups are manipulated with
+\indexmpishow{MPI_Group_incl}, \indexmpishow{MPI_Group_excl},
+\indexmpishow{MPI_Group_difference} and a few more.
+
+You can name your communicators with \indexmpishow{MPI_Comm_set_name}, which
+could improve the quality of error messages when they arise.
 
 \Level 1 {Intra-communicators}
 \label{sec:comm-group}
@@ -341,182 +1097,36 @@ Inter-communicators can be used if two groups of process work
 asynchronously with respect to each other; another application is
 fault tolerance (section~\ref{mpi:tolerant}).
 
-\Level 0 {One-sided communication}
-
-Above, you saw collectives and point-to-point operations. The latter
-type had in common that they require the co-operation of a sender and
-receiver. This co-operation could be loose: you can post a receive
-with \n{MPI_ANY_SOURCE} as sender, but there had to be both a send and
-receive call. On the other hand, in one-sided communication a process
-can do a `put' or `get' operation, writing data to or reading it from
-another processor, without that other processor's involvement.
-
-In one-sided MPI operations, also known as \acf{RMA} operations, there
-are still two processes involved: the \indexterm{origin}, which is the
-process that originates the transfer, whether this is a `put' or a `get',
-and the \indexterm{target} whose
-memory is being accessed. On the target, you declare an area of
-user-space memory that is accessible to other processes. This is known
-as a \indexterm{window}. Windows limit how origin processes can access
-the target's memory: you can only `get' data from a window or `put' it
-into a window; all the other memory is not reachable from other processes.
-
-A window is a contiguous area of memory:
-\begin{verbatim}
-MPI_WIN_CREATE (void *base, MPI_Aint size, 
-int disp_unit, MPI_Info info, MPI_Comm 
-comm, MPI_Win *win, ierr)
-\end{verbatim}
-A window is defined with respect to a communicator: each process
-specifies a memory area. (This routine is collective, so each
-process \emph{has} to call this routine.) These areas are then
-accessible to other processes in the communicator by specifying the
-process rank and an offset from the base of the window.
-\begin{verbatim}
-MPI_PUT (void *origin_addr, int origin_count, MPI_Datatype 
-origin_datatype, int target_rank, MPI_Aint target_disp, int 
-target_count, MPI_Datatype target_datatype, MPI_Win 
-window, ierr)
-\end{verbatim}
-The \n{MPI_Get} call is very similar; a third one-sided routine
-is \n{MPI_Accumulate} which does a reduction operation on the results
-that are being put:
-\begin{verbatim}
-MPI_ACCUMULATE (void *origin_addr, int
-origin_count, MPI_Datatype origin_datatype, 
-int target_rank, MPI_Aint target_disp, int
-target_count, MPI_Datatype
-target_datatype,MPI_Op op,MPI_Win 
-window,ierr)
-\end{verbatim}
-
-With a two-sided operation it is clear when the message has been
-completed; with a one-sided operation this is not so clear. Therefore
-we need a mechanism to ensure successful completion. One possibility
-is to use a \indexterm{fence}.
-\begin{verbatim}
-MPI_WIN_FENCE (int assert, MPI_Win win, ierr)
-\end{verbatim}
-This is comparable to doing a barrier on the communicator on which the
-window was based, and it guarantees that all communication on the
-window is completed.
-
-A fence delineates a so-called \indexterm{epoch}. In fact, you
-can put fences around the epoch, giving various hints to the system
-through the \n{assert} parameter.
-\begin{verbatim}
-MPI_Win_fence((MPI_MODE_NOPUT | MPI_MODE_NOPRECEDE), win);
-MPI_Get( /* operands */, win);
-MPI_Win_fence(MPI_MODE_NOSUCCEED, win);
-\end{verbatim}
-
-\begin{exercise}
-  Implement an `all-gather' operation using one-sided communication:
-  each processor stores a single number, and you want each processor
-  to build up an array that contains the values from all
-  processors. Note that you do not need a special case for a processor
-  collecting its own value: doing `communication' between a processor
-  and itself is perfectly legal.
-\end{exercise}
-
-\Level 1 {Put vs Get}
-
-\begin{verbatim}
-while(!converged(A)){ 
-  update(A); 
-  MPI_Win_fence(MPI_MODE_NOPRECEDE, win); 
-  for(i=0; i < toneighbors; i++) 
-    MPI_Put(&frombuf[i], 1, fromtype[i], toneighbor[i], 
-                         todisp[i], 1, totype[i], win); 
-  MPI_Win_fence((MPI_MODE_NOSTORE | MPI_MODE_NOSUCCEED), win); 
-  } 
-\end{verbatim}
-\begin{verbatim}
-  while(!converged(A)){ 
-  update_boundary(A); 
-  MPI_Win_fence((MPI_MODE_NOPUT | MPI_MODE_NOPRECEDE), win); 
-  for(i=0; i < fromneighbors; i++) 
-    MPI_Get(&tobuf[i], 1, totype[i], fromneighbor[i], 
-                    fromdisp[i], 1, fromtype[i], win); 
-  update_core(A); 
-  MPI_Win_fence(MPI_MODE_NOSUCCEED, win); 
-  } 
-\end{verbatim}
-
-\Level 1 {Active and passive target synchronization}
-
-There are two more fine-grained ways of doing one-sided communication
-that are suitable if only a small number of processor pairs is
-involved.  In \indexterm{active target synchronization} both
-processors are involved through the calls \n{MPI_Win_start},
-\n{MPI_Win_complete}, \n{MPI_ Win_post}, \n{Win_wait}. What routine
-you use depends on whether the processor is an \indexterm{origin} or
-\indexterm{target}.
-
-If the current process is going to have the data in its window accessed,
-you define an \indextermsub{exposure}{epoch} by:
-\begin{verbatim}
-MPI_Win_post( /* group of origin processes */ )
-MPI_Win_wait()
-\end{verbatim}
-This turns the current processor into a target for access operations issued
-by a different process.
-
-If the current process is going to be issuing one-sided operations,
-you define an \indextermsub{access}{epoch} by:
-\begin{verbatim}
-MPI_Win_start()
-MPI_Win_complete()
-\end{verbatim}
-This turns the current process into the origin of a number of
-one-sided access operations.
-
-The `post' and `start' routines open the window to a
-\indextermbus{group of}{processors}; see section~\ref{sec:comm-group}
-for how to get such a group from a communicator.
-
-In \indexterm{passive target synchronization} only one processor
-is involved in the communication. This involves using
-a lock: one process can lock the window
-on another, specified, process.
-\begin{verbatim}
-MPI_WIN_LOCK (int locktype, int rank, int assert, MPI_Win win,ierr)
-MPI_WIN_UNLOCK (int rank, MPI_Win win, ierr)
-\end{verbatim}
-During an access epoch, a process can initiate and finish a one-sided
-transfer.
-\begin{verbatim}
-If (rank == 0) {
-  MPI_Win_lock (MPI_LOCK_SHARED, 1, 0, win);
-  MPI_Put (outbuf, n, MPI_INT, 1, 0, n, MPI_INT, win);
-  MPI_Win_unlock (1, win);
-}
-\end{verbatim}
-These routines make MPI behave like a shared memory system; the
-instructions between locking and unlocking the window effectively
-become \indexterm{atomic operations}.
-
-\Level 1 {Details}
-
-Sometimes an architecture has memory that is shared between processes,
-or that otherwise is fast for one-sided communication. To put a window
-in such memory, it can be placed in memory that is especially
-allocated:
-\begin{verbatim}
-MPI_Alloc_mem() and MPI_Free_mem()
-\end{verbatim}
-These calls reduce to \n{malloc} and \n{free} is there is no special
-memory area.
-
 \Level 0 {Leftover topics}
 
-\Level 1 {Status object}
+\Level 1 {Getting message information}
 
-The \n{MPI_Status} object is a structure with the following 
+In some circumstances the recipient may not know all details of a message.
+\begin{itemize}
+\item If you are expecting multiple incoming messages, it may be most
+  efficient to deal with them in the order in which they arrive. For
+  that, you have to be able to ask `who did this message come from,
+  and what is in it'.
+\item Maybe you know the sender of a message, but the amount of data
+  is unknown. In that case you can overallocate your receive buffer,
+  and after the message is received ask how big it was, or you can
+  `probe' an incoming message and allocate enough data when you find
+  out how much data is being sent.
+\end{itemize}
+
+\Level 2 {Status object}
+
+The receive calls you saw above has a status argument. If you 
+precisely know what is going to be sent, this argument tells you 
+nothing new. However, if you expect data from multiple senders,
+or the amount of data is indeterminate, the status will give
+you that information.
+
+The \indexmpishow{MPI_Status} object is a structure with the following 
 freely accessible members:
 \n{MPI_SOURCE}, \n{MPI_TAG}, and \n{MPI_ERROR}. There is also opaque 
 information: the amount of data received can be retrieved by 
-a function call to \n{MPI_Get_count}.
+a function call to \indexmpishow{MPI_Get_count}.
 \begin{verbatim}
 int MPI_Get_count(
   MPI_Status *status,
@@ -527,6 +1137,19 @@ int MPI_Get_count(
 This may be necessary since the \n{count} argument to \n{MPI_Recv} is 
 the buffer size, not an indication of the actually expected number of
 data items.
+
+\Level 2 {Probing messages}
+
+MPI receive calls specify a receive buffer, and its size has to be
+enough for any data sent. In case you really have no idea how much data
+is being sent, and you don't want to overallocate the receive buffer,
+you can use a `probe' call.
+
+The calls \indexmpishow{MPI_Probe}, \indexmpishow{MPI_Iprobe}, accept a message,
+but do not copy the data. Instead, when probing tells you that there is a
+message, you can use \indexmpishow{MPI_Get_count} to determine its size,
+allocate a large enough receive buffer, and do a regular receive to
+have the data copied.
 
 \Level 1 {Error handling}
 \label{mpi:error}
@@ -555,8 +1178,10 @@ A few examples of what can go wrong:
 
 The MPI library has a general mechanism for dealing with errors that
 it detects. The default behaviour, where the full run is aborted, is
-equivalent to your code having the following statement\footnote{The
-  routine \n{MPI\_Errhandler\_set} is deprecated.}  :
+equivalent to your code having the following
+call\indexmpi{MPI_Comm_set_errhandler}\footnote{The routine
+  \n{MPI\_Errhandler\_set} is deprecated.}:
+\indexmpi{MPI_ERRORS_ARE_FATAL}\indexmpi{MPI_ERRORS_RETURN}
 \begin{verbatim}
 MPI_Comm_set_errhandler(MPI_COMM_WORLD,MPI_ERRORS_ARE_FATAL);
 \end{verbatim}
@@ -576,6 +1201,25 @@ ierr = MPI_Something();
 if (ierr!=0) {
     // print out information about what your programming is doing
     MPI_Abort();
+}
+\end{verbatim}
+For instance,
+\begin{verbatim}
+Fatal error in MPI_Waitall: 
+See the MPI_ERROR field in MPI_Status for the error code
+\end{verbatim}
+You could code this as\indexmpi{MPI_Error_string}\indexmpi{MPI_ERROR}
+\begin{verbatim}
+MPI_Comm_set_errhandler(MPI_COMM_WORLD,MPI_ERRORS_RETURN);
+ierr = MPI_Waitall(2*ntids-2,requests,status);
+if (ierr!=0) {
+   char errtxt[200];
+   for (int i=0; i<2*ntids-2; i++) {
+       int err = status[i].MPI_ERROR; int len=200;
+       MPI_Error_string(err,errtxt,&len);
+       printf("Waitall error: %d %s\n",err,errtxt);
+   }
+   MPI_Abort(MPI_COMM_WORLD,0);
 }
 \end{verbatim}
 One cases where errors can be handled is that of \emph{MPI file
@@ -608,7 +1252,14 @@ containing the new process(es) is not part of the
 old \n{MPI_COMM_WORLD}, so it is better to set up your code as a
 collection of inter-communicators to begin with.
 
+\Level 1 {Profiling}
+\label{sec:profile}
+
+\indexmpishow{MPI_Wtime} gives \indexterm{wall clock time} from
+unspecified starting point.
+
 \Level 1 {Debugging}
+\label{sec:debug}
 
 There are various ways of debugging an MPI program. Typically there
 are two cases. In the simple case your program can have a serious
@@ -652,144 +1303,21 @@ use \indexterm{valgrind}, but that requires some setup during
 installation. See \url{http://valgrind.org/docs/manual/mc-manual.html#mc-manual.mpiwrap}
 for details.
 
-\Level 0 {A realistic programming example}
+\Level 1 {Language issues}
 
-In this section we will gradually build a semi-realistic example
-program. To get you started some pieces have already been written:
-as a starting point look at \n{code/mpi/c/grid.cxx}.
+MPI is typically written in C, what if you program Fortran?
 
-\Level 1 {Description of the problem}
+Assumed shape arrays can be a problem: they need to be copied. 
+That's a problem with Isend.
 
-With this example you will investigate several strategies for
-implementing a simple iterative method. Let's say you have a
-two-dimensional grid of datapoints $G=\{g_{ij}\colon 0\leq
-i<n_i,\,0\leq j<n_j\}$ and you want to compute~$G'$ where
-\begin{equation}
-g'_{ij} = 1/4 \cdot (g_{i+1,j}+g_{i-1,j}+g_{i,j+1}+g_{i,j-1}).
-\label{eq:grid-update}
-\end{equation}
+\Level 0 {Programming projects}
+\SetBaseLevel 2
+\input projects-public/mpiprojects
+\SetBaseLevel 1
 
-This is easy enough to implement sequentially, but in parallel this
-requires some care.
+\Level 0 {Reference to the routines}
 
-Let's divide the grid $G$ and divide it over a two-dimension grid of
-$p_i\times p_j$
-processors. (Other strategies exist, but this one scales best; see
-section~\HPSCref{sec:pspmvp}.)
-Formally, we define two sequences of points
-\[ 0=i_0<\cdots<i_{p_i}<i_{p_i+1}=n_i,\quad 
-   0<j_0<\cdots<j_{p_j}<i_{p_j+1}=n_j
-\]
-and we say that processor $(p,q)$ computes $g_{ij}$ for
-\[ i_p\leq i<i_{p+1}, \quad j_q\leq j<j_{q+1}.
-\]
-From formula~\eqref{eq:grid-update} you see that the processor then
-needs one row of points on each side surrounding its part of the
-grid. A~picture makes this clear; see figure~\ref{fig:ghost-grid}.
-\begin{figure}
-\includegraphics[scale=.1]{graphics-public/jacobi-average}
-\caption{A grid divided over processors, with the `ghost' region indicated}
-\label{fig:ghost-grid}
-\end{figure}
-These elements surrounding the processor's own part are called
-the \indexterm{halo} or \indexterm{ghost region} of that processor.
-
-The problem is now that the elements in the halo are stored on a
-different processor, so communication is needed to gather them. In the
-upcoming exercises you will have to use different strategies for doing
-so.
-
-\Level 1 {Code basics}
-
-The program needs to read the values of the grid size and the
-processor grid size from the commandline, as well as the number of
-iterations. This routine does some error checking: if the number of
-processors does not add up to the size of \n{MPI_COMM_WORLD}, a
-nonzero error code is returned.
-\begin{verbatim}
-ierr = parameters_from_commandline
-  (argc,argv,comm,&ni,&nj,&pi,&pj,&nit);
-if (ierr) return MPI_Abort(comm,1);
-\end{verbatim}
-From the processor parameters we make a processor grid object:
-\begin{verbatim}
-processor_grid *pgrid = new processor_grid(comm,pi,pj);
-\end{verbatim}
-and from the numerical parameters we make a number grid:
-\begin{verbatim}
-number_grid *grid = new number_grid(pgrid,ni,nj);
-\end{verbatim}
-Number grids have a number of methods defined. To set the value of all
-the elements belonging to a processor to that processor's number:
-\begin{verbatim}
-grid->set_test_values();
-\end{verbatim}
-To set random values:
-\begin{verbatim}
-grid->set_random_values();
-\end{verbatim}
-If you want to visualize the whole grid, the following call gathers
-all values on processor zero and prints them:
-\begin{verbatim}
-grid->gather_and_print();
-\end{verbatim}
-
-Next we need to look at some data structure details.
-
-The definition of the \n{number_grid} object starts as follows:
-\begin{verbatim}
-class number_grid {
-public:
-  processor_grid *pgrid;
-  double *values,*shadow;
-\end{verbatim}
-where \n{values} contains the elements owned by the processor,
-and \n{shadow} is intended to contain the values plus the ghost
-region. So how does \n{shadow} receive those values? Well, the call looks 
-like
-\begin{verbatim}
-grid->build_shadow();
-\end{verbatim}
-and you will need to supply the implementation of that.
-Once you've done so, there is a routine that prints out the shadow array 
-of each processor
-\begin{verbatim}
-grid->print_shadow();
-\end{verbatim}
-This routine does the sequenced printing that you implemented in
-exercise~\ref{ex:hello-world-zero}.
-
-In the file \n{code/mpi/c/grid_impl.cxx} you can see several uses of
-the macro \n{INDEX}. This translates from a two-dimensional coordinate
-system to one-dimensional. Its main use is letting you use $(i,j)$
-coordinates for indexing the processor grid and the number grid: for
-processors you need the translation to the linear rank, and for the
-grid you need the translation to the linear array that holds the
-values.
-
-A good example of the use of \n{INDEX} is in the
-\n{number_grid::relax} routine: this takes points from the \n{shadow}
-array and averages them into a point of the \n{values} array. (To
-understand the reason for this particular averaging,
-see~\HPSCref{sec:2dbvp} and~\HPSCref{sec:jacobi-seidel}.) Note how the
-\n{INDEX} macro is used to index in a
-$\n{ilength}\times\n{jlength}$ target array \n{values}, while
-reading from a $(\n{ilength}+2)\times(\n{jlength}+2)$ source array
-\n{shadow}.
-\begin{verbatim}
-for (i=0; i<ilength; i++) {
-  for (j=0; j<jlength; j++) {
-    int c=0;
-    double new_value=0.;
-    for (c=0; c<5; c++) {
-	int ioff=i+1+ioffsets[c],joff=j+1+joffsets[c];
-	new_value += coefficients[c] * 
-	  shadow[ INDEX(ioff,joff,ilength+2,jlength+2) ];
-    }
-    values[ INDEX(i,j,ilength,jlength) ] = new_value/8.;
-  }
-}
-\end{verbatim}
+\input chapters-public/mpiref
 
 \Level 0 {Literature}
 
