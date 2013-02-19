@@ -47,8 +47,49 @@ before, few after.
 
 \Level 1 {Basic model}
 
-Distributed: no master, but there is an \n{mpirun} program.
-\ac{SPMD} mode: all processors execute the same program.
+Here we sketch the two most common scenarios for using MPI. In the
+first, the user is working on an interactive machine, which has
+network access to a number of hosts, typically a network of workstations;
+see figure~\ref{fig:mpi-interactive}.
+\begin{figure}[ht]
+  \includegraphics[scale=.12]{graphics-public/mpi-interactive}
+  \caption{Interactive MPI setup}
+  \label{fig:mpi-interactive}
+\end{figure}
+The user types the command \n{mpirun}\index{mpirun} and supplies
+\begin{itemize}
+\item The number of hosts involved,
+\item their names, possibly in a hostfile,
+\item and other parameters, such as whether to include the interactive
+  host; followed by
+\item the name of the program and its parameters.
+\end{itemize}
+The \n{mpirun} program then makes an \n{ssh}\index{ssh} connection
+to each of the hosts, giving them sufficient information that they 
+can find each other. All the output of the processors is piped through the 
+\n{mpirun} program, and appears on the interactive console.
+
+In the second scenario (figure~\ref{fig:mpi-batch}) the user prepares
+a \indextermbus{batch}{job} script with commands, and these will be
+run when the \indextermbus{batch}{scheduler} gives a number of hosts
+to the job.
+\begin{figure}[ht]
+  \includegraphics[scale=.1]{graphics-public/mpi-batch}
+  \caption{Batch MPI setup}
+  \label{fig:mpi-batch}
+\end{figure}
+Now the batch script contains the \n{mpirun} command%
+\begin{istc}
+, or some variant such as \n{ibrun}\index{ibrun}%
+\end{istc}
+, and the hostfile is dynamically generated when the job starts.
+Since the job now runs at a time when the user may not be logged in, 
+any screen output goes into an output file.
+
+You see that in both scenarios the parallel program is started
+by the \n{mpirun} command, which only supports
+an \ac{SPMD} mode of execution: all hosts execute the same program.
+
 To first order, the network is symmetric. However, the truth is more 
 complicated (`topology-aware communication').
 
