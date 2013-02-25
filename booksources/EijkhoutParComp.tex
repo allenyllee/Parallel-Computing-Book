@@ -38,6 +38,7 @@
  {\end{procedure}}
 
 \newcommand\verbatimsnippet[1]{\verbatiminput{code/snippets/#1}}
+\newenvironment{question}{\begin{quotation}\textbf{Question.\ }}{\end{quotation}}
 
 \def\svnrev{428}
 \edef\revision{\svnrev}
@@ -187,6 +188,12 @@
   \begin{quotation}
     \small\sl\noindent This reference section gives the syntax for
     routines introduced in section~\ref{#1}.
+  \end{quotation}}
+\newcommand\commandrefexercise[1]{\label{#1-exec}
+  \begin{quotation}
+    \small\sl\noindent The exercises in this section are about the
+    routines introduced in section~\ref{#1}; 
+    for the reference information see section~\ref{#1-ref}.
   \end{quotation}}
 
 \usepackage{xr-hyper}
