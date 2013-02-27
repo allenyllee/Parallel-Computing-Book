@@ -1,5 +1,8 @@
 \Level 1 {Basics}
 
+\Level 2 {MPI setup}
+\commandreflabel{sec:rank-size}
+
 \Level 2 {Language interfaces}
 
 The \indexterm{C++} interface is deprecated as of \indextermbus{MPI}{2.2}.
@@ -112,6 +115,30 @@ uses the value in the receive buffer as the root's contribution to the operation
 On the \n{Allreduce} call, \n{MPI_IN_PLACE} can be used for the send buffer of
 every process.
 
+The scan operations are
+\begin{verbatim}
+int MPI_Scan(void* sendbuf, void* recvbuf, 
+    int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm ) 
+\end{verbatim}
+and
+\begin{verbatim}
+int MPI_Exscan(void* sendbuf, void* recvbuf, 
+    int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm ) 
+\end{verbatim}
+The \n{MPI_Op} operations do not return an error code.
+
+The result of the exclusive scan is undefined on processor~0,
+and on processor~1 it is a copy of the send value of processor~1.
+In particular, the \n{MPI_Op} need not be called on these two 
+processors.
+
+\Level 1 {Error handling}
+\commandreflabel{mpi:error}
+
+MPI operators (\indexmpishow{MPI_Op}) do not return an error code. In case of
+an error they call \n{MPI_Abort}; if \indexmpishow{MPI_ERRORS_RETURN}
+is the error handler, errors may be silently ignore.
+
 \Level 1 {More utility stuff}
 \commandreflabel{sec:profile}
 
@@ -141,3 +168,24 @@ MPI_Attr_get( comm, MPI_WTIME_IS_GLOBAL, &v, &flag );
 if (mytid==0) printf(``Time synchronized? %d->%d\n'',flag,*v);
 \end{verbatim}
 %\indexmpi{MPI_Wtime} can be either a function or a macro.
+
+\Level 1 {Multi-threading}
+\commandreflabel{sec:mpi-thread}
+
+\begin{verbatim}
+int MPI_Init_thread( int *argc, char ***argv, int required, int *provided )
+\end{verbatim}
+
+\begin{itemize}
+\item \indexmpishow{MPI_THREAD_SINGLE}: each MPI process can only have
+  a single thread.
+\item \indexmpishow{MPI_THREAD_FUNNELED}: an MPI process can be
+  multithreaded, but all MPI calls need to be done from a single
+  thread.
+\item \indexmpishow{MPI_THREAD_SERIALIZED}: a processes can sustain
+  multiple threads that make MPI calls, but these threads can not be
+  simultaneous: they need to be for instance in an OpenMP
+  \indexterm{critical section}.
+\item \indexmpishow{MPI_THREAD_MULTIPLE}: processes can be fully
+  generally multi-threaded.
+\end{itemize}

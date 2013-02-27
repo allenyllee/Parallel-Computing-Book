@@ -1,2 +1,6 @@
-  Give pseudo-code for a solution that uses blocking operations, and is
-  parallel, although maybe not optimally so.
+  There are rare circumstances where you actually want this serial
+  behaviour. Recall from exercise~\ref{ex:hello-world-zero} that
+  output from processes is not automatically serialized. Take your
+  code from that exercise, and use the serialization behaviour your
+  observed to force the processes to output their print statements in
+  sequence.

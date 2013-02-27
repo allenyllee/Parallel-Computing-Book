@@ -2,6 +2,7 @@
 #define MANDEL_H 1
 
 #include <mpi.h>
+#include "Image.h"
 #include "tools.h"
 
 int parameters_from_commandline(int argc,char** argv,MPI_Comm comm,
@@ -25,7 +26,7 @@ private:
 class queue {
 protected:
   int ntids,total_tasks,t_start,t_stop;
-  MPI_Comm comm; circle *workcircle;
+  MPI_Comm comm; circle *workcircle; Image *image;
   double area;
 public:
   queue(MPI_Comm queue_comm,circle *disccircle) {
@@ -35,8 +36,10 @@ public:
     area = 0.;
     t_start = MPI_Wtime();
   };
-  void addtask(struct coordinate xy);
+  void addtask(struct coordinate);
+  void set_image(Image*);
   void complete();
+  void coordinate_to_image(struct coordinate,int);
   void wait_for_work(MPI_Comm,circle*);
 };
 

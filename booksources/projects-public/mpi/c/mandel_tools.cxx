@@ -25,22 +25,24 @@ int parameters_from_commandline(int argc,char** argv,MPI_Comm comm,
 
 circle::circle(double stp,int bound) {
   infty = bound;
-  xmin=-2.; xmax=+2.; step=stp; x = xmin;
-  ymax = sqrt(4-x*x); ymin = -ymax; y = ymin;
+  ymin=-2.; ymax=+2.; step=stp; y = ymin;
+  xmax = sqrt(4-y*y); xmin = -xmax; x = xmin;
 }
+
+/* Generate successive coordinates in the circle */
 void circle::next_coordinate(struct coordinate& xy) {
-  if (y<ymax-step) {
-    xy.x = x; xy.y = y;
-    y += step;
-  } else if (x<xmax-step) {
-    x += step; 
-    ymax = sqrt(4-x*x); ymin = -ymax; y = ymin;
-    xy.x = x; xy.y = y; y += step;
+  if (x<xmax-step) {
+    xy.x = x; xy.y = y; x += step;
+  } else if (y<ymax-step) {
+    y += step; 
+    xmax = sqrt(4-y*y); xmin = -xmax; x = xmin;
+    xy.x = x; xy.y = y; x += step;
   } else {
     invalid_coordinate(xy); //.x = -5.; xy.y = -5;
   }
   return;
 }
+
 int circle::is_valid_coordinate(struct coordinate xy) {
   return xy.x>-3. && xy.y > -3.;
 }
@@ -48,6 +50,9 @@ void circle::invalid_coordinate(struct coordinate& xy) {
   xy.x = -5.; xy.y = -5.;
 }
 
+/* Compute how many iterations it takes for the Mandelbrot
+   iteration to escape the circle, return 0 otherwise
+*/
 int belongs(struct coordinate xy,int itbound) {
   double x=xy.x, y=xy.y; int it;
   for (it=0; it<itbound; it++) {
@@ -56,11 +61,14 @@ int belongs(struct coordinate xy,int itbound) {
     yy = 2*x*y + xy.y;
     x = xx; y = yy;
     if (x*x+y*y>4.) {
-      //sleep(1);
-      return 0;
+      return it;
     }
   }
-  return 1;
+  return 0;
+}
+
+void queue::set_image(Image *theimage) {
+  image = theimage;
 }
 
 void queue::wait_for_work(MPI_Comm comm,circle *workcircle) {
@@ -70,14 +78,32 @@ void queue::wait_for_work(MPI_Comm comm,circle *workcircle) {
 
   while (!stop) {
     struct coordinate xy;
-    double step = workcircle->step,res;
+    int res;
 
     MPI_Recv(&xy,2,MPI_DOUBLE,ntids-1,0, comm,&status);
     stop = !workcircle->is_valid_coordinate(xy);
-    if (stop) res = 0.;
-    else
-      res = belongs(xy,workcircle->infty)*step*step;
-    MPI_Send(&res,1,MPI_DOUBLE,ntids-1,0, comm);
+    if (stop) res = 0;
+    else {
+      res = belongs(xy,workcircle->infty);
+    }
+    MPI_Send(&res,1,MPI_INT,ntids-1,0, comm);
   }
   return;
 }
+
+void queue::coordinate_to_image(struct coordinate xy,int contribution) {
+  int nx = (int) ( (xy.x+2.f)*(float)image->width*.25 ), 
+    ny = (int) ( (xy.y+2.f)*(float)image->height*.25 );
+  int pixel = nx+ny*image->width;
+  float colour[3];
+  if (contribution==0)
+    memset(colour,0,3*sizeof(float));
+  else {
+    float rfloat = ((float) contribution) / workcircle->infty;
+    colour[0] = rfloat;
+    colour[1] = max((float)0,(float)(1-2*rfloat));
+    colour[2] = max((float)0,(float)(2*(rfloat-.5)));
+  }
+  image->Add( pixel, colour );
+}
+

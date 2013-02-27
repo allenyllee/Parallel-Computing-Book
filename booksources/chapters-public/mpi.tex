@@ -169,8 +169,12 @@ there. In the latter case you will of course not get great
 performance, but at least you can test your code for correctness.
 
 \Level 1 {Distinguishing between processes}
+\commandref{sec:rank-size}
 
-In the SPMD model you run the same executable on each of a set of processors; see section~\HPSCref{sec:spmd}. So how can you do anything useful if all processors run the same code? Here is where your first two MPI routines come in.
+In the SPMD model you run the same executable on each of a set of
+processors; see section~\HPSCref{sec:spmd}. So how can you do anything
+useful if all processors run the same code? Here is where your first
+two MPI routines come in.
 
 With \indexmpishow{MPI_Comm_size} a processor can query how many
 processes there are in total, and with \indexmpishow{MPI_Comm_rank} it
@@ -178,18 +182,8 @@ can find out what its number is. This rank is a number from zero to
 the comm size minus~one. (Zero-based indexing is used even if you
 program in Fortran.)
 
-\begin{exercise}
-  \label{ex:hello-world-zero}
-  Write your first MPI program: make calls to \n{MPI_Comm_size} and
-  \n{MPI_Comm_rank}, and let processor zero print out how many
-  processes there are.
-
-  Now alter your program so that, for instance, processor~5 prints
-  `Hello, I~am processor 5~out of~12', et cetera. You will most likely
-  see that the output does not appear on your screen (or in your log
-  file if you run in batch mode) in sequence, or even nicely
-  separated. We will fix this later.
-\end{exercise}
+Using these calls, the simplest MPI programs does this:
+\verbatimsnippet{hello}
 
 \Level 0 {Point-to-point communication}
 
@@ -392,6 +386,7 @@ the unused source or target argument.
 
 
 \Level 2 {Subtleties with processor synchronization}
+\label{sec:handshake}
 
 Blocking communication involves a complicated dialog between the two
 processors involved. Processor one says `I~have this much data to
@@ -881,6 +876,68 @@ uses the value in the receive buffer as the root's contribution to the operation
 On the \n{Allreduce} call, \n{MPI_IN_PLACE} can be used for the send buffer of
 every process.
 
+\begin{verbatim}
+void *buffer = malloc(size*sizeof(double));
+// write data into the buffer
+if (mytid==0) {
+  sendbuf = MPI_IN_PLACE; recvbuf = buffer;
+} else {
+  sendbuf = buffer;       recvbuf = NULL;
+}
+MPI_Reduce(sendbuf,recvbuf,size,MPI_DOUBLE,MPI_MAX,0,comm);
+\end{verbatim}
+
+The \indexmpishow{MPI_Scan} operation also performs a reduction, but it keeps 
+the partial results. That is, if processor~$i$ contains a number~$x_i$, 
+and $\oplus$ is an operator,
+then the scan operation leaves $x_0\oplus\cdot\oplus x_i$ on processor~$i$.
+\begin{verbatim}
+MPI_Scan( send data, recv data, operator, communicator);
+\end{verbatim}
+This is an inclusive scan operation. The exclusive definition, which computes
+$x_0\oplus\cdot\oplus x_{i-1}$ on processor~$i$, can easily be derived
+from the inclusive operation for operations such as \n{MPI_PLUS} or \n{MPI_MULT}.
+This is not the case for \n{MPI_MIN} or \n{MPI_MAX}, so there is an
+exclusive routine
+\begin{verbatim}
+MPI_Exscan( send data, recv data, operator, communicator);
+\end{verbatim}
+with the same prototype. 
+
+The \n{MPI_Scan} operation is often useful with indexing data. Suppose that
+every processor~$p$ has a local vector where the number of elements~$n_p$ is dynamically 
+determined. In order to translate the local numbering $0\ldots n_p-1$ to a global numbering
+one does a scan with the number of local elements as input. The output is then the global 
+number of the first local variable.
+
+\begin{exercise}
+  Do you use \n{MPI_Scan} or \n{MPI_Exscan} for this operation? How
+  would you describe the result of the other scan operation, given the
+  same input?
+\end{exercise}
+
+It is possible to do a \indexterm{segmented scan}. Let $x_i$ be a series of numbers
+that we want to sum to $X_i$ as follows. Let $y_i$ be a series of booleans such that
+\[ 
+\begin{cases}
+  X_i=x_i&\hbox{if $y_i=0$}\\
+  X_i=X_{i-1}+x_i&\hbox{if $y_i=1$}
+\end{cases}
+\]
+This means that $X_i$ sums the segments between locations where $y_i=0$ and the
+first subsequent place where $y_i=1$. To implement this, you need a user-defined operator
+\[ 
+\begin{pmatrix}  X\\ x\\ y\end{pmatrix}
+=
+\begin{pmatrix}  X_1\\ x_1\\ y_1\end{pmatrix}
+\bigoplus
+\begin{pmatrix}  X_2\\ x_2\\ y_2\end{pmatrix}\colon
+  \begin{cases}
+    X=x_1+x_2&\hbox{if $y_2==1$}\\ X=x_2&\hbox{if $y_2==0$}
+  \end{cases}
+\]
+
+
 \Level 1 {Gather and scatter}
 
 In gather and scatter, the root collects information from, or conversely spreads it to,
@@ -903,11 +960,6 @@ but the \n{outcount} is not the length of the buffer: it is the number
 of elements to send to each process.
 On the receiving processes other than the root the outbuffer arguments are irrelevant.
 
-\begin{exercise}
-  Extend your Mandelbrot code to use collectives, as outlined
-  in section~\ref{proj:mandel-collective}.
-\end{exercise}
-
 \Level 1 {Variable gather and scatter}
 
 In the gather and scatter call above each processor received or sent
@@ -925,6 +977,20 @@ outbuffer, array-of-outcounts, array-of-displacements, outtype
 \label{sec:mpi3collect}
 
 MPI version~3 has non-blocking collectives.
+
+\Level 1 {Barrier and all-to-all}
+
+There are two collectives we have not mentioned yet. A~barrier is a
+call that blocks all processes until they have all reached the barrier
+call. This call's simplicity is contrasted with its usefulness, which
+is very limited. It is almost never necessary to synchronize processes
+through a barrier: for most purposes it does not matter if processors
+are out of sync. Conversely, collectives (except the new non-blocking
+ones) introduce a barrier of sorts themselves.
+
+The all-to-all call is a generalization of a scatter and gather: every
+process is scattering an array of data, and every process is gathering
+an array of data. There is also a `v' variant of this routine.
 
 \index{collectives|)}
 
@@ -1015,22 +1081,38 @@ you're done with them.
 
 \Level 1 {Creating new communicators}
 
-The main mechanisms for making new communicators are the following:
-\begin{itemize}
-\item \indexmpishow{MPI_Comm_dup} makes an exact duplicate of a communicator.
-  This is useful for software libraries.
-\item \indexmpishow{MPI_Comm_split} takes a single communicator and splits it 
-  into multiple, disjoint, new ones. This uses a `colour':
+There are various ways of making new communicators. We discuss three 
+mechanisms, from simple to complicated.
+
+\Level 2 {Duplicating communicators}
+
+With \indexmpishow{MPI_Comm_dup} you can make an exact duplicate of a communicator.
+This may seem pointless, but it is actually very useful for the design of
+software libraries. Image that you have a code
+\begin{verbatim}
+MPI_Isend(...); MPI_Irecv(...);
+// library call
+MPI_Waitall(...);
+\end{verbatim}
+and suppose that the library has receive calls. Now it is possible that the 
+receive in the library inadvertently
+catches the message that was sent in the outer environment.
+
+To prevent this confusion, the library should duplicate the outer communicator,
+and send all messages with respect to its duplicate. Now messages from the user
+code can never reach the library software, since they are on different communicators.
+
+\Level 2 {Splitting a communicator}
+
+Splittingf a communicator into multiple disjoint communicators
+can be done with \indexmpishow{MPI_Comm_split}.
+This uses a `colour':
 \begin{verbatim}
 MPI_Comm_split( old_comm, colour, new_comm, .... );
 \end{verbatim}
   and all processes in the old communicator with the same colour
   wind up in a new communicator together. The old communicator still exists,
   so processes now have two different contexts in which to communicate.
-\item The more general mechanism is based on groups: you can extract the 
-  group from a communicator, combine different groups, and form a new
-  communicator from the resulting group.
-\end{itemize}
 
 Here is one example of communicator splitting. Suppose your processors
 are in a two-dimensional grid:
@@ -1051,6 +1133,12 @@ MPI_Bcast( data, /* tag: */ 0, column_comm );
 Because of the SPMD nature of the program, you are now doing in parallel
 a broadcast in every processor column. Such operations often appear
 in \indexterm{dense linear algebra}.
+
+\Level 2 {Process groups}
+
+The most general mechanism is based on groups: you can extract the
+group from a communicator, combine different groups, and form a new
+communicator from the resulting group.
 
 The group mechanism is more involved. You get the group from a
 communicator, or conversely make a communicator from a group with
@@ -1138,6 +1226,33 @@ Inter-communicators can be used if two groups of process work
 asynchronously with respect to each other; another application is
 fault tolerance (section~\ref{mpi:tolerant}).
 
+\Level 0 {Hybrid programming: MPI and threads}\
+\commandref{sec:mpi-thread}
+
+It is not automatic that a program or a library is
+\indexterm{thread-safe}.  A user can request a certain level of
+multi-threading with \indexmpishow{MPI_Init_thread}, and the system
+will respond what the highest supported level is.
+
+MPI can be thread-safe on the following levels:
+\begin{itemize}
+\item An MPI implementation can forbid any multi-threading;
+\item it can allow one thread to make MPI calls;
+\item it can allow one thread \emph{at a time} to make MPI calls;
+\item it can allow arbitrary multi-threaded behaviour in MPI calls.
+\end{itemize}
+
+Some points.
+\begin{itemize}
+\item MPI can not distinguish between threads: the communicator rank
+  identifies a process, and is therefore identical for all threads.
+\item A message sent to a process can be received by any thread that
+  has issued a receive call with the right source/tag specification.
+\item Multi-threaded calls to an MPI routine have the semantics of an
+  unspecified sequence of calls.
+\item A blocking MPI call only blocks the thread that makes it.
+\end{itemize}
+
 \Level 0 {Leftover topics}
 
 \Level 1 {Getting message information}
@@ -1193,7 +1308,7 @@ allocate a large enough receive buffer, and do a regular receive to
 have the data copied.
 
 \Level 1 {Error handling}
-\label{mpi:error}
+\commandref{mpi:error}
 
 Errors in normal programs can be tricky to deal with; errors in
 parallel programs can be even harder. This is because in addition to

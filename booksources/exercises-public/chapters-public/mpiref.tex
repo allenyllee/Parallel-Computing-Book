@@ -1,0 +1,191 @@
+\Level 1 {Basics}
+
+\Level 2 {MPI setup}
+\commandreflabel{sec:rank-size}
+
+\Level 2 {Language interfaces}
+
+The \indexterm{C++} interface is deprecated as of \indextermbus{MPI}{2.2}.
+It is unclear what is happening.
+
+\Level 2 {Send and receive buffers}
+
+The data is specified as a number of elements in a buffer. The same
+MPI routine can be used with data of different types, so the standard
+indicates such buffers as \indexterm{choice}. The specification of
+this differs per language:
+\begin{itemize}
+\item In C it is an address, so the clean way is to pass it as
+  \verb+(void*)&myvar+.
+\item Fortran compilers may complain about type mismatches. This can
+  not be helped.
+\end{itemize}
+
+\Level 2 {Types}
+
+\n{double} vs \n{MPI_DOUBLE}, Fortran especially.
+
+Addresses have type \indexmpishow{MPI_Aint} or \n{INTEGER
+(KIND=MPI_ADDRESS_KIND)} in Fortran. The start of the address range is
+given in \indexmpishow{MPI_BOTTOM}.
+
+\Level 1 {Blocking communication}
+\commandreflabel{sec:blocking}
+
+The basic send command is
+\begin{verbatim}
+int MPI_Send(void *buf, 
+  int count, MPI_Datatype datatype, int dest, int tag,
+  MPI_Comm comm)
+\end{verbatim}
+\url{http://www.mcs.anl.gov/research/projects-public/mpi/www/www3/MPI_Send.html}
+This routine may not blocking for small messages; to force blocking
+behaviour use \n{MPI_Ssend} with the same argument list.
+\url{http://www.mcs.anl.gov/research/projects-public/mpi/www/www3/MPI_Ssend.html}
+
+\begin{verbatim}
+int MPI_Recv(void *buf, 
+  int count, MPI_Datatype datatype, int source, int tag,
+  MPI_Comm comm, MPI_Status *status)
+\end{verbatim}
+\url{http://www.mcs.anl.gov/research/projects-public/mpi/www/www3/MPI_Recv.html}
+The \n{count} argument indicates the maximum length of a message; the
+actual length of the message can be determined with \n{MPI_Get_count}.
+
+\Level 1 {Non-blocking communication}
+\commandreflabel{sec:nonblocking}
+
+The non-blocking routines have much the same parameter list as the 
+blocking ones, with the addition of an \n{MPI_Request} parameter.
+The \n{MPI_Isend} routine does not have a `status' parameter,
+which has moved to the `wait' routine.
+\begin{verbatim}
+int MPI_Isend(void *buf,
+  int count, MPI_Datatype datatype, int dest, int tag,
+  MPI_Comm comm, MPI_Request *request)
+\end{verbatim}
+\url{http://www.mcs.anl.gov/research/projects-public/mpi/www/www3/MPI_Isend.html}
+\begin{verbatim}
+int MPI_Irecv(void *buf,
+  int count, MPI_Datatype datatype, int source, int tag,
+  MPI_Comm comm, MPI_Request *request)
+\end{verbatim}
+\url{http://www.mcs.anl.gov/research/projects-public/mpi/www/www3/MPI_Irecv.html}
+
+There are various `wait' routines. Since you will often do at least
+one send and one receive, this routine is useful:
+\begin{verbatim}
+int MPI_Waitall(int count, MPI_Request array_of_requests[], 
+  MPI_Status array_of_statuses[])
+\end{verbatim}
+\url{http://www.mcs.anl.gov/research/projects-public/mpi/www/www3/MPI_Waitall.html}
+
+It is possible to omit the status array by specifying \n{MPI_STATUSES_IGNORE}.
+Other routines are \n{MPI_Wait} for a single request, and
+\n{MPI_Waitsome}, \n{MPI_Waitany}.
+
+\Level 1 {One-sided communication}
+\commandreflabel{sec:one-sided}
+
+\Level 2 {Windows and epochs}
+\commandreflabel{sec:windows}
+
+\begin{verbatim}
+MPI_WIN_CREATE (void *base, MPI_Aint size, 
+  int disp_unit, MPI_Info info, 
+  MPI_Comm comm, MPI_Win *win, ierr)
+\end{verbatim}
+The data array must not be \n{PARAMETER} of \n{static const}.
+
+\Level 1 {Collectives}
+\commandreflabel{sec:collective}
+
+\begin{verbatim}
+int MPI_Bcast( void *buffer, int count, MPI_Datatype datatype, int root, 
+               MPI_Comm comm )
+\end{verbatim}
+
+\begin{verbatim}
+int MPI_Reduce(void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, 
+               MPI_Op op, int root, MPI_Comm comm)
+\end{verbatim}
+On processes that are not the root, the receive buffer is ignored. On the root, 
+you have two buffers, but by specifying \indexmpishow{MPI_IN_PLACE}, the reduction call
+uses the value in the receive buffer as the root's contribution to the operation.
+On the \n{Allreduce} call, \n{MPI_IN_PLACE} can be used for the send buffer of
+every process.
+
+The scan operations are
+\begin{verbatim}
+int MPI_Scan(void* sendbuf, void* recvbuf, 
+    int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm ) 
+\end{verbatim}
+and
+\begin{verbatim}
+int MPI_Exscan(void* sendbuf, void* recvbuf, 
+    int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm ) 
+\end{verbatim}
+The \n{MPI_Op} operations do not return an error code.
+
+The result of the exclusive scan is undefined on processor~0,
+and on processor~1 it is a copy of the send value of processor~1.
+In particular, the \n{MPI_Op} need not be called on these two 
+processors.
+
+\Level 1 {Error handling}
+\commandreflabel{mpi:error}
+
+MPI operators (\indexmpishow{MPI_Op}) do not return an error code. In case of
+an error they call \n{MPI_Abort}; if \indexmpishow{MPI_ERRORS_RETURN}
+is the error handler, errors may be silently ignore.
+
+\Level 1 {More utility stuff}
+\commandreflabel{sec:profile}
+
+MPI has a \indexterm{wall clock} timer: \indexmpishow{MPI_Wtime}
+\begin{verbatim}
+double MPI_Wtime(void);
+\end{verbatim}
+which gives the number of seconds from a certain point in the past.
+Thus, you would write:
+\begin{verbatim}
+double tstart,tstop,elapsed;
+tstart = MPI_Wtime();
+tstop = MPI_Wtime();
+elapsed = tstop-tstart;
+\end{verbatim}
+The timer has a resolution of \indexmpishow{MPI_Wtick}:
+\begin{verbatim}
+double MPI_Wtick(void);
+\end{verbatim}
+Timing in parallel is a tricky issue. For instance, most clusters do
+not have a central clock, so you can not relate start and stop times
+on one process to those on another. You can test for a global clock as
+follows\indexmpi{MPI_WTIME_IS_GLOBAL}:
+\begin{verbatim}
+int *v,flag;
+MPI_Attr_get( comm, MPI_WTIME_IS_GLOBAL, &v, &flag );
+if (mytid==0) printf(``Time synchronized? %d->%d\n'',flag,*v);
+\end{verbatim}
+%\indexmpi{MPI_Wtime} can be either a function or a macro.
+
+\Level 1 {Multi-threading}
+\commandreflabel{sec:mpi-thread}
+
+\begin{verbatim}
+int MPI_Init_thread( int *argc, char ***argv, int required, int *provided )
+\end{verbatim}
+
+\begin{itemize}
+\item \indexmpishow{MPI_THREAD_SINGLE}: each MPI process can only have
+  a single thread.
+\item \indexmpishow{MPI_THREAD_FUNNELED}: an MPI process can be
+  multithreaded, but all MPI calls need to be done from a single
+  thread.
+\item \indexmpishow{MPI_THREAD_SERIALIZED}: a processes can sustain
+  multiple threads that make MPI calls, but these threads can not be
+  simultaneous: they need to be for instance in an OpenMP
+  \indexterm{critical section}.
+\item \indexmpishow{MPI_THREAD_MULTIPLE}: processes can be fully
+  generally multi-threaded.
+\end{itemize}

@@ -3,7 +3,8 @@ info ::
 
 APPS = test helloworld helloworld-seq time time_max \
   overlap \
-  linear-serial linear-serial-null linear-sendrecv linear-nonblock
+  linear-serial linear-serial-null linear-sendrecv linear-nonblock \
+  linear-onesided-get linear-onesided-put
 
 ifdef TACC_TAU_DIR
   CC = tau_cc.sh
@@ -33,9 +34,11 @@ grid.o grid_blocking.o grid_tools.o : grid.h grid_tools.h tools.h
 # Example: mandelbrot routines
 MANDEL_APPS = mandel_serial mandel_bulk mandel_async mandel_collective
 APPS += ${MANDEL_APPS}
-mandel_dependencies = mandel_tools.o tools.o
+mandel_dependencies = mandel_tools.o tools.o Image.o Color.o
 ${MANDEL_APPS} : ${mandel_dependencies}
-${patsubst %,%.o,${MANDEL_APPS}} mandel_tools.o : mandel.h tools.h
+${patsubst %,%.o,${MANDEL_APPS}} mandel_tools.o : mandel.h tools.h Image.h Color.h
+Color.o : Color.h
+Image.o : Image.h
 
 # rules for submitting to the queue and doing tau analysis
 info ::
@@ -82,4 +85,4 @@ clean ::
 	/bin/rm -rf *.o *~ *.gch a.out *.dSYM MULTI__* events.* \
 	    idev[0-9]*.o[0-9]* ddt.o[0-9]* jobtest.o* tautrace_*
 total_clean : clean 
-	/bin/rm -rf ${APPS} *.slog2
+	/bin/rm -rf ${APPS} *.slog2 *.ppm
