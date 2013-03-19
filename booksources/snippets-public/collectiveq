@@ -1,0 +1,4 @@
+class collectivequeue : public queue {
+public :
+  collectivequeue(MPI_Comm queue_comm,circle *workcircle)
+    : queue(queue_comm,workcircle) {

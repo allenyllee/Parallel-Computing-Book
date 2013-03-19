@@ -1,12 +1,47 @@
+This section gives reference information and illustrative examples
+of the use of MPI. While the code snippets given here should be enough,
+full programs can be found in the repository for this book
+\url{https://bitbucket.org/VictorEijkhout/parallel-computing-book}.
+
 \Level 1 {Basics}
 
 \Level 2 {MPI setup}
+\commandreflabel{sec:mpi-init}
+
+Every MPI program has to start with\indexmpi{MPI_Init}
+\begin{verbatim}
+MPI_Init(&argc,&argv);
+\end{verbatim}
+where \indextermtt{argc} and \indextermtt{argv} are the arguments
+of a C language main program:
+\begin{verbatim}
+int main(int argc,char **argv) {
+    ....
+    return 0;
+}
+\end{verbatim}
+The regular way to conclude an MPI program is through\indexmpi{MPI_Finalize}
+\begin{verbatim}
+MPI_Finalize();
+\end{verbatim}
+but an abnormal end to a run can be forced by\indexmpi{MPI_Abort}
+\begin{verbatim}
+MPI_Abort(comm,value);
+\end{verbatim}
+This aborts execution on all processes associated with the communicator,
+but many implementations simply abort all processes. The \n{value} parameter
+is returned to the environment.
+
+The commandline arguments can only be guaranteed to be passed correctly to 
+process zero. Here is a fragment of code that shows use of commandline arguments.
+The program \n{examples-public/mpi/c/init.c} takes a single integer commandline argument.
+If the user forgets to specify an argument of specifies~\n{-h}, a usage message
+is printed and the program aborts, otherwise the parameter is broadcast to 
+all processes.
+\verbatimsnippet{usage}
+
+\Level 2 {MPI ranks and communicator sizes}
 \commandreflabel{sec:rank-size}
-
-\Level 2 {Language interfaces}
-
-The \indexterm{C++} interface is deprecated as of \indextermbus{MPI}{2.2}.
-It is unclear what is happening.
 
 \Level 2 {Send and receive buffers}
 
@@ -43,6 +78,7 @@ This routine may not blocking for small messages; to force blocking
 behaviour use \n{MPI_Ssend} with the same argument list.
 \url{http://www.mcs.anl.gov/research/projects-public/mpi/www/www3/MPI_Ssend.html}
 
+The basic blocking receive command is
 \begin{verbatim}
 int MPI_Recv(void *buf, 
   int count, MPI_Datatype datatype, int source, int tag,
@@ -51,6 +87,14 @@ int MPI_Recv(void *buf,
 \url{http://www.mcs.anl.gov/research/projects-public/mpi/www/www3/MPI_Recv.html}
 The \n{count} argument indicates the maximum length of a message; the
 actual length of the message can be determined with \n{MPI_Get_count}.
+
+The following code is guaranteed to block, since a \n{MPI_Recv}
+always blocks:
+\verbatimsnippet{recvblock}
+On the other hand, this code may not block for small messages:
+\verbatimsnippet{sendblock}
+If you want to force uniform behaviour use \n{MPI_Ssend}:
+\verbatimsnippet{ssendblock}
 
 \Level 1 {Non-blocking communication}
 \commandreflabel{sec:nonblocking}
@@ -80,6 +124,9 @@ int MPI_Waitall(int count, MPI_Request array_of_requests[],
 \end{verbatim}
 \url{http://www.mcs.anl.gov/research/projects-public/mpi/www/www3/MPI_Waitall.html}
 
+Here is a simple code that does a non-blocking exchange between two processors:
+\verbatimsnippet{irecvnonblock}
+
 It is possible to omit the status array by specifying \n{MPI_STATUSES_IGNORE}.
 Other routines are \n{MPI_Wait} for a single request, and
 \n{MPI_Waitsome}, \n{MPI_Waitany}.
@@ -96,6 +143,21 @@ MPI_WIN_CREATE (void *base, MPI_Aint size,
   MPI_Comm comm, MPI_Win *win, ierr)
 \end{verbatim}
 The data array must not be \n{PARAMETER} of \n{static const}.
+
+Here is a single put operation. Note that the window create and window fence calls
+are collective, so they have to be performed on all processors.
+\verbatimsnippet{putblock}
+
+The \indexmpishow{MPI_Info} parameter can be used to pass implementation-dependent 
+information:
+\begin{verbatim}
+MPI_Info info;
+MPI_Info_create(&info);
+MPI_Info_set(info,"no_locks","true");
+MPI_Win_create( ... info ... &win);
+MPI_Info_free(&info);
+\end{verbatim}
+It is always valid to use \indexmpishow{MPI_INFO_NULL}.
 
 \Level 1 {Collectives}
 \commandreflabel{sec:collective}

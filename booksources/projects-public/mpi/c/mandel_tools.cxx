@@ -91,15 +91,15 @@ void queue::wait_for_work(MPI_Comm comm,circle *workcircle) {
   return;
 }
 
-void queue::coordinate_to_image(struct coordinate xy,int contribution) {
+void queue::coordinate_to_image(struct coordinate xy,int iteration) {
   int nx = (int) ( (xy.x+2.f)*(float)image->width*.25 ), 
     ny = (int) ( (xy.y+2.f)*(float)image->height*.25 );
   int pixel = nx+ny*image->width;
   float colour[3];
-  if (contribution==0)
+  if (iteration==0)
     memset(colour,0,3*sizeof(float));
   else {
-    float rfloat = ((float) contribution) / workcircle->infty;
+    float rfloat = ((float) iteration) / workcircle->infty;
     colour[0] = rfloat;
     colour[1] = max((float)0,(float)(1-2*rfloat));
     colour[2] = max((float)0,(float)(2*(rfloat-.5)));

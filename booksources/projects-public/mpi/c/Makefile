@@ -4,7 +4,7 @@ info ::
 APPS = test helloworld helloworld-seq time time_max \
   overlap \
   linear-serial linear-serial-null linear-sendrecv linear-nonblock \
-  linear-onesided-get linear-onesided-put
+  linear-onesided-get linear-onesided-put passiveput
 
 ifdef TACC_TAU_DIR
   CC = tau_cc.sh
@@ -19,10 +19,12 @@ OPT_flag = -O2
 DEBUG_flag = -g
 info ::
 	@echo "    debug flag: DEBUG=DEBUG/OPT (default: ${DEBUG})]"
+% : %.c
+	${CC} -std=c99 ${${DEBUG}_flag} -D${DEBUG} $*.c -o $@
+% : %.cxx
+	${CXX} ${${DEBUG}_flag} -D${DEBUG} $*.cxx -o $@
 %.o : %.cxx
 	${CXX} ${${DEBUG}_flag} -D${DEBUG} -c $*.cxx
-% : %.o
-	${CXX} -o $@ $^
 
 # Example: grid routines
 GRID_APPS = grid grid_test grid_blocking grid_nonblocking grid_vectype

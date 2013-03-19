@@ -37,7 +37,7 @@
   \begin{procedure}[H]\leftskip=\unitindent\caption{#1(#2)}}
  {\end{procedure}}
 
-\newcommand\verbatimsnippet[1]{\verbatiminput{code/snippets/#1}}
+\newcommand\verbatimsnippet[1]{\verbatiminput{snippets-public/#1}}
 \newenvironment{question}{\begin{quotation}\textbf{Question.\ }}{\end{quotation}}
 
 \def\svnrev{428}
@@ -167,6 +167,7 @@
   \catcode`\>=12 \catcode`\<=12
   \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
   \tt \afterassignment\mpitoindex\edef\indexedmpi}
+\global\let\indextermtt\indexmpishow
 \gdef\indexmpi#{\bgroup \catcode`\_=13 \def_{\char95\discretionary{}{}{}}
   \catcode`\>=12 \catcode`\<=12
   \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax

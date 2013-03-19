@@ -1,0 +1,6 @@
+class circle {
+ public :
+  circle(double stp,int bound);
+  void next_coordinate(struct coordinate& xy);
+  int is_valid_coordinate(struct coordinate xy);
+  void invalid_coordinate(struct coordinate& xy);

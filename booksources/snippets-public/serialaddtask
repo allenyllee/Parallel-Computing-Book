@@ -1,0 +1,28 @@
+class serialqueue : public queue {
+private :
+  int free_processor;
+public :
+  serialqueue(MPI_Comm queue_comm,circle *workcircle)
+    : queue(queue_comm,workcircle) {
+    free_processor=0;
+  };
+  /* Send a coordinate to a free processor;
+     if the coordinate is invalid, this should stop the process;
+     otherwise add the result to the image.
+  */
+  void addtask(struct coordinate xy) {
+    MPI_Status status; int contribution;
+
+    MPI_Send(&xy,2,MPI_DOUBLE, 
+	     free_processor,0,comm);
+    MPI_Recv(&contribution,1,MPI_INT,
+	     free_processor,0,comm, &status);
+    if (workcircle->is_valid_coordinate(xy)) {
+      coordinate_to_image(xy,contribution);
+      total_tasks++;
+    }
+    free_processor++;
+    if (free_processor==ntids-1)
+      // wrap around to the first again
+      free_processor = 0;
+  };

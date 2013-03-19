@@ -1,0 +1,12 @@
+void circle::next_coordinate(struct coordinate& xy) {
+  if (x<xmax-step) {
+    xy.x = x; xy.y = y; x += step;
+  } else if (y<ymax-step) {
+    y += step; 
+    xmax = sqrt(4-y*y); xmin = -xmax; x = xmin;
+    xy.x = x; xy.y = y; x += step;
+  } else {
+    invalid_coordinate(xy); //.x = -5.; xy.y = -5;
+  }
+  return;
+}

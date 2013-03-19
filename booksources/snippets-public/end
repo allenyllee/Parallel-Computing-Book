@@ -1,0 +1,6 @@
+ free(sendbuf); free(recvbuf);
+ 
+skip:
+ MPI_Finalize();
+ return 0;
+}

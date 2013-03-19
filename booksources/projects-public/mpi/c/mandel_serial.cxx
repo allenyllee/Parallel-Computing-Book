@@ -39,8 +39,7 @@ public :
     for (int p=0; p<ntids-1; p++)
       addtask(xy);
     t_stop = MPI_Wtime();
-    // printf("Area computed: %e\n by %d tasks in time %d\n",
-    // 	   area,total_tasks,t_stop-t_start);
+    printf("Tasks %d in time %d\n",total_tasks,t_stop-t_start);
     image->Write();
     return; 
   };
