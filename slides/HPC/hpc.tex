@@ -29,6 +29,9 @@
 
 \def\sublocal{_{\mathrm\scriptstyle local}}
 \newcommand\inv{^{-1}}
+\usepackage{amsmath,arydshln,graphicx,comment,multicol,undertilde}
+\newcommand\argmin{\mathop{\mathrm{argmin}}}
+\newcommand\setspan[1]{[\![#1]\!]}
 
 \begin{document}
 \title{Parallelism in Applied Math Calculations}
@@ -259,6 +262,11 @@ This is the (adjacency) graph of a sparse matrix.
 \includegraphics[scale=.3]{graphics/img206}
 }
 
+\sectionframe{Iterative solution methods}
+\input iterative
+
+\sectionframe{Sparse matrix-vector product}
+
 \frame{\frametitle{Sparse matrix storage}
 
  Matrix above has many zeros: $n^2$ elements but only $O(n)$
@@ -313,12 +321,29 @@ for (row=0; row<nrows; row++) {
 \end{verbatim}
 Operations with changes to the nonzero structure are much harder!
 
+Locality?
+}
+
+\frame[containsverbatim]{\frametitle{Sparse matrix operations}
+
+  Most common operation: matrix-vector product
+\begin{verbatim}
+for (row=0; row<nrows; row++) {
+   s = 0;
+   for (icol=ptr[row]; icol<ptr[row+1]; icol++) {
+      int col = ind[icol];
+      s += a[aptr] * x[col];
+      aptr++;
+   }
+   y[row] = s;
+}
+\end{verbatim}
+Operations with changes to the nonzero structure are much harder!
+
 Indirect addressing of \texttt{x} gives low spatial and temporal locality.
 }
 
-\sectionframe{Dense matrix-vector product}
-
-\frame{\frametitle{Parallel matrix-vector product; dense}
+\frame{\frametitle{Parallel matrix-vector product}
   \begin{itemize}
   \item Assume a division by block rows
   \item Every processor $p$ has a set of row indices $I_p$
@@ -340,8 +365,6 @@ Local and remote parts:
   \includegraphics[scale=.6]{graphics/distmvp}
 }
 
-\sectionframe{Sparse matrix-vector product}
-
 \frame{\frametitle{Sparse matrix-vector product}
 Difference stencil
 
@@ -359,6 +382,9 @@ Limited number of neighbours, limited buffer space
 
 \frame{\frametitle{Scaling}
 Separately 1D and 2D partitioning of the domain.
+}
+\frame{\frametitle{MPI Implementation}
+
 }
 
 \sectionframe{Nested dissection}
