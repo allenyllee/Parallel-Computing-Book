@@ -178,8 +178,9 @@ in 2D.
   \[ T_j^{k+1}=T_j^k+\frac{\alpha\Delta t}{\Delta x^2}
   (T_{j-1}^k-2T_j^k+T_{j+1}^k)+\Delta t q_j^k \]
   This has an explicit form:
-  \[ \utilde T^{k+1}=\left(I+\frac{\alpha\Delta t}{\Delta x^2}\right
+  \[ \utilde T^{k+1}=\left(I+\frac{\alpha\Delta t}{\Delta x^2}K\right
   )\utilde T^k+\Delta t\utilde q^k \]
+where $K$ is the Laplace matrix
 }
 
 \frame{\frametitle{Computational form: implicit}
@@ -387,34 +388,14 @@ Separately 1D and 2D partitioning of the domain.
 
 }
 
-\sectionframe{Nested dissection}
+\sectionframe{Gaussian elimination}
 
-\frame{\frametitle{Fill-in during LU}
-
-Fill-in: index $(i,j)$ where $a_{ij}=0$ but $\ell_{ij}\not=0$ or
-$u_{ij}\not=0$.
-
-2D BVP: $\Omega$ is $n\times n$, gives matrix of size $N=n^2$, with
-bandwidth~$n$. 
-
-Matrix storage $O(N)$
-
-LU storage $O(N^{3/2})$
-
-LU factorization work $O(N^2)$
-
-Cute fact: storage can be computed linear in \#nonzeros
-}
-
-\frame{\frametitle{Fill-in is a function of ordering}
-
-  \[ 
-  \begin{pmatrix}
-    *&*&\cdots&*\\ *&*&&\emptyset\\ \vdots&&\ddots\\ *&\emptyset&&*
-  \end{pmatrix}
-  \]
-  After factorization the matrix is dense.\\
-  Can this be permuted?
+\frame{\frametitle{Differences between product and solving}
+  \begin{itemize}
+  \item Treatment of sparsity
+  \item Operation count
+  \item Ease of parallelizing
+  \end{itemize}
 }
 
 \frame{\frametitle{Domain decomposition}
@@ -523,35 +504,32 @@ The domain/operator/graph view is more insightful, don't you think?
 \includegraphics[scale=2.5]{graphics/nesteddis}
 }
 
-\frame{\frametitle{Complexity}
-With $n=\sqrt N$:
-\begin{itemize}
-\item one dense matrix on a separator of size~$n$, plus
-\item two dense matrices on separators of size~$n/2$
-\item $\rightarrow 3/2\,n^2$ space and $5/12\,n^3$ time
-\item and then four times the above with $n\rightarrow n/2$
-\end{itemize}
-\[ 
-\begin{array}{r@{{}={}}l}
-\mathrm{space}&3/2n^2+4\cdot 3/2(n/2)^2+\cdots\\
-   & N(3/2+3/2+\cdots)\quad\hbox{$\log n$ terms}\\
-   & O(N\log N)
-\end{array}
-\]
-\[ 
-\begin{array}{r@{{}={}}l}
-\mathrm{time}&5/12n^3/3+4\cdot 5/12(n/2)^3/3+\cdots\\
-   & 5/12 N^{3/2}(1+1/4+1/16+\cdots)\\
-   & O(N^{3/2})
-\end{array}
-\]
+\frame{\frametitle{Fill-in is a function of ordering}
+
+  \[ 
+  \begin{pmatrix}
+    *&*&\cdots&*\\ *&*&&\emptyset\\ \vdots&&\ddots\\ *&\emptyset&&*
+  \end{pmatrix}
+  \]
+  After factorization the matrix is dense.\\
+  Can this be permuted?
 }
 
-\frame{\frametitle{More direct factorizations}
+\frame{\frametitle{Fill-in during LU}
 
-Minimum degree, multifrontal,\ldots
+Fill-in: index $(i,j)$ where $a_{ij}=0$ but $\ell_{ij}\not=0$ or
+$u_{ij}\not=0$.
 
-Finding good separators and domain decompositions is tough in general.
+2D BVP: $\Omega$ is $n\times n$, gives matrix of size $N=n^2$, with
+bandwidth~$n$. 
+
+Matrix storage $O(N)$
+
+LU storage $O(N^{3/2})$
+
+LU factorization work $O(N^2)$
+
+Without proof: nested dissection $O(N\log N)$ space, $O(N^{3/2})$ work
 }
 
 \sectionframe{Parallel preconditioners}

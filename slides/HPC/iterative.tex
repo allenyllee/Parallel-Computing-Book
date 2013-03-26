@@ -106,36 +106,6 @@ r_1&=&Ax_1-b=A(x_0-\tilde e_0)-b\\
 \end{itemize}
 }
 
-\frame[containsverbatim]{\frametitle{Choice of $K$}
-  \begin{itemize}
-  \item The closer $K$ is to $A$, the faster convergence.
-  \item Diagonal and lower triangular choice mentioned above: let \[
-    A=D_A+L_A+U_A \] be a splitting into diagonal, lower triangular,
-    upper triangular part, then
-  \item Jacobi method: $K=D_A$ (diagonal part),
-  \item Gauss-Seidel method: $K=D_A+L_A$ (lower triangle, including diagonal)
-  \item SOR method: $K=\omega D_A+L_A$
-  \end{itemize}
-}
-
-\frame[containsverbatim]{\frametitle{Choice of $K$ through incomplete LU}
-  \begin{itemize}
-  \item Inspiration from direct methods: let $K=LU\approx A$
-  \end{itemize}
-Gauss elimination:
-\begin{verbatim}
-for k,i,j:
-   a[i,j] = a[i,j] - a[i,k] * a[k,j] / a[k,k]
-\end{verbatim}
-Incomplete variant:
-\begin{verbatim}
-for k,i,j:
-  if a[i,j] not zero:
-    a[i,j] = a[i,j] - a[i,k] * a[k,j] / a[k,k]
-\end{verbatim}
-$\Rightarrow$ sparsity of $L+U$ the same as of $A$
-}
-
 \frame{\frametitle{General form of iterative methods}
 
 Iterative scheme:
@@ -194,7 +164,7 @@ Idea two:
 }
 
 \frame{\frametitle{Full Orthogonalization Method}
-
+See also GMRES:
 \begin{quote}
   \begin{tabbing}
     Let $r_0$ be given\\
@@ -249,6 +219,36 @@ Split recurrences:
       restarting and numerical cleverness
     \item BiCGstab and QMR: relax the orthogonality
   \end{itemize}
+}
+
+\frame[containsverbatim]{\frametitle{Choice of $K$}
+  \begin{itemize}
+  \item The closer $K$ is to $A$, the faster convergence.
+  \item Diagonal and lower triangular choice mentioned above: let \[
+    A=D_A+L_A+U_A \] be a splitting into diagonal, lower triangular,
+    upper triangular part, then
+  \item Jacobi method: $K=D_A$ (diagonal part),
+  \item Gauss-Seidel method: $K=D_A+L_A$ (lower triangle, including diagonal)
+  \item SOR method: $K=\omega D_A+L_A$
+  \end{itemize}
+}
+
+\frame[containsverbatim]{\frametitle{Choice of $K$ through incomplete LU}
+  \begin{itemize}
+  \item Inspiration from direct methods: let $K=LU\approx A$
+  \end{itemize}
+Gauss elimination:
+\begin{verbatim}
+for k,i,j:
+   a[i,j] = a[i,j] - a[i,k] * a[k,j] / a[k,k]
+\end{verbatim}
+Incomplete variant:
+\begin{verbatim}
+for k,i,j:
+  if a[i,j] not zero:
+    a[i,j] = a[i,j] - a[i,k] * a[k,j] / a[k,k]
+\end{verbatim}
+$\Rightarrow$ sparsity of $L+U$ the same as of $A$
 }
 
 \frame{\frametitle{CG derived from minimization}
