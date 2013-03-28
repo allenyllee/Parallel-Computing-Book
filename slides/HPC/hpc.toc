@@ -1,6 +1,0 @@
-\beamer@endinputifotherversion {3.20pt}
-\beamer@sectionintoc {1}{Approximating Differential Equations}{3}{0}{1}
-\beamer@sectionintoc {2}{Iterative solution methods}{22}{0}{2}
-\beamer@sectionintoc {3}{Sparse matrix-vector product}{41}{0}{3}
-\beamer@sectionintoc {4}{Gaussian elimination}{52}{0}{4}
-\beamer@sectionintoc {5}{Parallel preconditioners}{65}{0}{5}
