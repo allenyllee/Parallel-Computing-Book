@@ -1,3 +1,0 @@
-\beamer@endinputifotherversion {3.20pt}
-\beamer@sectionintoc {1}{Cost analysis}{3}{0}{1}
-\beamer@sectionintoc {2}{Dense matrix-vector product}{5}{0}{2}
