@@ -21,6 +21,7 @@ int main(int argc,char **argv)
   ierr = VecCreate(comm,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,PETSC_DECIDE,n); CHKERRQ(ierr);
   ierr = VecSetType(x,VECMPI); CHKERRQ(ierr);
+  ierr = VecSetUp(x); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(x,&myfirst,&mylast); CHKERRQ(ierr);
   localsize = mylast-myfirst;
 
@@ -28,6 +29,7 @@ int main(int argc,char **argv)
   ierr = MatSetType(A,MATMPIAIJ); CHKERRQ(ierr);
   ierr = MatSetSizes(A,localsize,localsize,
 		     PETSC_DECIDE,PETSC_DECIDE); CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A,3,PETSC_NULL,1,PETSC_NULL); CHKERRQ(ierr);
 
   for (i=myfirst; i<mylast; i++) {
     PetscReal v=1.0*mytid;

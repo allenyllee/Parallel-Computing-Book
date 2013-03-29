@@ -19,12 +19,15 @@ int main(int argc,char **argv)
   MPI_Comm_size(comm,&ntids); MPI_Comm_rank(comm,&mytid);
   localsize = PETSC_DECIDE;
   ierr = PetscSplitOwnership(comm,&localsize,&n); CHKERRQ(ierr);
+  MPI_Scan(&localsize,&mylast,1,MPI_INT,MPI_SUM,comm);
+  myfirst = mylast-localsize;
 
   ierr = MatCreate(comm,&A); CHKERRQ(ierr);
   ierr = MatSetType(A,MATMPIAIJ); CHKERRQ(ierr);
   ierr = MatSetSizes(A,localsize,localsize,
 		     PETSC_DECIDE,PETSC_DECIDE); CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(A,&myfirst,&mylast); CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A,3,PETSC_NULL,1,PETSC_NULL); CHKERRQ(ierr);
+  //  ierr = MatGetOwnershipRange(A,&myfirst,&mylast); CHKERRQ(ierr);
 
   for (i=myfirst; i<mylast; i++) {
     PetscReal v=1.0*mytid;
