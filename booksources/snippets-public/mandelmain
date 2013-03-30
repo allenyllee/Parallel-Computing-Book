@@ -7,6 +7,6 @@ if (mytid==ntids-1)  {
 	taskqueue->addtask(xy);
     else break;
   }
-  taskqueue->complete(workcircle);
+  taskqueue->complete();
 } else
   taskqueue->wait_for_work(comm,workcircle);

@@ -131,6 +131,11 @@ It is possible to omit the status array by specifying \n{MPI_STATUSES_IGNORE}.
 Other routines are \n{MPI_Wait} for a single request, and
 \n{MPI_Waitsome}, \n{MPI_Waitany}.
 
+The above fragment is unrealistically simple. In a more general scenario we
+have to manage send and receive buffers: we need as many buffers as there are
+simultaneous non-blocking sends and receives.
+\verbatimsnippet{irecvloop}
+
 \Level 1 {One-sided communication}
 \commandreflabel{sec:one-sided}
 

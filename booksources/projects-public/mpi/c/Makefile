@@ -21,8 +21,6 @@ info ::
 	@echo "    debug flag: DEBUG=DEBUG/OPT (default: ${DEBUG})]"
 % : %.c
 	${CC} -std=c99 ${${DEBUG}_flag} -D${DEBUG} $*.c -o $@
-% : %.cxx
-	${CXX} ${${DEBUG}_flag} -D${DEBUG} $*.cxx -o $@
 %.o : %.cxx
 	${CXX} ${${DEBUG}_flag} -D${DEBUG} -c $*.cxx
 
@@ -41,6 +39,9 @@ ${MANDEL_APPS} : ${mandel_dependencies}
 ${patsubst %,%.o,${MANDEL_APPS}} mandel_tools.o : mandel.h tools.h Image.h Color.h
 Color.o : Color.h
 Image.o : Image.h
+.SECONDEXPANSION:
+${MANDEL_APPS} : $$@.o ${mandel_dependencies}
+	${CXX} ${${DEBUG}_flag} -D${DEBUG} $^ -o $@
 
 # rules for submitting to the queue and doing tau analysis
 info ::

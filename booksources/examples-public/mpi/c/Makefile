@@ -1,7 +1,9 @@
 info ::
 	@echo "Do: make app (where app=${APPS})"
 
-APPS = init recvblock sendblock ssendblock putblock
+APPS = init recvblock sendblock ssendblock putblock anysource
+listapps :
+	@echo ${APPS}
 
 ifdef TACC_TAU_DIR
   CC = tau_cc.sh
@@ -59,11 +61,11 @@ tau :
 	  tau_treemerge.pl ; \
 	  tau2slog2 tau.trc tau.edf -o $$HOME/taulog$$TAU_EXT.slog2
 
-regression :
+regression : total_clean
 	-@export haserror=0 ; \
 	for p in ${APPS} ; do \
-	  make $$p.o >$$p.err 2>&1 ; \
-	  if [ ! -f $$p.o ] ; then \
+	  make $$p >$$p.err 2>&1 ; \
+	  if [ ! -f $$p ] ; then \
 	    if [ $$haserror == "0" ] ; then export haserror=1 ; echo ; fi ; \
 	    echo "Regression failed compilation of $$p" ; \
 	    cat $$p.err ; echo ; \

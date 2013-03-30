@@ -611,7 +611,18 @@ routine.  There is nothing special about a non-blocking or synchronous
 message once it arrives; the \n{MPI_Recv} call can match any of the
 send routines you have seen so far (but not \n{MPI_Sendrecv}).
 
-% MPI_Cancel( &request )
+\Level 2 {Speculative messaging}
+
+In some applications it makes sense that a message can come from 
+one of a number of processes. In this case, it is possible to specify
+\indexmpishow{MPI_ANY_SOURCE} as the source. To find out where the message actually
+came from, you would use the \indexmpishow{MPI_SOURCE} field of the receive status.
+
+The following code fragment models a scenario where multiple workers tasks
+compute something (in this case they simply wait a random time) and then report
+to the root process. The root takes the first incoming message, and tells the workers
+which of them was accepted; all others then cancel their message\indexmpi{MPI_Cancel}.
+\verbatimsnippet{anysource}
 
 % MPI_Probe
 
@@ -893,6 +904,7 @@ instructions between locking and unlocking the window effectively
 become \indexterm{atomic operations}.
 
 \Level 2 {Details}
+\label{sec:mpi-alloc}
 
 Sometimes an architecture has memory that is shared between processes,
 or that otherwise is fast for one-sided communication. To put a window
@@ -901,8 +913,8 @@ allocated:
 \begin{verbatim}
 MPI_Alloc_mem() and MPI_Free_mem()
 \end{verbatim}
-These calls reduce to \n{malloc} and \n{free} is there is no special
-memory area.
+These calls reduce to \n{malloc} and \n{free} if there is no special
+memory area; SGI is an example where such memory does exist.
 
 \index{communication!one-sided|)}
 

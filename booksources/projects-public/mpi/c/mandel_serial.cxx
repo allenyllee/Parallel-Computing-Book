@@ -33,7 +33,7 @@ public :
       // wrap around to the first again
       free_processor = 0;
   };
-  void complete(circle *workcircle) { 
+  void complete() { 
     struct coordinate xy;
     workcircle->invalid_coordinate(xy); free_processor=0;
     for (int p=0; p<ntids-1; p++)
@@ -74,7 +74,7 @@ int main(int argc,char **argv) {
 	taskqueue->addtask(xy);
       else break;
     }
-    taskqueue->complete(workcircle);
+    taskqueue->complete();
   } else
     taskqueue->wait_for_work(comm,workcircle);
 
