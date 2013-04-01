@@ -7,7 +7,7 @@ include ${PETSC_DIR}/conf/variables
 PROGS = init vec set mat 
 .SECONDEXPANSION:
 %.o : %.F
-	-${FC} -c -o $@ $^ ${PETSC_INCLUDE}
+	-${FC} -c -o $@ $^ ${PETSC_FC_INCLUDES}
 ${PROGS}: $$@.o 
 	-${CLINKER} -o $@ $@.o ${PETSC_LIB}
 
