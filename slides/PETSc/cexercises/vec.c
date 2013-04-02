@@ -12,7 +12,12 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc,&argv,0,0); CHKERRQ(ierr); 
+  ierr = PetscInitialize(&argc,&argv,0,"\nUsage: vec [-n number]\n\n"); CHKERRQ(ierr); 
+  {
+    PetscBool has;
+    ierr = PetscOptionsHasName(PETSC_NULL,"-help",&has); CHKERRQ(ierr);
+    if (has) goto skip;
+  }
   comm = PETSC_COMM_WORLD;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL); 
       CHKERRQ(ierr);
@@ -33,7 +38,7 @@ int main(int argc,char **argv)
   ierr = VecView(x,0); CHKERRQ(ierr);
 
   ierr = VecDestroy(&x); CHKERRQ(ierr);
+ skip:
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
