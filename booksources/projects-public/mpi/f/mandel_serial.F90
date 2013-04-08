@@ -15,15 +15,13 @@ contains
 
   subroutine AddTask(xy)
     type(Coordinate),intent(in) :: xy
-    real :: xyv(2)
+    real,dimension(2) :: xyv
     integer contribution,status,ierr
 
     xyv(1) = xy%x; xyv(2) = xy%y
     call MPI_Send(xyv,2,MPI_REAL,FreeProcessor,0,comm,ierr)
     call MPI_Recv(contribution,1,MPI_INTEGER,FreeProcessor,0,comm,status,ierr)
-    if (IsValidCoordinate(xy)) then
-       TotalTasks = TotalTasks+1
-    end if
+    TotalTasks = TotalTasks+1
     FreeProcessor = mod(FreeProcessor+1,ntids-1)
     
   end subroutine AddTask
@@ -32,7 +30,7 @@ contains
     type(Coordinate) :: xy
     integer p
     xy = InvalidCoordinate(); FreeProcessor = 0
-    do p=0,ntids-1
+    do p=1,ntids-1
        call AddTask(xy)
     end do
   end subroutine Complete
