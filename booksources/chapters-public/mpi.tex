@@ -190,7 +190,8 @@ later on.
 
 For most of your MPI programming, the only communicator you will use
 is \indexmpishow{MPI_COMM_WORLD} which contains all your
-processes. Later you will learn of the mechanisms for creating other
+processes. In section~\ref{sec:communicators}
+you will learn of the mechanisms for creating other
 communicators from it.
 
 \Level 1 {Distinguishing between processes}
@@ -207,7 +208,7 @@ With \indexmpishow{MPI_Comm_size} a processor can query how many
 processes there are in total, and with \indexmpishow{MPI_Comm_rank} it
 can find out what its number is. This rank is a number from zero to
 the comm size minus~one. (Zero-based indexing is used even if you
-program in Fortran.)
+program in \indexterm{Fortran}.)
 
 Using these calls, the simplest MPI programs does this:
 \verbatimsnippet{hello}
@@ -293,7 +294,13 @@ send call\ldots\ and then can't go on, because they are both waiting
 for the other to issue a receive call. This is known
 as \indexterm{deadlock}.
 
-The solution is to first do the send from 0 to~1, and then from 1 to~0 (or the other way around). So the code would look like:
+Formally you can describe deadlock as follows. Draw up a graph where
+every process is a node, and draw a directed arc from process~A to~B if
+A is waiting for~B. There is deadlock if this directed graph has a
+loop.
+
+The solution to the deadlock in the above example
+is to first do the send from 0 to~1, and then from 1 to~0 (or the other way around). So the code would look like:
 \begin{verbatim}
 if ( /* I am processor 0 */ ) {
   send(target=other);
@@ -350,14 +357,16 @@ explore next.
   parallel, although maybe not optimally so.
 \end{exercise}
 
-\begin{exercise}
-  There are rare circumstances where you actually want this serial
-  behaviour. Recall from exercise~\ref{ex:hello-world-zero} that
-  output from processes is not automatically serialized. Take your
-  code from that exercise, and use the serialization behaviour your
-  observed to force the processes to output their print statements in
-  sequence.
-\end{exercise}
+\begin{comment}
+  \begin{exercise}
+    There are rare circumstances where you actually want this serial
+    behaviour. Recall from exercise~\ref{ex:hello-world-zero} that
+    output from processes is not automatically serialized. Take your
+    code from that exercise, and use the serialization behaviour your
+    observed to force the processes to output their print statements in
+    sequence.
+  \end{exercise}
+\end{comment}
 
 Above, you saw a code fragment with a conditional send:
 \begin{verbatim}
@@ -461,6 +470,22 @@ Instead you would just synchronize the two processes involved.
   processes through the exchange of a blocking zero-size message.
 \end{exercise}
 
+\Level 2 {Speculative messaging}
+\commandref{sec:mpi-source}
+
+In some applications it makes sense that a message can come from 
+one of a number of processes. In this case, it is possible to specify
+\indexmpishow{MPI_ANY_SOURCE} as the source. To find out where the message actually
+came from, you would use the \indexmpishow{MPI_SOURCE} field of the status object
+that is delivered by \n{MPI_Recv} or the \n{MPI_Wait...} call after an \n{MPI_Irecv}.
+
+There are various scenarios where receiving from `any source' makes sense.
+One is that of the \indexterm{master-worker model}. The master task would first send
+data to the worker tasks, then issues a blocking wait for the data of whichever process
+finishes first.
+
+% MPI_Probe
+
 \index{communication!blocking|)}
 
 \Level 1 {Non-blocking communication}
@@ -470,10 +495,11 @@ Instead you would just synchronize the two processes involved.
 In the previous section you saw that blocking communication makes
 programming tricky if you want to avoid deadlock and performance
 problems. The main advantage of these routines is that you have full
-control about where the data is.  By contrast, \emph{non-blocking}
-communication routines are easier to use, but more wasteful of memory.
+control about where the data is: if the send call returns
+the data has been successfully received, and the send buffer can be used for
+other purposes or de-allocated.  
 
-The non-blocking calls \indexmpishow{MPI_Isend} and \indexmpishow{MPI_Irecv}
+By constrast, the non-blocking calls \indexmpishow{MPI_Isend} and \indexmpishow{MPI_Irecv}
 do not wait for their counterpart: in effect they tell the runtime
 system `here is some data and please send it as follows' or `here is
 some buffer space, and expect such-and-such data to
@@ -552,22 +578,6 @@ using \n{MPI_Waitall}.
 \label{fig:jump-nonblock}
 \end{figure}
 
-The \n{MPI_Test....} calls are themselves non-blocking: they
-test for whether one or more requests have been
-fullfilled. Here a typical idiom would be:
-\begin{verbatim}
-// start non-blocking communication
-for ( ... p ... ) {
-  MPI_Isend( .. p .. ); MPI_Irecv( .. p .. );
-}
-// wait for incoming data and process
-while ( .. there are still requests .. ) {
-  MPI_Test( ... );
-  p = message.source;
-  // process data from p
-}
-\end{verbatim}
-
 \begin{exercise}
   Read section~\HPSCref{sec:pspmvp} and give pseudo-code for the
     distributed sparse matrix-vector product using the above idiom for
@@ -577,9 +587,17 @@ while ( .. there are still requests .. ) {
     preferable.
 \end{exercise}
 
-Another scenario where \n{MPI_Wait} calls are convenient is in the
-\indexterm{master-worker model}. The master process creates tasks, and
-sends them to whichever worker process has finished its work:
+The \n{MPI_Wait...} routines are blocking. Thus, they are a good solution if 
+the receiving process can not do anything until the data 
+(or at least \emph{some} data) is actually received.
+The \n{MPI_Test....} calls are themselves non-blocking: they
+test for whether one or more requests have been
+fullfilled, but otherwise immediately return.
+This can be used in the
+\indexterm{master-worker model}: the master process creates tasks, and
+sends them to whichever worker process has finished its work,
+but while it waits for the workers it can itself do useful work.
+Pseudo-code:
 \begin{verbatim}
 while ( not done ) {
   // create new inputs for a while
@@ -611,21 +629,6 @@ routine.  There is nothing special about a non-blocking or synchronous
 message once it arrives; the \n{MPI_Recv} call can match any of the
 send routines you have seen so far (but not \n{MPI_Sendrecv}).
 
-\Level 2 {Speculative messaging}
-
-In some applications it makes sense that a message can come from 
-one of a number of processes. In this case, it is possible to specify
-\indexmpishow{MPI_ANY_SOURCE} as the source. To find out where the message actually
-came from, you would use the \indexmpishow{MPI_SOURCE} field of the receive status.
-
-The following code fragment models a scenario where multiple workers tasks
-compute something (in this case they simply wait a random time) and then report
-to the root process. The root takes the first incoming message, and tells the workers
-which of them was accepted; all others then cancel their message\indexmpi{MPI_Cancel}.
-\verbatimsnippet{anysource}
-
-% MPI_Probe
-
 \index{communication!non-blocking|)}
 \index{communication!two-sided|)}
 \Level 1 {One-sided communication}
@@ -634,11 +637,12 @@ which of them was accepted; all others then cancel their message\indexmpi{MPI_Ca
 \index{target!active synchronization|see{active target synchronization}}
 \index{target!passive synchronization|see{passive target synchronization}}
 
-Above, you saw collectives and point-to-point operations. The latter
-type had in common that they require the co-operation of a sender and
+Above, you saw  point-to-point operations of the two-sided type:
+they require the co-operation of a sender and
 receiver. This co-operation could be loose: you can post a receive
 with \n{MPI_ANY_SOURCE} as sender, but there had to be both a send and
-receive call. On the other hand, in one-sided communication a process
+receive call. In this section, you will see one-sided communication 
+routines where a process
 can do a `put' or `get' operation, writing data to or reading it from
 another processor, without that other processor's involvement.
 
@@ -647,7 +651,13 @@ In one-sided MPI operations, also known as \acf{RDMA} or
 are still two processes involved: the \indexterm{origin}, which is the
 process that originates the transfer, whether this is a `put' or a `get',
 and the \indexterm{target} whose
-memory is being accessed. On the target, you declare an area of
+memory is being accessed. Unlike with two-sided operations, the target
+does not perform an action that is the counterpart of the action on the origin.
+
+That does not mean that the origin can access arbitrary data on the target
+at arbitrary times. First of all, one-sided communication in MPI
+is limited to accessing only a specifically declared memory area on the target:
+the target declares an area of
 user-space memory that is accessible to other processes. This is known
 as a \indexterm{window}. Windows limit how origin processes can access
 the target's memory: you can only `get' data from a window or `put' it
@@ -662,18 +672,21 @@ implementation more efficient.
 
 Within one-sided communication, MPI has two modes: active RMA and
 passive RMA. In \indextermsub{active}{RMA}, or \indexterm{active target synchronization},
-both parties are involved; the main advantage
+the target sets boundaries on the time period (the `epoch')
+during which its window can be accessed.
+The main advantage
 of this mode is that the origin program can perform many small transfers, which are
 aggregated behind the scenes. Active RMA acts much like asynchronous transfer with a
 concluding \n{Waitall}.
 
 In \indextermsub{passive}{RMA}, or \indexterm{passive target synchronization},
-the target process is not involved. 
+the target process puts no limitation on when its window can be accessed.
 (\ac{PGAS} languages such as \ac{UPC} are based on this model: data is 
 simply read or written at will.)
 While 
-intuitively it is attractive to be able to write to and read from arbitrary memory,
-there are practical problems. For instance, it requires a remote agent on the target,
+intuitively it is attractive to be able to write to and read from a target at
+arbitrary time,
+there are problems. For instance, it requires a remote agent on the target,
 which may interfere with execution of the main thread, or conversely it may not be
 activated at the optimal time. Passive RMA is also very hard to debug and can lead
 to strange deadlocks.
@@ -872,10 +885,10 @@ for how to get such a group from a communicator.
 
 \Level 2 {Passive target synchronization}
 
-In \indexterm{passive target synchronization} only one processor
-is involved in the communication. This involves using
-a lock: one process can lock the window
-on another, specified, process.
+In \indexterm{passive target synchronization} only the origin is
+actively involved: the target makes no calls whatsoever.
+This means that the origin process remotely locks the window
+on the target.
 \begin{verbatim}
 MPI_Win_lock (int locktype, int rank, int assert, MPI_Win win)
 MPI_Win_unlock (int rank, MPI_Win win)
@@ -1003,7 +1016,8 @@ and incoming data, only relevant on the root. Also, you have to
 indicate how the data is to be combined. Popular choices are
 \indexmpishow{MPI_SUM}, \indexmpishow{MPI_PROD} and
 \indexmpishow{MPI_MAX}, but complicated operators such as finding the
-location of the maximum value exist. You can also define your own operators.
+location of the maximum value exist. You can also define your own
+operators; section~\ref{mpi:op-create}.
 
 On processes that are not the root, the receive buffer is ignored. On the root, 
 you have two buffers, but by specifying \indexmpishow{MPI_IN_PLACE}, the reduction call
@@ -1021,6 +1035,8 @@ if (mytid==0) {
 }
 MPI_Reduce(sendbuf,recvbuf,size,MPI_DOUBLE,MPI_MAX,0,comm);
 \end{verbatim}
+
+\Level 2 {Scan operations}
 
 The \indexmpishow{MPI_Scan} operation also performs a reduction, but it keeps 
 the partial results. That is, if processor~$i$ contains a number~$x_i$, 
@@ -1073,6 +1089,9 @@ first subsequent place where $y_i=1$. To implement this, you need a user-defined
 \]
 This operator is not communitative, and it needs to be declared as such
 with \indexmpishow{MPI_Op_create}.
+
+\Level 2 {User-defined reductions}
+\label{mpi:op-create}
 
 \Level 1 {Gather and scatter}
 
@@ -1247,7 +1266,11 @@ Fortran:
 \n{MPI_DOUBLE_COMPLEX}&Complex(Kind=Kind(0.d0))\\
 \end{tabular}
 
+\Level 1 {Derived datatypes}
+
 \Level 0 {Communicators}
+\label{sec:communicators}
+\index{communicator|(}
 
 A communicator is an object describing a group of processes. In many 
 applications all processes work together closely coupled, and the
@@ -1312,6 +1335,7 @@ and send all messages with respect to its duplicate. Now messages from the user
 code can never reach the library software, since they are on different communicators.
 
 \Level 2 {Splitting a communicator}
+\commandref{sec:comm-split}
 
 Splittingf a communicator into multiple disjoint communicators
 can be done with \indexmpishow{MPI_Comm_split}.
@@ -1369,15 +1393,6 @@ could improve the quality of error messages when they arise.
 We start by exploring the mechanisms for creating a communicator that
 encompasses a subset of \n{MPI_COMM_WORLD}. 
 
-There is a simple function that splits a communicator into disjoint
-communicators:
-\begin{verbatim}
-MPI_COMM_SPLIT(MPI_Comm comm, int color, int key, MPI_Comm newcomm, ierr)
-\end{verbatim}
-Each processor specifies what `colour' it is, and processes with the
-same colour are grouped into a joint communicator. The `key' value is
-used to determine the rank in the new communicator.
-
 The most general mechanism for creating communicators is through
 process groups: you can query the group of processes of a
 communicator, manipulate groups, and make a new communicator out of a
@@ -1434,6 +1449,8 @@ all processes of group~B.
 Inter-communicators can be used if two groups of process work
 asynchronously with respect to each other; another application is
 fault tolerance (section~\ref{mpi:tolerant}).
+
+\index{communicator|)}
 
 \Level 0 {Hybrid programming: MPI and threads}\
 \commandref{sec:mpi-thread}
@@ -1696,6 +1713,37 @@ could be retrieved or set by \n{shmem_get} and \n{shmem_put} calls.
 \Level 0 {Reference to the routines}
 
 \input chapters-public/mpiref
+
+\Level 0 {Review questions}
+
+If you answer that a statement is false, give a one-line explanation.
+\begin{enumerate}
+\item True or false: \n{mpicc} is a compiler.
+\item True or false: \n{mpirun} can only be used for interactive parallel runs.
+\item What is the function of a hostfile?
+\item True or false: in each communicator, processes are numbered consecutively from zero.
+\item If a processors issues a send to another processor, and that other processors
+  issues a receive from the first \emph{at exactly the same time}, the send and receive call
+  return immediately
+\item Describe a deadlock scenario involving three processors.
+\item A message sent with \n{MPI_Isend} from one processor can be
+  received with an \n{MPI_Recv} call on another processor.
+\item A message sent with \n{MPI_Send} from one processor can be
+  received with an \n{MPI_Irecv} on another processor.
+\item Why does the \n{MPI_Irecv} call not have an \n{MPI_Status} argument?
+\item Give a simple model for the time a send operation takes.
+\item Give a simple model for the time a broadcast of a single scalar takes.
+\item What is the relation between the concepts of `origin', `target'
+  and `window' in one-sided communication.
+\item What are the three routines for one-sided data transfer?
+\item Give an example of a collective call with and without a root processor.
+\item Give two examples of derived datatypes.
+\item Give an example where the sender uses a different type to send
+  than the receiver uses in the corresponding receive call. Name the types involved.
+\begin{comment}
+\item 
+\end{comment}
+\end{enumerate}
 
 \Level 0 {Literature}
 

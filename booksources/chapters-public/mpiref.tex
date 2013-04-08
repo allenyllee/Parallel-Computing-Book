@@ -96,6 +96,21 @@ On the other hand, this code may not block for small messages:
 If you want to force uniform behaviour use \n{MPI_Ssend}:
 \verbatimsnippet{ssendblock}
 
+\Level 2 {Receive status}
+\commandreflabel{sec:mpi-source}
+
+In section~\ref{sec:mpi-source} we mentioned the master-worker model
+as one opportunity for inspecting the \indexmpishow{MPI_SOURCE} field
+of the \indexmpishow{MPI_Status} object. Here we will show a slightly
+more complicated example, where only the result of the first task to
+complete is needed. Thus, we issue an \n{MPI_Recv}
+with \indexmpishow{MPI_ANY_SOURCE} as source.  When a result comes, we
+broadcast its source to all processes.  All the other workers then use
+this information to cancel their message with
+an \indexmpishow{MPI_Cancel} operation.
+
+\verbatimsnippet{anysource}
+
 \Level 1 {Non-blocking communication}
 \commandreflabel{sec:nonblocking}
 
@@ -198,6 +213,27 @@ The result of the exclusive scan is undefined on processor~0,
 and on processor~1 it is a copy of the send value of processor~1.
 In particular, the \n{MPI_Op} need not be called on these two 
 processors.
+
+\Level 1 {Communicators}
+
+\indexmpishow{MPI_Comm_dup}, \indexmpishow{MPI_Comm_free}
+
+\Level 2 {Splitting communicators}
+\commandreflabel{sec:comm-split}
+
+The command \indexmpishow{MPI_Comm_split} takes a communicator, and divides it
+into a number of disjoint communicators. It does this by assigning processes
+to the same subcommunicator if they have the same user-specified `colour'
+value.
+\begin{verbatim}
+int MPI_Comm_split(MPI_Comm comm, int color, int key, 
+                   MPI_Comm *newcomm)
+\end{verbatim}
+The ranking of processes in the new communicator is determined by a `key' value.
+Most of the time, there is no reason to use a relative ranking that is different from
+the global ranking, so the \n{MPI_Comm_rank} value of the global communicator
+is a good choice.
+\verbatimsnippet{commsplitrowcol}
 
 \Level 1 {Error handling}
 \commandreflabel{mpi:error}

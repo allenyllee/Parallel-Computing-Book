@@ -1,7 +1,8 @@
 info ::
 	@echo "Do: make app (where app=${APPS})"
 
-APPS = init recvblock sendblock ssendblock putblock anysource
+APPS = init recvblock sendblock ssendblock putblock anysource \
+    mvp2d
 listapps :
 	@echo ${APPS}
 
@@ -22,6 +23,10 @@ info ::
 	${CC} -std=c99 ${${DEBUG}_flag} -D${DEBUG} $*.c -o $@
 % : %.cxx
 	${CXX} ${${DEBUG}_flag} -D${DEBUG} $*.cxx -o $@
+
+# specific application dependencies
+mvp2d.o tools.o 
+mvp2d.o tools.o : tool.h
 
 # rules for submitting to the queue and doing tau analysis
 info ::

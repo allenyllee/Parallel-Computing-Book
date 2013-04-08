@@ -5,6 +5,13 @@
 #include "Image.h"
 #include "tools.h"
 
+#define CHK(x) if (x) {							\
+    char errtxt[200]; int len=200, mytid;				\
+    MPI_Error_string(x,errtxt,&len);					\
+    MPI_Comm_rank(MPI_COMM_WORLD,&mytid);				\
+    printf("p=%d, line=%d, err=%d, %s\n",mytid,__LINE__,x,errtxt);	\
+  return x;}
+
 int parameters_from_commandline(int argc,char** argv,MPI_Comm comm,
 				int *rsteps,int *riter);
 
@@ -36,9 +43,9 @@ public:
     area = 0.;
     t_start = MPI_Wtime();
   };
-  void addtask(struct coordinate);
+  int addtask(struct coordinate);
   void set_image(Image*);
-  void complete();
+  int complete();
   void coordinate_to_image(struct coordinate,int);
   void wait_for_work(MPI_Comm,circle*);
 };
