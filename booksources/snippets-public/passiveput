@@ -1,3 +1,4 @@
+// passiveput.c
 int target = ntids-1;
 if (mytid<target) {
   my_number = mytid;

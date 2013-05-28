@@ -1,8 +1,8 @@
 info ::
 	@echo "Do: make app (where app=${APPS})"
 
-APPS = init recvblock sendblock ssendblock putblock anysource \
-    mvp2d
+APPS = init recvblock sendblock ssendblock sendrecv putblock anysource cancel \
+    mvp2d commdup_wrong commdup_right irecv_source
 listapps :
 	@echo ${APPS}
 
@@ -11,22 +11,30 @@ ifdef TACC_TAU_DIR
   CXX = tau_cxx.sh
 else
   CC  = mpicc
-  CXX = mpicxx
+  CXX = mpicxx -std=c99
 endif
 
 DEBUG=OPT
 OPT_flag = -O2
 DEBUG_flag = -g
+TACC_BLIS_INC = ${HOME}/Installation/Blis/installation/include
+TACC_BLIS_LIB = ${HOME}/Installation/Blis/installation/lib
 info ::
 	@echo "    debug flag: DEBUG=DEBUG/OPT (default: ${DEBUG})]"
-% : %.c
-	${CC} -std=c99 ${${DEBUG}_flag} -D${DEBUG} $*.c -o $@
-% : %.cxx
-	${CXX} ${${DEBUG}_flag} -D${DEBUG} $*.cxx -o $@
+%.o : %.c
+	${CXX} -std=c99 ${${DEBUG}_flag} -D${DEBUG} \
+	  -I${TACC_BLIS_INC} \
+	  -c $*.c
+%.o : %.cxx
+	${CXX} ${${DEBUG}_flag} -D${DEBUG} \
+	  -I${TACC_BLIS_INC} \
+	  -c $*.cxx
 
-# specific application dependencies
-mvp2d.o tools.o 
-mvp2d.o tools.o : tool.h
+app_dependencies  = tools.o
+.SECONDEXPANSION:
+${APPS} : $$@.o ${app_dependencies}
+	${CXX} -o $@ $@.o ${app_dependencies} -L${TACC_BLIS_LIB} -lblis
+${patsubst %,%.o,${APPS}} tools.o : tools.h
 
 # rules for submitting to the queue and doing tau analysis
 info ::
@@ -67,6 +75,11 @@ tau :
 	  tau2slog2 tau.trc tau.edf -o $$HOME/taulog$$TAU_EXT.slog2
 
 regression : total_clean
+	for app in `make listapps` ; do \
+	  make $$app ; \
+	done
+
+noregression :
 	-@export haserror=0 ; \
 	for p in ${APPS} ; do \
 	  make $$p >$$p.err 2>&1 ; \

@@ -1,19 +1,22 @@
+// anysource.c
 if (mytid==ntids-1) {
+  int *recv_buffer;
   MPI_Status status;
-  ierr = MPI_Recv(dummy,0,MPI_INT, MPI_ANY_SOURCE,0,comm,&status); CHK(ierr);
-  first_tid = status.MPI_SOURCE;
-  ierr = MPI_Bcast(&first_tid,1,MPI_INT, ntids-1,comm); CHK(ierr);
-  printf("first msg came from %d\n",first_tid);
+
+  recv_buffer = (int*) malloc((ntids-1)*sizeof(int));
+
+  for (int p=0; p<ntids-1; p++) {
+    ierr = MPI_Recv(recv_buffer+p,1,MPI_INT, MPI_ANY_SOURCE,0,comm,
+		      &status); CHK(ierr);
+    int sender = status.MPI_SOURCE;
+    printf("Message from sender=%d: %d\n",
+	     sender,recv_buffer[p]);
+  }
 } else {
   float randomfraction = (rand() / (double)RAND_MAX);
   int randomwait = (int) ( ntids * randomfraction );
-  MPI_Request request;
   printf("process %d waits for %e/%d=%d\n",
 	   mytid,randomfraction,ntids,randomwait);
   sleep(randomwait);
-  ierr = MPI_Isend(dummy,0,MPI_INT, ntids-1,0,comm,&request); CHK(ierr);
-  ierr = MPI_Bcast(&first_tid,1,MPI_INT, ntids-1,comm); CHK(ierr);
-  if (mytid!=first_tid) {
-    ierr = MPI_Cancel(&request); CHK(ierr);
-  }
+  ierr = MPI_Send(&randomwait,1,MPI_INT, ntids-1,0,comm); CHK(ierr);
 }

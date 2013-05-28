@@ -1,0 +1,13 @@
+int library::communication_start() {
+int sdata=6,rdata, ierr;
+ierr = MPI_Isend(&sdata,1,MPI_INT,other,2,comm,&(request[0])); CHK(ierr);
+ierr = MPI_Irecv(&rdata,1,MPI_INT,other,MPI_ANY_TAG,comm,&(request[1])); CHK(ierr);
+return 0;
+}
+
+int library::communication_end() {
+MPI_Status status[2];
+int ierr;
+ierr = MPI_Waitall(2,request,status); CHK(ierr);
+return 0;
+}

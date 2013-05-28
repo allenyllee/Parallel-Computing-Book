@@ -1,3 +1,4 @@
+// init.c
 MPI_Comm_rank(comm,&mytid);
 if (mytid==0) {
   if ( argc==1 || // the program is called without parameter

@@ -5,6 +5,12 @@
 #include "mandel.h"
 #include "Image.h"
 
+/**
+   A class for a queue where the master sends coordinates
+   to the workers with blocking sends and receives.
+   Of course this is very silly, but it only serves to
+   provide a code base.
+ */
 class serialqueue : public queue {
 private :
   int free_processor;
@@ -13,35 +19,30 @@ public :
     : queue(queue_comm,workcircle) {
     free_processor=0;
   };
-  /* Send a coordinate to a free processor;
-     if the coordinate is invalid, this should stop the process;
-     otherwise add the result to the image.
+  /** 
+      The `addtask' routine adds a task to the queue. In this
+      simple case it immediately sends the task to a worker
+      and waits for the result, which is added to the image.
+
+      This routine is only called with valid coordinates;
+      the calling environment will stop the process once
+      an invalid coordinate is encountered.
   */
   void addtask(struct coordinate xy) {
     MPI_Status status; int contribution;
 
-    MPI_Send(&xy,2,MPI_DOUBLE, 
+    MPI_Send(&xy,1,coordinate_type,
 	     free_processor,0,comm);
     MPI_Recv(&contribution,1,MPI_INT,
 	     free_processor,0,comm, &status);
-    if (workcircle->is_valid_coordinate(xy)) {
-      coordinate_to_image(xy,contribution);
-      total_tasks++;
-    }
+
+    coordinate_to_image(xy,contribution);
+    total_tasks++;
     free_processor++;
     if (free_processor==ntids-1)
       // wrap around to the first again
       free_processor = 0;
-  };
-  void complete() { 
-    struct coordinate xy;
-    workcircle->invalid_coordinate(xy); free_processor=0;
-    for (int p=0; p<ntids-1; p++)
-      addtask(xy);
-    t_stop = MPI_Wtime();
-    printf("Tasks %d in time %d\n",total_tasks,t_stop-t_start);
-    image->Write();
-    return; 
+    return;
   };
 };
 
@@ -63,20 +64,9 @@ int main(int argc,char **argv) {
     return 1;
   }
 
-  circle *workcircle = new circle(2./steps,iters);
+  circle *workcircle = new circle(steps,iters,ntids-1);
   serialqueue *taskqueue = new serialqueue(comm,workcircle);
-  if (mytid==ntids-1)  {
-    taskqueue->set_image( new Image(2*steps,2*steps,"mandelpicture") );
-    for (;;) {
-      struct coordinate xy;
-      workcircle->next_coordinate(xy);
-      if (workcircle->is_valid_coordinate(xy))
-	taskqueue->addtask(xy);
-      else break;
-    }
-    taskqueue->complete();
-  } else
-    taskqueue->wait_for_work(comm,workcircle);
+  main_loop(comm,workcircle,taskqueue);
 
   MPI_Finalize();
   return 0;

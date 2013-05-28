@@ -6,7 +6,7 @@ full programs can be found in the repository for this book
 \Level 1 {Basics}
 
 \Level 2 {MPI setup}
-\commandreflabel{sec:mpi-init}
+\commandreflabel{mpi-init}
 
 Every MPI program has to start with\indexmpi{MPI_Init}
 \begin{verbatim}
@@ -41,7 +41,7 @@ all processes.
 \verbatimsnippet{usage}
 
 \Level 2 {MPI ranks and communicator sizes}
-\commandreflabel{sec:rank-size}
+\commandreflabel{rank-size}
 
 \Level 2 {Send and receive buffers}
 
@@ -65,7 +65,7 @@ Addresses have type \indexmpishow{MPI_Aint} or \n{INTEGER
 given in \indexmpishow{MPI_BOTTOM}.
 
 \Level 1 {Blocking communication}
-\commandreflabel{sec:blocking}
+\commandreflabel{blocking}
 
 The basic send command is
 \begin{verbatim}
@@ -86,7 +86,8 @@ int MPI_Recv(void *buf,
 \end{verbatim}
 \url{http://www.mcs.anl.gov/research/projects-public/mpi/www/www3/MPI_Recv.html}
 The \n{count} argument indicates the maximum length of a message; the
-actual length of the message can be determined with \n{MPI_Get_count}.
+actual length of the message can be determined with \n{MPI_Get_count}; 
+see section~\ref{sec:mpi-source}.
 
 The following code is guaranteed to block, since a \n{MPI_Recv}
 always blocks:
@@ -97,7 +98,7 @@ If you want to force uniform behaviour use \n{MPI_Ssend}:
 \verbatimsnippet{ssendblock}
 
 \Level 2 {Receive status}
-\commandreflabel{sec:mpi-source}
+\commandreflabel{mpi-source}
 
 In section~\ref{sec:mpi-source} we mentioned the master-worker model
 as one opportunity for inspecting the \indexmpishow{MPI_SOURCE} field
@@ -111,8 +112,23 @@ an \indexmpishow{MPI_Cancel} operation.
 
 \verbatimsnippet{anysource}
 
+\Level 1 {Deadlock-free blocking messages}
+\commandreflabel{send-recv}
+
+\indexmpi{MPI_Sendrecv}
+\begin{verbatim}
+int MPI_Sendrecv(
+  void *sendbuf, int sendcount, MPI_Datatype sendtype, 
+                int dest, int sendtag,
+  void *recvbuf, int recvcount, MPI_Datatype recvtype, 
+                int source, int recvtag,
+  MPI_Comm comm, MPI_Status *status)
+\end{verbatim}
+
+\verbatimsnippet{sendrecvring}
+
 \Level 1 {Non-blocking communication}
-\commandreflabel{sec:nonblocking}
+\commandreflabel{nonblocking}
 
 The non-blocking routines have much the same parameter list as the 
 blocking ones, with the addition of an \n{MPI_Request} parameter.
@@ -151,11 +167,18 @@ have to manage send and receive buffers: we need as many buffers as there are
 simultaneous non-blocking sends and receives.
 \verbatimsnippet{irecvloop}
 
+Instead of waiting for all messages, we can wait for any message to come
+with \indexmpishow{MPI_Waitany}, and process the receive data as it comes in.
+\verbatimsnippet{waitforany}
+Note the \indexmpishow{MPI_STATUS_IGNORE} parameter: we know everything
+about the incoming message, so we do not need to query a status object.
+Contrast this with the example in section~\ref{ref:mpi-source}.
+
 \Level 1 {One-sided communication}
-\commandreflabel{sec:one-sided}
+\commandreflabel{one-sided}
 
 \Level 2 {Windows and epochs}
-\commandreflabel{sec:windows}
+\commandreflabel{windows}
 
 \begin{verbatim}
 MPI_WIN_CREATE (void *base, MPI_Aint size, 
@@ -180,7 +203,7 @@ MPI_Info_free(&info);
 It is always valid to use \indexmpishow{MPI_INFO_NULL}.
 
 \Level 1 {Collectives}
-\commandreflabel{sec:collective}
+\commandreflabel{collective}
 
 \begin{verbatim}
 int MPI_Bcast( void *buffer, int count, MPI_Datatype datatype, int root, 
@@ -214,17 +237,51 @@ and on processor~1 it is a copy of the send value of processor~1.
 In particular, the \n{MPI_Op} need not be called on these two 
 processors.
 
+\Level 1 {Cancelling messages}
+
+\verbatimsnippet{cancel}
+
 \Level 1 {Communicators}
 
-\indexmpishow{MPI_Comm_dup}, \indexmpishow{MPI_Comm_free}
+\Level 2 {Communicator duplication}
+\commandreflabel{comm-dup}
+
+In section~\ref{sec:mpi-semantics} it was explained that MPI messages are 
+non-overtaking. This may lead to confusing situations, witness the following snippet:
+
+\verbatimsnippet{wrongcatchmain}
+
+This models a main program that does a simple message exchange, and it
+makes two calls to library routines. Unbeknown to the user, the library also issues send and receive calls, and they turn out to interfere:
+
+\verbatimsnippet{wrongcatchlib}
+
+Here
+\begin{itemize}
+\item The main program does a send,
+\item the library call \n{function_start} does a send and a receive;
+  because the receive can match either send, it is paired with the
+  first one;
+\item the main program does a receive, which will be paired with the send of the 
+  library call;
+\item both the main program and the library do a wait call, and in
+  both cases all requests are succesfully fulfilled, just not the way
+  you intended.
+\end{itemize}
+
+The solution is to give the library a separate communicator with
+\indexmpishow{MPI_Comm_dup}. Newly created communicators should be
+released again with \indexmpishow{MPI_Comm_free}.
+
+\verbatimsnippet{rightcatchmain}
 
 \Level 2 {Splitting communicators}
-\commandreflabel{sec:comm-split}
+\commandreflabel{comm-split}
 
-The command \indexmpishow{MPI_Comm_split} takes a communicator, and divides it
-into a number of disjoint communicators. It does this by assigning processes
-to the same subcommunicator if they have the same user-specified `colour'
-value.
+The command \indexmpishow{MPI_Comm_split} takes a communicator, and
+divides it into a number of disjoint communicators. It does this by
+assigning processes to the same subcommunicator if they have the same
+user-specified `colour' value.
 \begin{verbatim}
 int MPI_Comm_split(MPI_Comm comm, int color, int key, 
                    MPI_Comm *newcomm)
@@ -243,7 +300,7 @@ an error they call \n{MPI_Abort}; if \indexmpishow{MPI_ERRORS_RETURN}
 is the error handler, errors may be silently ignore.
 
 \Level 1 {More utility stuff}
-\commandreflabel{sec:profile}
+\commandreflabel{profile}
 
 MPI has a \indexterm{wall clock} timer: \indexmpishow{MPI_Wtime}
 \begin{verbatim}
@@ -273,7 +330,7 @@ if (mytid==0) printf(``Time synchronized? %d->%d\n'',flag,*v);
 %\indexmpi{MPI_Wtime} can be either a function or a macro.
 
 \Level 1 {Multi-threading}
-\commandreflabel{sec:mpi-thread}
+\commandreflabel{mpi-thread}
 
 \begin{verbatim}
 int MPI_Init_thread( int *argc, char ***argv, int required, int *provided )

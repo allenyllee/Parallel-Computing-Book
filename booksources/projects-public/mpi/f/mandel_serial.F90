@@ -15,13 +15,18 @@ contains
 
   subroutine AddTask(xy)
     type(Coordinate),intent(in) :: xy
-    real,dimension(2) :: xyv
+    real :: xyv(2)
     integer contribution,status,ierr
 
     xyv(1) = xy%x; xyv(2) = xy%y
+    write(*,*) "to",FreeProcessor
     call MPI_Send(xyv,2,MPI_REAL,FreeProcessor,0,comm,ierr)
+    write(*,*) ierr,"from",FreeProcessor
     call MPI_Recv(contribution,1,MPI_INTEGER,FreeProcessor,0,comm,status,ierr)
-    TotalTasks = TotalTasks+1
+    write(*,*) ierr,"done",FreeProcessor
+    if (IsValidCoordinate(xy)) then
+       TotalTasks = TotalTasks+1
+    end if
     FreeProcessor = mod(FreeProcessor+1,ntids-1)
     
   end subroutine AddTask
@@ -30,7 +35,7 @@ contains
     type(Coordinate) :: xy
     integer p
     xy = InvalidCoordinate(); FreeProcessor = 0
-    do p=1,ntids-1
+    do p=0,ntids-1
        call AddTask(xy)
     end do
   end subroutine Complete
@@ -47,6 +52,7 @@ program MandelSerial
 
   call MPI_Init(ierr)
   comm = MPI_COMM_WORLD
+  call MPI_Comm_set_errhandler(comm,MPI_ERRORS_RETURN,ierr)
   call QueueInit(comm)
 
   steps = 200; iters = 1000
@@ -55,12 +61,16 @@ program MandelSerial
   if (mytid.eq.ntids-1) then
      do
         xy = NextCoordinate()
+        write(*,*) "next",xy%x,xy%y
         if (IsValidCoordinate(xy)) then
            call AddTask(xy)
+           write(*,*) "added"
         else
+           write(*,*) "quit"
            exit
         end if
      end do
+     write(*,*) "done"
      call Complete()
   else
      call WaitForWork()

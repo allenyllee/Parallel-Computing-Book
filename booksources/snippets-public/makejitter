@@ -1,3 +1,4 @@
+// time_max.cxx
 wait = (int) ( 6.*rand() / (double)RAND_MAX );
 tstart = MPI_Wtime();
 sleep(wait);

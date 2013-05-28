@@ -9,7 +9,7 @@ PROGS = init vec set mat
 %.o : %.F
 	-${FC} -c -o $@ $^ ${PETSC_FC_INCLUDES}
 ${PROGS}: $$@.o 
-	-${CLINKER} -o $@ $@.o ${PETSC_LIB}
+	-${FLINKER} -o $@ $@.o ${PETSC_LIB}
 
 clean :
 	rm -f *~ *.o ${PROGS}

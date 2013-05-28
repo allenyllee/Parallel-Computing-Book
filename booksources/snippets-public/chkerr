@@ -1,3 +1,4 @@
+// globalinit.c
 #define CHK(x) if (x) {						 \
     char errtxt[200]; int len=200;				 \
   MPI_Error_string(x,errtxt,&len);				 \

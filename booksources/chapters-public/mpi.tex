@@ -130,7 +130,7 @@ performance, but at least you can test your code for correctness.
 \Level 0 {Basic concepts}
 
 \Level 1 {Initialization / finalization}
-\commandref{sec:mpi-init}
+\commandref{mpi-init}
 
 Every program that uses MPI needs to initialize and finalize exactly
 once. In~C, the calls are
@@ -195,7 +195,7 @@ you will learn of the mechanisms for creating other
 communicators from it.
 
 \Level 1 {Distinguishing between processes}
-\commandref{sec:rank-size}
+\commandref{rank-size}
 
 In the SPMD model you run the same executable on each of a set of
 processors; see section~\HPSCref{sec:spmd}. So how can you do anything
@@ -238,7 +238,7 @@ without you noticing.
 \Level 1 {Blocking communication}
 \index{communication!two-sided|(}
 \index{communication!blocking|(}
-\commandref{sec:blocking}
+\commandref{blocking}
 
 In two-sided communication, one process issues a send call and the
 other a receive call. Life would be easy if the send call put the data
@@ -391,14 +391,15 @@ The null processor
 value is also of use with the \n{MPI_Sendrecv} call.
 
 \Level 2 {Deadlock-free blocking communication}
+\commandref{send-recv}
 
 Above you saw that with blocking sends the precise ordering of the
 send and receive calls is crucial. Use the wrong ordering and you get
 either deadlock, or something that is not efficient at all in
 parallel. MPI has a way out of this problem that is sufficient for
-many purposes: the combined send/recv call
+many purposes: the combined send/recv call\indexmpi{MPI_Sendrecv}
 \begin{verbatim}
-MPI_Send_recv( /* send data */ ....
+MPI_Sendrecv( /* send data */ ....
                /* recv data */ .... );
 \end{verbatim}
 This call makes it easy to exchange data between two processors: both
@@ -471,7 +472,7 @@ Instead you would just synchronize the two processes involved.
 \end{exercise}
 
 \Level 2 {Speculative messaging}
-\commandref{sec:mpi-source}
+\commandref{mpi-source}
 
 In some applications it makes sense that a message can come from 
 one of a number of processes. In this case, it is possible to specify
@@ -489,7 +490,7 @@ finishes first.
 \index{communication!blocking|)}
 
 \Level 1 {Non-blocking communication}
-\commandref{sec:nonblocking}
+\commandref{nonblocking}
 \index{communication!non-blocking|(}
 
 In the previous section you saw that blocking communication makes
@@ -556,13 +557,15 @@ for (p=0; p<nrequests ; p++)
   \indexmpishow{MPI_Waitany} and write:
 \begin{verbatim}
 for (p=0; p<nrequests; p++) {
-  MPI_Waitany(nrequests,request_array,&index,statuses);
+  MPI_Waitany(nrequests,request_array,&index,&status);
   // operate on buffer[index]
 }
 \end{verbatim}
+  Note that this routine takes a single status argument, passed by reference,
+  and not an array of statuses!
 \item \indexmpishow{MPI_Waitsome} is very much like \n{Waitany},
   except that it returns multiple numbers, if multiple requests are
-  satisfied.
+  satisfied. Now the status argument is an array of \n{MPI_Status} objects.
 \end{itemize}
 
 Figure~\ref{fig:jump-nonblock} shows the trace of a non-blocking execution
@@ -632,7 +635,7 @@ send routines you have seen so far (but not \n{MPI_Sendrecv}).
 \index{communication!non-blocking|)}
 \index{communication!two-sided|)}
 \Level 1 {One-sided communication}
-\commandref{sec:one-sided}
+\commandref{one-sided}
 \index{communication!one-sided|(}
 \index{target!active synchronization|see{active target synchronization}}
 \index{target!passive synchronization|see{passive target synchronization}}
@@ -694,7 +697,7 @@ to strange deadlocks.
 %% McLaren says use an info object
 
 \Level 2 {Windows}
-\commandref{sec:windows}
+\commandref{windows}
 \index{window|(}
 
 A window is a contiguous area of memory,
@@ -933,7 +936,7 @@ memory area; SGI is an example where such memory does exist.
 
 \Level 0 {Collectives}
 \index{collectives|(}
-\commandref{sec:collective}
+\commandref{collective}
 
 Collectives are operations that involve all processes in a
 communicator. The simplest example is a broadcast: one processor has
@@ -1317,6 +1320,7 @@ There are various ways of making new communicators. We discuss three
 mechanisms, from simple to complicated.
 
 \Level 2 {Duplicating communicators}
+\commandref{comm-dup}
 
 With \indexmpishow{MPI_Comm_dup} you can make an exact duplicate of a communicator.
 This may seem pointless, but it is actually very useful for the design of
@@ -1335,7 +1339,7 @@ and send all messages with respect to its duplicate. Now messages from the user
 code can never reach the library software, since they are on different communicators.
 
 \Level 2 {Splitting a communicator}
-\commandref{sec:comm-split}
+\commandref{comm-split}
 
 Splittingf a communicator into multiple disjoint communicators
 can be done with \indexmpishow{MPI_Comm_split}.
@@ -1453,7 +1457,7 @@ fault tolerance (section~\ref{mpi:tolerant}).
 \index{communicator|)}
 
 \Level 0 {Hybrid programming: MPI and threads}\
-\commandref{sec:mpi-thread}
+\commandref{mpi-thread}
 
 It is not automatic that a program or a library is
 \indexterm{thread-safe}.  A user can request a certain level of
@@ -1500,7 +1504,12 @@ In some circumstances the recipient may not know all details of a message.
 
 The receive calls you saw above has a status argument. If you 
 precisely know what is going to be sent, this argument tells you 
-nothing new. However, if you expect data from multiple senders,
+nothing new. Therefore, there is a special value \indexmpishow{MPI_STATUS_IGNORE}
+that you can supply instead of a status object, which tells MPI that the 
+status does not have to be reported. For routines such as \indexmpishow{MPI_Waitany}
+where an array of statuses is needed, you can supply \indexmpishow{MPI_STATUSES_IGNORE}.
+
+However, if you expect data from multiple senders,
 or the amount of data is indeterminate, the status will give
 you that information.
 
@@ -1532,6 +1541,24 @@ but do not copy the data. Instead, when probing tells you that there is a
 message, you can use \indexmpishow{MPI_Get_count} to determine its size,
 allocate a large enough receive buffer, and do a regular receive to
 have the data copied.
+
+\Level 1 {Semantics}
+\label{sec:mpi-semantics}
+\index{MPI!semantics|(}
+
+MPI processes are only synchronized to a certain extent, so you may
+wonder what guarantees there are that running a code twice will give
+the same result.  You need to consider two cases: first of all, if the
+two runs are on different numbers of processors there are already
+numerical problems; see~\HPSCref{sec:roundoff-parallel}.
+
+Let us then limit ourselves to two runs on the same set of processors. 
+In that case, MPI is deterministic as long as you do not use 
+wildcards such as \indexmpishow{MPI_ANY_SOURCE}. Formally, 
+MPI messages are `non-overtaking': two messages between the same
+sender-receiver pair will arrive in sequence.
+
+\index{MPI!semantics|)}
 
 \Level 1 {Error handling}
 \commandref{mpi:error}
@@ -1640,6 +1667,20 @@ collection of inter-communicators to begin with.
 \indexmpishow{MPI_Wtime} gives \indexterm{wall clock time} from
 unspecified starting point.
 
+MPI allows you to write your own profiling interface. To make this possible,
+every routine \n{MPI_Something} calls a routine \n{PMPI_Something} that 
+does the actual work. You can now write your \n{MPI_...} routine
+which calls \indexmpishow{PMPI_...}, and inserting your own profiling calls.
+\begin{figure}
+  \includegraphics[scale=.7]{graphics-public/pmpi}
+  \caption{A stack trace, showing the \texttt{PMPI} calls.}
+  \label{fig:pmpi}
+\end{figure}
+As you can see in figure~\ref{fig:pmpi}, normally only the \n{PMPI} routines
+show up in the stack trace.
+
+Does the standard mandate this?
+
 \Level 1 {Debugging}
 \label{sec:debug}
 
@@ -1726,9 +1767,9 @@ If you answer that a statement is false, give a one-line explanation.
   issues a receive from the first \emph{at exactly the same time}, the send and receive call
   return immediately
 \item Describe a deadlock scenario involving three processors.
-\item A message sent with \n{MPI_Isend} from one processor can be
+\item True or false: a message sent with \n{MPI_Isend} from one processor can be
   received with an \n{MPI_Recv} call on another processor.
-\item A message sent with \n{MPI_Send} from one processor can be
+\item True or false: a message sent with \n{MPI_Send} from one processor can be
   received with an \n{MPI_Irecv} on another processor.
 \item Why does the \n{MPI_Irecv} call not have an \n{MPI_Status} argument?
 \item Give a simple model for the time a send operation takes.

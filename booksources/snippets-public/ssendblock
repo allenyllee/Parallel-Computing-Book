@@ -1,3 +1,5 @@
+// ssendblock.c
+other = 1-mytid;
 sendbuf = (int*) malloc(sizeof(int));
 recvbuf = (int*) malloc(sizeof(int));
 size = 1;

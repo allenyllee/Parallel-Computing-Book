@@ -1,3 +1,4 @@
+// irecvloop.c
 MPI_Request requests = 
   (MPI_Request*) malloc( 2*ntids*sizeof(MPI_Request) );
 recv_buffers = (int*) malloc( ntids*sizeof(int) );

@@ -1,0 +1,26 @@
+if (mytid==ntids-1) {
+int *recv_buffer;
+MPI_Status *status;
+MPI_Request *request;
+recv_buffer = (int*) malloc((ntids-1)*sizeof(int));
+status = (MPI_Status*) malloc((ntids-1)*sizeof(MPI_Status));
+request = (MPI_Request*) malloc((ntids-1)*sizeof(MPI_Request));
+
+for (int p=0; p<ntids-1; p++) {
+  ierr = MPI_Irecv(recv_buffer+p,1,MPI_INT, p,0,comm,
+		      request+p); CHK(ierr);
+}
+for (int p=0; p<ntids-1; p++) {
+  int index,sender;
+  MPI_Waitany(ntids-1,request,&index,status);
+  sender = status[index].MPI_SOURCE;
+  printf("Message from %d=%d: %d\n",index,sender,recv_buffer[index]);
+}
+} else {
+float randomfraction = (rand() / (double)RAND_MAX);
+int randomwait = (int) ( ntids * randomfraction );
+printf("process %d waits for %e/%d=%d\n",
+	   mytid,randomfraction,ntids,randomwait);
+sleep(randomwait);
+ierr = MPI_Send(&randomwait,1,MPI_INT, ntids-1,0,comm); CHK(ierr);
+}

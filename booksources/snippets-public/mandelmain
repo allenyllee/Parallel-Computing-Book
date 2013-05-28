@@ -1,5 +1,6 @@
 if (mytid==ntids-1)  {
-  taskqueue->set_image( new Image(2*steps,2*steps,"mandelpicture") );
+  taskqueue->set_image( new Image(workcircle->pixels,workcircle->pixels,
+				    "mandelpicture") );
   for (;;) {
     struct coordinate xy;
     workcircle->next_coordinate(xy);

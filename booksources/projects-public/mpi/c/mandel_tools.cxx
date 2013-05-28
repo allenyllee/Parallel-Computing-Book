@@ -5,6 +5,12 @@
 #include "mandel.h"
 #include "unistd.h"
 
+/**
+   Read the commandline arguments for this program.
+   This uses the general commandline_argument routine;
+   the commandline is only inspected on processors zero,
+   all others get their values by broadcast.
+*/
 int parameters_from_commandline(int argc,char** argv,MPI_Comm comm,
 				int *rsteps,int *riters)
 {
@@ -23,14 +29,25 @@ int parameters_from_commandline(int argc,char** argv,MPI_Comm comm,
   return 0;
 }
 
-circle::circle(double stp,int bound) {
-  infty = bound;
-  ymin=-2.; ymax=+2.; step=stp; y = ymin;
+/**
+   Set the bounds on the x and y range for circle points:
+   y from -2 to 2, x bounds will be depending on y.
+*/
+circle::circle(int pxls,int bound,int bs) {
+  infty = bound; pixels = pxls;
+  blocksize = bs; block = new struct coordinate[bs];
+  writepointer = 0; readpointer = bs;
+  ymin=-2.; ymax=+2.; step=2./pixels; y = ymin;
   xmax = sqrt(4-y*y); xmin = -xmax; x = xmin;
+  make_coordinate_type(&coordinate_type);
 }
 
-/* Generate successive coordinates in the circle */
-void circle::next_coordinate(struct coordinate& xy) {
+/**
+   Generate successive coordinates in the circle.
+   This simulates a double loop on y and x:
+   for each y values, we evaluate those x that are in the circle.
+*/
+void circle::next_coordinate_internal(struct coordinate& xy) {
   if (x<xmax-step) {
     xy.x = x; xy.y = y; x += step;
   } else if (y<ymax-step) {
@@ -41,6 +58,34 @@ void circle::next_coordinate(struct coordinate& xy) {
     invalid_coordinate(xy); //.x = -5.; xy.y = -5;
   }
   return;
+}
+/** 
+    Generate blocks of coordinates. The main reason for 
+    introducing this level is so that in a block
+    all coordinates are valid or all are invalid.
+*/
+void circle::next_coordinate(struct coordinate& xy) {
+  while (writepointer<blocksize) {
+    struct coordinate xy;
+    next_coordinate_internal(xy);
+    if (!is_valid_coordinate(xy)) {
+      /* Once one invalid coorddinate has been generated, we
+	 fill the whole block with invalids */
+      printf("invalid\n");
+      for (int prev=0; prev<blocksize; prev++)
+	invalid_coordinate( block[prev] );
+      writepointer = blocksize;
+    } else
+      /* default case: add the coordinate to the block */
+      block[writepointer++] = xy;
+    /* if the block is full, set the read pointer at the beginning */
+    if (writepointer==blocksize)
+      readpointer = 0;
+  }
+  if (readpointer<blocksize)
+    xy = block[readpointer++];
+  if (readpointer==blocksize)
+    writepointer = 0;
 }
 
 int circle::is_valid_coordinate(struct coordinate xy) {
@@ -67,10 +112,6 @@ int belongs(struct coordinate xy,int itbound) {
   return 0;
 }
 
-void queue::set_image(Image *theimage) {
-  image = theimage;
-}
-
 void queue::wait_for_work(MPI_Comm comm,circle *workcircle) {
   MPI_Status status; int ntids;
   MPI_Comm_size(comm,&ntids);
@@ -80,7 +121,7 @@ void queue::wait_for_work(MPI_Comm comm,circle *workcircle) {
     struct coordinate xy;
     int res;
 
-    MPI_Recv(&xy,2,MPI_DOUBLE,ntids-1,0, comm,&status);
+    MPI_Recv(&xy,1,coordinate_type,ntids-1,0, comm,&status);
     stop = !workcircle->is_valid_coordinate(xy);
     if (stop) res = 0;
     else {
@@ -89,6 +130,57 @@ void queue::wait_for_work(MPI_Comm comm,circle *workcircle) {
     MPI_Send(&res,1,MPI_INT,ntids-1,0, comm);
   }
   return;
+}
+
+/** We complete the computation by sending an invalid coordinate
+    to all worker processes which causes them to stop.
+*/
+void queue::complete() { 
+  struct coordinate xy;
+
+  workcircle->invalid_coordinate(xy);
+  for (int p=0; p<ntids-1; p++)
+    MPI_Send(&xy,1,coordinate_type, p,0,comm);
+
+  t_stop = MPI_Wtime();
+  printf("Tasks %d in time %d\n",total_tasks,t_stop-t_start);
+  image->Write();
+  return; 
+};
+
+void make_coordinate_type(MPI_Datatype *ctype) {
+  MPI_Type_contiguous(2,MPI_DOUBLE,ctype);
+  MPI_Type_commit(ctype);
+  return;
+}
+
+/** The main computational loop
+ */
+void main_loop(MPI_Comm comm,circle *workcircle,queue *taskqueue) {
+  int ntids,mytid; 
+
+  MPI_Comm_size(comm,&ntids);
+  MPI_Comm_rank(comm,&mytid);
+
+  if (mytid==ntids-1)  {
+    taskqueue->set_image( new Image(workcircle->pixels,workcircle->pixels,
+				    "mandelpicture") );
+    for (;;) {
+      struct coordinate xy;
+      workcircle->next_coordinate(xy);
+      if (workcircle->is_valid_coordinate(xy))
+	taskqueue->addtask(xy);
+      else break;
+    }
+    taskqueue->complete();
+  } else
+    taskqueue->wait_for_work(comm,workcircle);
+}
+
+/** Image stuff
+ */
+void queue::set_image(Image *theimage) {
+  image = theimage;
 }
 
 void queue::coordinate_to_image(struct coordinate xy,int iteration) {

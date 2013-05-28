@@ -89,6 +89,6 @@ info ::
 	@echo "make total_clean : cleanup including executables & slog2"
 clean ::
 	/bin/rm -rf *.o *~ *.gch a.out *.mod *.dSYM MULTI__* events.* \
-	    idev[0-9]*.o[0-9]* ddt.o[0-9]* core.[0-9]* jobtest.o* tautrace_*
+	    idev[0-9]*.o[0-9]* ddt.o[0-9]* jobtest.o* tautrace_*
 total_clean : clean 
 	/bin/rm -rf ${APPS} *.slog2 *.ppm

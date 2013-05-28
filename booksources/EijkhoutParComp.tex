@@ -37,7 +37,7 @@
   \begin{procedure}[H]\leftskip=\unitindent\caption{#1(#2)}}
  {\end{procedure}}
 
-\newcommand\verbatimsnippet[1]{\verbatiminput{snippets-public/#1}}
+\def\verbatimsnippet#1{\verbatiminput{snippets-public/#1}}
 \newenvironment{question}{\begin{quotation}\textbf{Question.\ }}{\end{quotation}}
 
 \def\svnrev{428}
@@ -180,15 +180,15 @@
   \egroup
 }
 
-\newcommand\commandref[1]{\label{#1}
+\newcommand\commandref[1]{\label{sec:#1}
   \begin{quotation}
     \small\sl\noindent The reference for the commands introduced here
-    can be found in section~\ref{#1-ref}.
+    can be found in section~\ref{ref:#1}.
   \end{quotation}}
-\newcommand\commandreflabel[1]{\label{#1-ref}
+\newcommand\commandreflabel[1]{\label{ref:#1}
   \begin{quotation}
     \small\sl\noindent This reference section gives the syntax for
-    routines introduced in section~\ref{#1}.
+    routines introduced in section~\ref{sec:#1}.
   \end{quotation}}
 \newcommand\commandrefexercise[1]{\label{#1-exec}
   \begin{quotation}
@@ -234,6 +234,7 @@
 \setcounter{tocdepth}{2}
 }
 \CHAPTER{MPI}{mpi}
+\CHAPTER{Ruminations on parallelism}{patterns}
 \CHAPTER{Hybrid computing}{hybrid}
 \CHAPTER{Support libraries}{libraries}
 
@@ -258,14 +259,15 @@
 
 \TUTORIAL{Managing projects with Make}{make}
 \TUTORIAL{Debugging}{debug}
+\TUTORIAL{Tracing}{tau}
 
 %\Level 0 {Class projects}
 
 %\PROJECT{Cache simulation and analysis}{cache}
 
-\Level 0 {Codes}
-\label{app:codes}
-\input appendices-public/codes
+%% \Level 0 {Codes}
+%% \label{app:codes}
+%% \input appendices-public/codes
 
 \vfill\pagebreak
 

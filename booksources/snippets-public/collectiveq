@@ -1,3 +1,4 @@
+// mandel_collective.cxx
 class collectivequeue : public queue {
 public :
   collectivequeue(MPI_Comm queue_comm,circle *workcircle)
