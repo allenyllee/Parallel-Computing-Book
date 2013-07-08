@@ -28,13 +28,13 @@ public :
       the calling environment will stop the process once
       an invalid coordinate is encountered.
   */
-  void addtask(struct coordinate xy) {
-    MPI_Status status; int contribution;
+  int addtask(struct coordinate xy) {
+    MPI_Status status; int contribution, err;
 
-    MPI_Send(&xy,1,coordinate_type,
-	     free_processor,0,comm);
-    MPI_Recv(&contribution,1,MPI_INT,
-	     free_processor,0,comm, &status);
+    err = MPI_Send(&xy,1,coordinate_type,
+	     free_processor,0,comm); CHK(err);
+    err = MPI_Recv(&contribution,1,MPI_INT,
+	     free_processor,0,comm, &status); CHK(err);
 
     coordinate_to_image(xy,contribution);
     total_tasks++;
@@ -42,7 +42,7 @@ public :
     if (free_processor==ntids-1)
       // wrap around to the first again
       free_processor = 0;
-    return;
+    return 0;
   };
 };
 
@@ -52,6 +52,7 @@ int main(int argc,char **argv) {
 
   MPI_Init(&argc,&argv);
   comm = MPI_COMM_WORLD;
+  MPI_Comm_set_errhandler(comm,MPI_ERRORS_RETURN);
   MPI_Comm_size(comm,&ntids);
   MPI_Comm_rank(comm,&mytid);
 

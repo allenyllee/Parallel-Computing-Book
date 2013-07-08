@@ -760,7 +760,7 @@ The zero process does work before it can do the second fence call, but all other
 processes can call it immediately. However, they can not finish that second fence call
 until all one-sided communication is finished, which means they wait for the zero process.
 \begin{figure}[ht]
-  \includegraphics[scale=.4]{graphics-public/putblock}
+  \includegraphics[scale=.4]{graphics-public/lonestar-twonode-put}%putblock
   \caption{A trace of a one-sided communication epoch where process zero only originates
   a one-sided transfer}
   \label{fig:putblock}
@@ -823,9 +823,11 @@ MPI_Accumulate (
   and itself is perfectly legal.
 \end{exercise}
 
-Accumulate is a reduction with remote result. As with reduction, the 
-order is undefined. The same predefined operators are available, but no
-user-defined ones. One extra: \indexmpishow{MPI_REPLACE}.
+Accumulate is a reduction with remote result. As with \n{MPI_Reduce}, the 
+order in which the operands are accumulated is undefined. 
+The same predefined operators are available, but no
+user-defined ones. There is one extra operator: \indexmpishow{MPI_REPLACE},
+this has the effect that only the last result to arrive is retained.
 
 \Level 2 {Put vs Get}
 
@@ -852,6 +854,7 @@ while(!converged(A)){
 \end{verbatim}
 
 \Level 2 {More active target synchronization}
+\commandref{post-wait}
 
 There is a more fine-grained ways of doing 
 \indexterm{active target synchronization}. While fences
@@ -876,15 +879,19 @@ by a different process.
 If the current process is going to be issuing one-sided operations,
 you define an \indextermsub{access}{epoch} by:
 \begin{verbatim}
-MPI_Win_start()
+MPI_Win_start( /* group of target processes */ )
+// access operations
 MPI_Win_complete()
 \end{verbatim}
 This turns the current process into the origin of a number of
 one-sided access operations.
 
-The `post' and `start' routines open the window to a
+Both pairs of operations declare a
 \indextermbus{group of}{processors}; see section~\ref{sec:comm-group}
 for how to get such a group from a communicator.
+On an origin processor you would specify a group that includes the targets
+you will interact with, on a target processor you specify a group
+that includes the possible origins.
 
 \Level 2 {Passive target synchronization}
 

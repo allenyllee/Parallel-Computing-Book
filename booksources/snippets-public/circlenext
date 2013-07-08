@@ -23,7 +23,6 @@ void circle::next_coordinate(struct coordinate& xy) {
     if (!is_valid_coordinate(xy)) {
       /* Once one invalid coorddinate has been generated, we
 	 fill the whole block with invalids */
-      printf("invalid\n");
       for (int prev=0; prev<blocksize; prev++)
 	invalid_coordinate( block[prev] );
       writepointer = blocksize;

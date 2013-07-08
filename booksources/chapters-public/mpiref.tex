@@ -43,6 +43,26 @@ all processes.
 \Level 2 {MPI ranks and communicator sizes}
 \commandreflabel{rank-size}
 
+Every MPI process has its own local storage. So if you pretend that all these
+small arrays are really together one big array, you need to know where each 
+piece fits in the whole. For this you need to know at the very least
+how many processes there are and what the rank of a process is.
+
+The following example creates a distributed array that will contains
+the values of a function at equidistant points in the interval~$[0,1]$.
+The code implements this as follows:
+\begin{enumerate}
+\item each process has an array of 10 points,
+\item so the distributed array has a length of 10 times the number of processes;
+\item of this array, each process has 10 points, starting at 10 times
+  the process id.
+\item To fill in values in the local array, the process iterates only
+  over its local points,
+\item but it needs to calculate the global coordinate of those points.
+\end{enumerate}
+ 
+\verbatimsnippet{local}
+
 \Level 2 {Send and receive buffers}
 
 The data is specified as a number of elements in a buffer. The same
@@ -92,9 +112,15 @@ see section~\ref{sec:mpi-source}.
 The following code is guaranteed to block, since a \n{MPI_Recv}
 always blocks:
 \verbatimsnippet{recvblock}
-On the other hand, this code may not block for small messages:
+On the other hand, if we put the send call before the receive,
+code may not block for small messages
+that fall under the \indexterm{eager limit}. In this example we send
+gradually larger messages. From the screen output you can see what
+the largest message was that fell under the eager limit; after that the code
+hangs because of a deadlock.
 \verbatimsnippet{sendblock}
-If you want to force uniform behaviour use \n{MPI_Ssend}:
+If you want a code to behave the same for all message sizes,
+you force the send call to be blocking by using \n{MPI_Ssend}:
 \verbatimsnippet{ssendblock}
 
 \Level 2 {Receive status}
@@ -102,20 +128,21 @@ If you want to force uniform behaviour use \n{MPI_Ssend}:
 
 In section~\ref{sec:mpi-source} we mentioned the master-worker model
 as one opportunity for inspecting the \indexmpishow{MPI_SOURCE} field
-of the \indexmpishow{MPI_Status} object. Here we will show a slightly
-more complicated example, where only the result of the first task to
-complete is needed. Thus, we issue an \n{MPI_Recv}
-with \indexmpishow{MPI_ANY_SOURCE} as source.  When a result comes, we
-broadcast its source to all processes.  All the other workers then use
-this information to cancel their message with
-an \indexmpishow{MPI_Cancel} operation.
+of the \indexmpishow{MPI_Status} object. Here is a small example: 
+the tasks perform a variable amount of work (modeled here by a random wait)
+before sending a message to the master. The master waits for any source,
+and inspects the status field to report where the message comes from.
 
 \verbatimsnippet{anysource}
 
 \Level 1 {Deadlock-free blocking messages}
 \commandreflabel{send-recv}
 
-\indexmpi{MPI_Sendrecv}
+If messsages are send roughly in pairs, the 
+\indexmpishow{MPI_Sendrecv} call is an easy way to prevent deadlock.
+Here you specify both the target of a send and the source of a receive,
+which can be same in case of a pairwise exchange of data,
+but they need not be the same.
 \begin{verbatim}
 int MPI_Sendrecv(
   void *sendbuf, int sendcount, MPI_Datatype sendtype, 
@@ -125,6 +152,8 @@ int MPI_Sendrecv(
   MPI_Comm comm, MPI_Status *status)
 \end{verbatim}
 
+As an example we set up a ring of three processors: each process sends
+to its right neighbour, and receives from its left neighbour.
 \verbatimsnippet{sendrecvring}
 
 \Level 1 {Non-blocking communication}
@@ -188,7 +217,8 @@ MPI_WIN_CREATE (void *base, MPI_Aint size,
 The data array must not be \n{PARAMETER} of \n{static const}.
 
 Here is a single put operation. Note that the window create and window fence calls
-are collective, so they have to be performed on all processors.
+are collective, so they have to be performed on all processors
+of the communicator that was used in the create call.
 \verbatimsnippet{putblock}
 
 The \indexmpishow{MPI_Info} parameter can be used to pass implementation-dependent 
@@ -201,6 +231,31 @@ MPI_Win_create( ... info ... &win);
 MPI_Info_free(&info);
 \end{verbatim}
 It is always valid to use \indexmpishow{MPI_INFO_NULL}.
+
+\Level 2 {More active target synchronization}
+\commandreflabel{post-wait}
+
+You start and complete an \indextermsub{exposure}{epoch} with%
+\indexmpi{MPI_Win_post}\indexmpi{MPI_Win_wait}:
+\begin{verbatim}
+int MPI_Win_post(MPI_Group group, int assert, MPI_Win win)
+int MPI_Win_wait(MPI_Win win)
+\end{verbatim}
+In other words, this turns your window into the \indexterm{target} for a remote access.
+
+You start and complete an \indextermsub{access}{epoch} with%
+\indexmpi{MPI_Win_start}\indexmpi{MPI_Win_complete}:
+\begin{verbatim}
+int MPI_Win_start(MPI_Group group, int assert, MPI_Win win)
+int MPI_Win_complete(MPI_Win win)
+\end{verbatim}
+In other words, these calls border the access to a remote window, with the current processor
+being the \indexterm{origin} of the remote access.
+
+In the following snippet a single processor puts data on one
+other. Note that they both have their own definition of the group, and
+that the receiving process only does the post and wait calls.
+\verbatimsnippet{postwaittwo}
 
 \Level 1 {Collectives}
 \commandreflabel{collective}
@@ -238,6 +293,16 @@ In particular, the \n{MPI_Op} need not be called on these two
 processors.
 
 \Level 1 {Cancelling messages}
+
+In section~\ref{sec:mpi-source} we showed a master-worker example where the 
+master accepts in arbitrary order the messages from the workers.
+Here we will show a slightly
+more complicated example, where only the result of the first task to
+complete is needed. Thus, we issue an \n{MPI_Recv}
+with \indexmpishow{MPI_ANY_SOURCE} as source.  When a result comes, we
+broadcast its source to all processes.  All the other workers then use
+this information to cancel their message with
+an \indexmpishow{MPI_Cancel} operation.
 
 \verbatimsnippet{cancel}
 

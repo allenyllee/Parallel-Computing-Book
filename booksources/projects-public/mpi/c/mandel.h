@@ -53,7 +53,7 @@ public:
     area = 0.;
     t_start = MPI_Wtime();
   };
-  virtual void addtask(struct coordinate) = 0;
+  virtual int addtask(struct coordinate) = 0;
   void set_image(Image*);
   void complete();
   void coordinate_to_image(struct coordinate,int);

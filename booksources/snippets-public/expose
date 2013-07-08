@@ -1,0 +1,20 @@
+// postwaitwin.c
+origin = (mytid-1) % ntids;
+target = (mytid+1) % ntids;
+MPI_Comm_group(comm,&all_group);
+twotids[0] = origin; twotids[1] = mytid;
+MPI_Group_incl(all_group,2,twotids,&left_group);
+twotids[0] = mytid; twotids[1] = target;
+MPI_Group_incl(all_group,2,twotids,&right_group);
+
+// exposure
+MPI_Win_post(left_group,0,the_window);
+// access
+MPI_Win_start(right_group,0,the_window);
+
+MPI_Put( /* data on origin: */   &my_number, 1,MPI_INT,
+	     /* data on target: */   target,0,   1,MPI_INT,
+	     the_window);
+
+MPI_Win_wait(the_window);
+MPI_Win_complete(the_window);

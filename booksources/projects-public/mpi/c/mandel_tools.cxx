@@ -14,7 +14,7 @@
 int parameters_from_commandline(int argc,char** argv,MPI_Comm comm,
 				int *rsteps,int *riters)
 {
-  int mytid,ntids, steps,iters;
+  int mytid,ntids, steps,iters, err;
   MPI_Comm_rank(comm,&mytid);
   MPI_Comm_size(comm,&ntids);
   if (mytid==0) {
@@ -23,8 +23,8 @@ int parameters_from_commandline(int argc,char** argv,MPI_Comm comm,
     steps = commandline_argument(argc,argv,"steps",10);
     iters = commandline_argument(argc,argv,"iters",100000);
   }
-  MPI_Bcast(&steps,1,MPI_INT,0,comm);
-  MPI_Bcast(&iters,1,MPI_INT,0,comm);
+  err = MPI_Bcast(&steps,1,MPI_INT,0,comm); CHK(err);
+  err = MPI_Bcast(&iters,1,MPI_INT,0,comm); CHK(err);
   *rsteps = steps; *riters = iters;
   return 0;
 }
@@ -71,7 +71,6 @@ void circle::next_coordinate(struct coordinate& xy) {
     if (!is_valid_coordinate(xy)) {
       /* Once one invalid coorddinate has been generated, we
 	 fill the whole block with invalids */
-      printf("invalid\n");
       for (int prev=0; prev<blocksize; prev++)
 	invalid_coordinate( block[prev] );
       writepointer = blocksize;
