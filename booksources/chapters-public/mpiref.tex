@@ -212,7 +212,7 @@ Contrast this with the example in section~\ref{ref:mpi-source}.
 \begin{verbatim}
 MPI_WIN_CREATE (void *base, MPI_Aint size, 
   int disp_unit, MPI_Info info, 
-  MPI_Comm comm, MPI_Win *win, ierr)
+  MPI_Comm comm, MPI_Win *win)
 \end{verbatim}
 The data array must not be \n{PARAMETER} of \n{static const}.
 
@@ -231,6 +231,45 @@ MPI_Win_create( ... info ... &win);
 MPI_Info_free(&info);
 \end{verbatim}
 It is always valid to use \indexmpishow{MPI_INFO_NULL}.
+
+\Level 2 {Remote memory access}
+\commandreflabel{putget}
+
+\indexmpi{MPI_Put}
+\begin{verbatim}
+MPI_Put (
+  void *origin_addr, int origin_count, MPI_Datatype origin_datatype,
+  int target_rank,
+  MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype,
+  MPI_Win window)
+\end{verbatim}
+The \n{MPI_Get} call is very similar;\indexmpi{MPI_Get}
+
+\begin{verbatim}
+int MPI_Get(void *origin_addr, int origin_count, MPI_Datatype
+            origin_datatype, int target_rank, MPI_Aint target_disp,
+            int target_count, MPI_Datatype target_datatype, MPI_Win
+            win)
+\end{verbatim}
+
+A third one-sided routine
+is \n{MPI_Accumulate} which does a reduction operation on the results
+that are being put:\indexmpi{MPI_Accumulate}
+\begin{verbatim}
+MPI_Accumulate (
+  void *origin_addr, int origin_count, MPI_Datatype origin_datatype, 
+  int target_rank,
+  MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype,
+  MPI_Op op,MPI_Win window)
+\end{verbatim}
+
+\Level 2 {Active target synchronization}
+\commandreflabel{fence}
+
+\indexmpi{MPI_Win_fence}
+\begin{verbatim}
+MPI_Win_fence (int assert, MPI_Win win)
+\end{verbatim}
 
 \Level 2 {More active target synchronization}
 \commandreflabel{post-wait}
@@ -275,7 +314,10 @@ uses the value in the receive buffer as the root's contribution to the operation
 On the \n{Allreduce} call, \n{MPI_IN_PLACE} can be used for the send buffer of
 every process.
 
-The scan operations are
+\Level 2 {Scan}
+\commandreflabel{scan}
+
+The scan operations are\indexmpi{MPI_Scan}
 \begin{verbatim}
 int MPI_Scan(void* sendbuf, void* recvbuf, 
     int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm ) 
@@ -291,6 +333,11 @@ The result of the exclusive scan is undefined on processor~0,
 and on processor~1 it is a copy of the send value of processor~1.
 In particular, the \n{MPI_Op} need not be called on these two 
 processors.
+
+Scan operations are often useful in index calculations. Suppose that every processor
+has part of a long array, and it knows only how many element it has. The following bit
+computes the global index of its first element.\indexmpi{MPI_Exscan}
+\verbatimsnippet{myfirst}
 
 \Level 1 {Cancelling messages}
 

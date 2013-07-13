@@ -1,5 +1,5 @@
 // sendblock.c
-int other = 1-mytid;
+other = 1-mytid;
 /* loop over increasingly large messages */
 for (int size=1; size<2000000000; size*=10) {
   sendbuf = (int*) malloc(size*sizeof(int));

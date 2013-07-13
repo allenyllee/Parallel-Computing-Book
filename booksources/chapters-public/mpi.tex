@@ -722,13 +722,14 @@ processor can specify its own window size, including zero, and even the type of 
 elements in it.
 
 \Level 2 {Active target synchronization: epochs}
+\commandref{fence}
 
 There are two mechanisms for \indexterm{active target synchronization}, that is,
 one-sided communications where both sides are involved to the extent that they declare
 the communication epoch. In this section we look at the first mechanism,
 which is to use a \indexterm{fence} operation:\indexmpi{MPI_Win_fence}
 \begin{verbatim}
-MPI_Win_fence (int assert, MPI_Win win, ierr)
+MPI_Win_fence (int assert, MPI_Win win)
 \end{verbatim}
 This operation is collective on the communicator of the window.
 It is comparable to \n{MPI_Wait} calls for non-blocking communication.
@@ -792,6 +793,7 @@ Global assertions:
 \index{window|)}
 
 \Level 2 {Put, get, accumulate}
+\commandref{putget}
 
 Window areas are 
 accessible to other processes in the communicator by specifying the
@@ -1047,6 +1049,7 @@ MPI_Reduce(sendbuf,recvbuf,size,MPI_DOUBLE,MPI_MAX,0,comm);
 \end{verbatim}
 
 \Level 2 {Scan operations}
+\commandref{scan}
 
 The \indexmpishow{MPI_Scan} operation also performs a reduction, but it keeps 
 the partial results. That is, if processor~$i$ contains a number~$x_i$, 

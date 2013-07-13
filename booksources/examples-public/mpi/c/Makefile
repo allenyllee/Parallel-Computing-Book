@@ -1,8 +1,11 @@
 info ::
 	@echo "Do: make app (where app=${APPS})"
 
-APPS = init recvblock sendblock ssendblock sendrecv putfence anysource cancel \
-    mvp2d commdup_wrong commdup_right irecv_source postwaitwin_two postwaitwin_ring
+APPS = init recvblock sendblock ssendblock sendrecv putfence getfence \
+    anysource cancel \
+    mvp2d commdup_wrong commdup_right irecv_source postwaitwin_two postwaitwin_ring \
+    centraldiff
+
 listapps :
 	@echo ${APPS}
 

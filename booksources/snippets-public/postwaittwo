@@ -4,7 +4,7 @@ if (mytid==origin) {
   // access
   MPI_Win_start(two_group,0,the_window);
   MPI_Put( /* data on origin: */   &my_number, 1,MPI_INT,
-	       /* data on target: */   target,0,   1,MPI_INT,
+           /* data on target: */   target,0,   1,MPI_INT,
 	       the_window);
   MPI_Win_complete(the_window);
 }
