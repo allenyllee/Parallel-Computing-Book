@@ -4,15 +4,13 @@
 #include "mpi.h"
 
 int main(int argc,char **argv) {
-  int mytid, other, size, *recvbuf, *sendbuf;
-  MPI_Comm comm;
+  int other, size, *recvbuf, *sendbuf;
   MPI_Status status;
 
-  MPI_Init(&argc,&argv);
-  comm = MPI_COMM_WORLD;
+#include "globalinit.c"
 
-  MPI_Comm_rank(comm,&mytid);
   if (mytid>1) goto skip;
+  other = 1-mytid;
   sendbuf = (int*) malloc(sizeof(int));
   recvbuf = (int*) malloc(sizeof(int));
   size = 1;

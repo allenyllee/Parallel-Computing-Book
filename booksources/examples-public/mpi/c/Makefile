@@ -7,7 +7,10 @@ APPS = init recvblock sendblock ssendblock sendrecv putfence getfence \
     centraldiff
 
 listapps :
-	@echo ${APPS}
+	@for a in ${APPS} ; do \
+	  if [ -e $$a.c ] ; then echo $$a.c ; fi ; \
+	  if [ -e $$a.cxx ] ; then echo $$a.cxx ; fi ; \
+	done | awk 'BEGIN { v="" } {v = v " " $$0} END {print v}'
 
 ifdef TACC_TAU_DIR
   CC = tau_cc.sh

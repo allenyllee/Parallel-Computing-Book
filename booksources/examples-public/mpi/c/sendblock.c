@@ -3,16 +3,24 @@
 #include <string.h>
 #include "mpi.h"
 
+/** This program shows deadlocking behaviour
+    when two processes exchange data with blocking
+    send and receive calls.
+    Under a certain limit MPI_Send may actually not be
+    blocking; we loop, increasing the message size,
+    to find roughly the crossover point.
+*/
 int main(int argc,char **argv) {
-  int mytid, other, *recvbuf, *sendbuf;
-  MPI_Comm comm;
+  int  *recvbuf, *sendbuf;
   MPI_Status status;
 
-  MPI_Init(&argc,&argv);
-  comm = MPI_COMM_WORLD;
+#include "globalinit.c"
 
-  MPI_Comm_rank(comm,&mytid);
+  /* we only use processors 0 and 1 */
+  int other;
   if (mytid>1) goto skip;
+  other = 1-mytid;
+  /* loop over increasingly large messages */
   for (int size=1; size<2000000000; size*=10) {
     sendbuf = (int*) malloc(size*sizeof(int));
     recvbuf = (int*) malloc(size*sizeof(int));
@@ -21,6 +29,10 @@ int main(int argc,char **argv) {
     }
     MPI_Send(sendbuf,size,MPI_INT,other,0,comm);
     MPI_Recv(recvbuf,size,MPI_INT,other,0,comm,&status);
+    /* If control reaches this point, the send call
+       did not block. If the send call blocks,
+       we do not reach this point, and the program will hang.
+    */
     if (mytid==0)
       printf("Send did not block for size %d\n",size);
     free(sendbuf); free(recvbuf);

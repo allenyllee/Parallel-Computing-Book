@@ -4,11 +4,9 @@
 #include "mpi.h"
 
 int main(int argc,char **argv) {
-  int mytid, input_argument;
-  MPI_Comm comm;
+  int input_argument;
 
-  MPI_Init(&argc,&argv);
-  comm = MPI_COMM_WORLD;
+#include "globalinit.c"
 
   MPI_Comm_rank(comm,&mytid);
   if (mytid==0) {
