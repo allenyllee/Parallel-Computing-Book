@@ -1,5 +1,0 @@
-// mvp2d.cxx
-row_number = ntids % ntids_i;
-col_number = ntids / ntids_j;
-MPI_Comm_split(global_comm,row_number,mytid,&row_comm);
-MPI_Comm_split(global_comm,col_number,mytid,&col_comm);
