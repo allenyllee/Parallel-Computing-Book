@@ -1,0 +1,52 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include "mpi.h"
+
+int main(int argc,char **argv) {
+  int mytid,ntids, ierr;
+  MPI_Comm comm;
+
+  MPI_Init(&argc,&argv);
+  comm = MPI_COMM_WORLD;
+  MPI_Comm_rank(comm,&mytid);
+  MPI_Comm_size(comm,&ntids);
+
+  MPI_Comm_set_errhandler(comm,MPI_ERRORS_RETURN);
+#define CHK(x) if (x) {						 \
+    char errtxt[200]; int len=200;				 \
+  MPI_Error_string(x,errtxt,&len);				 \
+  printf("p=%d, line=%d, err=%d, %s\n",mytid,__LINE__,x,errtxt); \
+  return x;}
+
+  // Initialize the random number generator
+  srand((int)(mytid*(double)RAND_MAX/ntids));
+
+  if (mytid==ntids-1) {
+    int *recv_buffer;
+    MPI_Request *request;
+    recv_buffer = (int*) malloc((ntids-1)*sizeof(int));
+    request = (MPI_Request*) malloc((ntids-1)*sizeof(MPI_Request));
+
+    for (int p=0; p<ntids-1; p++) {
+      ierr = MPI_Irecv(recv_buffer+p,1,MPI_INT, p,0,comm,
+		      request+p); CHK(ierr);
+    }
+    for (int p=0; p<ntids-1; p++) {
+      int index,sender;
+      MPI_Waitany(ntids-1,request,&index,MPI_STATUS_IGNORE);
+      printf("Message from %d: %d\n",index,recv_buffer[index]);
+    }
+  } else {
+    float randomfraction = (rand() / (double)RAND_MAX);
+    int randomwait = (int) ( ntids * randomfraction );
+    printf("process %d waits for %e/%d=%d\n",
+	   mytid,randomfraction,ntids,randomwait);
+    sleep(randomwait);
+    ierr = MPI_Send(&randomwait,1,MPI_INT, ntids-1,0,comm); CHK(ierr);
+  }
+
+  MPI_Finalize();
+  return 0;
+}

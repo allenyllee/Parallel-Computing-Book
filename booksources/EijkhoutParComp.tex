@@ -37,7 +37,7 @@
   \begin{procedure}[H]\leftskip=\unitindent\caption{#1(#2)}}
  {\end{procedure}}
 
-\def\verbatimsnippet#1{\verbatiminput{snippets-public/#1}}
+\def\verbatimsnippet#1{\verbatiminput{snippets/#1}}
 \newenvironment{question}{\begin{quotation}\textbf{Question.\ }}{\end{quotation}}
 
 \def\svnrev{428}
@@ -79,9 +79,9 @@
 \newcommand\CHAPTER[2]{
 \Level 0 {#1}\label{ch:#2}
 \def\chapshortname{#2}
-{\SetBaseLevel 1 \input chapters-public/#2
+{\SetBaseLevel 1 \input chapters/#2
 \write\chapterlist{\chapshortname}
-\openout\nx=exercises-public/\chapshortname-nx.tex
+\openout\nx=exercises/\chapshortname-nx.tex
 \write\nx{\arabic{excounter}}
 \closeout\nx
 \SetBaseLevel 0
@@ -91,9 +91,9 @@
 \newcommand\TUTORIAL[2]{
 \vfill\pagebreak \Level 1 {#1}\label{tut:#2}
 \def\chapshortname{#2}\setcounter{excounter}0\relax
-{\SetBaseLevel 2 \input tutorials-public/#2
+{\SetBaseLevel 2 \input tutorials/#2
 \write\chapterlist{\chapshortname}
-\openout\nx=exercises-public/\chapshortname-nx.tex
+\openout\nx=exercises/\chapshortname-nx.tex
 \write\nx{\arabic{excounter}}
 \closeout\nx
 \SetBaseLevel 0
@@ -103,9 +103,9 @@
 \ifprojects \vfill\pagebreak \else \projectstrue \fi
 \Level 1 {#1}\label{prj:#2}
 \def\chapshortname{#2}
-{\SetBaseLevel 2 \input projects-public/#2
+{\SetBaseLevel 2 \input projects/#2
 \write\chapterlist{\chapshortname}
-\openout\nx=exercises-public/\chapshortname-nx.tex
+\openout\nx=exercises/\chapshortname-nx.tex
 \write\nx{\arabic{excounter}}
 \closeout\nx
 \SetBaseLevel 0
@@ -115,9 +115,9 @@
   \def\chapshortname{#3}
   {\SetBaseLevel 2 {\index{#2|(}}
    \setcounter{excounter}0
-   \input appendices-public/#3 {\index{#2|)}}
+   \input appendices/#3 {\index{#2|)}}
    \write\chapterlist{\chapshortname}
-   \openout\nx=exercises-public/\chapshortname-nx.tex
+   \openout\nx=exercises/\chapshortname-nx.tex
    \write\nx{\arabic{excounter}}
    \closeout\nx
    \SetBaseLevel 0
@@ -127,9 +127,9 @@
   \def\chapshortname{#3}
   {\SetBaseLevel 2 {\indexacstart{#2}}
    \setcounter{excounter}0
-   \input appendices-public/#3 {\indexacend{#2}}
+   \input appendices/#3 {\indexacend{#2}}
    \write\chapterlist{\chapshortname}
-   \openout\nx=exercises-public/\chapshortname-nx.tex
+   \openout\nx=exercises/\chapshortname-nx.tex
    \write\nx{\arabic{excounter}}
    \closeout\nx
    \SetBaseLevel 0
@@ -159,7 +159,7 @@
 \OutlineLevelStart4{\paragraph{\bf #1}}
 
 \input scimacs
-\input exmacs-public
+\input exmacs
 \input tutmacs
 
 { \catcode`\_=13
@@ -248,14 +248,14 @@
 
 %\Level 0 {Theoretical background}
 
-%\input appendices-public/blurb
+%\input appendices/blurb
 
 %\APPENDIX{Linear algebra}{linear algebra}{norms}
 
 \Level 0 {Practical tutorials}
 \label{app:practical}
 
-\input tutorials-public/blurb
+\input tutorials/blurb
 
 \TUTORIAL{Managing projects with Make}{make}
 \TUTORIAL{Debugging}{debug}
@@ -267,11 +267,11 @@
 
 %% \Level 0 {Codes}
 %% \label{app:codes}
-%% \input appendices-public/codes
+%% \input appendices/codes
 
 \vfill\pagebreak
 
-\bibliography{parcompbook}
+\bibliography{vle}
 \bibliographystyle{plain}
 \vfill\pagebreak
 

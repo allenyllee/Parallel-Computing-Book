@@ -1,0 +1,21 @@
+\begin{thebibliography}{1}
+
+\bibitem{Chan2007Collective}
+Ernie Chan, Marcel Heimlich, Avi Purkayastha, and Robert van~de Geijn.
+\newblock Collective communication: theory, practice, and experience.
+\newblock {\em Concurrency and Computation: Practice and Experience},
+  19:1749--1783, 2007.
+
+\bibitem{Gropp:UsingMPI1}
+W.~Gropp, E.~Lusk, and A.~Skjellum.
+\newblock {\em Using {MPI}}.
+\newblock {T}he {MIT} {P}ress, 1994.
+
+\bibitem{OReilly-GnuMake}
+Robert Mecklenburg.
+\newblock {\em Managing Projects with {GNU} {Make}}.
+\newblock O'Reilly Media, 3rd edition edition, 2004.
+\newblock Print ISBN:978-0-596-00610-5 ISBN 10:0-596-00610-1 Ebook
+  ISBN:978-0-596-10445-0 ISBN 10:0-596-10445-6.
+
+\end{thebibliography}

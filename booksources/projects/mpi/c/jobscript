@@ -1,0 +1,15 @@
+#!/bin/bash
+
+#$   -q development
+#$   -V
+#$   -cwd
+#$   -pe 12way 24
+#$   -l h_rt=0:01:00
+#$   -N jobtest
+#$   -j y
+#$   -o $JOB_NAME.oe$JOB_ID
+#$ -A A-ccsc
+
+env | grep TAU
+ibrun $EXECUTABLE $OPTIONS
+

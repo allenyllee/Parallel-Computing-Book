@@ -1,0 +1,6 @@
+// centraldiff.cxx
+int my_first=0;
+err = MPI_Allreduce(&localsize,&globalsize,
+            1,MPI_INT,MPI_SUM,comm); CHK(err);
+err = MPI_Exscan(&localsize,&my_first,
+            1,MPI_INT,MPI_SUM,comm); CHK(err);
