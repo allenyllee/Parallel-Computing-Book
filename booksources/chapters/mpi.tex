@@ -941,6 +941,43 @@ MPI_Alloc_mem() and MPI_Free_mem()
 These calls reduce to \n{malloc} and \n{free} if there is no special
 memory area; SGI is an example where such memory does exist.
 
+\Level 2 {Implementation}
+\index{communication!one-sided, implementation of|(}
+
+You may wonder how one-sided communication is realized\footnote{For
+  more on this subject, see~\cite{thakur:ijhpca-sync}.}. Can a processor
+somehow get at another processor's data? Unfortunately, no.
+
+Active target synchronization is implemented in terms of two-sided communication.
+Imagine that the first fence operation does nothing, unless it concludes prior
+one-sided operations. The Put and Get calls do nothing involving communication,
+except for marking with what processors they exchange data.
+The concluding fence is where everything happens: first a global operation
+determines which targets need to issue send or receive calls, then the
+actual sends and receive are executed.
+
+\begin{exercise}
+  Assume that only Get operations are performed during an epoch. 
+  Sketch how these are translated to send/receive pairs. 
+  The problem here is how the senders find out that they need to send.
+  Show that you can solve this with an \indexmpishow{MPI_Scatter_reduce} call.
+\end{exercise}
+
+The previous paragraph noted that a collective operation was necessary
+to determine the two-sided traffic. Since collective operations induce
+some amount of synchronization, you may want to limit this.
+
+\begin{exercise}
+  Argue that the mechanism with window post/wait/start/complete operations
+  still needs a collective, but that this is less burdensome.
+\end{exercise}
+
+Passive target synchronization needs another mechanism entirely.  Here
+the target process needs to have a background task (process, thread,
+daemon,\ldots) running that listens for requests to lock the
+window. This can potentially be expensive.
+
+\index{communication!one-sided, implementation of|)}
 \index{communication!one-sided|)}
 
 \Level 0 {Collectives}

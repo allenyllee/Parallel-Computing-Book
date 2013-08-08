@@ -18,4 +18,11 @@ Robert Mecklenburg.
 \newblock Print ISBN:978-0-596-00610-5 ISBN 10:0-596-00610-1 Ebook
   ISBN:978-0-596-10445-0 ISBN 10:0-596-10445-6.
 
+\bibitem{thakur:ijhpca-sync}
+R.~Thakur, W.~Gropp, and B.~Toonen.
+\newblock Optimizing the synchronization operations in {MPI} one-sided
+  communication.
+\newblock {\em Int'l Journal of High Performance Computing Applications},
+  19:119--128, 2005.
+
 \end{thebibliography}
