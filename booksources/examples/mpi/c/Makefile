@@ -1,10 +1,22 @@
+################################################################
+################################################################
+####
+#### This makefile is part of the source of 
+#### "Parallel Computing"
+#### by Victor Eijkhout, copyright 2013
+####
+################################################################
+################################################################
+
 info ::
 	@echo "Do: make app (where app=${APPS})"
 
 APPS = init recvblock sendblock ssendblock sendrecv putfence getfence \
-    anysource cancel \
-    mvp2d commdup_wrong commdup_right irecv_source postwaitwin_two \
-    centraldiff
+    anysource cancel exscan \
+    mvp2d commdup_wrong commdup_right irecv_source postwaitwin passive \
+    centraldiff reduce reduceinplace allreduce allreduceinplace gather gatherv \
+    vector \
+    pingpong
 
 listapps :
 	@echo ${APPS}
@@ -24,7 +36,7 @@ else
 endif
 
 DEBUG=OPT
-OPT_flag = -O2
+OPT_flag = -O2 -g
 DEBUG_flag = -g
 #TACC_BLIS_INC = ${HOME}/Installation/Blis/installation/include
 #TACC_BLIS_LIB = ${HOME}/Installation/Blis/installation/lib
@@ -92,11 +104,25 @@ tau :
 	  tau_treemerge.pl ; \
 	  tau2slog2 tau.trc tau.edf -o $$HOME/taulog$$TAU_EXT.slog2
 
+info ::
+	@echo "make regression : do regression test on all apps"
+init_args = 5
+noap = `make listapps`
 regression : total_clean
-	@for app in `make listapps` ; do \
-	  make $$app ; \
+	@for app in init ; do \
+	  make $$app >/dev/null 2>&1 ; \
+	  if [ ! -e $$app ] ; then \
+	    echo "Application <<$$app>> failed to build" ; \
+	  fi ; \
 	done
-
+aprun :
+	  else \
+	    eval appargs=\"\\\$${$${app}_args}\" ; \
+	    echo $$appargs ; \
+	    if [ ! -z "$$appargs" ] ; then \
+	      eval mpirun -np 4 $$app $$appargs ; \
+	    fi ; \
+	foo
 noregression :
 	-@export haserror=0 ; \
 	for p in ${APPS} ; do \

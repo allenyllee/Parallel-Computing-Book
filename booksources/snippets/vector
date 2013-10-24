@@ -1,0 +1,17 @@
+// vector.c
+source = (double*) malloc(stride*length*sizeof(double));
+target = (double*) malloc(length*sizeof(double));
+MPI_Datatype newvectortype;
+MPI_Type_vector(length,block,stride,MPI_DOUBLE,&newvectortype);
+MPI_Type_commit(&newvectortype);
+if (mytid==sender) {
+  MPI_Send(source,1,newvectortype,the_other,0,comm);
+} else if (mytid==receiver) {
+  MPI_Status recv_status;
+  int count;
+  MPI_Recv(target,length,MPI_DOUBLE,the_other,0,comm,
+    &recv_status);
+  MPI_Get_count(&recv_status,MPI_DOUBLE,&count);
+  ASSERT(count==length);
+}
+MPI_Type_free(&newvectortype);

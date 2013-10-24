@@ -1,5 +1,15 @@
 % -*- latex -*-
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Parallel Computing'
+%%%% by Victor Eijkhout, copyright 2012/3
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 In this chapter you will learn the use of the main tool for 
 distributed memory programming: the \acf{MPI} library.
 The \ac{MPI} library has about 250 routines, many of which you may
@@ -797,7 +807,7 @@ Global assertions:
 
 Window areas are 
 accessible to other processes in the communicator by specifying the
-process rank and an offset from the base of the window.
+process rank and an offset from the base of the window.\indexmpi{MPI_Put}
 \begin{verbatim}
 MPI_Put (
   void *origin_addr, int origin_count, MPI_Datatype origin_datatype,
@@ -805,8 +815,8 @@ MPI_Put (
   MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype,
   MPI_Win window)
 \end{verbatim}
-The \n{MPI_Get} call is very similar; a third one-sided routine
-is \n{MPI_Accumulate} which does a reduction operation on the results
+The \indexmpishow{MPI_Get} call is very similar; a third one-sided routine
+is \indexmpishow{MPI_Accumulate} which does a reduction operation on the results
 that are being put:
 \begin{verbatim}
 MPI_Accumulate (
@@ -896,15 +906,13 @@ you will interact with, on a target processor you specify a group
 that includes the possible origins.
 
 \Level 2 {Passive target synchronization}
+\commandref{passive-sync}
 
 In \indexterm{passive target synchronization} only the origin is
 actively involved: the target makes no calls whatsoever.
 This means that the origin process remotely locks the window
 on the target.
-\begin{verbatim}
-MPI_Win_lock (int locktype, int rank, int assert, MPI_Win win)
-MPI_Win_unlock (int rank, MPI_Win win)
-\end{verbatim}
+
 During an access epoch, a process can initiate and finish a one-sided
 transfer.
 \begin{verbatim}
@@ -981,8 +989,8 @@ window. This can potentially be expensive.
 \index{communication!one-sided|)}
 
 \Level 0 {Collectives}
+\label{sec:collective}
 \index{collectives|(}
-\commandref{collective}
 
 Collectives are operations that involve all processes in a
 communicator. The simplest example is a broadcast: one processor has
@@ -1016,7 +1024,8 @@ call this routine; not to do so is an error that will probably
 manifest itself in `hanging' code. One such example is
 \n{MPI_Win_fence}.
 
-\Level 1 {Broadcast, reduce, scan}
+\Level 1 {Rooted collectives: broadcast, reduce}
+\commandref{bcast}
 \label{sec:bcast}
 
 The simplest collective is the broadcast, where one process has some
@@ -1068,24 +1077,22 @@ indicate how the data is to be combined. Popular choices are
 location of the maximum value exist. You can also define your own
 operators; section~\ref{mpi:op-create}.
 
-On processes that are not the root, the receive buffer is ignored. On the root, 
-you have two buffers, but by specifying \indexmpishow{MPI_IN_PLACE}, the reduction call
-uses the value in the receive buffer as the root's contribution to the operation.
-On the \n{Allreduce} call, \n{MPI_IN_PLACE} can be used for the send buffer of
-every process.
-
+One of the more common applications of the reduction operation
+is the \indexterm{inner product} computation. Typically, you have two vectors $x,y$
+that have the same distribution, that is,
+where all processes store equal parts of $x$ and~$y$.
+The computation is then
 \begin{verbatim}
-void *buffer = malloc(size*sizeof(double));
-// write data into the buffer
-if (mytid==0) {
-  sendbuf = MPI_IN_PLACE; recvbuf = buffer;
-} else {
-  sendbuf = buffer;       recvbuf = NULL;
-}
-MPI_Reduce(sendbuf,recvbuf,size,MPI_DOUBLE,MPI_MAX,0,comm);
+local_inprod = 0;
+for (i=0; i<localsize; i++)
+  local_inprod += x[i]*y[i];
+MPI_Reduce( &local_inprod, &global_inprod, 1,MPI_DOUBLE ... ) 
 \end{verbatim}
+If all processors need the result, you could then do a broadcast,
+but it is more efficient to use \indexmpishow{MPI_Allreduce}; 
+see section~\ref{sec:allreduce}.
 
-\Level 2 {Scan operations}
+\Level 1 {Scan operations}
 \commandref{scan}
 
 The \indexmpishow{MPI_Scan} operation also performs a reduction, but it keeps 
@@ -1095,15 +1102,21 @@ then the scan operation leaves $x_0\oplus\cdot\oplus x_i$ on processor~$i$.
 \begin{verbatim}
 MPI_Scan( send data, recv data, operator, communicator);
 \end{verbatim}
-This is an inclusive scan operation. The exclusive definition, which computes
-$x_0\oplus\cdot\oplus x_{i-1}$ on processor~$i$, can easily be derived
-from the inclusive operation for operations such as \n{MPI_PLUS} or \n{MPI_MULT}.
-This is not the case for \n{MPI_MIN} or \n{MPI_MAX}, so there is an
-exclusive routine
+This is an \indextermsub{inclusive}{scan} operation. 
+
+Often, the more useful variant is the \indextermsub{exclusive}{scan}
+\indexmpishow{MPI_Exscan}
 \begin{verbatim}
 MPI_Exscan( send data, recv data, operator, communicator);
 \end{verbatim}
 with the same prototype. 
+
+\begin{exercise}
+  The exclusive definition, which computes
+  $x_0\oplus\cdot\oplus x_{i-1}$ on processor~$i$, can easily be derived
+  from the inclusive operation for operations such as \n{MPI_PLUS} or \n{MPI_MULT}.
+  Are there operators where that is not the case?
+\end{exercise}
 
 The \n{MPI_Scan} operation is often useful with indexing data. Suppose that
 every processor~$p$ has a local vector where the number of elements~$n_p$ is dynamically 
@@ -1144,9 +1157,10 @@ with \indexmpishow{MPI_Op_create}.
 \label{mpi:op-create}
 
 \Level 1 {Gather and scatter}
+\commandref{gatherscatter}
 
-In gather and scatter, the root collects information from, or conversely spreads it to,
-all other processes. The difference with reduce and broadcast is that it involves
+In the \indexmpishow{MPI_Scatter} operation, the root spreads information to
+all other processes. The difference with a broadcast is that it involves
 individual information from/to every process. Thus, the gather operation typically 
 has an array of items, one coming from each sending process, and scatter has an array,
 \begin{figure}[ht]
@@ -1165,18 +1179,63 @@ but the \n{outcount} is not the length of the buffer: it is the number
 of elements to send to each process.
 On the receiving processes other than the root the outbuffer arguments are irrelevant.
 
-\Level 1 {Variable gather and scatter}
+\Level 1 {Variable-size-input collectives}
+\commandref{v-collective}
 
 In the gather and scatter call above each processor received or sent
 an identical number of items. In many cases this is appropriate, but
 sometimes each processor wants or contributes an individual number of
-items.
+items. 
 
-Looking again at the scatter, nothing changes in the receive buffer,
-but now the send buffer on the root is more complicated. It now consists of:
+Let's take the gather calls as an example. Assume that each processor 
+does a local computation that produces a number of data elements,
+and this number is different for each processor (or at least not
+the same for all). In the regular \n{MPI_Gather} call the root processor
+had a buffer of size~$nP$, where $n$~is the number of elements produced
+on each processor, and $P$~the number of processors. The contribution
+from processor~$p$ would go into locations $pn,\ldots,(p+1)n-1$.
+
+For the variable case, we first need to compute the total required
+buffer size. This can be done through a simple \indexmpishow{MPI_Reduce}
+with \indexmpishow{MPI_SUM} as reduction operator:
+the buffer size is $\sum_p n_p$ where $n_p$~is the number of elements
+on processor~$p$. But you can also postpone
+this calculation for a minute. 
+
+The next question is where the contributions of the processor will
+go into this buffer. For the contribution from processor~$p$
+that is $\sum_{q<p}n_p,\ldots\sum_{q\leq p}n_p-1$. To compute this,
+the root processor needs to have all the $n_p$ numbers, and it can collect
+them with an \indexmpishow{MPI_Gather} call.
+
+We now have all the ingredients.
+All the processors specify a send buffer just as with \n{MPI_Gather}.
+However, the receive buffer specification on the root is more complicated. 
+It now consists of:
 \begin{verbatim}
 outbuffer, array-of-outcounts, array-of-displacements, outtype
 \end{verbatim}
+and you have just seen how to construct that information.
+
+\Level 1 {`All'-type collectives}
+\commandref{allreduce}
+
+In many applications the result of a collective is needed on all processes.
+For instance, if $x,y$ are distributed vector objects, and you want to compute
+\[ y- (x^ty)x \]
+you need the inner product value on all processors. You could do this
+by writing a reduction followed by a broadcast, but more efficient
+algorithms exist.  Surprisingly, an `all-gather' operation takes as
+long as a rooted gather (see~\HPSCref{sec:collective} for details).
+
+Thus, MPI has the following operations:
+\begin{itemize}
+\item \indexmpishow{MPI_Allreduce} is equivalent to a \indexmpishow{MPI_Reduce} followed by a broadcast.
+\item \indexmpishow{MPI_Allgather} is equivalent to a \indexmpishow{MPI_Gather} followed by a broadcast.
+\item \indexmpishow{MPI_Allgatherv} is equivalent to an \indexmpishow{MPI_Gatherv} followed by a broadcast.
+\item \indexmpishow{MPI_Alltoall}, \indexmpishow{MPI_Alltoallv}.
+\end{itemize}
+The `v' variants are discussed in section~\ref{sec:v-collective}.
 
 \Level 1 {Non-blocking collectives}
 \label{sec:mpi3collect}
@@ -1273,50 +1332,91 @@ However, it is equally possible to have this execution:
 \index{collectives|)}
 
 \Level 0 {Data types}
+\index{MPI!data types|(}
 
 In many cases the data you send is a single element or an array of some 
 elementary type such as byte, int, or real. You pass the data by specifying
 the start address and the number of data elements.
 
-Since MPI is a library, and not a language, there is a possibility of 
-confusion here: you first declare your variable or array as, say, \n{double},
-and subsequently declare it to be \n{MPI_DOUBLE}. First of all, you
-can make errors, and the compiler will most likely not catch these.
-Secondly, the definition of datatypes is complicated; for instance there
-are 32-bit and 64-bit integers. How can you keep your code both 
-correct and portable then?
+\begin{comment}
+  Since MPI is a library, and not a language, there is a possibility of 
+  confusion here: you first declare your variable or array as, say, \n{double},
+  and subsequently declare it to be \n{MPI_DOUBLE}. First of all, you
+  can make errors, and the compiler will most likely not catch these.
+  Secondly, the definition of datatypes is complicated; for instance there
+  are 32-bit and 64-bit integers. How can you keep your code both 
+  correct and portable then?
+\end{comment}
 
 \Level 1 {Elementary data types}
+\commandref{elementary}
 
-C/C++:
-\begin{tabular}{ll}
-\n{MPI_CHAR}&only for text data, do not use for small integers\\
-\n{MPI_UNSIGNED_CHAR}\\
-\n{MPI_SIGNED_CHAR}\\
-\n{MPI_SHORT}\\
-\n{MPI_UNSIGNED_SHORT}\\
-\n{MPI_INT}\\
-\n{MPI_UNSIGNED}\\
-\n{MPI_LONG}\\
-\n{MPI_UNSIGNED_LONG}\\
-\n{MPI_FLOAT}\\
-\n{MPI_DOUBLE}\\
-\n{MPI_LONG_DOUBLE}
-\end{tabular}
-There is some, but not complete, support for \indexterm{C99} types.
-
-Fortran:
-\begin{tabular}{ll}
-\n{MPI_CHARACTER}&Character(Len=1)\\
-\n{MPI_LOGICAL}\\
-\n{MPI_INTEGER}\\
-\n{MPI_REAL}\\
-\n{MPI_DOUBLE_PRECISION}\\
-\n{MPI_COMPLEX}\\
-\n{MPI_DOUBLE_COMPLEX}&Complex(Kind=Kind(0.d0))\\
-\end{tabular}
+MPI has a number of elementary data types, corresponding to the 
+simple data types of programming languages.
+The names are made to resemble the types of C and~Fortran, 
+for instance \n{MPI_FLOAT} and \n{MPI_DOUBLE} versus
+\n{MPI_REAL} and \n{MPI_DOUBLE_PRECISION}.
 
 \Level 1 {Derived datatypes}
+\commandref{derived-types}
+
+MPI allows you to create your own data types, somewhat analogous to defining
+structures in a programming language. MPI data types are mostly of use
+if you want to send multiple items in one message.
+
+There are two problems with using only elementary datatypes
+as you have seen so far.
+\begin{itemize}
+\item MPI communication routines can only send multiples of a
+  single data type: it is not possible to send items of different
+  types, even if they are contiguous in memory. (It would be possible
+  to use the \n{MPI_BYTE} data type, but this is not advisable.)
+\item It is also ordinarily not possible to send items of one type if they are
+  not contiguous in memory. (You could send a contiguous memory area
+  that contains the items you want to send, but that is wasteful of
+  bandwidth.)
+\end{itemize}
+With MPI data types you can solve these problems in several ways.
+\begin{itemize}
+\item You can create a new \indextermbus{contiguous}{data type}
+  consisting of an array of elements of another data type. There is no
+  essential difference between sending one element of such a type
+  and multiple elements of the
+  component type.
+\item You can create a \indextermbus{vector}{data type} consisting of
+  regularly spaced blocks of elements of a component type. This is a first
+  solution to the problem of sending non-contiguous data.
+\item For not regularly spaced data, there is the
+  \indextermbus{indexed}{data type}, where you specify an array of
+  index locations for blocks of elements of a component type.
+  The blocks can each be of a different size.
+\item The \indextermbus{struct}{data type} can accomodate multiple
+  data types.
+\end{itemize}
+And you can combine these mechanisms to get irregularly spaced
+heterogeneous data, et cetera.
+
+\Level 1 {Basic calls}
+
+New MPI data types are created by
+\begin{itemize}
+\item \indexmpishow{MPI_Type_contiguous}
+\item \indexmpishow{MPI_Type_vector}
+\item \indexmpishow{MPI_Type_struct}
+\end{itemize}
+It is necessary to call \indexmpishow{MPI_Type_commit} which makes MPI
+do the indexing calculations for the data type.  When you no longer
+need the data type, you call \indexmpishow{MPI_Type_free}.
+
+\Level 1 {Contiguous type}
+
+\Level 1 {Vector type}
+
+\Level 1 {Indexed type}
+
+\Level 1 {Struct type}
+
+\index{MPI!data types|)}
 
 \Level 0 {Communicators}
 \label{sec:communicators}
@@ -1708,11 +1808,52 @@ containing the new process(es) is not part of the
 old \n{MPI_COMM_WORLD}, so it is better to set up your code as a
 collection of inter-communicators to begin with.
 
-\Level 1 {Profiling}
-\label{sec:profile}
+\Level 1 {Timing}
+\commandref{timing}
 
-\indexmpishow{MPI_Wtime} gives \indexterm{wall clock time} from
-unspecified starting point.
+Timing of parallel programs is tricky. On each node you can use a timer,
+typically based on some \ac{OS} call. MPI supplies its own routine
+\indexmpishow{MPI_Wtime} which gives \indexterm{wall clock time}.
+Normally you don't worry about the starting point for this timer: 
+you call it before and after an event and subtract the values.
+\begin{verbatim}
+t = MPI_Wtime();
+// something happens here
+t = MPI_Wtime()-t;
+\end{verbatim}
+
+Now suppose you want to measure the time for a single send. It is not possible
+to start a clock on the sender and do the second measurement on the receiver,
+because the two clocks need not be synchronized. Usually a \indexterm{ping-pong} is 
+done: 
+\begin{verbatim}
+if ( proc_source ) {
+  MPI_Send( /* to target */ );
+  MPI_Recv( /* from target */ );
+else if ( proc_target ) {
+  MPI_Recv( /* from source */ );
+  MPI_Send( /* to source */ );
+}
+\end{verbatim}
+
+\begin{exercise}
+  Why is it generally not a good idea to use processes 0 and~1 for the source and target processor?
+  Can you come up with a better guess?
+\end{exercise}
+
+\begin{exercise}
+  Take the pingpong program of section~\ref{ref:timing} and modify it 
+  to use longer messages. How does the timing increase with message size?
+\end{exercise}
+
+\begin{exercise}
+  Take the pingpong program of section~\ref{ref:timing} and modify it 
+  to let half the processors
+  be source and the other half the targets. Does the pingpong time increase?
+\end{exercise}
+
+\Level 1 {Profiling}
+\commandref{profile}
 
 MPI allows you to write your own profiling interface. To make this possible,
 every routine \n{MPI_Something} calls a routine \n{PMPI_Something} that 
@@ -1792,15 +1933,6 @@ guaranteed to be identical between processors, and indeed, were
 guaranteed to occupy the same location in memory. Variables could be
 declared to be shared a `symmetric' pragma or directive; their values
 could be retrieved or set by \n{shmem_get} and \n{shmem_put} calls.
-
-\Level 0 {Programming projects}
-\SetBaseLevel 2
-\input projects/mpiprojects
-\SetBaseLevel 1
-
-\Level 0 {Reference to the routines}
-
-\input chapters/mpiref
 
 \Level 0 {Review questions}
 

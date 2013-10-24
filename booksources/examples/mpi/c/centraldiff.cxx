@@ -1,3 +1,14 @@
+/* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   %%%%
+   %%%% This program file is part of the book and course
+   %%%% "Parallel Computing"
+   %%%% by Victor Eijkhout, copyright 2013
+   %%%%
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -23,7 +34,7 @@ int main(int argc,char ** argv) {
     local_domain[i] = (double)mytid;
 
   MPI_Win my_window;
-  err = MPI_Win_create(&local_domain,
+  err = MPI_Win_create(local_domain,
        	       localsize*sizeof(double),sizeof(double),MPI_INFO_NULL,
        	       comm, &my_window); CHK(err);
   for (int iter=0; iter<100; iter++) {
@@ -57,8 +68,7 @@ int average(double local[],double halo[],int localsize,MPI_Win window,MPI_Comm c
   printf("%d %d\n",mytid,ntids);
   for (int i=0; i<localsize; i++)
     halo[i+1] = local[i];
-  //  err = MPI_Win_fence(MPI_MODE_NOPRECEDE,window); CHK(err);
-  err = MPI_Win_fence(0,window); CHK(err);
+  err = MPI_Win_fence(MPI_MODE_NOPRECEDE,window); CHK(err);
   // get from the left
   if (mytid>0) {
     err = MPI_Get(&left_val,1,MPI_DOUBLE,
@@ -73,12 +83,11 @@ int average(double local[],double halo[],int localsize,MPI_Win window,MPI_Comm c
             0,1,MPI_DOUBLE, // offset and amount
             window); CHK(err);
   } else right_val= 0.;
-  err = MPI_Win_fence(0,window); CHK(err);
+  err = MPI_Win_fence(MPI_MODE_NOSUCCEED,window); CHK(err);
   halo[0] = left_val; halo[localsize+1] = right_val;
-  //  err = MPI_Win_fence(MPI_MODE_NOSUCCEED,window); CHK(err);
-  printf("%d: ",mytid);
-  for (int i=0; i<localsize+2; i++) printf("%e ",halo[i]);
-  printf("\n");
+  // printf("%d: ",mytid);
+  // for (int i=0; i<localsize+2; i++) printf("%e ",halo[i]);
+  // printf("\n");
   for (int i=0; i<localsize; i++)
     local[i] = 2*halo[i+1]-halo[i+2]-halo[i];
   return 0;

@@ -1,4 +1,4 @@
-// postwaitwin_two.c
+// postwaitwin.c
 if (mytid==origin) {
   MPI_Group_incl(all_group,1,&target,&two_group);
   // access

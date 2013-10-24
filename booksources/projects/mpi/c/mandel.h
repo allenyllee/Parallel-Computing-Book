@@ -38,7 +38,7 @@ private:
 
 class queue {
 protected:
-  int ntids,total_tasks,t_start,t_stop;
+  int ntids,mytid, total_tasks,t_start,t_stop;
   MPI_Comm comm;
   circle *workcircle;
   Image *image;
@@ -49,19 +49,19 @@ public:
     comm = queue_comm; workcircle = disccircle;
     total_tasks = 0;
     MPI_Comm_size(comm,&ntids);
+    MPI_Comm_rank(comm,&mytid);
     make_coordinate_type(&coordinate_type);
     area = 0.;
     t_start = MPI_Wtime();
   };
   virtual int addtask(struct coordinate) = 0;
+  void main_loop(MPI_Comm comm,circle *workcircle);
+  virtual void wait_for_work(MPI_Comm,circle*);
+  virtual void complete();
   void set_image(Image*);
-  void complete();
   void coordinate_to_image(struct coordinate,int);
-  void wait_for_work(MPI_Comm,circle*);
 };
 
 void scan_circle(queue *taskqueue);
-
-void main_loop(MPI_Comm,circle*,queue*);
 
 #endif

@@ -67,7 +67,7 @@ int main(int argc,char **argv) {
 
   circle *workcircle = new circle(steps,iters,ntids-1);
   serialqueue *taskqueue = new serialqueue(comm,workcircle);
-  main_loop(comm,workcircle,taskqueue);
+  taskqueue->main_loop(comm,workcircle);
 
   MPI_Finalize();
   return 0;

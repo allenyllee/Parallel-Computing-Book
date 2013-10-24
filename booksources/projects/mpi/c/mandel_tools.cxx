@@ -111,6 +111,32 @@ int belongs(struct coordinate xy,int itbound) {
   return 0;
 }
 
+/** The main computational loop
+ */
+void queue::main_loop(MPI_Comm comm,circle *workcircle) {
+  int ntids,mytid; 
+    
+  ntids = this->ntids;
+  mytid = this->mytid;
+
+  if (mytid==ntids-1)  {
+    this->set_image( new Image(workcircle->pixels,workcircle->pixels,
+			       "mandelpicture") );
+    for (;;) {
+      struct coordinate xy;
+      workcircle->next_coordinate(xy);
+      if (workcircle->is_valid_coordinate(xy)) {
+	this->total_tasks += 1;
+	this->addtask(xy);
+      }
+      else break;
+    }
+    this->complete();
+  } else {
+    this->wait_for_work(comm,workcircle);
+  }
+}
+
 void queue::wait_for_work(MPI_Comm comm,circle *workcircle) {
   MPI_Status status; int ntids;
   MPI_Comm_size(comm,&ntids);
@@ -151,29 +177,6 @@ void make_coordinate_type(MPI_Datatype *ctype) {
   MPI_Type_contiguous(2,MPI_DOUBLE,ctype);
   MPI_Type_commit(ctype);
   return;
-}
-
-/** The main computational loop
- */
-void main_loop(MPI_Comm comm,circle *workcircle,queue *taskqueue) {
-  int ntids,mytid; 
-
-  MPI_Comm_size(comm,&ntids);
-  MPI_Comm_rank(comm,&mytid);
-
-  if (mytid==ntids-1)  {
-    taskqueue->set_image( new Image(workcircle->pixels,workcircle->pixels,
-				    "mandelpicture") );
-    for (;;) {
-      struct coordinate xy;
-      workcircle->next_coordinate(xy);
-      if (workcircle->is_valid_coordinate(xy))
-	taskqueue->addtask(xy);
-      else break;
-    }
-    taskqueue->complete();
-  } else
-    taskqueue->wait_for_work(comm,workcircle);
 }
 
 /** Image stuff

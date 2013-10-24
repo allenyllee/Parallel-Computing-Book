@@ -1,11 +1,21 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Parallel Computing'
+%%%% by Victor Eijkhout, copyright 2012/3
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 This section gives reference information and illustrative examples
 of the use of MPI. While the code snippets given here should be enough,
 full programs can be found in the repository for this book
 \url{https://bitbucket.org/VictorEijkhout/parallel-computing-book}.
 
-\Level 1 {Basics}
+\Level 0 {Basics}
 
-\Level 2 {MPI setup}
+\Level 1 {MPI setup}
 \commandreflabel{mpi-init}
 
 Every MPI program has to start with\indexmpi{MPI_Init}
@@ -40,7 +50,7 @@ is printed and the program aborts, otherwise the parameter is broadcast to
 all processes.
 \verbatimsnippet{usage}
 
-\Level 2 {MPI ranks and communicator sizes}
+\Level 1 {MPI ranks and communicator sizes}
 \commandreflabel{rank-size}
 
 Every MPI process has its own local storage. So if you pretend that all these
@@ -63,7 +73,7 @@ The code implements this as follows:
  
 \verbatimsnippet{local}
 
-\Level 2 {Send and receive buffers}
+\Level 1 {Send and receive buffers}
 
 The data is specified as a number of elements in a buffer. The same
 MPI routine can be used with data of different types, so the standard
@@ -76,15 +86,50 @@ this differs per language:
   not be helped.
 \end{itemize}
 
-\Level 2 {Types}
+\Level 0 {Data types}
 
-\n{double} vs \n{MPI_DOUBLE}, Fortran especially.
+\Level 1 {Elementary types}
+\commandreflabel{elementary}
+
+C/C++:
+
+\begin{tabular}{ll}
+\n{MPI_CHAR}&only for text data, do not use for small integers\\
+\n{MPI_UNSIGNED_CHAR}\\
+\n{MPI_SIGNED_CHAR}\\
+\n{MPI_SHORT}\\
+\n{MPI_UNSIGNED_SHORT}\\
+\n{MPI_INT}\\
+\n{MPI_UNSIGNED}\\
+\n{MPI_LONG}\\
+\n{MPI_UNSIGNED_LONG}\\
+\n{MPI_FLOAT}\\
+\n{MPI_DOUBLE}\\
+\n{MPI_LONG_DOUBLE}
+\end{tabular}
+
+There is some, but not complete, support for \indexterm{C99} types.
+
+Fortran:
+
+\begin{tabular}{ll}
+\n{MPI_CHARACTER}&Character(Len=1)\\
+\n{MPI_LOGICAL}\\
+\n{MPI_INTEGER}\\
+\n{MPI_REAL}\\
+\n{MPI_DOUBLE_PRECISION}\\
+\n{MPI_COMPLEX}\\
+\n{MPI_DOUBLE_COMPLEX}&Complex(Kind=Kind(0.d0))\\
+\end{tabular}
 
 Addresses have type \indexmpishow{MPI_Aint} or \n{INTEGER
 (KIND=MPI_ADDRESS_KIND)} in Fortran. The start of the address range is
 given in \indexmpishow{MPI_BOTTOM}.
 
-\Level 1 {Blocking communication}
+\Level 1 {Derived datatypes}
+\commandreflabel{derived-types}
+
+\Level 0 {Blocking communication}
 \commandreflabel{blocking}
 
 The basic send command is
@@ -123,7 +168,7 @@ If you want a code to behave the same for all message sizes,
 you force the send call to be blocking by using \n{MPI_Ssend}:
 \verbatimsnippet{ssendblock}
 
-\Level 2 {Receive status}
+\Level 1 {Receive status}
 \commandreflabel{mpi-source}
 
 In section~\ref{sec:mpi-source} we mentioned the master-worker model
@@ -135,7 +180,7 @@ and inspects the status field to report where the message comes from.
 
 \verbatimsnippet{anysource}
 
-\Level 1 {Deadlock-free blocking messages}
+\Level 0 {Deadlock-free blocking messages}
 \commandreflabel{send-recv}
 
 If messsages are send roughly in pairs, the 
@@ -156,7 +201,7 @@ As an example we set up a ring of three processors: each process sends
 to its right neighbour, and receives from its left neighbour.
 \verbatimsnippet{sendrecvring}
 
-\Level 1 {Non-blocking communication}
+\Level 0 {Non-blocking communication}
 \commandreflabel{nonblocking}
 
 The non-blocking routines have much the same parameter list as the 
@@ -203,23 +248,19 @@ Note the \indexmpishow{MPI_STATUS_IGNORE} parameter: we know everything
 about the incoming message, so we do not need to query a status object.
 Contrast this with the example in section~\ref{ref:mpi-source}.
 
-\Level 1 {One-sided communication}
+\Level 0 {One-sided communication}
 \commandreflabel{one-sided}
 
-\Level 2 {Windows and epochs}
+\Level 1 {Windows and epochs}
 \commandreflabel{windows}
 
+\indexmpi{MPI_Win_create}
 \begin{verbatim}
-MPI_WIN_CREATE (void *base, MPI_Aint size, 
+MPI_Win_create (void *base, MPI_Aint size, 
   int disp_unit, MPI_Info info, 
   MPI_Comm comm, MPI_Win *win)
 \end{verbatim}
 The data array must not be \n{PARAMETER} of \n{static const}.
-
-Here is a single put operation. Note that the window create and window fence calls
-are collective, so they have to be performed on all processors
-of the communicator that was used in the create call.
-\verbatimsnippet{putblock}
 
 The \indexmpishow{MPI_Info} parameter can be used to pass implementation-dependent 
 information:
@@ -232,7 +273,7 @@ MPI_Info_free(&info);
 \end{verbatim}
 It is always valid to use \indexmpishow{MPI_INFO_NULL}.
 
-\Level 2 {Remote memory access}
+\Level 1 {Remote memory access}
 \commandreflabel{putget}
 
 \indexmpi{MPI_Put}
@@ -252,6 +293,14 @@ int MPI_Get(void *origin_addr, int origin_count, MPI_Datatype
             win)
 \end{verbatim}
 
+Here is a single put operation. Note that the window create and window fence calls
+are collective, so they have to be performed on all processors
+of the communicator that was used in the create call.
+\verbatimsnippet{putblock}
+
+Very similar, a get operation.
+\verbatimsnippet{getblock}
+
 A third one-sided routine
 is \n{MPI_Accumulate} which does a reduction operation on the results
 that are being put:\indexmpi{MPI_Accumulate}
@@ -263,7 +312,7 @@ MPI_Accumulate (
   MPI_Op op,MPI_Win window)
 \end{verbatim}
 
-\Level 2 {Active target synchronization}
+\Level 1 {Active target synchronization}
 \commandreflabel{fence}
 
 \indexmpi{MPI_Win_fence}
@@ -271,7 +320,7 @@ MPI_Accumulate (
 MPI_Win_fence (int assert, MPI_Win win)
 \end{verbatim}
 
-\Level 2 {More active target synchronization}
+\Level 1 {More active target synchronization}
 \commandreflabel{post-wait}
 
 You start and complete an \indextermsub{exposure}{epoch} with%
@@ -296,25 +345,118 @@ other. Note that they both have their own definition of the group, and
 that the receiving process only does the post and wait calls.
 \verbatimsnippet{postwaittwo}
 
-\Level 1 {Collectives}
-\commandreflabel{collective}
+\Level 1 {Passive target synchronization}
+\commandreflabel{passive-sync}
 
+\indexmpi{MPI_Win_lock}\indexmpi{MPI_Win_unlock}
+\begin{verbatim}
+MPI_Win_lock (int locktype, int rank, int assert, MPI_Win win)
+MPI_Win_unlock (int rank, MPI_Win win)
+\end{verbatim}
+
+\verbatimsnippet{passive}
+
+\Level 0 {Collectives}
+
+\Level 1 {Rooted collectives}
+\commandreflabel{bcast}
+
+The \indexmpishow{MPI_Bcast} call has a single data argument. Its
+value on the root processor is copied to all other processors,
+where any previous value is overwritten.
 \begin{verbatim}
 int MPI_Bcast( void *buffer, int count, MPI_Datatype datatype, int root, 
                MPI_Comm comm )
 \end{verbatim}
+There is an example in section~\ref{ref:mpi-init}.
 
+The \indexmpishow{MPI_Reduce} call combines the values from the individual
+processors. In order not to overwrite the input value on the root, 
+this call has two data arguments, a send buffer and a receive buffer.
 \begin{verbatim}
-int MPI_Reduce(void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, 
-               MPI_Op op, int root, MPI_Comm comm)
+int MPI_Reduce
+  (void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, 
+   MPI_Op op, int root, MPI_Comm comm)
 \end{verbatim}
-On processes that are not the root, the receive buffer is ignored. On the root, 
-you have two buffers, but by specifying \indexmpishow{MPI_IN_PLACE}, the reduction call
-uses the value in the receive buffer as the root's contribution to the operation.
-On the \n{Allreduce} call, \n{MPI_IN_PLACE} can be used for the send buffer of
-every process.
+On processes that are not the root, the receive buffer is ignored. 
+\verbatimsnippet{reduce}
 
-\Level 2 {Scan}
+On the root, 
+you need two buffers, which could be a significant memory demand
+in the case of a large array to be reduced.
+Therefore, you can specify \indexmpishow{MPI_IN_PLACE} as the send
+buffer on the root. The reduction call then
+uses the value in the receive buffer as the root's contribution to the operation.
+\verbatimsnippet{reduceinplace}
+
+\Level 1 {Gather and scatter}
+\commandreflabel{gatherscatter}
+
+In the gather and scatter calls, each processor has $n$ elements of individual
+data. There is also a root processor that has an array of length~$np$, where $p$
+is the number of processors. The gather call collects all this data from the 
+processors to the root; the scatter call assumes that the information is 
+initially on the root and it is spread to the individual processors.
+
+The prototype for \indexmpishow{MPI_Gather} has two `count' parameters, one
+for the length of the individual send buffers, and one for the receive buffer.
+However, confusingly, the second parameter (which is only relevant on the root)
+does not indicate the total amount of information coming in, but
+rather the size of \emph{each} contribution. Thus, the two count parameters
+will usually be the same (at least on the root); they can differ if you 
+use different \indexmpishow{MPI_Datatype} values for the sending and receiving
+processors.
+\begin{verbatim}
+int MPI_Gather(
+  void *sendbuf, int sendcnt, MPI_Datatype sendtype,
+  void *recvbuf, int recvcnt, MPI_Datatype recvtype,
+  int root, MPI_Comm comm
+);
+\end{verbatim}
+
+Here is a small example:
+\verbatimsnippet{gather}
+This will also be the basis of a more elaborate example in
+section~\ref{ref:v-collective}.
+
+The \n{MPI_IN_PLACE} option can be used for the send buffer on the root;
+the data for the root is then assumed to be already in the correct location
+in the receive buffer.
+
+The scatter operation is in some sense the inverse of the gather:
+the root process has an array of length $np$ where $p$~is the number of processors
+and $n$~the number of elements each processor will receive.
+
+\Level 1 {`All'-type collectives}
+\commandreflabel{allreduce}
+
+The collectives that construct a result on all processes are
+\indexmpishow{MPI_Allgather}, \indexmpishow{MPI_Allgatherv}, 
+\indexmpishow{MPI_Allreduce}, \indexmpishow{MPI_Alltoall}, \indexmpishow{MPI_Alltoallv}.
+
+Each processor has a contribution in their send buffer; the global result
+is returned in each processor's receive buffer.
+\verbatimsnippet{allreduce}
+
+If a large amount of data is being communicated, it may be wasteful to 
+have both a (large) send and receive buffer.
+This problem can be circumvented by using \indexmpishow{MPI_IN_PLACE}
+as the specification of the send buffer. The send data is then
+assumed to be in the receive buffer. After the reduction it is, of course,
+overwritten.
+\verbatimsnippet{allreduceinplace}
+
+\Level 1 {Variable-size-input collectives}
+\commandreflabel{v-collective}
+
+In an \indexmpishow{MPI_Gatherv} call each process has an individual number
+of items to contribute. To gather this, the root process needs to find
+these individual amounts with an \n{MPI_Gather} call, and locally construct the
+offsets array. Note how the offsets array has size \n{ntids+1}: the final offset
+value is automatically the total size of all incoming data.
+\verbatimsnippet{gatherv}
+
+\Level 1 {Scan}
 \commandreflabel{scan}
 
 The scan operations are\indexmpi{MPI_Scan}
@@ -322,7 +464,7 @@ The scan operations are\indexmpi{MPI_Scan}
 int MPI_Scan(void* sendbuf, void* recvbuf, 
     int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm ) 
 \end{verbatim}
-and
+and\indexmpi{MPI_Exscan}
 \begin{verbatim}
 int MPI_Exscan(void* sendbuf, void* recvbuf, 
     int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm ) 
@@ -339,7 +481,7 @@ has part of a long array, and it knows only how many element it has. The followi
 computes the global index of its first element.\indexmpi{MPI_Exscan}
 \verbatimsnippet{myfirst}
 
-\Level 1 {Cancelling messages}
+\Level 0 {Cancelling messages}
 
 In section~\ref{sec:mpi-source} we showed a master-worker example where the 
 master accepts in arbitrary order the messages from the workers.
@@ -353,9 +495,9 @@ an \indexmpishow{MPI_Cancel} operation.
 
 \verbatimsnippet{cancel}
 
-\Level 1 {Communicators}
+\Level 0 {Communicators}
 
-\Level 2 {Communicator duplication}
+\Level 1 {Communicator duplication}
 \commandreflabel{comm-dup}
 
 In section~\ref{sec:mpi-semantics} it was explained that MPI messages are 
@@ -387,7 +529,7 @@ released again with \indexmpishow{MPI_Comm_free}.
 
 \verbatimsnippet{rightcatchmain}
 
-\Level 2 {Splitting communicators}
+\Level 1 {Splitting communicators}
 \commandreflabel{comm-split}
 
 The command \indexmpishow{MPI_Comm_split} takes a communicator, and
@@ -404,32 +546,29 @@ the global ranking, so the \n{MPI_Comm_rank} value of the global communicator
 is a good choice.
 \verbatimsnippet{commsplitrowcol}
 
-\Level 1 {Error handling}
+\Level 0 {Error handling}
 \commandreflabel{mpi:error}
 
 MPI operators (\indexmpishow{MPI_Op}) do not return an error code. In case of
 an error they call \n{MPI_Abort}; if \indexmpishow{MPI_ERRORS_RETURN}
 is the error handler, errors may be silently ignore.
 
-\Level 1 {More utility stuff}
-\commandreflabel{profile}
+\Level 0 {More utility stuff}
+\Level 1 {Timing}
+\commandreflabel{timing}
 
 MPI has a \indexterm{wall clock} timer: \indexmpishow{MPI_Wtime}
 \begin{verbatim}
 double MPI_Wtime(void);
 \end{verbatim}
 which gives the number of seconds from a certain point in the past.
-Thus, you would write:
-\begin{verbatim}
-double tstart,tstop,elapsed;
-tstart = MPI_Wtime();
-tstop = MPI_Wtime();
-elapsed = tstop-tstart;
-\end{verbatim}
+\verbatimsnippet{pingpong}
+
 The timer has a resolution of \indexmpishow{MPI_Wtick}:
 \begin{verbatim}
 double MPI_Wtick(void);
 \end{verbatim}
+
 Timing in parallel is a tricky issue. For instance, most clusters do
 not have a central clock, so you can not relate start and stop times
 on one process to those on another. You can test for a global clock as
@@ -441,7 +580,10 @@ if (mytid==0) printf(``Time synchronized? %d->%d\n'',flag,*v);
 \end{verbatim}
 %\indexmpi{MPI_Wtime} can be either a function or a macro.
 
-\Level 1 {Multi-threading}
+%\Level 1 {Profiling}
+%\commandreflabel{profile}
+
+\Level 0 {Multi-threading}
 \commandreflabel{mpi-thread}
 
 \begin{verbatim}

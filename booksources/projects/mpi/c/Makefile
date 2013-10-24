@@ -15,7 +15,7 @@ else
 endif
 
 DEBUG=OPT
-OPT_flag = -O2
+OPT_flag = -O2 -g
 DEBUG_flag = -g
 info ::
 	@echo "    debug flag: DEBUG=DEBUG/OPT (default: ${DEBUG})]"
@@ -82,10 +82,27 @@ tau :
 	  tau2slog2 tau.trc tau.edf -o $$HOME/taulog$$TAU_EXT.slog2
 
 info ::
+	@echo "make regression"
+regression: total_clean
+	for a in ${MANDEL_APPS} ; do \
+	  echo "Compilation $$a" ; \
+	  make $$a >/dev/null 2>&1 ; \
+	  if [ ! -e $$a ] ; then echo ".. could not make $$a" ; fi ; \
+	  if [ ! -z "${SLURM_STEP_ID}" ] ; then \
+	    echo ".. run $$a" ; \
+	    rm -f mandelpicture* ; \
+	    ibrun $$a >$$a.runlog 2>&1 ; \
+	    if [ ! -e "mandelpicture.ppm" ] ; then \
+	      echo ".. failed to run $$a" ; \
+	    fi ; \
+	  fi ; \
+	done
+
+info ::
 	@echo "make clean       : cleanup but leave executables & slog2"
 	@echo "make total_clean : cleanup including executables & slog2"
 clean ::
-	/bin/rm -rf *.o *~ *.gch a.out *.dSYM MULTI__* events.* \
+	/bin/rm -rf *.o *~ *.gch a.out *.dSYM MULTI__* events.* *.runlog \
 	    core.[0-9]* idev[0-9]*.o[0-9]* ddt.o[0-9]* jobtest.o* tautrace_*
 total_clean : clean 
 	/bin/rm -rf ${APPS} *.slog2 *.ppm
