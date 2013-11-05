@@ -1,3 +1,4 @@
+% -*- latex -*-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%
@@ -17,6 +18,22 @@ full programs can be found in the repository for this book
 
 \Level 1 {MPI setup}
 \commandreflabel{mpi-init}
+
+If you use MPI commands in a program file, be sure to include
+the proper header file, \indexterm{mpi.h} or \indexterm{mpif.h}.
+\begin{verbatim}
+#include "mpi.h" // for C
+#include "mpif.h" ! for Fortran
+\end{verbatim}
+For \indexterm{Fortran90}, many MPI installations also have an MPI
+module, so you can write
+\begin{verbatim}
+use mpi
+\end{verbatim}
+The internals of these files can be different between MPI
+installations, so you can not compile one file against one \n{mpi.h}
+file and another file, even with the same compiler on the same machine,
+against a different MPI.
 
 Every MPI program has to start with\indexmpi{MPI_Init}
 \begin{verbatim}
@@ -128,6 +145,86 @@ given in \indexmpishow{MPI_BOTTOM}.
 
 \Level 1 {Derived datatypes}
 \commandreflabel{derived-types}
+
+The space taken by a derived type is not immediately obvious from its
+definition since padding maybe applied. The actual size can be
+retrieved with \indexmpishow{MPI_Type_extent}:
+\begin{verbatim}
+int MPI_Type_extent(MPI_Datatype datatype, MPI_Aint *extent)
+\end{verbatim}
+
+\Level 2 {Type create and release calls}
+\commandreflabel{data-commit}
+
+A derived type needs to be committed with \indexmpishow{MPI_Type_commit}:
+\begin{verbatim}
+int MPI_Type_commit (MPI_datatype *datatype)
+\end{verbatim}
+The commit call is typically used to find an efficient `flat' representation
+of recursively defined datatypes.
+
+When you no longer need the derived type, its space can be released with
+\indexmpishow{MPI_Type_free}:
+\begin{verbatim}
+int MPI_Type_free (MPI_datatype *datatype)
+\end{verbatim}
+After the type free call
+\begin{itemize}
+\item The definition of the datatype identifier will be changed to
+  \indexmpishow{MPI_DATATYPE_NULL}.
+\item Any communication using this data type, that was already
+  started, will be completed succesfully.
+\item Datatypes that are defined in terms of this data type will still
+  be usable.
+\end{itemize}
+
+\Level 2 {Contiguous type}
+
+\Level 2 {Vector type}
+\commandreflabel{data:vector}
+
+The \indexmpishow{MPI_Type_vector} type can be used to create a type
+of regularly spaced blocks of data. All block lengths need to be the same,
+and the vector type is built out of a single constituent type.
+\begin{verbatim}
+int MPI_Type_vector(
+  int count, int blocklength, int stride,
+  MPI_Datatype old_type, MPI_Datatype *newtype_p
+);
+\end{verbatim}
+
+In this example a vector type is created only on the sender, in order to send
+a strided subset of an array; the receiver receives the data as a contiguous block.
+\verbatimsnippet{vector}
+
+\Level 1 {Packed data}
+\commandreflabel{pack}
+
+With \indexmpishow{MPI_PACK} data elements can be added 
+to a buffer one at a time. The \n{position} parameter is updated
+each time by the packing routine.
+\begin{verbatim}
+int MPI_Pack(
+  void *inbuf, int incount, MPI_Datatype datatype,
+  void *outbuf, int outcount, int *position,
+  MPI_Comm comm);
+\end{verbatim}
+
+Conversely, \indexmpishow{MPI_UNPACK} retrieves one element
+from the buffer at a time. You need to specify the MPI datatype.
+\begin{verbatim}
+int MPI_Unpack(
+  void *inbuf, int insize, int *position,
+  void *outbuf, int outcount, MPI_Datatype datatype,
+  MPI_Comm comm);
+\end{verbatim}
+
+A packed buffer is sent of received with a datatype of
+\indexmpishow{MPI_PACKED}. The sending routine uses the \n{position}
+parameter to specify how much data is sent, but the receiving routine
+does not know this value a~priori, so has to specify an upper bound.
+
+\verbatimsnippet{packunpack}
 
 \Level 0 {Blocking communication}
 \commandreflabel{blocking}
@@ -423,17 +520,73 @@ The \n{MPI_IN_PLACE} option can be used for the send buffer on the root;
 the data for the root is then assumed to be already in the correct location
 in the receive buffer.
 
-The scatter operation is in some sense the inverse of the gather:
+The \indexmpishow{MPI_Scatter} operation is in some sense the inverse of the gather:
 the root process has an array of length $np$ where $p$~is the number of processors
 and $n$~the number of elements each processor will receive.
+\begin{verbatim}
+int MPI_Scatter
+  (void* sendbuf, int sendcount, MPI_Datatype sendtype, 
+   void* recvbuf, int recvcount, MPI_Datatype recvtype, 
+   int root, MPI_Comm comm) 
+\end{verbatim}
+
+\Level 1 {Reduce-scatter}
+\commandreflabel{reducescatter}
+
+The \indexmpishow{MPI_Reduce_scatter} command is equivalent to a reduction
+on an array of data, followed by a scatter of that data to the individual processes.
+
+To be precise, there is an array \n{recvcounts} where \n{recvcounts[i]} gives
+the number of elements that ultimate wind up on process~\n{i}.
+The result is equivalent to doing a reduction with a length equal to the sum
+of the \n{recvcounts[i]} values, followed by a scatter where process~\n{i}
+receives \n{recvcounts[i]} values. (Since the amount of data to be scattered
+depends on the process, this is in fact equivalent to \indexmpishow{MPI_Scatterv}
+rather than a regular scatter.)
+\begin{verbatim}
+int MPI_Reduce_scatter
+  (void* sendbuf, void* recvbuf, int *recvcounts, MPI_Datatype datatype, 
+   MPI_Op op, MPI_Comm comm)
+\end{verbatim}
+For instance, if all \n{recvcounts[i]} values are~1, the sendbuffer has one element
+for each process, and the receive buffer has length~1.
+
+An important application of this is establishing an irregular
+communication pattern.  Assume that each process knows which
+other processes it wants to communicate with; the problem is to
+let the other processes know about this.
+The solution is to use \n{MPI_Reduce_scatter} to find out how many processes
+want to communicate with you, and then wait for precisely that many messages
+with a source value of \indexmpishow{MPI_ANY_SOURCE}.
+\verbatimsnippet{reducescatter}
 
 \Level 1 {`All'-type collectives}
 \commandreflabel{allreduce}
 
-The collectives that construct a result on all processes are
-\indexmpishow{MPI_Allgather}, \indexmpishow{MPI_Allgatherv}, 
-\indexmpishow{MPI_Allreduce}, \indexmpishow{MPI_Alltoall}, \indexmpishow{MPI_Alltoallv}.
-
+The following collectives construct a result on all processes:
+\indexmpishow{MPI_Allgather}
+\begin{verbatim}
+int MPI_Allgather
+  (void *sendbuf, int sendcount, MPI_Datatype sendtype, 
+   void *recvbuf, int recvcount, MPI_Datatype recvtype, 
+  MPI_Comm comm)
+\end{verbatim}
+%
+\indexmpishow{MPI_Allreduce}
+\begin{verbatim}
+int MPI_Allreduce 
+  (void *sendbuf, void *recvbuf, int count, 
+   MPI_Datatype datatype, MPI_Op op, 
+   MPI_Comm comm )
+\end{verbatim}
+%
+\indexmpishow{MPI_Alltoall}
+\begin{verbatim}
+int MPI_Alltoall
+  (void *sendbuf, int sendcount, MPI_Datatype sendtype, 
+   void *recvbuf, int recvcount, MPI_Datatype recvtype, 
+   MPI_Comm comm)
+\end{verbatim}
 Each processor has a contribution in their send buffer; the global result
 is returned in each processor's receive buffer.
 \verbatimsnippet{allreduce}
@@ -449,11 +602,39 @@ overwritten.
 \Level 1 {Variable-size-input collectives}
 \commandreflabel{v-collective}
 
-In an \indexmpishow{MPI_Gatherv} call each process has an individual number
-of items to contribute. To gather this, the root process needs to find
-these individual amounts with an \n{MPI_Gather} call, and locally construct the
-offsets array. Note how the offsets array has size \n{ntids+1}: the final offset
-value is automatically the total size of all incoming data.
+The following collectives construct a result on all 
+processors, but from different sized inputs:
+%
+\indexmpishow{MPI_Scatterv}
+\begin{verbatim}
+int MPI_Scatterv
+  (void* sendbuf, int *sendcounts, int *displs, MPI_Datatype sendtype, 
+   void* recvbuf, int recvcount, MPI_Datatype recvtype, 
+   int root, MPI_Comm comm)
+\end{verbatim}
+\indexmpishow{MPI_Allgatherv}
+\begin{verbatim}
+int MPI_Allgatherv
+  (void *sendbuf, int sendcount, MPI_Datatype sendtype, 
+   void *recvbuf, int *recvcounts, int *displs, 
+   MPI_Datatype recvtype, MPI_Comm comm)
+\end{verbatim}
+%
+\indexmpishow{MPI_Alltoallv}.
+\begin{verbatim}
+int MPI_Alltoallv
+  (void *sendbuf, int *sendcnts, int *sdispls, MPI_Datatype sendtype, 
+   void *recvbuf, int *recvcnts, int *rdispls, MPI_Datatype recvtype,
+   MPI_Comm comm)
+\end{verbatim}
+
+In an \indexmpishow{MPI_Gatherv} call each process has an individual
+number of items to contribute. To gather this, the root process needs
+to find these individual amounts with an \n{MPI_Gather} call, and
+locally construct the offsets array. Note how the offsets array has
+size \n{ntids+1}: the final offset value is automatically the total
+size of all incoming data.  
+%
 \verbatimsnippet{gatherv}
 
 \Level 1 {Scan}

@@ -1217,6 +1217,43 @@ outbuffer, array-of-outcounts, array-of-displacements, outtype
 \end{verbatim}
 and you have just seen how to construct that information.
 
+\Level 1 {Reduce-scatter}
+\commandref{reducescatter}
+
+There are several MPI collectives that are functionally equivalent to
+a combination of others. You have already seen \n{MPI_Allreduce} which
+is equivalent to a reduction followed by a broadcast. Often such
+combinations can be more efficient than using the individual calls;
+see~\HPSCref{sec:collective}.
+
+Here is another example: \indexmpishow{MPI_Reduce_scatter} is equivalent
+to a reduction on an array of data (meaning a pointwise reduction on each
+array location) followed by a scatter of this array to the individual 
+processes.
+
+One important example of this command is the
+\indextermsub{sparse}{matrix-vector product};
+see~\HPSCref{sec:spmvp-performance} for background information.
+Each process contains one or more matrix rows, so by looking at indices
+the process can decide what other processes it needs data from.
+The problem is for a process to find out what other processes 
+it needs to send data to. 
+
+Using \indexmpishow{MPI_Reduce_scatter} the process goes as follows:
+\begin{itemize}
+\item Each process creates an array of ones and zeros, describing who
+  it needs data from.
+\item The reduce part of the reduce-scatter yields an array of
+  requester counts; after the scatter each process knows how many
+  processes request data from it.
+\item Next, the sender processes need to find out what elements are
+  requested from it. For this, each process sends out arrays of
+  indices.
+\item The big trick is that each process now knows how many of these
+  requests will be coming in, so it can post precisely that many
+  \n{MPI_Irecv} calls, with a source of \indexmpishow{MPI_ANY_SOURCE}.
+\end{itemize}
+
 \Level 1 {`All'-type collectives}
 \commandref{allreduce}
 
@@ -1396,7 +1433,8 @@ With MPI data types you can solve these problems in several ways.
 And you can combine these mechanisms to get irregularly spaced
 heterogeneous data, et cetera.
 
-\Level 1 {Basic calls}
+\Level 2 {Basic calls}
+\commandref{data-commit}
 
 New MPI data types are created by
 \begin{itemize}
@@ -1408,15 +1446,46 @@ It is necessary to call \indexmpishow{MPI_Type_commit} which makes MPI
 do the indexing calculations for the data type.  When you no longer
 need the data type, you call \indexmpishow{MPI_Type_free}.
 
-\Level 1 {Contiguous type}
+\Level 2 {Contiguous type}
 
-\Level 1 {Vector type}
+The simplest derived type is the `contiguous' type: an array of items
+of an elementary or earlier defined type. There is no difference between sending
+one item of a contiguous type and multiple items of the constituent type.
 
-\Level 1 {Indexed type}
+\Level 2 {Vector type}
+\commandref{data:vector}
 
-\Level 1 {Struct type}
+\Level 2 {Indexed type}
+
+\Level 2 {Struct type}
 
 \index{MPI!data types|)}
+
+\Level 1 {Packing}
+\commandref{pack}
+
+One of the reasons for derived datatypes is dealing with non-contiguous data.
+In older communication libraries this could only be done by \indexterm{packing} data
+from its original containers into a buffer, and likewise unpacking it at the
+receiver into its destination data structures.
+
+MPI offers this packing facility, partly for compatibility with such libraries,
+but also for reasons of flexibility. Unlike with derived datatypes,
+which transfers data atomically, packing routines add data sequentially
+to the buffer and unpacking takes them sequentially. 
+
+This means that 
+one could pack an integer describing how many floating point numbers
+are in the rest of the packed message. 
+Correspondingly, the unpack routine could then investigate the first integer
+and based on it unpack the right number of floating point numbers.
+
+MPI offers the following:
+\begin{itemize}
+\item The \indexmpishow{MPI_Pack} command adds data to a send buffer;
+\item the \indexmpishow{MPI_Unpack} command retrieves data from a receive buffer;
+\item the buffer is sent with a datatype of \indexmpishow{MPI_PACKED}.
+\end{itemize}
 
 \Level 0 {Communicators}
 \label{sec:communicators}

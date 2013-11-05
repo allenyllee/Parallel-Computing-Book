@@ -15,7 +15,8 @@ APPS = init recvblock sendblock ssendblock sendrecv putfence getfence \
     anysource cancel exscan \
     mvp2d commdup_wrong commdup_right irecv_source postwaitwin passive \
     centraldiff reduce reduceinplace allreduce allreduceinplace gather gatherv \
-    vector \
+    reducescatter \
+    contiguous vector pack \
     pingpong
 
 listapps :
@@ -43,7 +44,7 @@ DEBUG_flag = -g
 info ::
 	@echo "    debug flag: DEBUG=DEBUG/OPT (default: ${DEBUG})]"
 %.o : %.c
-	${CXX} ${${DEBUG}_flag} -D${DEBUG} \
+	${CC} ${${DEBUG}_flag} -D${DEBUG} \
 	  -c $*.c
 %.o : %.cxx
 	${CXX} ${${DEBUG}_flag} -D${DEBUG} \
@@ -53,7 +54,7 @@ app_dependencies  = tools.o
 .SECONDEXPANSION:
 ${APPS} : $$@.o ${app_dependencies}
 	${CXX} -o $@ $@.o ${app_dependencies} #-L${TACC_BLIS_LIB} -lblis
-${patsubst %,%.o,${APPS}} tools.o : tools.h
+${patsubst %,%.o,${APPS}} tools.o : tools.h globalinit.c
 
 # rules for submitting to the queue and doing tau analysis
 info ::
