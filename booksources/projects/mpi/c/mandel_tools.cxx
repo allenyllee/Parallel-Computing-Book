@@ -1,10 +1,12 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include "tools.h"
-#include "mandel.h"
 #include "unistd.h"
 
+#include "tools.h"
+#include "mandel.h"
+
+#define MAX(a,b) ( ((a)>(b)) ? (a) : (b) )
 /**
    Read the commandline arguments for this program.
    This uses the general commandline_argument routine;
@@ -195,8 +197,8 @@ void queue::coordinate_to_image(struct coordinate xy,int iteration) {
   else {
     float rfloat = ((float) iteration) / workcircle->infty;
     colour[0] = rfloat;
-    colour[1] = max((float)0,(float)(1-2*rfloat));
-    colour[2] = max((float)0,(float)(2*(rfloat-.5)));
+    colour[1] = MAX((float)0,(float)(1-2*rfloat));
+    colour[2] = MAX((float)0,(float)(2*(rfloat-.5)));
   }
   image->Add( pixel, colour );
 }

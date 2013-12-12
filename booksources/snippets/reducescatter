@@ -1,0 +1,17 @@
+// reducescatter.c
+// record what processes you will communicate with
+int *recv_requests;
+// find how many procs want to communicate with you
+MPI_Reduce_scatter
+  (recv_requests,&nsend_requests,counts,MPI_INT,
+  MPI_SUM,comm);
+// send a msg to the selected processes
+for (i=0; i<ntids; i++)
+  if (recv_requests[i]>0)
+    MPI_Isend(&msg,1,MPI_INT, /*to:*/ i,0,comm,
+      mpi_requests+irequest++);
+// do as many receives as you know are coming in
+for (i=0; i<nsend_requests; i++)
+  MPI_Irecv(&msg,1,MPI_INT,MPI_ANY_SOURCE,MPI_ANY_TAG,comm,
+      mpi_requests+irequest++);
+MPI_Waitall(irequest,mpi_requests,MPI_STATUSES_IGNORE);

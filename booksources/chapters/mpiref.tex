@@ -107,6 +107,7 @@ this differs per language:
 
 \Level 1 {Elementary types}
 \commandreflabel{elementary}
+\index{datatype!elementary|(}
 
 C/C++:
 
@@ -143,8 +144,11 @@ Addresses have type \indexmpishow{MPI_Aint} or \n{INTEGER
 (KIND=MPI_ADDRESS_KIND)} in Fortran. The start of the address range is
 given in \indexmpishow{MPI_BOTTOM}.
 
+\index{datatype!elementary|)}
+
 \Level 1 {Derived datatypes}
 \commandreflabel{derived-types}
+\index{datatype!derived|(}
 
 The space taken by a derived type is not immediately obvious from its
 definition since padding maybe applied. The actual size can be
@@ -179,6 +183,17 @@ After the type free call
 \end{itemize}
 
 \Level 2 {Contiguous type}
+\commandreflabel{data:contiguous}
+
+A contiguous datatype, created with a call to \indexmpishow{MPI_Type_contiguous},
+\begin{verbatim}
+int MPI_Type_contiguous(
+  int count, MPI_Datatype old_type, MPI_Datatype *new_type_p)
+\end{verbatim}
+consists of a number of elements of a datatype, contiguous in memory.
+Sending one element of a contiguous type is fully equivalent to sending
+a number of elements of the constituent type.
+\verbatimsnippet{contiguous}
 
 \Level 2 {Vector type}
 \commandreflabel{data:vector}
@@ -196,6 +211,84 @@ int MPI_Type_vector(
 In this example a vector type is created only on the sender, in order to send
 a strided subset of an array; the receiver receives the data as a contiguous block.
 \verbatimsnippet{vector}
+
+\Level 2 {Indexed data}
+\commandreflabel{data:indexed}
+
+The indexed datatype is similar to the vector type, in the sense that it consists
+of a series of blocks of items, all of the same type. However, where the
+vector type was described by a single stride and blocklength,
+with \indexmpishow{MPI_Type_indexed}
+you can specify the location and length of each block.
+\begin{verbatim}
+int MPI_Type_indexed(
+  int count, int blocklens[], int indices[],
+  MPI_Datatype old_type, MPI_Datatype *newtype);
+\end{verbatim}
+The following example picks items that are on prime number-indexed
+locations.
+\verbatimsnippet{indexed}
+
+You can also \indexmpishow{MPI_Type_create_hindexed} which describes blocks
+of a single old type, but with indix locations in bytes, rather than
+in multiples of the old type.
+\begin{verbatim}
+int MPI_Type_create_hindexed
+ (int count, int blocklens[], MPI_Aint indices[],
+  MPI_Datatype old_type,MPI_Datatype *newtype)
+\end{verbatim}
+You can use this to pick all occurrences of a single component out of
+an array of structures. However, you need to be very careful with the
+index calculation. Use pointer arithmetic, as in the example in
+section~\ref{ref:data:struct}.  Another use of this function is in
+sending an \n{stl<vector>}\index{C++!standard library!vector}, that
+is, a vector object from the \indextermbus{C++}{standard library}, if
+the component type is a pointer. No further explanation here.
+
+\Level 2 {Structure data}
+\commandreflabel{data:struct}
+
+The \indexmpishow{MPI_Type_create_struct} routine creates
+a type consisting of blocks of multiple datatypes,
+much like \n{MPI_Type_indexed} makes
+an array of blocks of a single type.
+\begin{verbatim}
+int MPI_Type_create_struct(
+  int count, int blocklengths[], MPI_Aint displacements[],
+  MPI_Datatype types[], MPI_Datatype *newtype);
+\end{verbatim}
+\begin{description}
+\item[\texttt{count}] The number of blocks in this
+  datatype. The \n{blocklengths}, \n{displacements}, \n{types}
+  arguments have to be at least of this length.
+\item[\texttt{blocklengths}] array containing the lengths of the blocks of each datatype.
+\item[\texttt{displacements}] array describing the relative location
+  of the blocks of each datatype.
+\item[\texttt{types}] array containing the datatypes; each block in
+  the new type is of a single datatype; there can be multiple
+  blocks consisting of the same type.
+\end{description}
+In this example, unlike the previous ones, both sender and receiver
+create the structure type. With structures it is no longer possible to
+send as a derived type and receive as a array of a simple type.
+(It would be possible to send as one structure type and receive as another, 
+as long as they have the same \indextermbus{datatype}{signature}.)
+\verbatimsnippet{structure}
+Note the \n{displacement} calculations in this example,
+which involve some not so elegant pointer arithmetic.
+It would have been incorrect to write
+\begin{verbatim}
+displacement[0] = 0;
+displacement[1] = displacement[0] + sizeof(char);
+\end{verbatim}
+since you do not know the way the \indexterm{compiler} lays out the
+structure in memory\footnote{Homework question: what does the language
+  standard say about this?}.
+
+(There is a deprecated function \indexmpishow{MPI_Type_struct} with the same
+functionality.)
+
+\index{datatype!derived|)}
 
 \Level 1 {Packed data}
 \commandreflabel{pack}
@@ -417,8 +510,47 @@ MPI_Accumulate (
 MPI_Win_fence (int assert, MPI_Win win)
 \end{verbatim}
 
+\Level 1 {Assertions}
+\label{sec:mpi-assert}
+
+The \n{MPI_Win_fence} call, as well \n{MPI_Win_start} and such, take an argument
+through which assertions can be passed about the activity before, after, and during the epoch.
+The value zero is always allowed, by you can make your program more efficient by specifying
+one or more of the following:
+\begin{itemize}
+\item \indexmpishow{MPI_MODE_NOCHECK}: this is used with
+  \indexmpishow{MPI_Win_start} and \indexmpishow{MPI_Win_post}; it
+  indicates that when the origin `start' call is made, the target
+  `post' call has already been issued. This is comparable to using
+  \indexmpishow{MPI_Rsend}.
+\item \indexmpishow{MPI_MODE_NOSTORE}: this is used to specify that
+  the local window was not updated in the preceding epoch.
+\item \indexmpishow{MPI_MODE_NOPUT}: this is used to specify that a local
+  window will not be used as target in this epoch.
+\item \indexmpishow{MPI_MODE_NOPRECEDE}: this states that the
+  \indexmpishow{MPI_Win_fence} call does not conclude a sequence of
+  RMA operations. If this assertion is made on any process in a window group,
+  it must be specified by all.
+\item \indexmpishow{MPI_MODE_NOSUCCEED}: this states that the
+  \indexmpishow{MPI_Win_fence} call is not the start of a sequence of
+  local RMA calls. If any process in a window group specifies this,
+  all process must do so.
+\end{itemize}
+
 \Level 1 {More active target synchronization}
 \commandreflabel{post-wait}
+
+The `fence' mechanism (section~\ref{ref:fence}) uses a global synchronization on the
+communicator of the window, which may 
+lead to performance inefficiencies if processors are not in step which each other. 
+There is a mechanism that is more fine-grained, by using synchronization only 
+on a processor \indexterm{group}. This takes four different calls, two for starting
+and two for ending the epoch, separately for target and origin.
+\begin{figure}[ht]
+  \includegraphics[scale=.1]{postwait}
+  \caption{Window locking calls in fine-grained active target synchronization}
+  \label{fig:postwait}
+\end{figure}
 
 You start and complete an \indextermsub{exposure}{epoch} with%
 \indexmpi{MPI_Win_post}\indexmpi{MPI_Win_wait}:
@@ -602,24 +734,39 @@ overwritten.
 \Level 1 {Variable-size-input collectives}
 \commandreflabel{v-collective}
 
-The following collectives construct a result on all 
-processors, but from different sized inputs:
-%
-\indexmpishow{MPI_Scatterv}
+There are various calls where processors can have
+buffers of differing sizes.
+\begin{itemize}
+\item In \indexmpishow{MPI_Scatterv} the root process has a different
+  amount of data for each recipient.
+\item In \indexmpishow{MPI_Gatherv}, conversely, each process
+  contributes a different sized send buffer to the received result;
+  \indexmpishow{MPI_Allgatherv} does the same, but leaves its result
+  on all processes; \indexmpishow{MPI_Alltoallv} does a different
+  variable-sized gather on each process.
+\end{itemize}
+
 \begin{verbatim}
 int MPI_Scatterv
   (void* sendbuf, int *sendcounts, int *displs, MPI_Datatype sendtype, 
    void* recvbuf, int recvcount, MPI_Datatype recvtype, 
    int root, MPI_Comm comm)
 \end{verbatim}
-\indexmpishow{MPI_Allgatherv}
+
+\begin{verbatim}
+int MPI_Gatherv
+  (void *sendbuf, int sendcnt, MPI_Datatype sendtype,
+   void *recvbuf, int *recvcnts, int *displs, MPI_Datatype recvtype,
+   int root, MPI_Comm comm)
+\end{verbatim}
+
 \begin{verbatim}
 int MPI_Allgatherv
   (void *sendbuf, int sendcount, MPI_Datatype sendtype, 
    void *recvbuf, int *recvcounts, int *displs, 
    MPI_Datatype recvtype, MPI_Comm comm)
 \end{verbatim}
-%
+
 \indexmpishow{MPI_Alltoallv}.
 \begin{verbatim}
 int MPI_Alltoallv
@@ -628,7 +775,7 @@ int MPI_Alltoallv
    MPI_Comm comm)
 \end{verbatim}
 
-In an \indexmpishow{MPI_Gatherv} call each process has an individual
+For example, in an \indexmpishow{MPI_Gatherv} call each process has an individual
 number of items to contribute. To gather this, the root process needs
 to find these individual amounts with an \n{MPI_Gather} call, and
 locally construct the offsets array. Note how the offsets array has

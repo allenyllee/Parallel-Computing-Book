@@ -1369,7 +1369,7 @@ However, it is equally possible to have this execution:
 \index{collectives|)}
 
 \Level 0 {Data types}
-\index{MPI!data types|(}
+\index{datatype|(}
 
 In many cases the data you send is a single element or an array of some 
 elementary type such as byte, int, or real. You pass the data by specifying
@@ -1387,6 +1387,7 @@ the start address and the number of data elements.
 
 \Level 1 {Elementary data types}
 \commandref{elementary}
+\index{datatype!elementary|(}
 
 MPI has a number of elementary data types, corresponding to the 
 simple data types of programming languages.
@@ -1394,8 +1395,11 @@ The names are made to resemble the types of C and~Fortran,
 for instance \n{MPI_FLOAT} and \n{MPI_DOUBLE} versus
 \n{MPI_REAL} and \n{MPI_DOUBLE_PRECISION}.
 
+\index{datatype!elementary|)}
+
 \Level 1 {Derived datatypes}
 \commandref{derived-types}
+\index{datatype!derived|(}
 
 MPI allows you to create your own data types, somewhat analogous to defining
 structures in a programming language. MPI data types are mostly of use
@@ -1406,12 +1410,12 @@ as you have seen so far.
 \begin{itemize}
 \item MPI communication routines can only send multiples of a
   single data type: it is not possible to send items of different
-  types, even if they are contiguous in memory. (It would be possible
-  to use the \n{MPI_BYTE} data type, but this is not advisable.)
+  types, even if they are contiguous in memory. It would be possible
+  to use the \n{MPI_BYTE} data type, but this is not advisable.
 \item It is also ordinarily not possible to send items of one type if they are
-  not contiguous in memory. (You could send a contiguous memory area
+  not contiguous in memory. You could of course send a contiguous memory area
   that contains the items you want to send, but that is wasteful of
-  bandwidth.)
+  bandwidth.
 \end{itemize}
 With MPI data types you can solve these problems in several ways.
 \begin{itemize}
@@ -1433,6 +1437,27 @@ With MPI data types you can solve these problems in several ways.
 And you can combine these mechanisms to get irregularly spaced
 heterogeneous data, et cetera.
 
+\Level 2 {Datatype signatures}
+\label{sec:signature}
+\index{datatype!signature|(}
+
+With the primitive types you have seen so far, it pretty much went
+without saying that if the sender sends an array of doubles, the
+receiver had to declare the datatype also as doubles. With derived
+types that is no longer the case: the sender and receiver can declare
+a different datatype for the send and receive buffer, as long as these
+have the same \indextermbus{datatype}{signature}.
+
+The signature of a datatype is the internal representation of that
+datatype. For instance, if the sender declares a datatype consisting
+of two doubles, and it sends four elements of that type, the receiver
+can receive it as two elements of a type consisting of four doubles.
+
+You can also look at the signature as the form `under the hood' in which MPI
+sends the data.
+
+\index{datatype!signature|)}
+
 \Level 2 {Basic calls}
 \commandref{data-commit}
 
@@ -1441,25 +1466,60 @@ New MPI data types are created by
 \item \indexmpishow{MPI_Type_contiguous}
 \item \indexmpishow{MPI_Type_vector}
 \item \indexmpishow{MPI_Type_struct}
+\item \indexmpishow{MPI_Type_indexed}
+\item \indexmpishow{MPI_Type_hindexed}
 \end{itemize}
 It is necessary to call \indexmpishow{MPI_Type_commit} which makes MPI
 do the indexing calculations for the data type.  When you no longer
 need the data type, you call \indexmpishow{MPI_Type_free}.
 
 \Level 2 {Contiguous type}
+\commandref{data:contiguous}
 
-The simplest derived type is the `contiguous' type: an array of items
+The simplest derived type is the `contiguous' type,
+constructed with \indexmpishow{MPI_Type_contiguous}
+A~contigous type describes an array of items
 of an elementary or earlier defined type. There is no difference between sending
 one item of a contiguous type and multiple items of the constituent type.
+\begin{figure}[ht]
+  \includegraphics[scale=.08]{data-contiguous}
+  \caption{A contiguous datatype is built up out of elements of a constituent type}
+  \label{fig:data-contiguous}
+\end{figure}
+This is illustrated in figure~\ref{fig:data-contiguous}.
 
 \Level 2 {Vector type}
 \commandref{data:vector}
 
+The simplest non-contiguous datatype is the `vector' type, constructed with
+\indexmpishow{MPI_Type_vector}. A~vector type describes a series of blocks, all 
+of equal size, spaced with a constant stride.
+\begin{figure}[ht]
+  \includegraphics[scale=.12]{data-vector}
+  \caption{A vector datatype is built up out of strided blocks of elements of a constituent type}
+  \label{fig:data-vector}
+\end{figure}
+This is illustrated in figure~\ref{fig:data-vector}.
+
 \Level 2 {Indexed type}
+\commandref{data:indexed}
+
+The indexed datatype, constructed with \indexmpishow{MPI_Type_indexed}
+can send arbitrarily located elements from an array of a single datatype.
+You need to supply an array of index locations, plus an array of blocklengths
+with a separate blocklength for each index. The total number of elements sent
+is the sum of the blocklengths.
 
 \Level 2 {Struct type}
+\commandref{data:struct}
 
-\index{MPI!data types|)}
+The structure type, created with \indexmpishow{MPI_Type_create_struct},
+can contain multiple data types.
+This is very similar in functionality to \indexmpishow{MPI_Type_hindexed},
+which uses byte-based indexing. The structure-based type is probably cleaner
+in use.
+
+\index{datatype!derived|)}
 
 \Level 1 {Packing}
 \commandref{pack}
@@ -1486,6 +1546,8 @@ MPI offers the following:
 \item the \indexmpishow{MPI_Unpack} command retrieves data from a receive buffer;
 \item the buffer is sent with a datatype of \indexmpishow{MPI_PACKED}.
 \end{itemize}
+
+\index{datatype|)}
 
 \Level 0 {Communicators}
 \label{sec:communicators}

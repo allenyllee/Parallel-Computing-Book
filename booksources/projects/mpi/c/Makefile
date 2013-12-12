@@ -88,7 +88,7 @@ regression: total_clean
 	  echo "Compilation $$a" ; \
 	  make $$a >/dev/null 2>&1 ; \
 	  if [ ! -e $$a ] ; then echo ".. could not make $$a" ; fi ; \
-	  if [ ! -z "${SLURM_STEP_ID}" ] ; then \
+	  if [ ! -z "${SLURM_NNODES}" ] ; then \
 	    echo ".. run $$a" ; \
 	    rm -f mandelpicture* ; \
 	    ibrun $$a >$$a.runlog 2>&1 ; \

@@ -16,7 +16,7 @@ APPS = init recvblock sendblock ssendblock sendrecv putfence getfence \
     mvp2d commdup_wrong commdup_right irecv_source postwaitwin passive \
     centraldiff reduce reduceinplace allreduce allreduceinplace gather gatherv \
     reducescatter \
-    contiguous vector pack \
+    contiguous vector indexed struct pack \
     pingpong
 
 listapps :
@@ -38,7 +38,7 @@ endif
 
 DEBUG=OPT
 OPT_flag = -O2 -g
-DEBUG_flag = -g
+DEBUG_flag = -O0 -g
 #TACC_BLIS_INC = ${HOME}/Installation/Blis/installation/include
 #TACC_BLIS_LIB = ${HOME}/Installation/Blis/installation/lib
 info ::
