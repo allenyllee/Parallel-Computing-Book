@@ -1501,6 +1501,40 @@ of equal size, spaced with a constant stride.
 \end{figure}
 This is illustrated in figure~\ref{fig:data-vector}.
 
+As an example of this datatype, consider the example of transposing
+a matrix, for instance to convert between
+C and Fortran arrays (see section~\HPSCref{sec:CFarrays}). Suppose that 
+a processor has a matrix stored in~C, row-major, layout, and it needs
+to send a column to another processor. If the matrix is declared as
+\begin{verbatim}
+  int M,N; double mat[M][N]
+\end{verbatim}
+then a column has $M$ blocks of one element, spaced $N$~locations apart.
+In other words:
+\begin{verbatim}
+MPI_Datatype MPI_column;
+MPI_Type_vector( 
+    /* count= */ M, /* blocklength= */ 1, /* stride= */ N,
+    MPI_DOUBLE, &MPI_column );
+\end{verbatim}
+Sending the first column is easy:
+\begin{verbatim}
+MPI_Send( mat, 1,MPI_column, ... );
+\end{verbatim}
+The second column is just a little trickier: you now need to pick out 
+elements with the same stride, but starting at \n{A[0][1]}.
+\begin{verbatim}
+MPI_Send( &(mat[0][1]), 1,MPI_column, ... );
+\end{verbatim}
+You can make this marginally more efficient (and harder to read)
+by replacing the index expression by \n{mat+1}.
+
+\begin{exercise}
+  Suppose you have a matrix of size $4N\times 4N$, and you want to
+  send the elements \n{A[4*i][4*j]} with $i,j=0,\ldots,N-1$. How would
+  you send these elements with a single transfer?
+\end{exercise}
+
 \Level 2 {Indexed type}
 \commandref{data:indexed}
 
@@ -1515,7 +1549,23 @@ is the sum of the blocklengths.
 
 The structure type, created with \indexmpishow{MPI_Type_create_struct},
 can contain multiple data types.
-This is very similar in functionality to \indexmpishow{MPI_Type_hindexed},
+\begin{figure}[ht]
+  \includegraphics[scale=.11]{data-struct}
+  \caption{The elements of an MPI Struct datatype}
+  \label{fig:data-struct}
+\end{figure}
+The specification contains a `count' parameter that specifies how many blocks
+there are in a single structure. For instance,
+\begin{verbatim}
+struct {
+ int i;
+ float x,y;
+} point;
+\end{verbatim}
+has two blocks, one of a single integer, and one of two floats.
+This is illustrated in figure~\ref{fig:data-struct}.
+
+The structure type is very similar in functionality to \indexmpishow{MPI_Type_hindexed},
 which uses byte-based indexing. The structure-based type is probably cleaner
 in use.
 
@@ -1952,6 +2002,30 @@ t = MPI_Wtime();
 // something happens here
 t = MPI_Wtime()-t;
 \end{verbatim}
+If you execute this on a single processor you get fairly reliable
+timings, except that you would need to subtract the overhead for the
+timer. This is the usual way to measure timer overhead:
+\begin{verbatim}
+t = MPI_Wtime();
+// absolutely nothing here
+t = MPI_Wtime()-t;
+\end{verbatim}
+
+However, if you try to time a parallel application you will most likely
+get different times for each process, so you would have to take the
+average or maximum.  Another solution is to synchronize the processors
+by using a \indexterm{barrier}\indexmpi{MPI_Barrier}:
+\begin{verbatim}
+MPI_Barrier(comm)
+t = MPI_Wtime();
+// something happens here
+MPI_Barrier(comm)
+t = MPI_Wtime()-t;
+\end{verbatim}
+
+\begin{exercise}
+  This scheme also has some overhead associated with it. How would you measure that?
+\end{exercise}
 
 Now suppose you want to measure the time for a single send. It is not possible
 to start a clock on the sender and do the second measurement on the receiver,
@@ -1982,6 +2056,12 @@ else if ( proc_target ) {
   to let half the processors
   be source and the other half the targets. Does the pingpong time increase?
 \end{exercise}
+
+No matter what sort of timing you are doing, it is good to know the accuracy of your timer.
+The routine \indexmpishow{MPI_Wtick} gives the smallest possible timer increment.
+If you find that your timing result is too close to this `tick', you need to find a better timer
+(for CPU measurements there are cycle-accurate timers), or you need to increase
+your running time, for instance by increasing the amount of data.
 
 \Level 1 {Profiling}
 \commandref{profile}

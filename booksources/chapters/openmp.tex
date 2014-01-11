@@ -13,3 +13,22 @@
 \Level 1 {OpenMP code structure}
 \commandref{omp-code}
 
+\Level 1 {Stuff}
+
+\Level 2 {Critical sections}
+
+There are two pragmas for critical sections: \indexpragma{critical} and \indexpragma{atomic}.
+The second one is more limited but has performance advantages.
+
+A \n{critical} section works by acquiring a lock, which carries a substantial overhead.
+Furthermore, if your code has multiple critical sections, they are all mutually exclusive:
+if a thread is in one critical section, the other ones are all blocked.
+
+On the other hand, the syntax for \n{atomic} sections is limited, but such sections
+are not exclusive and they can be more efficient, since they assume that there is a hardware
+mechanism for making them critical.
+
+The problem with \n{critical} sections being mutually exclusive can be mitigated by naming them:
+\begin{verbatim}
+#pragma omp critical (optional_name_in_parens)
+\end{verbatim}

@@ -1,7 +1,7 @@
 module Circle
   implicit none
 
-  integer :: step,bound;
+  integer :: step,bound
   real :: ymin,ymax,y, xmin,xmax,x
 
   type coordinate
@@ -35,7 +35,7 @@ contains
   
   Logical function IsValidCoordinate(xy)
     type(Coordinate),intent(in) :: xy
-    if (xy%x>-3. .and. xy%y>-3.) then
+    if (xy%x<-3. .and. xy%y<-3.) then
        IsValidCoordinate = .TRUE.
     else
        IsValidCoordinate = .FALSE.
@@ -90,7 +90,7 @@ contains
 
     stop = .False.
     do
-!       write(*,*) mytid,"recving"
+       write(*,*) mytid,"recving"
        call MPI_Recv(xyv,2,MPI_REAL,ntids-1,0, comm,status,ierr)
        xy%x = xyv(1); xy%y = xyv(2)
        stop = .NOT. IsValidCoordinate(xy)
@@ -98,9 +98,9 @@ contains
           res = 0
        else
           res = Belongs(xy)
-!          write(*,*) "proc",mytid,"on",x,xy%x,xy%y,res
+          write(*,*) "proc",mytid,"working on",x,xy%x,xy%y,"result",res
        end if
-       call MPI_Send(res,1,MPI_INTEGER,ntids-1,0,comm,status,ierr)
+       call MPI_Send(res,1,MPI_INTEGER,ntids-1,0,comm,ierr)
        if (stop) then
           exit
        end if

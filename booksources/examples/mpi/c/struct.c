@@ -52,6 +52,11 @@ int main(int argc,char **argv) {
   displacements[2] = (size_t)&(myobject.i) - (size_t)&myobject;
   MPI_Type_create_struct(structlen,blocklengths,displacements,types,&newstructuretype);
   MPI_Type_commit(&newstructuretype);
+  {
+    MPI_Aint typesize;
+    MPI_Type_extent(newstructuretype,&typesize);
+    if (mytid==0) printf("Type extent: %d bytes\n",typesize);
+  }
   if (mytid==sender) {
     MPI_Send(&myobject,1,newstructuretype,the_other,0,comm);
   } else if (mytid==receiver) {

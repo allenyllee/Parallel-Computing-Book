@@ -156,6 +156,7 @@ retrieved with \indexmpishow{MPI_Type_extent}:
 \begin{verbatim}
 int MPI_Type_extent(MPI_Datatype datatype, MPI_Aint *extent)
 \end{verbatim}
+See the example in section~\ref{ref:data:struct}
 
 \Level 2 {Type create and release calls}
 \commandreflabel{data-commit}
@@ -284,6 +285,8 @@ displacement[1] = displacement[0] + sizeof(char);
 since you do not know the way the \indexterm{compiler} lays out the
 structure in memory\footnote{Homework question: what does the language
   standard say about this?}.
+The space that MPI takes for a structure type can be queried 
+with \indexmpishow{MPI_Type_extent}.
 
 (There is a deprecated function \indexmpishow{MPI_Type_struct} with the same
 functionality.)

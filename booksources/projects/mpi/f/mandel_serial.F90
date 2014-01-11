@@ -55,7 +55,7 @@ program MandelSerial
   call MPI_Comm_set_errhandler(comm,MPI_ERRORS_RETURN,ierr)
   call QueueInit(comm)
 
-  steps = 200; iters = 1000
+  steps = 10; iters = 1000
   call SetParameters(steps,iters)
 
   if (mytid.eq.ntids-1) then
