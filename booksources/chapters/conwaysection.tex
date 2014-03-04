@@ -1,3 +1,4 @@
+% -*- latex -*-
 \Level 0 {Introduction}
 
 There is not one way to approach parallel programming. 
@@ -73,45 +74,53 @@ surprisingly, Life can simulate, very slowly, a~computer!
 It is not hard to write a program for Life. Let's say we want to compute a certain
 number of time steps, and we have a square board of $N\times N$ cells.
 Also assume that we have a function \n{life_evaluation} that takes a
-$3\times3$ cells and returns the updated status of the center cell:
+$3\times3$ cells and returns the updated status of the center cell\footnote{We
+use a quasi-python syntax here, except that in arrays we let the upper bound 
+be inclusive.}:
 \begin{verbatim}
 def life_evaluation( cells ):
+  # cells is a 3x3 array
   count = 0
   for i in [0,1,2]:
     for j in [0,1,2]:
-      count += cells[i,j]
+      if i!=1 and j!=1:
+        count += cells[i,j]
+  return life_count_evaluation( cells[1,1],count )
+def life_count_evaluation( cell,count )
   if count<2:
-   return 0
+    return 0 # loneliness
   elif count>3:
-    return 0
-  elif cells[1,1]==1 and (count==2 or count==3):
-    return 1
-  elif cells[1,1]==0 and count==3:
-    return 1
-  else: return cells[1,1]
+    return 0 # overcrowding
+  elif cell==1 and (count==2 or count==3):
+    return 1 # live on
+  elif cell==0 and count==3:
+    return 1 # spontaneous generation
+  else:
+    return 0 # no change in dead cells
 \end{verbatim}
 
 The code would then be something like:
 \begin{verbatim}
 life_board.create(final_time,N,N)
 
-for t in [0:final_time]:
+for t in [0:final_time-1]:
     for i in [0:N-1]:
         for j in [0:N-1]:
-            life_board[t+1,i,j] := life_evaluation( life_board[t,i-1:i+1,j-1:j+1] )
+            life_board[t+1,i,j] := 
+                life_evaluation( life_board[t,i-1:i+1,j-1:j+1] )
 \end{verbatim}
 where we don't worry too much about the edge of the board;
 we can for instance declare that points outside the range $0\ldots N-1$ 
 are always dead.
 
-The above code created a board for all time steps, which
+The above code creates a board for each time step, which
 is not strictly necessary. You can save yourself some space
 by creating only two boards:
 \begin{verbatim}
 life_board.create(N,N)
 temp_board.create(N,N)
 
-for t in [0:final_time]:
+for t in [0:final_time-1]:
     life_generation( life_board,temp_board )
 
 def life_generation( board,tmp ):
@@ -227,9 +236,11 @@ more power efficient, and easier to manufacture.
 
 In the 1980s and 1990s \ac{SIMD} computers existed, such as the MasPar
 and the Connection Machine. They were sometimes called \indexterm{array processors}
-since they could operate on an array of data simultaneously.
-These days, \ac{SIMD} still exists, but in slightly different guises,
-and we will now explore what \ac{SIMD} parallelism looks like
+since they could operate on an array of data simultaneously,
+up to $2^{16}$ elements.
+These days, \ac{SIMD} still exists, but in slightly different guises
+and on much smaller scale;
+we will now explore what \ac{SIMD} parallelism looks like
 in current architectures.
 
 \Level 2 {Vector instructions}
@@ -326,7 +337,8 @@ We can do a similar story for computations in a CPU. Let's say we're
 dealing with floating point numbers of the form $a.b\times 10^c$.  Now
 if we add $5.8\times 10^1$ and $3.2\times 10^2$, we
 \begin{enumerate}
-\item first bring them on the same power of ten: $0.58\times 10^2+3.2\times 10^2$,
+\item first bring them on the same power of ten: $0.58\times
+  10^2+3.2\times 10^2$,
 \item do the addition: $3.88\times 10^2$,
 \item round to get rid of that last decimal place: $3.9\times 10^2$
 \end{enumerate}
@@ -398,7 +410,7 @@ a lot like \ac{SIMD}, and in fact it is something very close to it.
 Starting from the realization that graphics processing has a lot
 in common with traditional parallelism, people have tried to use \acp{GPU}
 for \ac{SIMD}-type numerical computations. Doing so was cumbersome,
-until NVIDIA came out with the \indexacf{CUDA} language.
+until \indexterm{NVIDIA} came out with the \indexacf{CUDA} language.
 \ac{CUDA} is a way of explicitly doing data parallel programming:
 you write piece of code called a \indexterm{kernel}, which 
 applies to a single data element. You then indicate a two-dimensional
@@ -668,10 +680,10 @@ get the data from the network, and do something with it.
   \includegraphics[scale=.08]{send-ideal}\hfill
   \includegraphics[scale=.08]{send-blocking}
   \caption{Illustration of `ideal' and `blocking' send}
-  \label{fig:send-blocking}
+  \label{fig:cw-send-blocking}
 \end{figure}
 This idealized behaviour is illustrated in the left half of
-figure~\ref{fig:send-blocking}. Practice is different.
+figure~\ref{fig:cw-send-blocking}. Practice is different.
 
 Suppose a process sends a large message, something that takes
 a great deal of memory. Since the only memory in the system
@@ -708,15 +720,16 @@ Let's suppose you want to compute the board \emph{two} timesteps from
 now, without explicitly computing the next timestep. Would that be possible?
 
 \begin{exercise}
-  Life expresses the value in \n{i,j} at time $t+1$ as a simple function of the
-  $3\times3$ patch \n{i-1:i+1,j-1:j+1} at time~$t$.  Convince yourself that the
-  value in \n{i,j} at~$t+\nobreak2$ can be computed as a function of a
-  $5\times5$ patch at~$t$.
+  Life expresses the value in \n{i,j} at time $t+1$ as a simple
+  function of the $3\times3$ patch \n{i-1:i+1,j-1:j+1} at time~$t$.
+  Convince yourself that the value in \n{i,j} at~$t+\nobreak2$ can be
+  computed as a function of a $5\times5$ patch at~$t$.
 
-  Can you formulate rules for this update over two timesteps? Are these rules as
-  elegant as the old ones, just expressed in a count of live and dead
-  cells? If you would code the new rules as a case statement, how many 
-  clauses would there be? Let's not persue this further\ldots
+  Can you formulate rules for this update over two timesteps? Are
+  these rules as elegant as the old ones, just expressed in a count of
+  live and dead cells? If you would code the new rules as a case
+  statement, how many clauses would there be? Let's not persue this
+  further\ldots
 \end{exercise}
 
 This has taught us something about dependence and
@@ -736,9 +749,10 @@ It means that processors do not have to synchronize what time step they are work
 within restrictions they can be working on different time steps.
 
 \begin{exercise}
-  Just how independent can processors be? If processor $i,j$ is working on time~$t$,
-  can processor $i+1,j$ be working on $t+2$? Can you give a formal description of
-  how far out of step processor $i,j$ and $i',j'$ can be?
+  Just how independent can processors be? If processor $i,j$ is
+  working on time~$t$, can processor $i+1,j$ be working on $t+2$? Can
+  you give a formal description of how far out of step processor $i,j$
+  and $i',j'$ can be?
 \end{exercise}
 
 The previous sections were supposed to be about task parallelism, but
@@ -859,7 +873,9 @@ the communication, which is slow, will be outweighed by the computation,
 which is much faster.
 
 Our analysis here was very simple, based on having exactly~$N$ processors.
-However, in many cases a more refined analysis gives the same conclusion:
+In practice you will have fewer processors, and each processor will
+have a subdomain rather than a single point.
+However, a more refined analysis gives the same conclusion:
 a two-dimensional distribution is to be prefered over a one-dimensional one;
 see for instance section~\HPSCref{sec:mvp-2d} for the analysis
 of the matrix-vector product algorithm.
@@ -872,7 +888,7 @@ Let's do just a little analysis on the following scenario:
   both the processing power (in operations per second) and the total
   memory.
 \item As you buy more processors, you can store a larger Life board:
-  we're assuming that the amount $M$ of memory is kept constant. (This
+  we're assuming that the amount $M$ of memory per processor is kept constant. (This
   strategy of scaling up the problem as you scale up the computer is
   called \indextermsub{weak}{scaling}. The scenario where you only
   increase the number of processors, keeping the problem fixed and
@@ -1004,3 +1020,7 @@ changes during the run of a program, and you want to rebalance it.
 Doing so can be tricky, since it requires problem data to be moved,
 and processor have to reallocate and rearrange their data structures.
 
+\begin{review}
+  \Level 1 {Review questions}
+  \input review/conway
+\end{review}

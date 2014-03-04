@@ -27,7 +27,7 @@
   {\refstepcounter{excounter}%
    \begingroup\def\ProcessCutFile{}\par
    \edef\tmp{\def\noexpand\CommentCutFile
-                 {exercises/\chapshortname-ex\arabic{excounter}.tex}}\tmp
+                 {exercises/\chapshortname\arabic{excounter}.tex}}\tmp
    }
   {\begin{quote}
    \leavevmode
@@ -41,7 +41,7 @@
 \generalcomment{answer}
   {\begingroup
    \edef\tmp{\def\noexpand\CommentCutFile
-                 {answers/\chapshortname-an\noexpand\arabic{excounter}.tex}}\tmp
+                 {answers/\chapshortname\noexpand\arabic{excounter}.tex}}\tmp
    \def\ProcessCutFile{}}
   {\ifIncludeAnswers \begin{quote}
    \leavevmode

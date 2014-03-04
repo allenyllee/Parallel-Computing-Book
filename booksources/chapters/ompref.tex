@@ -24,3 +24,87 @@ the proper header file \indexterm{omp.h}.
 \begin{verbatim}
 #include "omp.h" // for C
 \end{verbatim}
+
+For Fortran:
+\begin{verbatim}
+use omp_lib
+\end{verbatim}
+The \indexterm{structured block} that follows a pragma is basically a block 
+that gets executed as a whole: you can not jump into or out of it.
+
+\Level 0 {Thread stuff}
+
+\Level 1 {Creating parallel threads}
+\commandreflabel{omp-parallel}
+
+\indexpragma{parallel}
+\verbatimsnippet{hello-who-omp}
+
+\indexpragma{parallel for}
+
+\Level 0 {Controlling thread data}
+\commandreflabel{sec:ompdata}
+
+\indexpragma{shared}
+
+\Level 1 {Private data}
+
+Data that is declared private with the \indexpragma{private} directive is
+put on a separate \indextermbus{stack}{per thread}. The OpenMP standard
+does not dictate the size of these stacks, but beware of \indextermbus{stack}{overflow}.
+A~typical default
+is a few megabyte; you can control it with the environment variable
+\indextermtt{OMP_STACKSIZE}
+
+\indexpragma{firstprivate}
+\indexpragma{lastprivate}
+\indexpragma{copyin}
+
+\Level 0 {Parallel regions}
+\commandreflabel{parallelregion}
+
+\indexpragma{parallel}
+
+\Level 1 {Loop parallelism}
+\commandreflabel{omp-for}
+
+A loop prefixed with the \indexpragma{for} or \indexpragma{parallel for} pragma
+(they are synonymous) is automatically parallelized.
+\begin{itemize}
+\item The loop can not contains \n{break}, \n{return}, \n{exit} statements, or
+  \n{goto} to a label outside the loop.
+\item The \n{continue} statement is allowed.
+\item The index update has to be an increment (or decrement) by a fixed amount.
+\end{itemize}
+
+\Level 1 {Reductions}
+\commandreflabel{reduction}
+
+Arithmetic reductions: $+,*,-,\max,\min$
+
+Logical operator reductions: \n{&,&&,|,||,^}
+
+Fortran: 
+
+\Level 0 {Stuff}
+
+\Level 1 {Timing}
+
+To do \indextermsub{OpenMP}{timing} you can use any system utility;
+however there is a dedicated routine \indexcommand{omp_get_wtime}
+that express the time since some starting point as a double:
+\begin{verbatim}
+double omp_get_wtime(void);
+\end{verbatim}
+To measure a time difference:
+\begin{verbatim}
+double tstart,tend,duration;
+tstart = omp_get_wtime();
+// do stuff
+tend = omp_get_wtime();
+duration = tend-tstart;
+\end{verbatim}
+The timer resolution is given by:
+\begin{verbatim}
+double omp_get_wtick(void);
+\end{verbatim}

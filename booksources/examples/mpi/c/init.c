@@ -19,7 +19,6 @@ int main(int argc,char **argv) {
 
 #include "globalinit.c"
 
-  MPI_Comm_rank(comm,&mytid);
   if (mytid==0) {
     if ( argc==1 || // the program is called without parameter
          ( argc>1 && !strcmp(argv[1],"-h") ) // user asked for help

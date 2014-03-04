@@ -17,6 +17,7 @@ APPS = init recvblock sendblock ssendblock sendrecv putfence getfence \
     centraldiff reduce reduceinplace allreduce allreduceinplace gather gatherv \
     reducescatter \
     contiguous vector indexed struct pack \
+    cart persist \
     pingpong
 
 listapps :
@@ -39,8 +40,7 @@ endif
 DEBUG=OPT
 OPT_flag = -O2 -g
 DEBUG_flag = -O0 -g
-#TACC_BLIS_INC = ${HOME}/Installation/Blis/installation/include
-#TACC_BLIS_LIB = ${HOME}/Installation/Blis/installation/lib
+
 info ::
 	@echo "    debug flag: DEBUG=DEBUG/OPT (default: ${DEBUG})]"
 %.o : %.c
@@ -53,7 +53,7 @@ info ::
 app_dependencies  = tools.o
 .SECONDEXPANSION:
 ${APPS} : $$@.o ${app_dependencies}
-	${CXX} -o $@ $@.o ${app_dependencies} #-L${TACC_BLIS_LIB} -lblis
+	${CXX} -o $@ $@.o ${app_dependencies}
 ${patsubst %,%.o,${APPS}} tools.o : tools.h globalinit.c
 
 # rules for submitting to the queue and doing tau analysis

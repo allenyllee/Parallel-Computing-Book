@@ -11,6 +11,17 @@ W.~Gropp, E.~Lusk, and A.~Skjellum.
 \newblock {\em Using {MPI}}.
 \newblock {T}he {MIT} {P}ress, 1994.
 
+\bibitem{Hoefler:case-for-nbc}
+Torsten Hoefler, Prabhanjan Kambadur, Richard~L. Graham, Galen Shipman, and
+  Andrew Lumsdaine.
+\newblock A case for standard non-blocking collective operations.
+\newblock In {\em Proceedings, Euro PVM/MPI}, Paris, France, October 2007.
+
+\bibitem{Hoefler:2010:SCP}
+Torsten Hoefler, Christian Siebert, and Andrew Lumsdaine.
+\newblock Scalable communication protocols for dynamic sparse data exchange.
+\newblock {\em SIGPLAN Not.}, 45(5):159--168, January 2010.
+
 \bibitem{OReilly-GnuMake}
 Robert Mecklenburg.
 \newblock {\em Managing Projects with {GNU} {Make}}.

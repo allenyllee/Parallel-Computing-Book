@@ -44,24 +44,23 @@ int main(int argc,char **argv) {
   int *myjobs = new int[ninputs];
   for (int i=0; i<ninputs; i++) 
     myjobs[i] = 0;
-
   if (mytid!=repository) {
-
-    float occupied=-1.,table_element;
-
+    float contribution=(float)mytid,table_element;
     int loc=0;
-
       MPI_Win_lock(MPI_LOCK_EXCLUSIVE,repository,0,the_window);
-
-      cout << "locking from" << mytid << "\n";
       // read the table element by getting the result from adding zero
-      err = MPI_Fetch_and_op(&occupied,&table_element,MPI_INT,
-       	            repository,loc,MPI_REPLACE,the_window); CHK(err);
+      err = MPI_Fetch_and_op(&contribution,&table_element,MPI_FLOAT,
+       	            repository,loc,MPI_SUM,the_window); CHK(err);
       MPI_Win_unlock(repository,the_window);
-
   }
 
   err = MPI_Win_free(&the_window); CHK(err);
+
+  MPI_Barrier(comm);
+
+  if (mytid==repository) {
+    printf("Final result: %e\n",inputs[0]);
+  }
 
   MPI_Finalize();
   return 0;

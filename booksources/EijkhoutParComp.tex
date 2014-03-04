@@ -19,6 +19,7 @@
 \IncludeAnswersfalse
 \input inex
 \includecomment{gpu}
+\includecomment{review}
 
 \usepackage{amssymb}
 \usepackage[fleqn]{amsmath}
@@ -39,6 +40,7 @@
 
 \def\verbatimsnippet#1{\verbatiminput{snippets/#1}}
 \newenvironment{question}{\begin{quotation}\textbf{Question.\ }}{\end{quotation}}
+\newenvironment{fortrannote}{\begin{quotation}\textbf{Fortran\ }}{\end{quotation}}
 
 \def\svnrev{428}
 \edef\revision{\svnrev}
@@ -71,7 +73,6 @@
 \fancyfoot[RE]{\footnotesize\sl Parallel Computing -- r\revision}
 \begin{lulu}
 \fancyfoot[RE]{\footnotesize\sl Parallel Computing}
-}
 \end{lulu}
 \fancyfoot[LO]{\footnotesize\sl Victor Eijkhout}
 
@@ -167,7 +168,6 @@
   \catcode`\>=12 \catcode`\<=12
   \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
   \tt \afterassignment\mpitoindex\edef\indexedmpi}
-\global\let\indextermtt\indexmpishow
 \gdef\indexmpi#{\bgroup \catcode`\_=13 \def_{\char95\discretionary{}{}{}}
   \catcode`\>=12 \catcode`\<=12
   \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
@@ -179,7 +179,11 @@
   \tmp
   \egroup
 }
-\def\indexpragma#1{\index{omp!#1|texttt}}
+\def\indexpragma#1{\texttt{#1}\index{omp!#1|texttt}}
+\index{pragma|see{for list see under `omp'}}
+\let\indextermtt\indexmpishow
+\let\indexcommand\indexmpishow
+\def\indexclauseoption#1#2{\texttt{#2}\index{#1!#2|texttt}}
 
 \newcommand\commandref[1]{\label{sec:#1}
   \begin{quotation}
@@ -201,7 +205,7 @@
 \usepackage{xr-hyper}
 \usepackage[pdftex,colorlinks]{hyperref}
 \hypersetup{bookmarksopen=true}
-\externaldocument[HPSC-]{../scicompbook/scicompbook}
+\externaldocument[HPSC-]{../hpc-book-private/scicompbook}
 \newcommand\HPSCref[1]{HPSC-\nobreak\ref{HPSC-#1}}
 \usepackage[all]{hypcap}
 
@@ -237,11 +241,14 @@
 
 \CHAPTER{Introduction to parallel programming}{conwaysection}
 
+\acresetall
 \part{MPI}
 
+\tracingmacros=2
 \CHAPTER{MPI tutorial}{mpi}
 \CHAPTER{MPI Reference}{mpiref}
 
+\acresetall
 \part{OpenMP}
 
 \CHAPTER{OpenMP tutorial}{openmp}
@@ -280,16 +287,16 @@
 
 \Level 0 {Class projects}
 
-\SetBaseLevel 1
-\input projects/mpiprojects
-\SetBaseLevel 0
+%% \SetBaseLevel 1
+%% \input projects/mpiprojects
+%% \SetBaseLevel 0
+\PROJECT{A Style Guide to Project Submissions}{projectstyle}
+\PROJECT{Warmup Exercises}{warmup}
+\PROJECT{Mandelbrot set}{mandelbrot}
+\PROJECT{Data parallel grids}{grid}
 
-%\PROJECT{Cache simulation and analysis}{cache}
-
-%% \Level 0 {Codes}
-%% \label{app:codes}
-%% \input appendices/codes
-
+\Level 0 {Ascii table}
+\input ascii
 \vfill\pagebreak
 
 \bibliography{vle}

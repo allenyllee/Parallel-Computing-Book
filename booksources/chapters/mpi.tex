@@ -143,20 +143,16 @@ performance, but at least you can test your code for correctness.
 \commandref{mpi-init}
 
 Every program that uses MPI needs to initialize and finalize exactly
-once. In~C, the calls are
+once. The calls for this are \indexmpishow{MPI_Init} and \indexmpishow{MPI_Finalize}.
+In~C, the calls are \
 \begin{verbatim}
 ierr = MPI_Init(&argc,&argv);
 // your code
 ierr = MPI_Finalize();
 \end{verbatim}
-where \n{argc} and \n{argv} are the arguments of the main program.
+where \n{argc} and \n{argv} are the arguments of the main program. For Fortran see the
+reference section~\ref{ref:mpi-init}.
 %
-The corresponding Fortran calls are
-\begin{verbatim}
-call MPI_Init(ierr)
-// your code
-call MPI_Finalize()
-\end{verbatim}
 (There is a call \indexmpishow{MPI_Abort} if you want to abort execution
 completely.)
 
@@ -416,8 +412,17 @@ This call makes it easy to exchange data between two processors: both
 specify the other as both target and source. However, there need not
 be any such relation between target and source: it is possible to
 receive from a predecessor in some ordering, and send to a successor
-in that ordering.
-
+in that ordering; see figure~\ref{fig:sendrecv}.
+\begin{figure}[ht]
+\begin{lulu}
+    \includegraphics[scale=.6]{sendrecv-actual}
+\end{lulu}
+\begin{notlulu}
+    \includegraphics[scale=.09]{sendrecv}
+\end{notlulu}
+  \caption{An MPI Sendrecv call}
+  \label{fig:sendrecv}
+\end{figure}
 Above you saw some examples that had most processors doing both a send and
 a receive, but some only a send or only a receive. You can still use
 \n{MPI_Sendrecv} in this call if you use \n{MPI_PROC_NULL} for
@@ -642,8 +647,34 @@ routine.  There is nothing special about a non-blocking or synchronous
 message once it arrives; the \n{MPI_Recv} call can match any of the
 send routines you have seen so far (but not \n{MPI_Sendrecv}).
 
+\Level 1 {Persistent communication}
+\commandref{persistent}
+
+An \n{Isend} or \n{Irecv} call as an \n{MPI_Request} parameter. This
+is an object that gets created in the send/recv call, and deleted in
+the wait call. You can imagine that this carries some overhead, and if
+the same communication is repeated many times you may want to avoid
+this overhead by reusing the request object.
+
+To do this, MPI has \indextermsub{persistent}{communication}:
+\begin{itemize}
+\item You describe the communication with
+  \indexmpishow{MPI_Send_init}, which has the same calling sequence as
+  \n{MPI_Isend}, or \indexmpishow{MPI_Recv_init}, which has the same
+  calling sequence as \n{MPI_Irecv}.
+\item The actual communication is performed by calling
+  \indexmpishow{MPI_Start}, for a single request, or
+  \indexmpishow{MPI_Startall} for an array or requests.
+\item Completion of the communication is confirmed with
+  \indexmpishow{MPI_Wait} or similar routines as you have seen in the
+  explanation of non-blocking communication.
+\item The wait call does not release the request object: that is done
+  with \indexmpishow{MPI_Request_free}.
+\end{itemize}
+
 \index{communication!non-blocking|)}
 \index{communication!two-sided|)}
+
 \Level 1 {One-sided communication}
 \commandref{one-sided}
 \index{communication!one-sided|(}
@@ -935,6 +966,28 @@ The two lock types are:
 These routines make MPI behave like a shared memory system; the
 instructions between locking and unlocking the window effectively
 become \indexterm{atomic operations}.
+
+The above mechanism is of limited use.
+Suppose processor zero has a data structure \n{work_table}
+with items that need to be processed. A~counter \n{first_work}
+keeps track of the lowest numbered item that still needs processing.
+You can imagine the following
+\indexterm{master-worker} scenario:
+\begin{itemize}
+\item Each process connects to the master,
+\item inspects the \n{first_work} variable,
+\item retrieves the corresponding work item, and
+\item increments the \n{first_work} variable.
+\end{itemize}
+It is important here to avoid a \indexterm{race conditions}
+(see section \HPSCref{sec:shared-lock}) that would result
+from a second process reading the \n{first_work} variable 
+before the first process could have updated it. Therefore, the reading
+and updating needs to be an \indexterm{atomic operation}.
+
+Unfortunately, you can not have a put and get call in the same access
+epoch. For this reason, MPI version~3 has added certain atomic
+operations, such as \indexmpishow{MPI_Fetch_and_op}.
 
 \Level 2 {Details}
 \label{sec:mpi-alloc}
@@ -1275,9 +1328,33 @@ Thus, MPI has the following operations:
 The `v' variants are discussed in section~\ref{sec:v-collective}.
 
 \Level 1 {Non-blocking collectives}
-\label{sec:mpi3collect}
+\commandref{mpi3collect}
 
-MPI version~3 has non-blocking collectives.
+Above you have seen how the `Isend' and `Irecv' routines can overlap communication
+with computation. This is not possible with the collectives you have seen so far:
+they act like blocking sends or receives.
+However, there are also \indextermsub{non-blocking}{collectives}.
+These have roughly the same calling sequence as their blocking counterparts,
+except that they output an \indexmpishow{MPI_Request}. You
+can then use an \indexmpishow{MPI_Wait} call to make sure the collective
+has completed.
+
+Such operations can be used to increase efficiency.
+For instance, computing
+\[ y \leftarrow Ax + x^tx \]
+involves a matrix-vector product, which is dominated by computation
+in the \indextermsub{sparse}{matrix} case, and an inner product which is 
+typically dominated by the communication cost. You would code this as
+\begin{verbatim}
+MPI_Iallreduce( .... x ..., &request);
+// compute the matrix vector product
+MPI_Wait(request);
+// do the addition
+\end{verbatim}
+
+This can also be used for 3D FFT operations~\cite{Hoefler:case-for-nbc}.
+Occasionally, a non-blocking collective can be used for non-obvious purposes,
+such as the \indexmpishow{MPI_Ibarrier} in~\cite{Hoefler:2010:SCP}.
 
 \Level 1 {Barrier and all-to-all}
 
@@ -1782,6 +1859,36 @@ Inter-communicators can be used if two groups of process work
 asynchronously with respect to each other; another application is
 fault tolerance (section~\ref{mpi:tolerant}).
 
+\Level 1 {Process topologies}
+\commandref{topology}
+
+In the communicators you have seen so far, processes are linearly ordered.
+In some circumstances the problem you are coding has some structure,
+and expressing the program
+in terms of that structure would be convenient. For this purpose, MPI 
+can define a virtual \indexterm{topology}. There are two types:
+\begin{itemize}
+\item regular, Cartesian, grids; and
+\item general graphs.
+\end{itemize}
+
+\Level 2 {Cartesian grid topology}
+\commandref{cartesian}
+
+A \indextermsub{Cartesian}{grid} is a structure, typically in 2~or~3 dimensions,
+of points that have two neighbours in each of the dimensions.
+Thus, if a Cartesian grid has sizes $K\times M\times N$, its
+points have coordinates $(k,m,n)$ with $0\leq k<K$ et cetera.
+Most points have six neighbours $(k\pm1,m,n)$, $(k,m\pm1,n)$, $(k,m,n\pm1)$;
+the exception are the edge points. A~grid where edge processors
+are connected through \indexterm{wraparound connections} is called
+a \indextermsub{periodic}{grid}.
+
+The most common use of Cartesian coordinates
+is to find the rank of process by referring to it in grid terms.
+For instance, one could ask `what are my neighbours offset by $(1,0,0)$, 
+$(-1,0,0)$, $(0,1,0)$ et cetera'.
+
 \index{communicator|)}
 
 \Level 0 {Hybrid programming: MPI and threads}\
@@ -1991,6 +2098,7 @@ collection of inter-communicators to begin with.
 
 \Level 1 {Timing}
 \commandref{timing}
+\index{timing!MPI|(}
 
 Timing of parallel programs is tricky. On each node you can use a timer,
 typically based on some \ac{OS} call. MPI supplies its own routine
@@ -2062,6 +2170,8 @@ The routine \indexmpishow{MPI_Wtick} gives the smallest possible timer increment
 If you find that your timing result is too close to this `tick', you need to find a better timer
 (for CPU measurements there are cycle-accurate timers), or you need to increase
 your running time, for instance by increasing the amount of data.
+
+\index{timing!MPI|)}
 
 \Level 1 {Profiling}
 \commandref{profile}

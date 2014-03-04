@@ -59,13 +59,28 @@ This aborts execution on all processes associated with the communicator,
 but many implementations simply abort all processes. The \n{value} parameter
 is returned to the environment.
 
-The commandline arguments can only be guaranteed to be passed correctly to 
-process zero. Here is a fragment of code that shows use of commandline arguments.
-The program \n{examples/mpi/c/init.c} takes a single integer commandline argument.
-If the user forgets to specify an argument of specifies~\n{-h}, a usage message
-is printed and the program aborts, otherwise the parameter is broadcast to 
-all processes.
+The corresponding Fortran calls are
+\begin{verbatim}
+call MPI_Init(ierr)
+// your code
+call MPI_Finalize()
+\end{verbatim}
+Note that the \n{MPI_Init} call is one of the few that differs between C and Fortran:
+the C~routine takes the commandline arguments, which Fortran lacks.
+
+Any \indexterm{commandline argument} to the program can only be
+guaranteed to be passed correctly to process zero. Here is a fragment
+of code that shows use of commandline arguments.  The program
+\n{examples/mpi/c/init.c} takes a single integer commandline argument.
+If the user forgets to specify an argument of specifies~\n{-h}, a
+usage message is printed and the program aborts, otherwise the
+parameter is broadcast to all processes.  
+%
 \verbatimsnippet{usage}
+%
+For Fortran:
+%
+\verbatimsnippet{usage-f}
 
 \Level 1 {MPI ranks and communicator sizes}
 \commandreflabel{rank-size}
@@ -325,7 +340,7 @@ does not know this value a~priori, so has to specify an upper bound.
 \Level 0 {Blocking communication}
 \commandreflabel{blocking}
 
-The basic send command is
+The basic send command is \indexmpishow{MPI_Send}:
 \begin{verbatim}
 int MPI_Send(void *buf, 
   int count, MPI_Datatype datatype, int dest, int tag,
@@ -336,7 +351,7 @@ This routine may not blocking for small messages; to force blocking
 behaviour use \n{MPI_Ssend} with the same argument list.
 \url{http://www.mcs.anl.gov/research/projects/mpi/www/www3/MPI_Ssend.html}
 
-The basic blocking receive command is
+The basic blocking receive command is \indexmpishow{MPI_Recv}:
 \begin{verbatim}
 int MPI_Recv(void *buf, 
   int count, MPI_Datatype datatype, int source, int tag,
@@ -347,6 +362,13 @@ The \n{count} argument indicates the maximum length of a message; the
 actual length of the message can be determined with \n{MPI_Get_count}; 
 see section~\ref{sec:mpi-source}.
 
+\begin{fortrannote}
+  In Fortran the \n{MPI_Status} object needs to be explicitly created:
+\begin{verbatim}
+integer status(MPI_STATUS_SIZE)
+\end{verbatim}
+\end{fortrannote}
+
 The following code is guaranteed to block, since a \n{MPI_Recv}
 always blocks:
 \verbatimsnippet{recvblock}
@@ -356,7 +378,11 @@ that fall under the \indexterm{eager limit}. In this example we send
 gradually larger messages. From the screen output you can see what
 the largest message was that fell under the eager limit; after that the code
 hangs because of a deadlock.
+%
 \verbatimsnippet{sendblock}
+%
+\verbatimsnippet{sendblock-f}
+%
 If you want a code to behave the same for all message sizes,
 you force the send call to be blocking by using \n{MPI_Ssend}:
 \verbatimsnippet{ssendblock}
@@ -440,6 +466,32 @@ with \indexmpishow{MPI_Waitany}, and process the receive data as it comes in.
 Note the \indexmpishow{MPI_STATUS_IGNORE} parameter: we know everything
 about the incoming message, so we do not need to query a status object.
 Contrast this with the example in section~\ref{ref:mpi-source}.
+
+\Level 1 {Persistent communication}
+\commandreflabel{persistent}
+
+\begin{verbatim}
+int MPI_Send_init(
+  void* buf, int count, MPI_Datatype datatype, 
+  int dest, int tag, MPI_Comm comm, 
+  MPI_Request *request) 
+\end{verbatim}
+
+\begin{verbatim}
+int MPI_Recv_init(
+  void* buf, int count, MPI_Datatype datatype, 
+  int source, int tag, MPI_Comm comm, 
+  MPI_Request *request)
+\end{verbatim}
+
+\begin{verbatim}
+int MPI_Start(MPI_Request *request)
+int MPI_Startall(int count, MPI_Request *array_of_requests) 
+\end{verbatim}
+
+\begin{verbatim}
+int MPI_Request_free(MPI_Request *request)
+\end{verbatim}
 
 \Level 0 {One-sided communication}
 \commandreflabel{one-sided}
@@ -586,7 +638,15 @@ MPI_Win_lock (int locktype, int rank, int assert, MPI_Win win)
 MPI_Win_unlock (int rank, MPI_Win win)
 \end{verbatim}
 
-\verbatimsnippet{passive}
+The \indexmpi{MPI_Fetch_and_op} call atomically retrieves an item from the window
+indicated, and replaces the item on the target by doing an accumulate on it
+with the data on the origin.
+\begin{verbatim}
+int MPI_Fetch_and_op(const void *origin_addr, void *result_addr,
+        MPI_Datatype datatype, int target_rank, MPI_Aint target_disp,
+        MPI_Op op, MPI_Win win)
+\end{verbatim}
+\verbatimsnippet{fetchop}
 
 \Level 0 {Collectives}
 
@@ -812,6 +872,19 @@ has part of a long array, and it knows only how many element it has. The followi
 computes the global index of its first element.\indexmpi{MPI_Exscan}
 \verbatimsnippet{myfirst}
 
+\Level 1 {Non-blocking collectives}
+\commandreflabel{mpi3collect}
+
+The same calling sequence as the blocking counterpart, except for the addition
+of an \indexmpishow{MPI_Request} parameter. For instance 
+\indexmpishow{MPI_Ibcast}:
+\begin{verbatim}
+int MPI_Ibcast(
+  void *buffer, int count, MPI_Datatype datatype,
+  int root, MPI_Comm comm, 
+  MPI_Request *request)
+\end{verbatim}
+
 \Level 0 {Cancelling messages}
 
 In section~\ref{sec:mpi-source} we showed a master-worker example where the 
@@ -876,6 +949,49 @@ Most of the time, there is no reason to use a relative ranking that is different
 the global ranking, so the \n{MPI_Comm_rank} value of the global communicator
 is a good choice.
 \verbatimsnippet{commsplitrowcol}
+
+\Level 1 {Process topologies}
+\commandreflabel{topology}
+
+\Level 2 {Cartesian grid topology}
+\commandreflabel{cartesian}
+
+The cartesian topology is specified by giving
+\indexmpishow{MPI_Cart_create} the sizes of the processor grid along
+each axis, and whether the grid is periodic along that axis.
+\begin{verbatim}
+int MPI_Cart_create(
+  MPI_Comm comm_old, int ndims, int *dims, int *periods, 
+  int reorder, MPI_Comm *comm_cart)
+\end{verbatim}
+Each point in this new communicator has a coordinate and a rank.  They
+can be queried with \indexmpishow{MPI_Cart_coord} and
+\indexmpishow{MPI_Cart_rank} respectively.
+\begin{verbatim}
+int MPI_Cart_coords(
+  MPI_Comm comm, int rank, int maxdims,
+  int *coords);
+int MPI_Cart_rank(
+  MPI_Comm comm, init *coords, 
+  int *rank);
+\end{verbatim}
+Note that these routines can give the coordinates for any rank,
+not just for the current process.
+%
+\verbatimsnippet{cart}
+
+The \n{reorder} parameter to \n{MPI_Cart_create}
+indicates whether processes can have a rank
+in the new communicator that is different from in the old one.
+
+Strangely enough you can only shift in one direction, you can not
+specify a shift vector.
+\begin{verbatim}
+int MPI_Cart_shift(MPI_Comm comm, int direction, int displ, int *source, 
+                  int *dest)
+\end{verbatim}
+If you specify a processor outside the grid
+the result is \indexmpishow{MPI_PROC_NULL}.
 
 \Level 0 {Error handling}
 \commandreflabel{mpi:error}
