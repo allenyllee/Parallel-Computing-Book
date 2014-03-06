@@ -1,0 +1,27 @@
+\documentclass[11pt]{artikel3}
+
+\usepackage{pslatex}
+\def\n{\bgroup\catcode`\_=12 \tt \let\next=}
+
+\begin{document}
+\title{MPI Programming exercise: timing}
+\author{}\date{}\maketitle
+
+Start with the \n{time_avg} program, which computes the average time
+taken for a computation. Compile the program with \n{make time_avg}
+and run it in an \n{idev} session.
+
+Now do the following experiments.
+
+\section{Timer accuracy}
+
+The first thing you have to wonder about when you're doing timings is:
+how much does the timer disturb the measurements. 
+Find a way to measure how much time the timer itself takes.
+
+\section{Collecting results}
+
+Instead of just computing the average time for a computation, 
+gather all the timings on the root process and print them all.
+
+\end{document}
