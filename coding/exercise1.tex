@@ -8,8 +8,14 @@
 \author{}\date{}\maketitle
 
 Start with the \n{time_avg} program, which computes the average time
-taken for a computation. Compile the program with \n{make time_avg}
-and run it in an \n{idev} session.
+taken for a computation. 
+
+The make file has a handy feature: if you type \n{make} it will not
+actually do anything, but it will tell you all its capabilities. (Take
+a look at the makefile. How is this effect attained?)
+
+Compile the program with \n{make time_avg} and run it in an \n{idev}
+session: \n{ibrun time_avg}.
 
 Now do the following experiments.
 
@@ -23,5 +29,32 @@ Find a way to measure how much time the timer itself takes.
 
 Instead of just computing the average time for a computation, 
 gather all the timings on the root process and print them all.
+
+\section{Trace output}
+
+Do the following steps \emph{on a login node} (you may want to keep
+two windows open):
+\begin{enumerate}
+\item \n{make total_clean} to remove all binaries
+\item \n{module load tau}
+\item Rebuild your program. Do you notice anything different about the
+  output?
+\item Now try to get an \n{idev} session on more than one node: \n{idev -N 2}.
+\item Instead of running with \n{idev}, do \n{make idevrun}. (Inspect
+  the makefile to see what magic is going on there!)
+\item You'll see that a directory has been created. If you now type
+  \n{make tauplots}, a file with extension~\n{slog2} is created.
+\item Invoke the \n{jumpshot} program on that \n{slog2} file.
+\item What does it all mean? Experiment with zooming in; see what the
+  different colours mean.
+\end{enumerate}
+
+\section{Report!}
+
+Write up a report of what you've done here. Ideally, your report
+will have some code snippets and screen shots.
+Note: every
+question/suggestion in this assignment is of course an opportunity for
+writing a paragraph or two. 
 
 \end{document}

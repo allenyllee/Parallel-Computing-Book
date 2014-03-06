@@ -20,9 +20,9 @@ info ::
 # rules for submitting to the queue and doing tau analysis
 info ::
 	@echo
-	@echo "make submit EXECUTABLE=<any prog> OPTIONS=<whatever>"
-EXECUTABLE = grid_blocking
-OPTIONS = pi 4 pj 6 ni 400 nj 600 it 10
+	@echo "make submit EXECUTABLE=<...> (default=${EXECUTABLE})"
+EXECUTABLE = 
+OPTIONS = 
 submit :
 	@export TAU_EXT=`if [ ! -z "${EXECUTABLE}" ] ; then echo "_" ; fi`${EXECUTABLE} ; \
 	export TAU_DUMP_DIR=`pwd`/tautrace$$TAU_EXT ; \
@@ -33,6 +33,8 @@ submit :
 	  PROFILEDIR=$${TAU_DUMP_DIR} \
 	    EXECUTABLE=${EXECUTABLE} OPTIONS="${OPTIONS}" \
 	      qsub jobscript
+info ::
+	@echo "make idevrun EXECUTABLE=<...> (default=${EXECUTABLE})"
 idevrun :
 	@if [ -z "${EXECUTABLE}" ] ; then \
 	   echo "Usage: make ibrun executable option"; exit 1 ; fi
@@ -44,8 +46,9 @@ idevrun :
 	  PROFILEDIR=$${TAU_DUMP_DIR} \
 	    ibrun ${EXECUTABLE} ${OPTIONS}
 info ::
-	@echo "make tau EXECUTABLE=..."
-tau :
+	@echo "make tauplots EXECUTABLE=..."
+	@echo "    (for post-processing)"
+tauplots :
 	@export HOME=`pwd` ; \
 	export TAU_EXT=`if [ ! -z "${EXECUTABLE}" ] ; then echo "_" ; fi`${EXECUTABLE} ; \
 	export TAU_DUMP_DIR=`pwd`/tautrace$$TAU_EXT ; \
@@ -54,23 +57,6 @@ tau :
 	  rm -f tau.trc tau.edf ; \
 	  tau_treemerge.pl ; \
 	  tau2slog2 tau.trc tau.edf -o $$HOME/taulog$$TAU_EXT.slog2
-
-info ::
-	@echo "make regression"
-regression: total_clean
-	for a in ${MANDEL_APPS} ; do \
-	  echo "Compilation $$a" ; \
-	  make $$a >/dev/null 2>&1 ; \
-	  if [ ! -e $$a ] ; then echo ".. could not make $$a" ; fi ; \
-	  if [ ! -z "${SLURM_NNODES}" ] ; then \
-	    echo ".. run $$a" ; \
-	    rm -f mandelpicture* ; \
-	    ibrun $$a >$$a.runlog 2>&1 ; \
-	    if [ ! -e "mandelpicture.ppm" ] ; then \
-	      echo ".. failed to run $$a" ; \
-	    fi ; \
-	  fi ; \
-	done
 
 info ::
 	@echo "make clean       : cleanup but leave executables & slog2"
