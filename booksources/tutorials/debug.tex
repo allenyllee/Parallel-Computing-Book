@@ -1,3 +1,4 @@
+% -*- latex -*-
 \index{debugging|(}
 
 When a program misbehaves, \emph{debugging} is the process of finding
@@ -35,6 +36,25 @@ concepts common to all debuggers.
 In this tutorial you will debug a number of simple programs with
 gdb and valgrind. The files can be downloaded from
 \n{http://tinyurl.com/ISTC-debug-tutorial}.
+
+\Level 0 {Step 0: compiling for debug}
+
+You often need to recompile your code before you can debug it.
+A~first reason for this is that the binary code typically knows
+nothing about what variable names corresponded to what memory locations,
+or what lines in the source to what instructions. In order to make
+the binary executable know this, you have to include the \indexterm{symbol table}
+in it, which is done by adding the \n{-g} option to the compiler line.
+
+Usually, you also need to lower
+the \indextermbus{compiler}{optimization level}: a production code
+will often be compiled with flags such as \n{-O2} or \n{-Xhost} that
+try to make the code as fast as possible, but for debugging you need
+to replace this by~\n{-O0} (`oh-zero').  The reason is that higher
+levels will reorganize your code, making it hard to relate the
+execution to the source\footnote{Typically, actual code motion is done
+by \n{-O3}, but at level \n{-O2} the compiler will inline functions
+and make other simplifications.}.
 
 \Level 0 {Invoking {\tt gdb}}
 
@@ -372,6 +392,112 @@ and rerun your program. When the program breaks, find for what value
 of the loop variable it happened. What is the sequence of commands you use?
 
 \index{gdb|)}
+
+\Level 0 {Parallel debugging}
+\index{debugging!parallel|(}
+
+Debugging parallel programs is harder than than sequential
+programs, because every sequential bug may show up, plus a number
+of new types, caused by the interaction of the various processes.
+
+Here are a few possible parallel bugs:
+\begin{itemize}
+\item Processes can \indexterm{deadlock} because they are waiting for
+  a message that never comes. This typically happens with blocking
+  send/receive calls due to an error in program logic.
+\item If an incoming message is unexpectedly larger than anticipated,
+  a memory error can occur.
+\item A collective call will hang if somehow one of the processes does
+  not call the routine.
+\end{itemize}
+
+There are few low-budget solutions to parallel debugging. The main one
+is to create an xterm for each process. We will describe this next.
+There are also commercial packages such as \indexterm{DDT} and
+\indexterm{TotalView}, that offer a GUI. They are very convenient but
+also expensive. The \indexterm{Eclipse} project has a parallel package, 
+\indextermbus{Eclipse}{PTP}, that includes a graphic debugger.
+
+\Level 1 {MPI debugging with gdb}
+\index{gdb|(}
+
+You can not run parallel programs in gdb, but you can start multiple
+gdb processes that behave just like MPI processes! The command
+\begin{verbatim}
+mpirun -np <NP> xterm -e gdb ./program 
+\end{verbatim}
+create a number of \n{xterm} windows, each of which execute
+the commandline \n{gdb ./program}. And because these xterms have
+been started with \n{mpirun}, they actually form a communicator.
+
+\index{gdb|)}
+\begin{pcse}
+\Level 1 {Full-screen parallel debugging with DDT}
+\index{DDT|(}
+
+In this tutorial you will run and diagnose a few incorrect MPI
+programs using DDT.  You can start a session with \n{ddt yourprogram
+  &}, or use \n{File > New Session > Run} to specify a program name,
+and possibly parameters.  In both cases you get a dialog where you
+can specify program parameters. It is also important to check the following:
+\begin{itemize}
+\item You can specify the number of cores here;
+\item It is usually a good idea to turn on memory checking;
+\item Make sure you specify the right MPI.
+\end{itemize}
+
+When DDT opens on your main program, it halts at the \n{MPI_Init}
+statement, and need to press the forward arrow, top left of the main
+window.
+
+\heading{Problem1} This program has every process independently generate
+random numbers, and if the number meets a certain condition, stops execution.
+There is no problem with this code as such, so let's suppose you simply want
+to monitor its execution.
+\begin{itemize}
+\item Compile \n{abort.c}. Don't forget about the \n{-g -O0} flags;
+  if you use the makefile they are included automatically.
+\item Run the program with DDT, you'll see that it concludes
+  succesfully.
+\item Set a breakpoint at the Finalize statement in the subroutine, by
+  clicking to the left of the line number. Now if you run the program
+  you'll get a message that all processes are stopped at a
+  breakpoint. Pause the execution.
+\item The `Stacks' tab will tell you that all processes are the same
+  point in the code, but they are not in fact in the same
+  iteration. 
+\item You can for instance use the `Input/Output' tabs to see what every process has been doing.
+\item Alternatively, use the variables pane on the right to examine
+  the \n{it} variable. You can do that for individual processes, but
+  you can also control click on the \n{it} variable and choose \n{View
+    as Array}. Set up the display as a one-dimensional array and check
+  the iteration numbers.
+\item Activate the barrier statement and rerun the code. Make sure you
+  have no breakpoints. Reason that the code will not complete, but
+  just hang.
+\item Hit the general Pause button. Now what difference do you see in the `Stacks' tab?
+\end{itemize}
+
+\heading{Problem2} Compile \n{problem1.c} and run it in DDT. You'll
+get a dialog warning about an abort.
+\begin{itemize}
+\item Pause the program in the dialog. Notice that only the root process is
+  paused. If you want to inspect other processes, press the general
+  pause button. Do this.
+\item In the bottom panel click on \n{Stacks}. This gives you the
+  `call stack', which tells you what the processes were doing when you
+  paused them. Where is the root process in the execution? Where are
+  the others?
+\item From the call stack it is clear what the error was. Fix it and
+  rerun with \n{File > Restart Session}.
+\end{itemize}
+
+\heading{Problem2}
+
+\index{DDT|)}
+\end{pcse}
+
+\index{debugging!parallel|(}
 
 \Level 0 {Further reading}
 

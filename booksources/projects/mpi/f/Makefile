@@ -17,34 +17,30 @@ else
   F90 = mpif90
 endif
 
-DEBUG=OPT
-OPT_flag = -O2
-DEBUG_flag = -g
+OPTLEVEL = 2
+FFLAGS = -g -O${OPTLEVEL}
+CFLAGS = ${FFLAGS} -std=c99 
 info ::
 	@echo "    debug flag: DEBUG=DEBUG/OPT (default: ${DEBUG})]"
 % : %.F
-	${FC} ${${DEBUG}_flag} -D${DEBUG} $*.F -o $@
+	${FC} ${FFLAGS} $*.F -o $@
 %.o : %.F90
-	${F90} ${${DEBUG}_flag} -D${DEBUG} -c $*.F90
-
-# Example: grid routines
-GRID_APPS = grid grid_test grid_blocking grid_nonblocking grid_vectype
-APPS += ${GRID_APPS}
-grid_dependencies = grid_impl.o grid_tools.o tools.o
-${GRID_APPS} : ${grid_dependencies}
-grid.o grid_blocking.o grid_tools.o : grid.h grid_tools.h tools.h
+	${F90} ${FFLAGS} -c $*.F90
+%.o : %.cxx
+	${CXX} ${CFLAGS} -c $*.cxx
 
 # Example: mandelbrot routines
 MANDEL_APPS = mandel_serial mandel_bulk mandel_async mandel_collective
 APPS += ${MANDEL_APPS}
 mandel_dependencies = mandel_tools.o 
-#Image.o Color.o tools.o 
+#Image.o Color.o
 ${MANDEL_APPS} : ${mandel_dependencies}
 Color.o : Color.h
 Image.o : Image.h
 .SECONDEXPANSION:
 ${MANDEL_APPS} : ${mandel_dependencies} $$@.o
-	${F90} ${${DEBUG}_flag} -D${DEBUG} $^ -o $@
+	${F90} ${FFLAGS} $@.o ${mandel_dependencies} -o $@
+# -lstdc++ -lc
 
 # rules for submitting to the queue and doing tau analysis
 info ::

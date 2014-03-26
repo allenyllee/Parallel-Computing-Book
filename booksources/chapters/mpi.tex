@@ -649,6 +649,7 @@ send routines you have seen so far (but not \n{MPI_Sendrecv}).
 
 \Level 1 {Persistent communication}
 \commandref{persistent}
+\index{communication!persistent|(textbf}
 
 An \n{Isend} or \n{Irecv} call as an \n{MPI_Request} parameter. This
 is an object that gets created in the send/recv call, and deleted in
@@ -656,7 +657,8 @@ the wait call. You can imagine that this carries some overhead, and if
 the same communication is repeated many times you may want to avoid
 this overhead by reusing the request object.
 
-To do this, MPI has \indextermsub{persistent}{communication}:
+To do this, MPI has \emph{persistent communication}:
+\index{persistent communication|see{communication, persistent}}
 \begin{itemize}
 \item You describe the communication with
   \indexmpishow{MPI_Send_init}, which has the same calling sequence as
@@ -671,6 +673,8 @@ To do this, MPI has \indextermsub{persistent}{communication}:
 \item The wait call does not release the request object: that is done
   with \indexmpishow{MPI_Request_free}.
 \end{itemize}
+
+\index{communication!persistent|)}
 
 \index{communication!non-blocking|)}
 \index{communication!two-sided|)}

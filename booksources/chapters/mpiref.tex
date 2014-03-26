@@ -359,15 +359,9 @@ int MPI_Recv(void *buf,
 \end{verbatim}
 \url{http://www.mcs.anl.gov/research/projects/mpi/www/www3/MPI_Recv.html}
 The \n{count} argument indicates the maximum length of a message; the
-actual length of the message can be determined with \n{MPI_Get_count}; 
-see section~\ref{sec:mpi-source}.
-
-\begin{fortrannote}
-  In Fortran the \n{MPI_Status} object needs to be explicitly created:
-\begin{verbatim}
-integer status(MPI_STATUS_SIZE)
-\end{verbatim}
-\end{fortrannote}
+actual length of the received message can be determined 
+from the status object. See section~\ref{ref:mpi-source}
+for more about the status object.
 
 The following code is guaranteed to block, since a \n{MPI_Recv}
 always blocks:
@@ -389,6 +383,28 @@ you force the send call to be blocking by using \n{MPI_Ssend}:
 
 \Level 1 {Receive status}
 \commandreflabel{mpi-source}
+
+Any time you receive data, there can be an \indexmpishow{MPI_Status}
+object describing the data that was received. This can be necessary if
+you use \indexmpishow{MPI_ANY_SOURCE} or \indexmpishow{MPI_ANY_TAG} in
+the description of the receive message. If you are not interested in
+the status information, you can use the values
+\indexmpishow{MPI_STATUS_IGNORE} or (for \indexmpishow{MPI_Waitall},
+\indexmpishow{MPI_Waitany}) \indexmpishow{MPI_STATUSES_IGNORE}.
+
+A receive call has a \n{count} parameter, but this describes the length
+of the buffer, not the amount of data expected. That quantity
+can be retrieved with \indexmpishow{MPI_Get_count}.
+
+The status object is returned when the message is received. Thus, with
+\n{MPI_Recv} it is returned explicitly,
+but with \n{MPI_Irecv} it is returned from the \n{MPI_Wait...} call.
+\begin{fortrannote}
+  In Fortran the \n{MPI_Status} object needs to be explicitly created:
+\begin{verbatim}
+integer status(MPI_STATUS_SIZE)
+\end{verbatim}
+\end{fortrannote}
 
 In section~\ref{sec:mpi-source} we mentioned the master-worker model
 as one opportunity for inspecting the \indexmpishow{MPI_SOURCE} field
@@ -469,29 +485,48 @@ Contrast this with the example in section~\ref{ref:mpi-source}.
 
 \Level 1 {Persistent communication}
 \commandreflabel{persistent}
+\index{communication!persistent|(}
 
+The calls \indexmpishow{MPI_Send_init} and \indexmpishow{MPI_Recv_init}
+for creating a persistent communication have the same syntax as 
+those for non-blocking sends and receives. The difference is that they do not start
+an actual communication, they only create the request object.
 \begin{verbatim}
 int MPI_Send_init(
   void* buf, int count, MPI_Datatype datatype, 
-  int dest, int tag, MPI_Comm comm, 
-  MPI_Request *request) 
-\end{verbatim}
-
-\begin{verbatim}
+  int dest, int tag, MPI_Comm comm, MPI_Request *request) 
 int MPI_Recv_init(
   void* buf, int count, MPI_Datatype datatype, 
   int source, int tag, MPI_Comm comm, 
   MPI_Request *request)
 \end{verbatim}
 
+Given these request object, a communication (both send and receive) is then started
+with \indexmpishow{MPI_Start} for a single request or \indexmpishow{MPI_Start_all} for 
+multiple requests, given in an array.
 \begin{verbatim}
 int MPI_Start(MPI_Request *request)
 int MPI_Startall(int count, MPI_Request *array_of_requests) 
 \end{verbatim}
+These are equivalent to starting an \n{Isend} or \n{Isend}; correspondingly, 
+it is necessary to issue an \n{MPI_Wait...} call (section~\ref{ref:nonblocking})
+to determine their completion.
 
+After a request object has been used, possibly multiple times, it can be freed
+with \indexmpishow{MPI_Request_free}.
 \begin{verbatim}
 int MPI_Request_free(MPI_Request *request)
 \end{verbatim}
+
+In the following example a ping-pong is implemented with persistent communication.
+\verbatimsnippet{persist}
+
+As with ordinary send commands, there are the variants
+\indexmpishow{MPI_Bsend_init},
+\indexmpishow{MPI_Ssend_init},
+\indexmpishow{MPI_Rsend_init}.
+
+\index{communication!persistent|)}
 
 \Level 0 {One-sided communication}
 \commandreflabel{one-sided}

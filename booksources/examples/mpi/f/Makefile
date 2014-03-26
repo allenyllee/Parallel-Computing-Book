@@ -11,7 +11,7 @@
 info ::
 	@echo "Do: make app (where app=${APPS})"
 
-APPS = init local sendblock ssendblock sendrecv
+APPS = init local sendblock ssendblock sendrecv anysource
 
 listapps :
 	@echo ${APPS}

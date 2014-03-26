@@ -18,10 +18,7 @@
 int main(int argc,char **argv) {
 
 #include "globalinit.c"
-  int ierr;
 
-  // Initialize the random number generator
-  srand((int)(mytid*(double)RAND_MAX/ntids));
 
   if (mytid==ntids-1) {
     int *recv_buffer;
@@ -30,8 +27,8 @@ int main(int argc,char **argv) {
     recv_buffer = (int*) malloc((ntids-1)*sizeof(int));
 
     for (int p=0; p<ntids-1; p++) {
-      ierr = MPI_Recv(recv_buffer+p,1,MPI_INT, MPI_ANY_SOURCE,0,comm,
-		      &status); CHK(ierr);
+      err = MPI_Recv(recv_buffer+p,1,MPI_INT, MPI_ANY_SOURCE,0,comm,
+		      &status); CHK(err);
       int sender = status.MPI_SOURCE;
       printf("Message from sender=%d: %d\n",
 	     sender,recv_buffer[p]);
@@ -42,7 +39,7 @@ int main(int argc,char **argv) {
     printf("process %d waits for %e/%d=%d\n",
 	   mytid,randomfraction,ntids,randomwait);
     sleep(randomwait);
-    ierr = MPI_Send(&randomwait,1,MPI_INT, ntids-1,0,comm); CHK(ierr);
+    err = MPI_Send(&randomwait,1,MPI_INT, ntids-1,0,comm); CHK(err);
   }
 
   MPI_Finalize();

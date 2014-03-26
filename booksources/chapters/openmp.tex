@@ -50,14 +50,19 @@ OpenMP is largely based on directives: instructions to the compiler
 and runtime that are hidden in comment-like structures. In Fortran,
 the directives are actually in a comment:
 \begin{verbatim}
-$! OMP construct
+!$OMP construct
 \end{verbatim}
 while in C they are hidden in a \indexterm{pragma}: something that
 is normally meant for the \indextermbus{C}{preprocessor}:
 \begin{verbatim}
 #pragma omp construct
 \end{verbatim}
-After the directive, you usually find a `structured block'.
+After the directive, in~C you usually find a `structured block':
+a single statement or a block in curly braces. In~Fortran,
+the directive is explicitly closed with
+\begin{verbatim}
+!$OMP END construct
+\end{verbatim}
 
 There are also a couple of OpenMP routines, and for that
 you need to include
@@ -223,7 +228,10 @@ int x;
 \commandref{omp-private}
 
 The \indexpragma{private} directive declares data to have a separate copy 
-in the memory of each thread. 
+in the memory of each thread. By default, such private variables are uninitialized
+at the begin of the parallel region, and any computed value goes away at the end 
+of the parallel region. You can force initialization with \indexclause{firstprivate},
+and preserving the last iteration with \indexclause{lastprivate}.
 
 Private arrays are tricky.
 \begin{itemize}
@@ -454,7 +462,23 @@ contains the \emph{last} location where \n{a[i]} is zero.
 
 \Level 1 {Sections}
 
+\Level 1 {Single/master}
+
+\indexpragma{master}
+\indexpragma{single}
+
+These pragmas can for instance be used to print tracing information.
+\begin{verbatim}
+#pragma omp parallel
+{
+#pragma omp single
+  printf("We are starting this section!\n");
+  // parallel stuff
+}
+\end{verbatim}
+
 \Level 0 {Reductions}
+\commandref{reduction}
 
 Parallel tasks often produce some quantity that needs to be summed
 or otherwise combined.
@@ -516,13 +540,6 @@ and this may work if you are just dealing with a few function invocates.
 However, If you use local results for a parallel loop beware of \indexterm{false sharing}; 
 see \HPSCref{sec:falseshare} for an explanation.
 
-\Level 0 {Synchronization}
-
-In the constructs for declaring parallel regions above, you had little control over 
-in what order threads executed the work they were assigned.
-This section will discuss \indexterm{synchronization} constructs: ways of telling
-threads to bring a certain order to the sequence in which they do things.
-
 The easiest way to effect a reduction is of course to the use the \indextermtt{reduction}
 clause. Adding this to an \n{omp for} loop has the following effect:
 \begin{itemize}
@@ -537,7 +554,15 @@ This is one of those cases where the parallel execution can have a slightly diff
 value from the one that is computed sequentially, because floating point operations
 are not associative. See~\HPSCref{sec:roundoff-parallel} for more explanation.
 
+\Level 0 {Synchronization}
+
+In the constructs for declaring parallel regions above, you had little control over 
+in what order threads executed the work they were assigned.
+This section will discuss \indexterm{synchronization} constructs: ways of telling
+threads to bring a certain order to the sequence in which they do things.
+
 \Level 1 {Barrier}
+\commandref{exbarrier}
 
 A barrier defines a point in the code where all active threads will stop
 until all threads have arrived at that point. With this, you can guarantee that
@@ -598,6 +623,35 @@ The problem with \n{critical} sections being mutually exclusive can be mitigated
 \begin{verbatim}
 #pragma omp critical (optional_name_in_parens)
 \end{verbatim}
+
+\Level 1 {Locks}
+
+OpenMP also has the traditional mechanism of a \indexterm{lock}. A~lock is somewhat similar to 
+a critical section: it guarantees that some instructions can only be performed by one
+process at a time. However, a critical section is indeed about code; a~lock is about data.
+With a lock you make sure that some data elements can only be touched by one process at a time.
+
+One simple example of the use of locks is generation of a \indexterm{histogram}.
+A~histogram consists of a number of bins, that get updated depending on some data.
+Here is the basic structure of such a code:
+\begin{verbatim}
+int count[100];
+float x = some_function();
+int ix = (int)x;
+if (ix>=100)
+  error();
+else
+  count[ix]++;
+\end{verbatim}
+It would be possible to guard the last line:
+\begin{verbatim}
+#pragma omp critical
+  count[ix]++;
+\end{verbatim}
+but that is unnecessarily restrictive. If there are enough bins in the
+histogram, and if the \n{some_function} takes enough time, there are unlikely to be
+conflicting writes. The solution then is to create an array of locks, with
+one lock for each \n{count} location.
 
 \Level 0 {Dependency analysis}
 

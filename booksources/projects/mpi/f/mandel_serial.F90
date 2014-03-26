@@ -1,6 +1,8 @@
+! -*- f90 -*-
 module SerialQueue
   use Circle
   use Queue
+
   implicit none
 
   integer FreeProcessor,TotalTasks
@@ -8,30 +10,34 @@ module SerialQueue
 contains
   
   subroutine QueueInit(commv)
+    use Queue
     integer,intent(in) :: commv
     call QueueInit0(commv)
     FreeProcessor = 0; TotalTasks = 0
   end subroutine QueueInit
 
   subroutine AddTask(xy)
+    use Queue
     type(Coordinate),intent(in) :: xy
     real :: xyv(2)
-    integer contribution,status,ierr
+    integer contribution,status(MPI_STATUS_SIZE),ierr
 
     xyv(1) = xy%x; xyv(2) = xy%y
-    write(*,*) "to",FreeProcessor
     call MPI_Send(xyv,2,MPI_REAL,FreeProcessor,0,comm,ierr)
-    write(*,*) ierr,"from",FreeProcessor
-    call MPI_Recv(contribution,1,MPI_INTEGER,FreeProcessor,0,comm,status,ierr)
-    write(*,*) ierr,"done",FreeProcessor
     if (IsValidCoordinate(xy)) then
+       call MPI_Recv(contribution,1,MPI_INTEGER,FreeProcessor,0,comm,status,ierr)
+       !write(*,*) "coord",xy%x,xy%y,"on proc",FreeProcessor,"gives",contribution
+!       call coordinate_to_image(xy,contribution)
        TotalTasks = TotalTasks+1
+    else
+       print *,"terminating",FreeProcessor
     end if
     FreeProcessor = mod(FreeProcessor+1,ntids-1)
     
   end subroutine AddTask
 
   subroutine Complete()
+    use Queue
     type(Coordinate) :: xy
     integer p
     xy = InvalidCoordinate(); FreeProcessor = 0
@@ -55,23 +61,21 @@ program MandelSerial
   call MPI_Comm_set_errhandler(comm,MPI_ERRORS_RETURN,ierr)
   call QueueInit(comm)
 
-  steps = 10; iters = 1000
-  call SetParameters(steps,iters)
+!  steps = 10; iters = 1000
+  call GetArguments(steps,iters)
+  call SetParameters(ntids,steps,iters)
 
   if (mytid.eq.ntids-1) then
      do
         xy = NextCoordinate()
-        write(*,*) "next",xy%x,xy%y
         if (IsValidCoordinate(xy)) then
            call AddTask(xy)
-           write(*,*) "added"
         else
-           write(*,*) "quit"
            exit
         end if
      end do
-     write(*,*) "done"
      call Complete()
+     print *,"Performed",TotalTasks,"tasks"
   else
      call WaitForWork()
   end if
