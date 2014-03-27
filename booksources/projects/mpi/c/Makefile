@@ -1,35 +1,35 @@
-info ::
-	@echo "Do: make app (where app=${APPS})"
+################################################################
+################################################################
+####
+#### This make file is part of the source of 
+#### `Parallel Programing in Science and Engineering'
+#### by Victor Eijkhout, copyright 2013/4
+####
+#### This is a makefile for the programming exercises
+####
+################################################################
+################################################################
 
-APPS = test helloworld helloworld-seq time time_max \
-  overlap \
-  linear-serial linear-serial-null linear-sendrecv linear-nonblock \
-  linear-onesided-get linear-onesided-put passiveput
+info ::
+
+APPS =
 
 ifdef TACC_TAU_DIR
-  CC = tau_cc.sh
+  CX = tau_cc.sh
   CXX = tau_cxx.sh
 else
   CC  = mpicc
   CXX = mpicxx
 endif
 
-DEBUG=OPT
-OPT_flag = -O2 -g
-DEBUG_flag = -g
-info ::
-	@echo "    debug flag: DEBUG=DEBUG/OPT (default: ${DEBUG})]"
+OPTLEVEL = 2
+FFLAGS = -g -O${OPTLEVEL}
+CFLAGS = ${FFLAGS} -std=c99 
+
 % : %.c
 	${CC} -std=c99 ${${DEBUG}_flag} -D${DEBUG} $*.c -o $@
 %.o : %.cxx
 	${CXX} ${${DEBUG}_flag} -D${DEBUG} -c $*.cxx
-
-# Example: grid routines
-GRID_APPS = grid grid_test grid_blocking grid_nonblocking grid_vectype
-APPS += ${GRID_APPS}
-grid_dependencies = grid_impl.o grid_tools.o tools.o
-${GRID_APPS} : ${grid_dependencies}
-grid.o grid_blocking.o grid_tools.o : grid.h grid_tools.h tools.h
 
 # Example: mandelbrot routines
 MANDEL_APPS = mandel_serial mandel_bulk mandel_async mandel_collective
@@ -59,6 +59,8 @@ submit :
 	  PROFILEDIR=$${TAU_DUMP_DIR} \
 	    EXECUTABLE=${EXECUTABLE} OPTIONS="${OPTIONS}" \
 	      qsub jobscript
+info ::
+	@echo "make idevrun EXECUTABLE=<any prog> OPTIONS=<whatever>"
 idevrun :
 	@if [ -z "${EXECUTABLE}" ] ; then \
 	   echo "Usage: make ibrun executable option"; exit 1 ; fi
@@ -70,7 +72,7 @@ idevrun :
 	  PROFILEDIR=$${TAU_DUMP_DIR} \
 	    ibrun ${EXECUTABLE} ${OPTIONS}
 info ::
-	@echo "make tau EXECUTABLE=..."
+	@echo "make tau EXECUTABLE=... (this does the post-processing)"
 tau :
 	@export HOME=`pwd` ; \
 	export TAU_EXT=`if [ ! -z "${EXECUTABLE}" ] ; then echo "_" ; fi`${EXECUTABLE} ; \
@@ -99,10 +101,11 @@ regression: total_clean
 	done
 
 info ::
-	@echo "make clean       : cleanup but leave executables & slog2"
-	@echo "make total_clean : cleanup including executables & slog2"
+	@echo "make clean       : cleanup but leave slog2"
+	@echo "make total_clean : cleanup including slog2"
 clean ::
 	/bin/rm -rf *.o *~ *.gch a.out *.dSYM MULTI__* events.* *.runlog \
-	    core.[0-9]* idev[0-9]*.o[0-9]* ddt.o[0-9]* jobtest.o* tautrace_*
+	    core.[0-9]* idev[0-9]*.o[0-9]* ddt.o[0-9]* jobtest.o* tautrace_* \
+	    ${APPS}
 total_clean : clean 
-	/bin/rm -rf ${APPS} *.slog2 *.ppm
+	/bin/rm -rf  *.slog2 *.ppm

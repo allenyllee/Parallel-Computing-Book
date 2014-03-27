@@ -1,0 +1,75 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Parallel Programing in Science and Engineering'
+%%%% by Victor Eijkhout, copyright 2013/4
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+This directory contains C++ sources for programming assignments
+for the textbook
+
+    Parallel Programing in Science and Engineering
+by
+    Victor Eijkhout
+    http://www.tacc.utexas.edu/~eijkhout/istc/istc.html
+
+%%%% General commands %%%%
+
+The functionality of the makefile can be discovered by 
+doing "make".
+
+%%%% Tau instrumentation %%%%
+
+The programs in this directory can be instrumented with the TAU library.
+To compile:
+
+    module load tau
+    make clean # delete all binaries
+    make someprog # as before
+
+To run in an idev session:
+
+    make idevrun EXECUTABLE=... [OPTIONS=...]
+
+Note! In the idev session you need to reload the tau module. Also,
+you can not do the compilation with tau from inside idev, so you 
+need two windows open.
+
+To run in the batch:
+
+    make submit EXECUTABLE=... [OPTIONS=...]
+
+These run rules set up the TAU environment variables.
+
+After the run:
+
+    make tau EXECUTABLE=....
+
+This will leave a file with extension "slog2" which can be viewed
+with "jumpshot".
+
+%%%% Mandelbrot examples %%%%
+
+The mandelbrot examples compute the famous Mandelbrot Set
+http://en.wikipedia.org/wiki/Mandelbrot_set
+
+To make the code:
+
+    make mandel_serial
+
+To run
+
+    mandel_serial [steps 1234] [iters 5678]
+
+where:
+- steps specifies the number of pixels that the picture is going to be wide
+- iters specifies the number of iterations that is used to decide
+ whether a point is in the Mandelbrot set
+
+These codes produce a graphics file "mandelpicture.ppm".
+To view:
+- OS X: "open mandelpicture.ppm"
+- linux (with imagemagick): "display mandelpicture.ppm"

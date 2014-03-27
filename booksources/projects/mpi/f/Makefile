@@ -1,20 +1,29 @@
+################################################################
+################################################################
 ####
-#### This is a makefile for the exercises
+#### This make file is part of the source of 
+#### `Parallel Programing in Science and Engineering'
+#### by Victor Eijkhout, copyright 2013/4
 ####
-info ::
-	@echo "Do: make app (where app=${APPS})"
+#### This is a makefile for the programming exercises
+####
+################################################################
+################################################################
 
-APPS = test helloworld helloworld-seq time time_max \
-  overlap \
-  linear-serial linear-serial-null linear-sendrecv linear-nonblock \
-  linear-onesided-get linear-onesided-put passiveput
+info ::
+
+APPS = 
 
 ifdef TACC_TAU_DIR
+  FC = tau_f77.sh
+  F90 = tau_f90.sh
   CC = tau_cc.sh
   CXX = tau_cxx.sh
 else
   FC  = mpif77
   F90 = mpif90
+  CC  = mpicc
+  CXX = mpicxx
 endif
 
 OPTLEVEL = 2
@@ -35,6 +44,7 @@ APPS += ${MANDEL_APPS}
 mandel_dependencies = mandel_tools.o 
 #Image.o Color.o
 ${MANDEL_APPS} : ${mandel_dependencies}
+APPS += ${MANDEL_APPS}
 Color.o : Color.h
 Image.o : Image.h
 .SECONDEXPANSION:
@@ -58,6 +68,8 @@ submit :
 	  PROFILEDIR=$${TAU_DUMP_DIR} \
 	    EXECUTABLE=${EXECUTABLE} OPTIONS="${OPTIONS}" \
 	      qsub jobscript
+info ::
+	@echo "make idevrun EXECUTABLE=<any prog> OPTIONS=<whatever>"
 idevrun :
 	@if [ -z "${EXECUTABLE}" ] ; then \
 	   echo "Usage: make ibrun executable option"; exit 1 ; fi
@@ -69,7 +81,7 @@ idevrun :
 	  PROFILEDIR=$${TAU_DUMP_DIR} \
 	    ibrun ${EXECUTABLE} ${OPTIONS}
 info ::
-	@echo "make tau EXECUTABLE=..."
+	@echo "make tau EXECUTABLE=... (this does the post-processing)"
 tau :
 	@export HOME=`pwd` ; \
 	export TAU_EXT=`if [ ! -z "${EXECUTABLE}" ] ; then echo "_" ; fi`${EXECUTABLE} ; \
@@ -81,10 +93,11 @@ tau :
 	  tau2slog2 tau.trc tau.edf -o $$HOME/taulog$$TAU_EXT.slog2
 
 info ::
-	@echo "make clean       : cleanup but leave executables & slog2"
-	@echo "make total_clean : cleanup including executables & slog2"
+	@echo "make clean       : cleanup but leave slog2"
+	@echo "make total_clean : cleanup including slog2"
 clean ::
 	/bin/rm -rf *.o *~ *.gch a.out *.mod *.dSYM MULTI__* events.* \
-	    idev[0-9]*.o[0-9]* ddt.o[0-9]* jobtest.o* tautrace_*
+	    idev[0-9]*.o[0-9]* ddt.o[0-9]* jobtest.o* tautrace_* \
+	    ${APPS}
 total_clean : clean 
-	/bin/rm -rf ${APPS} *.slog2 *.ppm
+	/bin/rm -rf *.slog2 *.ppm
