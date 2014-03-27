@@ -27,9 +27,9 @@ FFLAGS = -g -O${OPTLEVEL}
 CFLAGS = ${FFLAGS} -std=c99 
 
 % : %.c
-	${CC} -std=c99 ${${DEBUG}_flag} -D${DEBUG} $*.c -o $@
+	${CC} -std=c99 ${CFLAGS} $*.c -o $@
 %.o : %.cxx
-	${CXX} ${${DEBUG}_flag} -D${DEBUG} -c $*.cxx
+	${CXX} ${CFLAGS} -c $*.cxx
 
 # Example: mandelbrot routines
 MANDEL_APPS = mandel_serial mandel_bulk mandel_async mandel_collective
@@ -41,7 +41,7 @@ Color.o : Color.h
 Image.o : Image.h
 .SECONDEXPANSION:
 ${MANDEL_APPS} : $$@.o ${mandel_dependencies}
-	${CXX} ${${DEBUG}_flag} -D${DEBUG} $^ -o $@
+	${CXX} ${CFLAGS} $^ -o $@
 
 # rules for submitting to the queue and doing tau analysis
 info ::
