@@ -1,29 +1,77 @@
 % -*- latex -*-
 \Level 0 {Mandelbrot set}
 
-If you've never heard the name \indexterm{Mandelbrot set}, you
-probably recognize the picture. Its formal definition is as follows:
-\begin{quotation}\noindent
-  A point $c$ in the complex plane is part of the Mandelbrot set if 
-  the series $x_n$ defined by 
-  \[ 
-  \begin{cases}
-    x_0=0\\ x_{n+1}=x_n^2+c
-  \end{cases}
-  \] satisfies \[ \forall_n\colon |x_n|\leq 2. \]  
+The \indexterm{Mandelbrot set} is a set in the complex plane defined as follows:
+\begin{quotation}
+  \begin{tabbing}
+    in order to compute whether a point $c=c_r+ic_i$ is in the set,\\
+    evaluate\={} the following series:\\
+    \>$z_0=0$\\
+    \>$z_{i+1}=z_i^2+c$\\
+    now two things can happen:\\
+    \>if a $z_i$ ever escapes from the circle with radius~2, the series will quickly `go to infinity'\\
+    \>the alternative\={} is that the series will always stay within that circle,\\
+    \>\> in which case we say that $c$ is in the Mandelbrot set.
+  \end{tabbing}
 \end{quotation}
-It is easy to see that only points $c$ in the bounding circle
-$|c|< 2$ qualify, but
-apart from that it's hard to say much without a lot more thinking.
-Or computing; and that's what we're going to do.
+Of course it is hard to show that a series will \emph{always} be bounded, so instead
+we execute this algorithm:
+\begin{figure}
+  \includegraphics{mandelbrot}
+  \caption{Mandelbrot set}
+  \label{fig:mandelbrot}
+\end{figure}
+\begin{quotation}
+  \begin{tabbing}
+    choose an iteration upper bound $n$\\
+    iterate for at most $n$ steps\\
+    if $z_n$ is still in the circle with radius~2, colour $c$ black\\
+    otherwise give $c$ a colour based on the first iteration~$m$
+    for which $|z_m|>2$.
+  \end{tabbing}
+\end{quotation}
+Figure~\ref{fig:mandelbrot} shows a typical output.
 
-In this set of exercises you are going to take an example program
-\n{mandel_main.cxx} and extend it to use a variety of MPI programming
-constructs.  This program has been set up as a
-\indexterm{master-worker} model: there is one master processor (for a
-change this is the last processor, rather than zero) which gives out
-work to, and accepts results from, the worker processors. It then
-takes the resuls and construct an image file from them.
+In the directory \n{projects/mpi/\{c,f\}} there are files for a Mandelbrot generation program.
+This code uses a \indexterm{master-worker model}, but implemented deliberately 
+inefficiently:
+\begin{quotation}
+  \begin{tabbing}
+    the last processor is the master; it generates a list of coordinates\\
+    for \=each coordinate the master:\\
+    \>sends it with an \n{MPI_Send} to the next worker\\
+    \>and waits for an integer result with an \n{MPI_Recv} call\\
+    on the other hand, each worker repeats this:\\
+    \>it waits\={} for a coordinate with \n{MPI_Recv};\\
+    \>\>if it is outside the circle the worker exits\\
+    \>otherwise it computes an iteration number and \\
+    \>\>uses \n{MPI_Send} to report this to the master
+  \end{tabbing}
+\end{quotation}
+It is clear that because of the blocking send and receive in the master
+only one worker will be active at any time. That is not good.
+
+Your assignment is to make the program more efficient.
+Do this four different ways.
+\begin{enumerate}
+\item You could for instance let the master do a \n{Scatter} of coordinates,
+  and a \n{Gather} of results.
+\item The easiest change to the program that makes it more efficient 
+  involves replacing the blocking sends and receives on the master by 
+  non-blocking calls. The master then sends out as many coordinates as there are workers
+  by \n{Isend} calls, and proceeds to wait for the results. Argue that you can use
+  both blocking and non-blocking receives and get a fairly efficient code in either case.
+\item This non-blocking solution would be efficient if all worker tasks took the same amount
+  of time. However, the worker task can sometimes conclude very quickly that a point is not
+  in the set, and sometimes it has to iterate all the way to the upper bound. Therefore, 
+  the most efficient solution is to use a master that waits for a result to come back,
+  and immediately sends a new coordinate to that worker.
+\item Another possible solution minimizes the role of the master to providing
+  a table of coordinates and a table of results. All processes now use one-sided
+  communication, passive target synchronization to be precise, to grab coordinates
+  from master data, and write their results back. Hint: this probably needs the MPI-3
+  \n{Fetch_and_op} routine.
+\end{enumerate}
 
 \Level 1 {Invocation}
 

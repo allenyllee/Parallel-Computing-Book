@@ -422,13 +422,19 @@ If messsages are send roughly in pairs, the
 \indexmpishow{MPI_Sendrecv} call is an easy way to prevent deadlock.
 Here you specify both the target of a send and the source of a receive,
 which can be same in case of a pairwise exchange of data,
-but they need not be the same.
+but they need not be the same. To swap equal-sized buffers you
+can use \indexmpishow{MPI_Sendrecv_replace}.
 \begin{verbatim}
 int MPI_Sendrecv(
   void *sendbuf, int sendcount, MPI_Datatype sendtype, 
-                int dest, int sendtag,
+        int dest, int sendtag,
   void *recvbuf, int recvcount, MPI_Datatype recvtype, 
-                int source, int recvtag,
+        int source, int recvtag,
+  MPI_Comm comm, MPI_Status *status)
+int MPI_Sendrecv_replace(
+  void *buf, int count, MPI_Datatype datatype, 
+        int dest, int sendtag,
+        int source, int recvtag,
   MPI_Comm comm, MPI_Status *status)
 \end{verbatim}
 
@@ -440,8 +446,8 @@ to its right neighbour, and receives from its left neighbour.
 \commandreflabel{nonblocking}
 
 The non-blocking routines have much the same parameter list as the 
-blocking ones, with the addition of an \n{MPI_Request} parameter.
-The \n{MPI_Isend} routine does not have a `status' parameter,
+blocking ones, with the addition of an \indexmpishow{MPI_Request} parameter.
+The \n{MPI_Isend} routine does not have an \indexmpishow{MPI_Status} parameter,
 which has moved to the `wait' routine.
 \begin{verbatim}
 int MPI_Isend(void *buf,
@@ -456,6 +462,8 @@ int MPI_Irecv(void *buf,
 \end{verbatim}
 \url{http://www.mcs.anl.gov/research/projects/mpi/www/www3/MPI_Irecv.html}
 
+In Fortran, the request parameter is an integer.
+
 There are various `wait' routines. Since you will often do at least
 one send and one receive, this routine is useful:
 \begin{verbatim}
@@ -467,7 +475,7 @@ int MPI_Waitall(int count, MPI_Request array_of_requests[],
 Here is a simple code that does a non-blocking exchange between two processors:
 \verbatimsnippet{irecvnonblock}
 
-It is possible to omit the status array by specifying \n{MPI_STATUSES_IGNORE}.
+It is possible to omit the status array by specifying \indexmpishow{MPI_STATUSES_IGNORE}.
 Other routines are \n{MPI_Wait} for a single request, and
 \n{MPI_Waitsome}, \n{MPI_Waitany}.
 
@@ -534,13 +542,17 @@ As with ordinary send commands, there are the variants
 \Level 1 {Windows and epochs}
 \commandreflabel{windows}
 
-\indexmpi{MPI_Win_create}
+C syntax for \indexmpishow{MPI_Win_create}
 \begin{verbatim}
 MPI_Win_create (void *base, MPI_Aint size, 
   int disp_unit, MPI_Info info, 
   MPI_Comm comm, MPI_Win *win)
 \end{verbatim}
 The data array must not be \n{PARAMETER} of \n{static const}.
+
+The size parameter is measured in bytes. In~C this is easily done
+with the \indextermtt{sizeof} operator;
+for doing this calculation in Fortran, see section~\ref{sec:f-sizeof}.
 
 The \indexmpishow{MPI_Info} parameter can be used to pass implementation-dependent 
 information:
@@ -556,7 +568,7 @@ It is always valid to use \indexmpishow{MPI_INFO_NULL}.
 \Level 1 {Remote memory access}
 \commandreflabel{putget}
 
-\indexmpi{MPI_Put}
+C interface to \indexmpi{MPI_Put}:
 \begin{verbatim}
 MPI_Put (
   void *origin_addr, int origin_count, MPI_Datatype origin_datatype,
@@ -564,8 +576,20 @@ MPI_Put (
   MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype,
   MPI_Win window)
 \end{verbatim}
-The \n{MPI_Get} call is very similar;\indexmpi{MPI_Get}
+Fortran interface
+\begin{verbatim}
+MPI_Put(origin_addr, origin_count, origin_datatype, target_rank,
+    target_disp, target_count, target_datatype, win, ierror)
 
+<type> :: origin_addr(*)
+INTEGER(KIND=MPI_ADDRESS_KIND) :: target_disp
+INTEGER :: origin_count, origin_datatype,
+    target_rank, target_count, target_datatype,
+    win, ierror
+\end{verbatim}
+
+
+The \indexmpishow{MPI_Get} call is very similar.
 \begin{verbatim}
 int MPI_Get(void *origin_addr, int origin_count, MPI_Datatype
             origin_datatype, int target_rank, MPI_Aint target_disp,
@@ -1027,6 +1051,47 @@ int MPI_Cart_shift(MPI_Comm comm, int direction, int displ, int *source,
 \end{verbatim}
 If you specify a processor outside the grid
 the result is \indexmpishow{MPI_PROC_NULL}.
+
+\Level 0 {Leftover topics}
+
+\Level 1 {Fortran issues}
+\commandreflabel{mpi-fortran}
+\index{MPI!Fortran issues|(}
+
+\Level 2 {Data types}
+
+The equivalent of \indexmpishowsub{MPI_Aint}{in Fortran} is
+\begin{verbatim}
+integer(kind=MPI_ADDRESS_KIND) :: winsize
+\end{verbatim}
+
+\Level 2 {Type issues}
+
+Fortran90 is a strongly typed language, so it is not possible to pass
+argument by reference to their address, as C/C++ do with the \n{void*}
+type for send and receive buffers. In Fortran this is solved by having
+separate routines for each datatype, and providing an \n{Interface} block
+in the MPI module. If you manage to request a version that does not exist,
+the compiler will display a message like
+\begin{verbatim}
+There is no matching specific 
+subroutine for this generic subroutine call [MPI_Send]
+\end{verbatim}
+
+\Level 2 {Byte calculations}
+\label{sec:f-sizeof}
+
+Fortran lacks a \n{sizeof} operator to query the sizes of datatypes.
+Since sometimes exact byte counts are necessary,
+for instance in one-sided communication,
+Fortran can use the \indexmpishow{MPI_Sizeof} routine:
+\begin{verbatim}
+call MPI_Sizeof(windowdata,window_element_size,ierr)
+window_size = window_element_size*500
+call MPI_Win_create( windowdata,window_size,window_element_size,... );
+\end{verbatim}
+
+\index{MPI!Fortran issues|)}
 
 \Level 0 {Error handling}
 \commandreflabel{mpi:error}

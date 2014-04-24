@@ -653,6 +653,23 @@ histogram, and if the \n{some_function} takes enough time, there are unlikely to
 conflicting writes. The solution then is to create an array of locks, with
 one lock for each \n{count} location.
 
+\Level 0 {Tasks}
+\commandref{omp:task}
+
+The \indexpragma{task} pragma is followed by a structured block.
+Each time the structured block is encountered, a new task is generated.
+\begin{verbatim}
+#pragma omp parallel
+{
+#pragma omp single
+  while (something) {
+    p = ......
+#pragma omp task
+    process(p)
+  }
+}
+\end{verbatim}
+
 \Level 0 {Dependency analysis}
 
 \Level 1 {Anti/output dependencies}
@@ -673,3 +690,100 @@ which can be individually parallelized.
 \Level 0 {Stuff}
 
 \Level 1 {Timing}
+
+\Level 1 {Thread safety}
+\index{thread-safe|(}
+
+With OpenMP it is relatively easy to take existing code and make
+it parallel by introducing parallel sections. If you're careful
+to declare the appropriate variables shared and private,
+this may work fine. However, your code may include
+calls to library routines that include a \indexterm{race condition};
+such code is said not to be \emph{thread-safe}.
+
+For example a routine
+\begin{verbatim}
+static int isave;
+int next_one() {
+ int i = isave;
+ isave += 1;
+ return i;
+}
+
+...
+for ( .... ) {
+  int ivalue = next_one();
+}
+\end{verbatim}
+has a clear race condition, as the iterations of the loop
+may get different \n{next_one} values, as they are supposed to,
+or not. This can be solved by using an \indexpragma{critical}
+pragma for the \n{next_one} call; another solution 
+is to use an \indexpragma{threadprivate} declaration for \n{isave}.
+This is for instance the right solution if  the \n{next_one}
+routine implements a \indexterm{random number generator}.
+
+\index{thread-safe|)}
+
+\Level 1 {Relaxed memory model}
+\commandref{omp:flush}
+
+\Level 1 {Thread synchronization}
+
+Let's do a \indexterm{producer-consumer} model\footnote{This example
+  is from Intel's excellent OMP course by Tim Mattson}.  This can be
+implemented with sections, where one section, the producer, sets a
+flag when data is available, and the other, the consumer, waits until
+the flag is set.
+\begin{verbatim}
+#pragma omp parallel sections
+{
+  // the producer
+  #pragma omp section
+  {
+    ... do some producing work ...
+    flag = 1;
+  }
+  // the consumer
+  #pragma omp section
+  {
+    while (flag==0) { }
+    ... do some consuming work ...
+  }
+}
+\end{verbatim}
+One reason this doesn't work, is that the compiler will see that the flag is never used
+in the producing section, and that is never changed in the consuming section, so
+it may optimize these statements, to the point of optimizing them away.
+
+The producer then needs to do:
+\begin{verbatim}
+... do some producing work ...
+#pragma omp flush
+#pragma atomic write
+  flag = 1;
+#pragma omp flush(flag)
+\end{verbatim}
+and the consumer does:
+\begin{verbatim}
+#pragma omp flush(flag)
+while (flag==0) {
+  #pragma omp flush(flag)
+}
+#pragma omp flush
+\end{verbatim}
+This code strictly speaking has a \indexterm{race condition} on the \n{flag} variable.
+It is better to use an \indexpragma{atomic} pragma here: the producer has
+\begin{verbatim}
+#pragma atomic write
+  flag = 1;
+\end{verbatim}
+and the consumer:
+\begin{verbatim}
+while (1) {
+  #pragma omp flush(flag)
+  #pragma omp atomic read
+    flag_read = flag
+  if (flag_read==1) break;
+}
+\end{verbatim}

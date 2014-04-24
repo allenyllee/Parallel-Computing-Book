@@ -2,8 +2,8 @@
 ################################################################
 ####
 #### This makefile is part of the source of 
-#### "Parallel Computing"
-#### by Victor Eijkhout, copyright 2013
+#### "Parallel Computing for Science and Engineering"
+#### by Victor Eijkhout, copyright 2013/4
 ####
 ################################################################
 ################################################################
@@ -11,7 +11,9 @@
 info ::
 	@echo "Do: make app (where app=${APPS})"
 
-APPS = init local sendblock ssendblock sendrecv anysource
+APPS = init local sendblock ssendblock sendrecv anysource \
+    putfence getfence exscan \
+    irecv_source
 
 listapps :
 	@echo ${APPS}
@@ -23,9 +25,9 @@ listsources :
 	done | awk 'BEGIN { v="" } {v = v " " $$0} END {print v}'
 
 ifdef TACC_TAU_DIR
-  FC =
+  FC = tau_f90.sh
 else
-  FC = mpif90
+  FC  = mpif90
 endif
 
 OPTLEVEL = 0

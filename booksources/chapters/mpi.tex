@@ -394,7 +394,7 @@ send(target=successor);
 where the send call is executed by all processors; the target value
 of \indexmpishow{MPI_PROC_NULL} means that no actual send is done. 
 The null processor
-value is also of use with the \n{MPI_Sendrecv} call.
+value is also of use with the \indexmpishow{MPI_Sendrecv} call.
 
 \Level 2 {Deadlock-free blocking communication}
 \commandref{send-recv}
@@ -403,7 +403,7 @@ Above you saw that with blocking sends the precise ordering of the
 send and receive calls is crucial. Use the wrong ordering and you get
 either deadlock, or something that is not efficient at all in
 parallel. MPI has a way out of this problem that is sufficient for
-many purposes: the combined send/recv call\indexmpi{MPI_Sendrecv}
+many purposes: the combined send/recv call\indexmpishow{MPI_Sendrecv}
 \begin{verbatim}
 MPI_Sendrecv( /* send data */ ....
                /* recv data */ .... );
@@ -436,57 +436,10 @@ the unused source or target argument.
   of your earlier code?
 \end{exercise}
 
+If the send and receive buffer have the same size, the routine
+\indexmpishow{MPI_Sendrecv_replace} will do an in-place replacement.
 
-\Level 2 {Subtleties with processor synchronization}
-\label{sec:handshake}
-
-Blocking communication involves a complicated dialog between the two
-processors involved. Processor one says `I~have this much data to
-send; do you have space for that?', to which processor two replies
-`yes, I~do; go ahead and send', upon which processor one does the
-actual send. This back-and-forth (technically known as
-a \indexterm{handshake}) takes a certain amount of communication
-overhead. For this reason, network hardware will sometimes forgo the
-handshake for small messages, and just send them regardless, knowing
-that the other process has a small buffer for such occasions.
-
-%This behaviour is not dictated by the standard: it is up to the implementation
-%to make this optimization for small messages.
-
-One strange side-effect of this strategy is that a code that
-should \indexterm{deadlock} according to the MPI specification does
-not do so. In effect, you may be shielded from you own programming
-mistake! Of course, if you then run a larger problem, and the small
-message becomes larger than the threshold, the deadlock will suddenly
-occur. So you find yourself in the situation that a bug only manifests
-itself on large problems, which are usually harder to debug. In this
-case, replacing every \n{MPI_Send} with a \indexmpishow{MPI_Ssend} will force the
-handshake, even for small messages.
-
-Conversely, you may sometimes wish to avoid the handshake on large
-messages. MPI as a solution for this: the \indexmpishow{MPI_Rsend} (`ready
-send') routine sends its data immediately, but it needs the receiver
-to be ready for this. How can you guarantee that the receiving process
-is ready? You could for instance do the following (this uses
-non-blocking routines, which are explained below in
-section~\ref{sec:nonblocking}):
-\begin{verbatim}
-if ( receiving ) {
-  MPI_Irecv()   // post non-blocking receive
-  MPI_Barrier() // synchronize
-else if ( sending ) {
-  MPI_Barrier() // synchronize
-  MPI_Rsend()   // send data fast
-\end{verbatim}
-When the barrier is reached, the receive has been posted, so it is safe 
-to do a ready send. However, global barriers are not a good idea.
-Instead you would just synchronize the two processes involved.
-\begin{exercise}
-  Give pseudo-code for a scheme where you synchronize the two
-  processes through the exchange of a blocking zero-size message.
-\end{exercise}
-
-\Level 2 {Speculative messaging}
+\Level 2 {Wildcards in the receive call}
 \commandref{mpi-source}
 
 In some applications it makes sense that a message can come from 
@@ -983,7 +936,7 @@ You can imagine the following
 \item retrieves the corresponding work item, and
 \item increments the \n{first_work} variable.
 \end{itemize}
-It is important here to avoid a \indexterm{race conditions}
+It is important here to avoid a \indexterm{race condition}
 (see section \HPSCref{sec:shared-lock}) that would result
 from a second process reading the \n{first_work} variable 
 before the first process could have updated it. Therefore, the reading
@@ -1044,6 +997,57 @@ window. This can potentially be expensive.
 
 \index{communication!one-sided, implementation of|)}
 \index{communication!one-sided|)}
+
+\Level 1 {Remaining topics in point-to-point communication}
+
+\Level 2 {Subtleties with processor synchronization}
+\label{sec:handshake}
+
+Blocking communication involves a complicated dialog between the two
+processors involved. Processor one says `I~have this much data to
+send; do you have space for that?', to which processor two replies
+`yes, I~do; go ahead and send', upon which processor one does the
+actual send. This back-and-forth (technically known as
+a \indexterm{handshake}) takes a certain amount of communication
+overhead. For this reason, network hardware will sometimes forgo the
+handshake for small messages, and just send them regardless, knowing
+that the other process has a small buffer for such occasions.
+
+%This behaviour is not dictated by the standard: it is up to the implementation
+%to make this optimization for small messages.
+
+One strange side-effect of this strategy is that a code that
+should \indexterm{deadlock} according to the MPI specification does
+not do so. In effect, you may be shielded from you own programming
+mistake! Of course, if you then run a larger problem, and the small
+message becomes larger than the threshold, the deadlock will suddenly
+occur. So you find yourself in the situation that a bug only manifests
+itself on large problems, which are usually harder to debug. In this
+case, replacing every \n{MPI_Send} with a \indexmpishow{MPI_Ssend} will force the
+handshake, even for small messages.
+
+Conversely, you may sometimes wish to avoid the handshake on large
+messages. MPI as a solution for this: the \indexmpishow{MPI_Rsend} (`ready
+send') routine sends its data immediately, but it needs the receiver
+to be ready for this. How can you guarantee that the receiving process
+is ready? You could for instance do the following (this uses
+non-blocking routines, which are explained below in
+section~\ref{sec:nonblocking}):
+\begin{verbatim}
+if ( receiving ) {
+  MPI_Irecv()   // post non-blocking receive
+  MPI_Barrier() // synchronize
+else if ( sending ) {
+  MPI_Barrier() // synchronize
+  MPI_Rsend()   // send data fast
+\end{verbatim}
+When the barrier is reached, the receive has been posted, so it is safe 
+to do a ready send. However, global barriers are not a good idea.
+Instead you would just synchronize the two processes involved.
+\begin{exercise}
+  Give pseudo-code for a scheme where you synchronize the two
+  processes through the exchange of a blocking zero-size message.
+\end{exercise}
 
 \Level 0 {Collectives}
 \label{sec:collective}
@@ -2075,6 +2079,21 @@ One cases where errors can be handled is that of \emph{MPI file
 permissions, code can possibly progress without writing data, or
 writing to a temporary file.
 
+\Level 1 {Fortran issues}
+\commandref{mpi-fortran}
+\index{MPI!Fortran issues|(}
+
+\begin{itemize}
+\item Fortran routines have the same prototype as C~routines except for the addition
+  of an integer error parameter.
+\item The call for \indexmpishowsub{MPI_Init}{in Fortran} does not have the commandline arguments;
+  they need to be handled separately.
+\item The routine \indexmpishow{MPI_Sizeof} is only available in Fortran, it provides the 
+  functionality of the C/C++ operator \indextermtt{sizeof}.
+\end{itemize}
+
+\index{MPI!Fortran issues|)}
+
 \Level 1 {Fault tolerance}
 \label{mpi:tolerant}
 
@@ -2263,29 +2282,57 @@ could be retrieved or set by \n{shmem_get} and \n{shmem_put} calls.
 
 If you answer that a statement is false, give a one-line explanation.
 \begin{enumerate}
+
+%% system
 \item True or false: \n{mpicc} is a compiler.
+
 \item True or false: \n{mpirun} can only be used for interactive parallel runs.
+
 \item What is the function of a hostfile?
+
+%% communicators
 \item True or false: in each communicator, processes are numbered consecutively from zero.
-\item If a processors issues a send to another processor, and that other processors
-  issues a receive from the first \emph{at exactly the same time}, the send and receive call
-  return immediately
+
+%% point-to-point
 \item Describe a deadlock scenario involving three processors.
+
 \item True or false: a message sent with \n{MPI_Isend} from one processor can be
   received with an \n{MPI_Recv} call on another processor.
+
 \item True or false: a message sent with \n{MPI_Send} from one processor can be
   received with an \n{MPI_Irecv} on another processor.
+
 \item Why does the \n{MPI_Irecv} call not have an \n{MPI_Status} argument?
-\item Give a simple model for the time a send operation takes.
-\item Give a simple model for the time a broadcast of a single scalar takes.
-\item What is the relation between the concepts of `origin', `target'
+
+%% one-sided
+\item What is the relation between the concepts of `origin', `target', `fence',
   and `window' in one-sided communication.
+
 \item What are the three routines for one-sided data transfer?
+
+%% collective
 \item Give an example of a collective call with and without a root processor.
+
+\item Given a distributed array, meaning that every processor has
+\begin{verbatim}
+double x[N]; // N can vary per processor
+\end{verbatim}
+give the approximate MPI-based code that computes the maximum value
+in the array, and leaves the result on every processor.
+
+%% datatypes
 \item Give two examples of derived datatypes.
-\item Give an example where the sender uses a different type to send
+
+\item Give a practical example where the sender uses a different type to send
   than the receiver uses in the corresponding receive call. Name the types involved.
 \begin{comment}
+
+%% theory
+\item Give a simple model for the time a send operation takes.
+
+\item Give a simple model for the time a broadcast of a single scalar takes.
+
+
 \item 
 \end{comment}
 \end{enumerate}

@@ -116,10 +116,6 @@ int belongs(struct coordinate xy,int itbound) {
 /** The main computational loop
  */
 void queue::main_loop(MPI_Comm comm,circle *workcircle) {
-  int ntids,mytid; 
-    
-  ntids = this->ntids;
-  mytid = this->mytid;
 
   if (mytid==ntids-1)  {
     this->set_image( new Image(workcircle->pixels,workcircle->pixels,

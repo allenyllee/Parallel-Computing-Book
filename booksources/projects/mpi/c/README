@@ -62,7 +62,8 @@ To make the code:
 
 To run
 
-    mandel_serial [steps 1234] [iters 5678]
+    ibrun mandel_serial steps 1234 iters 5678
+where there 'steps' and 'iters' specification are optional.
 
 where:
 - steps specifies the number of pixels that the picture is going to be wide

@@ -2,8 +2,8 @@
 ################################################################
 ####
 #### This makefile is part of the source of 
-#### "Parallel Computing"
-#### by Victor Eijkhout, copyright 2013
+#### "Parallel Computing for Science and Engineering"
+#### by Victor Eijkhout, copyright 2013/4
 ####
 ################################################################
 ################################################################
@@ -11,14 +11,14 @@
 info ::
 	@echo "Do: make app (where app=${APPS})"
 
-APPS = init recvblock sendblock ssendblock sendrecv putfence getfence \
-    anysource cancel exscan \
-    mvp2d commdup_wrong commdup_right irecv_source postwaitwin passive \
-    centraldiff reduce reduceinplace allreduce allreduceinplace gather gatherv \
+APPS = init recvblock sendblock ssendblock sendrecv \
+    putfence getfence anysource cancel exscan \
+    irecv_source postwaitwin passive \
+    reduce reduceinplace allreduce allreduceinplace gather gatherv \
     reducescatter \
     contiguous vector indexed struct pack \
-    cart persist \
-    pingpong
+    commdup_wrong commdup_right cart persist \
+    pingpong mvp2d centraldiff 
 
 listapps :
 	@echo ${APPS}

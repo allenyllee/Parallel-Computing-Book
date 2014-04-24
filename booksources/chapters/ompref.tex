@@ -255,6 +255,9 @@ what schedule is currently being used with
 \item\indextermtt{omp_get_num_procs}: query the physical number of cores available.
 \end{itemize}
 
+\Level 0 {Tasks}
+\commandreflabel{omp:task}
+
 \Level 0 {Stuff}
 
 \Level 1 {Environment variables}
@@ -328,3 +331,20 @@ for gcc (pre-openmp 3.1)
 \begin{verbatim}
 export GOMP_CPU_AFFINITY=0-63
 \end{verbatim}
+
+\Level 1 {Relaxed memory model}
+\commandreflabel{omp:flush}
+
+\indexpragma{flush}
+
+\begin{itemize}
+\item There is an implicit flush of all variables at the start and end 
+  of a \emph{parallel region}\index{parallel region!flush at}.
+\item There is a flush at each barrier, whether explicit or implicit,
+  such as at the end of a \emph{workshare construct}\index{workshare
+    construct!flush at}.
+\item At entry and exit of a \emph{critical section}\index{critical
+  section!flush at}
+\item When a \emph{lock}\index{lock!flush at} is set or unset.
+\end{itemize}
+

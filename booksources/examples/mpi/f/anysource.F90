@@ -1,9 +1,10 @@
+! -*- f90 -*-
 !  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 !  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 !  %%%%
 !  %%%% This program file is part of the book and course
 !  %%%% "Parallel Computing"
-!  %%%% by Victor Eijkhout, copyright 2013
+!  %%%% by Victor Eijkhout, copyright 2013/4
 !  %%%%
 !  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 !  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -34,6 +35,7 @@ Program AnySource
          call random_number(randomvalue)
          randomint = randomvalue*ntids
          call sleep(randomint)
+         print *,mytid,"waits for",randomint
          call MPI_Send(p,1,MPI_INTEGER,ntids-1,0,comm,err)
       end if
 

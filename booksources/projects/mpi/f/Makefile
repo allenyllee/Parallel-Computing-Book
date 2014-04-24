@@ -95,9 +95,7 @@ tau :
 info ::
 	@echo "make clean       : cleanup but leave slog2"
 	@echo "make total_clean : cleanup including slog2"
-clean ::
-	/bin/rm -rf *.o *~ *.gch a.out *.mod *.dSYM MULTI__* events.* \
-	    idev[0-9]*.o[0-9]* ddt.o[0-9]* jobtest.o* tautrace_* \
-	    ${APPS}
+include ../../Make.inc
+clean :: codeclean
 total_clean : clean 
-	/bin/rm -rf *.slog2 *.ppm
+	@/bin/rm -rf ${APPS} *.slog2 *.ppm

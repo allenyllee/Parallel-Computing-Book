@@ -2,8 +2,8 @@
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    %%%%
    %%%% This program file is part of the book and course
-   %%%% "Parallel Computing"
-   %%%% by Victor Eijkhout, copyright 2013
+   %%%% "Parallel Computing for Science and Engineering"
+   %%%% by Victor Eijkhout, copyright 2013/4
    %%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -20,19 +20,21 @@ int main(int argc,char **argv) {
 
   {
     MPI_Win the_window;
-    int my_number = 27, other_number, other = ntids-1;
+    int my_number=0, window_data[2], other = ntids-1;
+    if (mytid==0)
+      my_number = 37;
 
-    MPI_Win_create(&other_number,1*sizeof(int),sizeof(int),
+    MPI_Win_create(&window_data,2*sizeof(int),sizeof(int),
                    MPI_INFO_NULL,comm,&the_window);
     MPI_Win_fence(0,the_window);
     if (mytid==0) {
       MPI_Put( /* data on origin: */   &my_number, 1,MPI_INT,
-	       /* data on target: */   other,0,    1,MPI_INT,
+	       /* data on target: */   other,1,    1,MPI_INT,
 	       the_window);
     }
     MPI_Win_fence(0,the_window);
     if (mytid==other)
-      printf("I got the following: %d\n",other_number);
+      printf("I got the following: %d\n",window_data[1]);
     MPI_Win_free(&the_window);
   }
 
