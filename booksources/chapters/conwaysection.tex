@@ -808,7 +808,7 @@ while there_are_tasks_left():
     for r in running_tasks:
         if r.finished():
             for t in scheduled_tasks:
-                t.mark_input(r)
+                t.mark_available_input(r)
     t = find_available_task()
     p = find_available_processor()
     schedule(t,p)

@@ -602,7 +602,7 @@ before the first can update it; the second thread the updates to the wrong value
 
 Thus:
 \begin{verbatim}
-#pragma omp paralle
+#pragma omp parallel
 {
   int mytid = omp_get_thread_num();
   double tmp = some_function();
@@ -728,7 +728,7 @@ routine implements a \indexterm{random number generator}.
 \Level 1 {Relaxed memory model}
 \commandref{omp:flush}
 
-\Level 1 {Thread synchronization}
+\Level 2 {Thread synchronization}
 
 Let's do a \indexterm{producer-consumer} model\footnote{This example
   is from Intel's excellent OMP course by Tim Mattson}.  This can be
@@ -787,3 +787,10 @@ while (1) {
   if (flag_read==1) break;
 }
 \end{verbatim}
+
+\Level 0 {Idioms}
+
+\Level 1 {While loops}
+
+\verbatimsnippet{linkedlist}
+

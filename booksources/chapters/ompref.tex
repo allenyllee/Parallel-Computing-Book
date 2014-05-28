@@ -156,7 +156,48 @@ The \n{single} pragma does have a barrier, which can be removed with
 
 \Level 0 {Synchronization}
 
-\Level 1 {Implicit barriers}
+\begin{itemize}
+\item \texttt{barrier}
+\item \texttt{critical}
+\item \texttt{atomic}
+\item \texttt{ordered}
+\item \texttt{nowait}
+\end{itemize}
+
+\Level 1 {Barriers}
+
+A barrier is a location in the code that needs to be reached
+by all threads before any of them can continue. There is 
+a directive for declaring an explicit barrier, but 
+there are also implicit barriers associated with certain other 
+directives.
+
+\Level 2 {Explicit barriers}
+\commandreflabel{exbarrier}
+
+You saw an example above where explicit barriers are needed.
+You can sometimes replace an explicit barrier by an implicit one:
+\begin{verbatim}
+#pragma omp parallel
+{
+  // do something
+#pragma omp barrier
+  // do something else
+}
+\end{verbatim}
+is equivalent to
+\begin{verbatim}
+#pragma omp parallel
+{
+  // do something
+}
+#pragma omp parallel
+  // do something else
+}
+\end{verbatim}
+but the second code has more overhead in creating the team of threads a second time.
+
+\Level 2 {Implicit barriers}
 
 At the end of a parallel region the team of threads is dissolved and
 only the master thread continues. Therefore, there is an
@@ -186,31 +227,6 @@ Here the \n{nowait} clause implies that threads can start on the second loop
 while other threads are still working on the first. Since the two loops use the same
 schedule here, an iteration that uses \n{a[i]} can indeed rely on it that that 
 value has been computed.
-
-\Level 1 {Explicit barriers}
-\commandreflabel{exbarrier}
-
-You saw an example above where explicit barriers are needed.
-You can sometimes replace an explicit barrier by an implicit one:
-\begin{verbatim}
-#pragma omp parallel
-{
-  // do something
-#pragma omp barrier
-  // do something else
-}
-\end{verbatim}
-is equivalent to
-\begin{verbatim}
-#pragma omp parallel
-{
-  // do something
-}
-#pragma omp parallel
-  // do something else
-}
-\end{verbatim}
-but the second code has more overhead in creating the team of threads a second time.
 
 \Level 1 {Locks}
 

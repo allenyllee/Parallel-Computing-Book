@@ -1,5 +1,3 @@
 
-#pragma hello-who-omp
-
-  return 0;
+return 0;
 }

@@ -5,6 +5,8 @@
 #### "Parallel Computing for Science and Engineering"
 #### by Victor Eijkhout, copyright 2013/4
 ####
+#### This is the makefile for the examples/mpi/c
+####
 ################################################################
 ################################################################
 
@@ -12,8 +14,9 @@ info ::
 	@echo "Do: make app (where app=${APPS})"
 
 APPS = init recvblock sendblock ssendblock sendrecv \
+    irecv_source \
     putfence getfence anysource cancel exscan \
-    irecv_source postwaitwin passive \
+    postwaitwin passive \
     reduce reduceinplace allreduce allreduceinplace gather gatherv \
     reducescatter \
     contiguous vector indexed struct pack \

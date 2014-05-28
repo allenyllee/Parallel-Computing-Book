@@ -5,6 +5,8 @@
 #### "Parallel Computing for Science and Engineering"
 #### by Victor Eijkhout, copyright 2013/4
 ####
+#### This is the makefile for the examples/mpi/f
+####
 ################################################################
 ################################################################
 
@@ -13,7 +15,8 @@ info ::
 
 APPS = init local sendblock ssendblock sendrecv anysource \
     putfence getfence exscan \
-    irecv_source
+    irecv_source reduce reduceinplace allreduce gather gatherv \
+    contiguous
 
 listapps :
 	@echo ${APPS}

@@ -395,6 +395,14 @@ the status information, you can use the values
 A receive call has a \n{count} parameter, but this describes the length
 of the buffer, not the amount of data expected. That quantity
 can be retrieved with \indexmpishow{MPI_Get_count}.
+\begin{verbatim}
+// C:
+int MPI_Get_count(MPI_Status *status,MPI_Datatype datatype,
+    int *count)
+! Fortran:
+MPI_Get_count(INTEGER status(MPI_STATUS_SIZE),INTEGER datatype,
+    INTEGER count,INTEGER ierror)
+\end{verbatim}
 
 The status object is returned when the message is received. Thus, with
 \n{MPI_Recv} it is returned explicitly,
@@ -462,7 +470,9 @@ int MPI_Irecv(void *buf,
 \end{verbatim}
 \url{http://www.mcs.anl.gov/research/projects/mpi/www/www3/MPI_Irecv.html}
 
-In Fortran, the request parameter is an integer.
+\begin{fortrannote}
+  The request parameter is an integer.
+\end{fortrannote}
 
 There are various `wait' routines. Since you will often do at least
 one send and one receive, this routine is useful:
@@ -490,6 +500,12 @@ with \indexmpishow{MPI_Waitany}, and process the receive data as it comes in.
 Note the \indexmpishow{MPI_STATUS_IGNORE} parameter: we know everything
 about the incoming message, so we do not need to query a status object.
 Contrast this with the example in section~\ref{ref:mpi-source}.
+
+\begin{fortrannote}
+  The \n{index} parameter is the index in the array of requests,
+  so it uses \emph{1-based indexing}\index{fortran!1-based indexing}.
+\end{fortrannote}
+\verbatimsnippet{waitforany-f}
 
 \Level 1 {Persistent communication}
 \commandreflabel{persistent}
@@ -739,6 +755,10 @@ Therefore, you can specify \indexmpishow{MPI_IN_PLACE} as the send
 buffer on the root. The reduction call then
 uses the value in the receive buffer as the root's contribution to the operation.
 \verbatimsnippet{reduceinplace}
+
+In Fortran the code is less elegant because you can not do
+these address calculations:
+\verbatimsnippet{reduceinplace-f}
 
 \Level 1 {Gather and scatter}
 \commandreflabel{gatherscatter}
