@@ -331,7 +331,15 @@ for (...) {
 
 The parallel regions of section~\ref{sec:parallelregion} were a case of \ac{SPMD} programming,
 where the same code gets executed by all workers. In contrast to this, OpenMP has \indexterm{work sharing}
-constructs, where the work is split up between the threads.
+constructs, where the work is split up between the threads in a team. The work sharing constructs are:
+\begin{itemize}
+\item \texttt{for/do} the threads divide up the loop iterations among
+  themselves; see~\ref{sec:omp-for}.
+\item \texttt{sections} the threads divide a fixed number of sections
+  between themselves; see section~\ref{sec:omp-sections}.
+\item \texttt{single} the section is executed by a single thread; section~\ref{sec:omp-single}.
+\item \texttt{task}
+\end{itemize}
 
 \Level 1 {Loop parallelism}
 \commandref{omp-for}
@@ -361,7 +369,7 @@ for (i=0; i<N; i++) {
 \end{verbatim}
 This has several advantages. For one, you don't have to calculate the loop bounds
 for the threads yourself, but you can also tell OpenMP to assign the loop
-iterations according to different schedules.
+iterations according to different schedules (section~\ref{sec:schedule}).
 
 Using \n{parallel for} is actually short hand for using a \n{parallel} pragma,
 which creates the threads, and inside a \n{for} pragma, which spreads the loop 
@@ -372,6 +380,7 @@ The loop has to satisfy a number of basic constraints, such as that you can not
 jump out of it.
 
 \Level 2 {Loop schedules}
+\commandref{sec:schedule}
 
 Usually you will have many more iterations in a loop than there are threads.
 Thus, there are several ways you can assign your loop iterations to the threads.
@@ -461,9 +470,10 @@ You have now solved a slightly different problem: the result variable
 contains the \emph{last} location where \n{a[i]} is zero.
 
 \Level 1 {Sections}
+\commandref{omp-sections}
 
 \Level 1 {Single/master}
-
+\commandref{omp-single}
 \indexpragma{master}
 \indexpragma{single}
 
@@ -555,10 +565,11 @@ value from the one that is computed sequentially, because floating point operati
 are not associative. See~\HPSCref{sec:roundoff-parallel} for more explanation.
 
 \Level 0 {Synchronization}
+\index{synchronization!in OpenMP|(}
 
 In the constructs for declaring parallel regions above, you had little control over 
 in what order threads executed the work they were assigned.
-This section will discuss \indexterm{synchronization} constructs: ways of telling
+This section will discuss \emph{synchronization} constructs: ways of telling
 threads to bring a certain order to the sequence in which they do things.
 
 \Level 1 {Barrier}
@@ -615,7 +626,8 @@ A \n{critical} section works by acquiring a lock, which carries a substantial ov
 Furthermore, if your code has multiple critical sections, they are all mutually exclusive:
 if a thread is in one critical section, the other ones are all blocked.
 
-On the other hand, the syntax for \n{atomic} sections is limited, but such sections
+On the other hand, the syntax for \n{atomic} sections is limited to the update
+of a single memory location, but such sections
 are not exclusive and they can be more efficient, since they assume that there is a hardware
 mechanism for making them critical.
 
@@ -652,6 +664,8 @@ but that is unnecessarily restrictive. If there are enough bins in the
 histogram, and if the \n{some_function} takes enough time, there are unlikely to be
 conflicting writes. The solution then is to create an array of locks, with
 one lock for each \n{count} location.
+
+\index{synchronization!in OpenMP|)}
 
 \Level 0 {Tasks}
 \commandref{omp:task}

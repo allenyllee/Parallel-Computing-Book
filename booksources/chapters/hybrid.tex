@@ -8,9 +8,39 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-MPI-2 provides precise interaction with multi-threaded programs
-\n{MPI_THREAD_SINGLE}
-\n{MPI_THREAD_FUNNELLED}  (OpenMP loops)
-\n{MPI_THREAD_SERIAL} (Open MP single)
-\n{MPI_THREAD_MULTIPLE}
+\Level 0 {Hybrid MPI-plus-threads execution}
 
+In hybrid execution, the main question is whether all threads
+are allowed to make MPI calls. To determine this,
+replace the \n{MPI_Init} call by
+\indexmpishow{MPI_Init_thread}:
+\begin{verbatim}
+int MPI_Init_thread
+  ( int *argc, char ***argv, int required, int *provided )
+\end{verbatim}
+Here the \n{required} and \n{provided} parameters can take the following
+values:
+\begin{description}
+\item[\texttt{MPI\_THREAD\_SINGLE}]\indexmpi{MPI_THREAD_SINGLE} Only a
+  single thread will execute.
+\item[\texttt{MPI\_THREAD\_FUNNELLED}]\indexmpi{MPI_THREAD_FUNNELLED}
+  The program may use multiple threads, but only the mean thread will
+  make MPI calls.
+\item[\texttt{MPI\_THREAD\_SERIAL}]\indexmpi{MPI_THREAD_SERIAL} The
+  program may use multiple threads, all of which may make MPI calls,
+  but there will never be simultaneous MPI calls in more than one
+  thread.
+\item[\texttt{MPI\_THREAD\_MULTIPLE}]\indexmpi{MPI_THREAD_MULTIPLE}Multiple
+  threads may MPI calls, without restrictions.
+\end{description}
+
+The \emph{mpirun}\index{mpirun!and environment variables}
+program usually propagates \indexterm{environment variables},
+so the value of \indextermtt{OMP_NUM_THREADS} when you call \n{mpirun}
+will be seen by each MPI process.
+
+\begin{itemize}
+\item It is possible to use blocking sends in threads, and let the
+  threads block. This does away with the need for polling.
+\item You can not send to a thread number.
+\end{itemize}

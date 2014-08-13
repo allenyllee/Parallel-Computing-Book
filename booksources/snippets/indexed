@@ -1,8 +1,8 @@
 // indexed.c
-indices = (int*) malloc(count*sizeof(double));
-blocklengths = (int*) malloc(count*sizeof(double));
-source = (int*) malloc(totalcount*sizeof(double));
-target = (int*) malloc(count*sizeof(double));
+indices = (int*) malloc(count*sizeof(int));
+blocklengths = (int*) malloc(count*sizeof(int));
+source = (int*) malloc(totalcount*sizeof(int));
+target = (int*) malloc(count*sizeof(int));
 MPI_Datatype newvectortype;
 if (mytid==sender) {
   MPI_Type_indexed(count,blocklengths,indices,MPI_INT,&newvectortype);

@@ -26,10 +26,10 @@ int main(int argc,char **argv) {
     count = 5,totalcount = 15;
   int *source,*target;
   int *indices,*blocklengths;
-  indices = (int*) malloc(count*sizeof(double));
-  blocklengths = (int*) malloc(count*sizeof(double));
-  source = (int*) malloc(totalcount*sizeof(double));
-  target = (int*) malloc(count*sizeof(double));
+  indices = (int*) malloc(count*sizeof(int));
+  blocklengths = (int*) malloc(count*sizeof(int));
+  source = (int*) malloc(totalcount*sizeof(int));
+  target = (int*) malloc(count*sizeof(int));
 
   indices[0] = 2; indices[1] = 3; indices[2] = 5;
   indices[3] = 7; indices[4] = 11;

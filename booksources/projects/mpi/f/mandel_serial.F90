@@ -5,7 +5,7 @@ module SerialQueue
 
   implicit none
 
-  integer FreeProcessor,TotalTasks
+  integer :: FreeProcessor
 
 contains
   
@@ -27,7 +27,7 @@ contains
     if (IsValidCoordinate(xy)) then
        call MPI_Recv(contribution,1,MPI_INTEGER,FreeProcessor,0,comm,status,ierr)
        !write(*,*) "coord",xy%x,xy%y,"on proc",FreeProcessor,"gives",contribution
-!       call coordinate_to_image(xy,contribution)
+       call coordinate_to_image(xy%x,xy%y,contribution)
        TotalTasks = TotalTasks+1
     else
        print *,"terminating",FreeProcessor
@@ -44,6 +44,7 @@ contains
     do p=0,ntids-1
        call AddTask(xy)
     end do
+    call image_write()
   end subroutine Complete
 
 end module SerialQueue
@@ -52,18 +53,19 @@ program MandelSerial
   use Circle
   use SerialQueue
   implicit none
+  integer :: steps,iters,ierr
   type(Coordinate) :: xy
-  integer ierr
-  integer steps,iters
 
   call MPI_Init(ierr)
   comm = MPI_COMM_WORLD
   call MPI_Comm_set_errhandler(comm,MPI_ERRORS_RETURN,ierr)
   call QueueInit(comm)
 
-!  steps = 10; iters = 1000
+  steps = 200; iters = 1000
   call GetArguments(steps,iters)
   call SetParameters(ntids,steps,iters)
+
+  call set_image_parms(steps,iters)
 
   if (mytid.eq.ntids-1) then
      do

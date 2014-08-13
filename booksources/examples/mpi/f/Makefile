@@ -16,7 +16,8 @@ info ::
 APPS = init local sendblock ssendblock sendrecv anysource \
     putfence getfence exscan \
     irecv_source reduce reduceinplace allreduce gather gatherv \
-    contiguous
+    contiguous vector indexed pack \
+    persist
 
 listapps :
 	@echo ${APPS}

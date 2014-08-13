@@ -20,15 +20,15 @@ contains
     character(32) :: argtxt,dt
     integer :: i
     steps = 10; iters = 1000
-    call iarg(0,argtxt)
-    do i=1,iargc()
-       call getarg(i,argtxt)
+    !call iarg(0,argtxt)
+    do i=1,command_argument_count()-1 !iargc()
+       call get_command_argument(i,argtxt) !call getarg(i,argtxt)
        if (argtxt(1:5)=='steps') then
-          call getarg(i+1,argtxt)
+          call get_command_argument(i+1,argtxt) !call getarg(i+1,argtxt)
           read(argtxt,*) steps
        end if
        if (argtxt(1:5)=='iters') then
-          call getarg(i+1,argtxt)
+          call get_command_argument(i+1,argtxt) !call getarg(i+1,argtxt)
           read(argtxt,*) iters
        end if
     end do
@@ -38,6 +38,7 @@ contains
   subroutine SetParameters(bs,steps_v,bound_v)
     implicit none
     integer,intent(in) :: bs,steps_v,bound_v
+
     step = 2./steps_v ; bound = bound_v
     ymin = -2.; ymax = +2.; ycur = ymin
     xmax = sqrt(4-ycur*ycur); xmin = -xmax; xcur = xmin
@@ -139,10 +140,15 @@ contains
 end module Circle
 
 module Queue
+  use Circle
   use mpi
   implicit none
 
   integer :: comm,ntids,mytid
+! common bookkeeping for all queue variants
+  integer :: TotalTasks
+! store the image
+!  integer :: image
 
 contains
 

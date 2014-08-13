@@ -241,10 +241,11 @@ One-sided communication is very different in nature. Compare it to leaving your
 front-door open and people can bring things to your house, or take them,
 without you noticing.
 
-\Level 1 {Blocking communication}
-\index{communication!two-sided|(}
-\index{communication!blocking|(}
-\commandref{blocking}
+\Level 1 {Concepts: blocking vs non-blocking, synchronous vs asynchronous}
+\index{communication!blocking|(textbf}
+\index{communication!non-blocking|(textbf}
+\index{communication!synchronous|(textbf}
+\index{communication!asynchronous|(textbf}
 
 In two-sided communication, one process issues a send call and the
 other a receive call. Life would be easy if the send call put the data
@@ -259,34 +260,66 @@ figure~\ref{fig:send-ideal}.
 Of course, if the receiving process gets to the receive call before
 the send call has been issued, it will be idle until that happens.
 
-Even if processes are optimally synchronized communication introduces
-some overhead: there is an inital latency connected with every
-message, and the network also has a limited bandwidth which leads to a
-transfer time per byte; see~\HPSCref{sec:bwlatency}.
-
 The above ideal scenario is not realistic: it assumes that somewhere
 in the network there is buffer capacity for all messages that are in
 transit. Since this message volume can be large, we have to worry
 explicitly about management of send and receive \indexterm{buffers}.
 
 The easiest scenario is that the sending process keeps the message
-data in its address space until the receiving process has indicated
+data in a local data structure until the receiving process has indicated
 that it is ready to receive it. This is pictured in
-figure~\ref{fig:send-blocking}.
+figure~\ref{fig:send-blocking}, left picture.
 \begin{figure}[ht]
-\includegraphics[scale=.1]{graphics/send-blocking}
-\caption{Illustration of a blocking communication: the sending processor is idle until the receiving processor issues and finishes the receive call}
+\hbox{%
+\includegraphics[scale=.08]{graphics/send-blocking}
+\kern1cm
+\includegraphics[scale=.08]{graphics/send-nonblocking}
+}
+\caption{Left: illustration of a blocking communication: the sending
+  processor is idle until the receiving processor issues and finishes
+  the receive call.  Right: illustration of a non-blocking
+  communication: the sending processor immediately continues execution
+  after issueing the send call}
 \label{fig:send-blocking}
 \end{figure}
 This is known as \emph{blocking} communication: a process that issues
 a send or receive call will then block until the corresponding receive
-or send call is successfully concluded.
+or send call is successfully concluded. However, this can be inefficient;
+it is better if the data is set aside for the system to transfer it, 
+while the user program continues. This is known as \emph{non-blocking}
+communication, illustrated in the right figure.
 
-It is clear what the first problem with this scenario is: if your
+It is easiest to think of blocking as a form of synchronization with
+the other process, but that is not quite true. Synchronization is a
+concept in itself, and we talk about \emph{synchronous} communication
+if there is actual coordination going on with the other process,
+and \emph{asynchronous} communication if there is not. Blocking then
+only refers to the program waiting until the user data is safe
+to reuse; in the synchronous case a blocking call means that the data
+is indeed transferred, in the asynchronous case it only means that the
+data has been transferred to some system buffer.
+\begin{figure}[ht]
+\includegraphics[scale=.15]{block-vs-sync}
+\caption{Blocking and synchronicity}
+\label{fig:block-sync}
+\end{figure}
+The four possible cases are illustrated in figure~\ref{fig:block-sync}.
+
+\index{communication!non-blocking|)}
+\index{communication!blocking|)}
+\index{communication!synchronous|)}
+\index{communication!asynchronous|)}
+
+\Level 1 {Blocking communication}
+\index{communication!two-sided|(}
+\index{communication!blocking|(textbf}
+\commandref{blocking}
+
+Above we signalled a first problem with blocking communication:
+if your
 processes are not perfectly synchronized your performance may degrade
 because processes spend time waiting for each other;
 see~\HPSCref{sec:load}. 
-
 But there is a more insidious, more serious problem.
 Suppose two process need to exchange data, and consider the following
 pseudo-code, which purports to exchange data between processes 0 and~1:
@@ -459,7 +492,7 @@ finishes first.
 
 \Level 1 {Non-blocking communication}
 \commandref{nonblocking}
-\index{communication!non-blocking|(}
+\index{communication!non-blocking|(textbf}
 
 In the previous section you saw that blocking communication makes
 programming tricky if you want to avoid deadlock and performance
@@ -538,11 +571,6 @@ for (p=0; p<nrequests; p++) {
 
 Figure~\ref{fig:jump-nonblock} shows the trace of a non-blocking execution
 using \n{MPI_Waitall}.
-\begin{figure}[ht]
-\includegraphics[scale=.1]{graphics/send-nonblocking}
-\caption{Illustration of a non-blocking communication: the sending processor immediately continues execution after issueing the send call}
-\label{fig:send-nonblocking}
-\end{figure}
 \begin{figure}[ht]
 \includegraphics[scale=.4]{graphics/linear-nonblock}
 \caption{A trace of a nonblocking send between neighbouring processors}
@@ -711,13 +739,26 @@ call them; see figure~\ref{fig:window}.
 \begin{verbatim}
 MPI_Info info;
 MPI_Win window;
-MPI_Win_create( /* size */, info, comm, &window );
+MPI_Win_create( /* memory area */, info, comm, &window );
 MPI_Win_free( &window );
 \end{verbatim}
 (For the \n{info} parameter you can often use \indexmpishow{MPI_INFO_NULL}.)
 While the creation of a window is collective, each
 processor can specify its own window size, including zero, and even the type of the
 elements in it.
+
+The MPI specification allows that the memory of a window can be 
+separate from the regular program memory. The routine \indexmpishow{MPI_Alloc_mem}
+can return a pointer to such priviliged memory.
+
+\begin{verbatim}
+MPI_Info info ;
+int error ;
+error = MPI_Info_create ( & info ) ;
+error = MPI_Info_set ( info , "no_locks" , "true" ) ;
+/* Use the info object*/
+error = MPI_Info_free ( info ) ;
+\end{verbatim}
 
 \Level 2 {Active target synchronization: epochs}
 \commandref{fence}
@@ -786,7 +827,6 @@ Global assertions:
   \item\indexmpishow{MPI_MODE_NOSUCCEED} This process will make no
     \ac{RMA} calls in the next epoch.
 \end{itemize}
-
 
 \index{window|)}
 
@@ -905,7 +945,7 @@ During an access epoch, a process can initiate and finish a one-sided
 transfer.
 \begin{verbatim}
 If (rank == 0) {
-  MPI_Win_lock (MPI_LOCK_SHARED, 1, 0, win);
+  MPI_Win_lock (MPI_LOCK_EXCLUSIVE, 1, 0, win);
   MPI_Put (outbuf, n, MPI_INT, 1, 0, n, MPI_INT, win);
   MPI_Win_unlock (1, win);
 }
@@ -1774,7 +1814,7 @@ proc_j = mytid / proc_column_length;
 You can now create a communicator per column:
 \begin{verbatim}
 MPI_Comm column_comm;
-MPI_Comm_split( MPI_COMM_WORLD, proj_j, &column_comm );
+MPI_Comm_split( MPI_COMM_WORLD, proj, j, &column_comm );
 \end{verbatim}
 and do a broadcast in that column:
 \begin{verbatim}
@@ -1899,6 +1939,46 @@ $(-1,0,0)$, $(0,1,0)$ et cetera'.
 
 \index{communicator|)}
 
+\Level 0 {Synchronization}
+\index{synchronization!in MPI|(}
+
+MPI programs conform to the \ac{SPMD} model, and this means that events
+in one process can be unrelated in time to events in another process.
+Any \emph{synchronization} that happens is induced by communication 
+and other MPI mechanisms. By synchronization here we mean any sort of
+temporal ordering of events in different processes.
+
+You have already seen some mechanisms.
+\begin{enumerate}
+\item In blocking communication, the receive call does not return until the send call has completed.
+\item In non-blocking communication, the wait on a receive request will not return 
+  until the send has been completed.
+\item In one-sided communication, the fence mechanism impose a certain ordering on events.
+\end{enumerate}
+
+Another synchronization mechanism is induced by the \emph{barrier}\index{barrier!in MPI}
+mechanism. However, while an \indexmpishow{MPI_Barrier} call guarantees that all processes have
+reached a certain location in their source, this does not necessarily imply anything about 
+message traffic. Consider this example
+\begin{quotation}
+  \begin{tabular}{|l|l|l|}
+    \hline
+    Proc 0 & Proc 1 & Proc 2\\
+    \hline
+    Isend to 1 & Irecv from any source & \\
+    Barrier    & Barrier               & Barrier \\
+    Wait for send request & wait for recv request & Isend to 1 \\
+                          & (another wildcard recv) & wait for send request \\
+    \hline
+  \end{tabular}
+\end{quotation}
+The unexpected behaviour here is that the (first) receive on process~1
+can be matched with the send on process~2: the barrier on process~1 only guarantees that the 
+receive instruction was performed, not the actual transfer. For that you need the \n{MPI_Wait}
+call, which is after the barrier.
+
+\index{synchronization!in MPI|)}
+
 \Level 0 {Hybrid programming: MPI and threads}\
 \commandref{mpi-thread}
 
@@ -1984,24 +2064,6 @@ but do not copy the data. Instead, when probing tells you that there is a
 message, you can use \indexmpishow{MPI_Get_count} to determine its size,
 allocate a large enough receive buffer, and do a regular receive to
 have the data copied.
-
-\Level 1 {Semantics}
-\label{sec:mpi-semantics}
-\index{MPI!semantics|(}
-
-MPI processes are only synchronized to a certain extent, so you may
-wonder what guarantees there are that running a code twice will give
-the same result.  You need to consider two cases: first of all, if the
-two runs are on different numbers of processors there are already
-numerical problems; see~\HPSCref{sec:roundoff-parallel}.
-
-Let us then limit ourselves to two runs on the same set of processors. 
-In that case, MPI is deterministic as long as you do not use 
-wildcards such as \indexmpishow{MPI_ANY_SOURCE}. Formally, 
-MPI messages are `non-overtaking': two messages between the same
-sender-receiver pair will arrive in sequence.
-
-\index{MPI!semantics|)}
 
 \Level 1 {Error handling}
 \commandref{mpi:error}
@@ -2267,6 +2329,45 @@ That's a problem with Isend.
 
 The \indexterm{C++} interface is deprecated as of \indextermbus{MPI}{2.2}.
 It is unclear what is happening.
+
+\Level 1 {Determinism}
+\label{sec:mpi-semantics}
+\index{MPI!semantics|(}
+
+MPI processes are only synchronized to a certain extent, so you may
+wonder what guarantees there are that running a code twice will give
+the same result.  You need to consider two cases: first of all, if the
+two runs are on different numbers of processors there are already
+numerical problems; see~\HPSCref{sec:roundoff-parallel}.
+
+Let us then limit ourselves to two runs on the same set of processors. 
+In that case, MPI is deterministic as long as you do not use 
+wildcards such as \indexmpishow{MPI_ANY_SOURCE}. Formally, 
+MPI messages are `non-overtaking': two messages between the same
+sender-receiver pair will arrive in sequence.
+Actually, they may not arrive in sequence: they are \emph{matched}\index{matching}
+in sequence in the user program. If the second message is much smaller than the first,
+it may actually arrive earlier in the lower transport layer.
+
+\index{MPI!semantics|)}
+
+\Level 1 {Progress}
+\index{progress|(}
+
+Non-blocking communication implies that messages make \emph{progress}
+while computation is going on. However, communication of this sort can 
+typically not be off-loaded to the network card, so it has to be done by 
+a process. This requires a separate thread of execution, with
+obvious performance problems. Therefore, in practice overlap may
+not actually happen, and for the message to make progress
+it is necessary for the MPI library to become active occasionally.
+For instance, people have inserted dummy \n{MPI_Probe} calls.
+
+A similar problem arises with passive target synchronization:
+it is possible that the origin process may hang until 
+the target process makes an MPI call.
+
+\index{progress|)}
 
 \Level 1 {The origin of one-sided communication in ShMem}
 

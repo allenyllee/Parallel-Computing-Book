@@ -11,6 +11,7 @@
 ################################################################
 
 info ::
+	@echo "make"
 
 APPS = 
 
@@ -30,7 +31,7 @@ OPTLEVEL = 2
 FFLAGS = -g -O${OPTLEVEL}
 CFLAGS = ${FFLAGS} -std=c99 
 info ::
-	@echo "    debug flag: DEBUG=DEBUG/OPT (default: ${DEBUG})]"
+	@echo "    [OPTLEVEL=... (default: ${OPTLEVEL})]"
 % : %.F
 	${FC} ${FFLAGS} $*.F -o $@
 %.o : %.F90
@@ -41,15 +42,15 @@ info ::
 # Example: mandelbrot routines
 MANDEL_APPS = mandel_serial mandel_bulk mandel_async mandel_collective
 APPS += ${MANDEL_APPS}
-mandel_dependencies = mandel_tools.o 
-#Image.o Color.o
+mandel_dependencies = mandel_tools.o imagetools.o Image.o
+mandel_tools.o : Image.o
 ${MANDEL_APPS} : ${mandel_dependencies}
 APPS += ${MANDEL_APPS}
 Color.o : Color.h
 Image.o : Image.h
 .SECONDEXPANSION:
 ${MANDEL_APPS} : ${mandel_dependencies} $$@.o
-	${F90} ${FFLAGS} $@.o ${mandel_dependencies} -o $@
+	${F90} ${FFLAGS} $@.o ${mandel_dependencies}  -lstdc++ -lc -o $@
 # -lstdc++ -lc
 
 # rules for submitting to the queue and doing tau analysis

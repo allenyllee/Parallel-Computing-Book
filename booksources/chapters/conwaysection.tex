@@ -30,8 +30,7 @@ types of parallel computers.
 
 (Note. At some points in this discussion there will be references to
 the book `Introduction to High-Performance Scientific Computing' by
-the present author\footnote{Download and purchase links can be found
-  on \url{http://www.tacc.utexas.edu/~eijkhout/istc/istc.html}.}. Such
+the present author~\cite{Eijkhout:IHPSClulu}.. Such
 references take the form `HPSC-1.2.3' for section 1.2.3 of that book.)
 
 \Level 1 {Conway's Game of Life}
@@ -273,6 +272,33 @@ processor can actually use all that available parallelism.
 
 Now suppose that you are coding the Game of Life, which is \ac{SIMD} in nature,
 and you want to make sure that is is executed with these vector instructions.
+
+First of all the code needs to have the right structure. The original code
+does not have a lot of parallelism in the inner loop, where it
+can be exploited with vector instruction:
+\begin{verbatim}
+for i in [0:N]:
+  for j in [0:N]:
+    count = 0
+    for ii in {-1,0,+1}:
+      for jj in {-1,0,+1}:
+        if ii!=0 and jj!=0:
+          count += board[i+ii,j+jj]
+\end{verbatim}
+Instead, we have to exchange loops as:
+\begin{verbatim}
+for i in [0:N]:
+  for j in [0:N]:
+    count[j] = 0
+  for ii in {-1,0,+1}:
+    for jj in {-1,0,+1}:
+      if ii!=0 and jj!=0:
+        for j in [0:N]:
+          count[j] += board[i+ii,j+jj]
+\end{verbatim}
+Note that the \n{count} variable now has become an array.
+This is one of the reasons that compilers are unable to make this transformation.
+
 Regular programming languages have no way of saying `do the following
 operation with vector instructions'. That leaves you with two options:
 \begin{enumerate}
@@ -714,7 +740,7 @@ Here the idea is that:
   from it.
 \end{itemize}
 One-sided communication sounds attractive, but it is often easier and more efficient
-to uses \indextermsub{non-blocking}{communication calls}. Here the send or receive instruction
+to uses \indextermsub{non-blocking}{communication} calls. Here the send or receive instruction
 only indicates to the system the buffer with send data, or in which to receive data. 
 You then need a second call to ensure that the operation is actually completed.
 

@@ -1,4 +1,4 @@
-// commdup_right.cxx
+// commdup_right.F90
 class library {
 private:
   MPI_Comm comm;

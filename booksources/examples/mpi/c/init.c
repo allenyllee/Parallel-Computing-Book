@@ -29,6 +29,7 @@ int main(int argc,char **argv) {
     input_argument = atoi(argv[1]);
   }
   MPI_Bcast(&input_argument,1,MPI_INT,0,comm);
+  printf("Processor %d gets %d\n",mytid,input_argument);
 
   MPI_Finalize();
   return 0;

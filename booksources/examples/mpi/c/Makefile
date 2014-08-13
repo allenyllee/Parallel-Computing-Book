@@ -13,7 +13,7 @@
 info ::
 	@echo "Do: make app (where app=${APPS})"
 
-APPS = init recvblock sendblock ssendblock sendrecv \
+APPS = hello init recvblock sendblock ssendblock sendrecv \
     irecv_source \
     putfence getfence anysource cancel exscan \
     postwaitwin passive \

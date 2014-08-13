@@ -22,18 +22,17 @@ Torsten Hoefler, Christian Siebert, and Andrew Lumsdaine.
 \newblock Scalable communication protocols for dynamic sparse data exchange.
 \newblock {\em SIGPLAN Not.}, 45(5):159--168, January 2010.
 
-\bibitem{OReilly-GnuMake}
-Robert Mecklenburg.
-\newblock {\em Managing Projects with {GNU} {Make}}.
-\newblock O'Reilly Media, 3rd edition edition, 2004.
-\newblock Print ISBN:978-0-596-00610-5 ISBN 10:0-596-00610-1 Ebook
-  ISBN:978-0-596-10445-0 ISBN 10:0-596-10445-6.
-
 \bibitem{thakur:ijhpca-sync}
 R.~Thakur, W.~Gropp, and B.~Toonen.
 \newblock Optimizing the synchronization operations in {MPI} one-sided
   communication.
 \newblock {\em Int'l Journal of High Performance Computing Applications},
   19:119--128, 2005.
+
+\bibitem{Eijkhout:IHPSClulu}
+{Victor Eijkhout with Robert van de Geijn and Edmond Chow}.
+\newblock {\em Introduction to High Performance Scientific Computing}.
+\newblock lulu.com, 2011.
+\newblock \url{http://www.tacc.utexas.edu/~eijkhout/istc/istc.html}.
 
 \end{thebibliography}
