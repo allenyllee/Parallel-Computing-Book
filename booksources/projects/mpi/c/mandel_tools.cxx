@@ -166,7 +166,7 @@ void queue::complete() {
     MPI_Send(&xy,1,coordinate_type, p,0,comm);
 
   t_stop = MPI_Wtime();
-  printf("Tasks %d in time %d\n",total_tasks,t_stop-t_start);
+  printf("Tasks %d in time %7.4f\n",total_tasks,t_stop-t_start);
   image->Write();
   return; 
 };

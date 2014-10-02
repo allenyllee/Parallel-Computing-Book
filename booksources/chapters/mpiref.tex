@@ -536,11 +536,7 @@ These are equivalent to starting an \n{Isend} or \n{Isend}; correspondingly,
 it is necessary to issue an \n{MPI_Wait...} call (section~\ref{ref:nonblocking})
 to determine their completion.
 
-After a request object has been used, possibly multiple times, it can be freed
-with \indexmpishow{MPI_Request_free}.
-\begin{verbatim}
-int MPI_Request_free(MPI_Request *request)
-\end{verbatim}
+After a request object has been used, possibly multiple times, it can be freed; see~\ref{ref:mpirequest}.
 
 In the following example a ping-pong is implemented with persistent communication.
 \verbatimsnippet{persist}
@@ -551,6 +547,34 @@ As with ordinary send commands, there are the variants
 \indexmpishow{MPI_Rsend_init}.
 
 \index{communication!persistent|)}
+
+\Level 1 {About \texttt{MPI\_Request}}
+\label{ref:mpirequest}
+
+An \indexmpidef{MPI_Request} object is not actually an object,
+unlike \n{MPI_Status}. Instead it is an (opaque) pointer.
+This meeans that when you call, for instance, \n{MPI_Irecv},
+MPI will allocate an actual request object, and return its
+address in the \n{MPI_Request} variable.
+
+Correspondingly, calls to \indexmpishow{MPI_Wait...} or \indexmpishow{MPI_Test}
+free this object.
+If your application is such that you do not use `wait' call, you can free the
+request object explicitly
+with \indexmpishow{MPI_Request_free}.
+\begin{verbatim}
+int MPI_Request_free(MPI_Request *request)
+\end{verbatim}
+
+You can inspect the status of a request without freeing the request object
+with \indexmpishow{MPI_Request_get_status}:
+\begin{verbatim}
+int MPI_Request_get_status(
+  MPI_Request request,
+  int *flag,
+  MPI_Status *status
+);
+\end{verbatim}
 
 \Level 0 {One-sided communication}
 \commandreflabel{one-sided}

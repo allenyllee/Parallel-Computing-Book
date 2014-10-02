@@ -38,7 +38,8 @@ private:
 
 class queue {
 protected:
-  int ntids,mytid, total_tasks,t_start,t_stop;
+  int ntids,mytid, total_tasks;
+  double t_start,t_stop;
   MPI_Comm comm;
   circle *workcircle;
   Image *image;

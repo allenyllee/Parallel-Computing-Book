@@ -26,11 +26,8 @@ contains
     call MPI_Send(xyv,2,MPI_REAL,FreeProcessor,0,comm,ierr)
     if (IsValidCoordinate(xy)) then
        call MPI_Recv(contribution,1,MPI_INTEGER,FreeProcessor,0,comm,status,ierr)
-       !write(*,*) "coord",xy%x,xy%y,"on proc",FreeProcessor,"gives",contribution
        call coordinate_to_image(xy%x,xy%y,contribution)
        TotalTasks = TotalTasks+1
-    else
-       print *,"terminating",FreeProcessor
     end if
     FreeProcessor = mod(FreeProcessor+1,ntids-1)
     
@@ -45,6 +42,8 @@ contains
        call AddTask(xy)
     end do
     call image_write()
+    t_stop = MPI_Wtime()
+    print *,"Performed",TotalTasks,"tasks in",t_stop-t_start
   end subroutine Complete
 
 end module SerialQueue
@@ -77,7 +76,6 @@ program MandelSerial
         end if
      end do
      call Complete()
-     print *,"Performed",TotalTasks,"tasks"
   else
      call WaitForWork()
   end if

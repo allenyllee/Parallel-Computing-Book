@@ -65,6 +65,12 @@ A very simple solution using blocking sends on the master is given:
   execution that bears this out.
 \end{exercise}
 
+\begin{figure}[ht]
+\includegraphics[scale=.35]{mandel_serial}
+\caption{Trace of a serial Mandelbrot calculation}
+\label{fig:mandel-serial}
+\end{figure}
+
 \Level 0 {Bulk task scheduling}
 \label{proj:mandel-bulk}
 
@@ -89,6 +95,12 @@ to do this is with non-blocking sends.
   call.
 \end{exercise}
 
+\begin{figure}[ht]
+\includegraphics[scale=.35]{mandel_bulk}
+\caption{Trace of a bulk Mandelbrot calculation}
+\label{fig:mandel-bulk}
+\end{figure}
+
 \Level 0 {Collective task scheduling}
 \label{proj:mandel-collective}
 
@@ -111,6 +123,12 @@ In the Mandelbrot case this is clearly not the case.
   Code a fully dynamic solution that uses \n{MPI_Probe} or \n{MPI_Waitany}.
   Make an execution trace and report on the total running time.
 \end{exercise}
+
+\begin{figure}[ht]
+\includegraphics[scale=.35]{mandel_async}
+\caption{Trace of an asynchronous Mandelbrot calculation}
+\label{fig:mandel-async}
+\end{figure}
 
 \Level 0 {One-sided solution}
 

@@ -147,8 +147,7 @@ module Queue
   integer :: comm,ntids,mytid
 ! common bookkeeping for all queue variants
   integer :: TotalTasks
-! store the image
-!  integer :: image
+  double precision :: t_start,t_stop
 
 contains
 
@@ -164,6 +163,7 @@ contains
        write(*,*) "You need at least two processors"
        call MPI_Abort(comm,1,ierr)
     end if
+    t_start = MPI_Wtime()
   end subroutine QueueInit0
 
   subroutine WaitForWork()
