@@ -13,38 +13,188 @@
 
 \Level 1 {The OpenMP model}
 
-OpenMP has has a model, that is, an abstract way of thinking
-about program execution,
-that is based on \indexterm{threads}. (For more on threads, 
-see \HPSCref{sec:threads}.) At the start of your program, 
-there is typically some sequential work, and that gets executed
-by a single thread, the \emph{master thread}\index{threads!master}. Then,
-when the opportunity for parallelism offers itself, 
-\indextermsub{worker}{threads} can come into action.
+OpenMP is based on on two concepts: the use of of \indexterm{threads}
+and the \indexterm{fork/join} model of
+parallelism. For now you can think of a thread as a sort of process:
+the computer executes a sequence of instructions.
+The fork/join model says that a thread can split itself (`fork')
+into a number of threads that are identical copies. At some point
+these copies go away and the original thread is left (`join'),
+but while the \indextermsub{team of}{threads} exists,
+you have parallelism available to you. The part of the execution
+between fork and join is known as a \indexterm{parallel region}.
+
+Figure~\ref{fig:forkjoin} gives a simple picture of this:
+a thread forks into a team of threads, and these threads
+themselves can fork again.
+\begin{figure}[ht]
+\includegraphics[scale=.08]{fork-join}
+\caption{Thread creation and deletion during parallel execution}
+\label{fig:forkjoin}
+\end{figure}
+
+The threads that are forked are all copies of the
+\emph{master thread}\index{threads!master}: they have access to all that was
+computed so far; this is their \indexterm{shared data}.  Of course, if
+the threads were completely identical the parallelism would be
+pointless, so they also have private data, and they can identify
+themselves: they know their thread number.  This allows you to do
+meaningful parallel computations with threads.
+
+This brings us to the third important concept: that of \indexterm{work sharing}
+constructs. In a team of threads, initially there will be replicated execution;
+a work sharing construct divides available parallelism over the threads.
+
+So there you have it: OpenMP uses teams of threads, and inside
+a parallel region the work is distributed over the threads with a work sharing construct.
+Threads can access shared data, and they have some private data.
+
+For more on threads, see \HPSCref{sec:threads}.
+
+\Level 1 {OpenMP language constructs}
 
 Of course, OpenMP is not magic, so you have to tell it when something
-can be done in parallel. This is done through \indexterm{directives}
-that precede a block of parallelizable code. Here is a very simple example:
-\verbatimsnippet{hello-omp}
-It prints out the `hello world' message once for each thread. How many
-threads there are is controlled outside of your program.
+can be done in parallel. This is mostly done through \indexterm{directives},
+and to a lesser extent through library calls.
 
-The way you should view this is as follows.
+The first thing we want to do is create a parallel region.
+Here is a very simple example:
+\verbatimsnippet{hello-omp}
+or in Fortran
+\verbatimsnippet{hello-omp-f}
+It prints out the `hello world' message once for each thread. How many
+threads there are can be determined in a number of ways; we will get to that later.
+
+This code corresponds to the model we just discussed:
 \begin{itemize}
 \item Immediately preceding the parallel block, one thread will be
-  executing the code. Typically this is the
-  \indextermsub{master}{thread}.
-\item At the start of the block, a new \indextermbus{thread}{team} is
-  created; this includes the thread that was active before the block.
+  executing the code. In the main program this is the \emph{initial
+    thread}\index{threads!initial}.
+\item At the start of the block, a new \indextermsub{team of}{threads} is
+  created, and the thread that was active before the block
+  becomes the \emph{master thread}\index{threads!master} of that team.
 \item Each thread in the team then executes the body of the block; it
   will have access to all variables of the surrounding environment.
 \end{itemize}
-This is illustrated in figure~\ref{fig:fork-join} below.
 
-\Level 1 {Some context}
+\Level 1 {Directives}
+\commandref{omp-directives}
 
-\Level 2 {OpenMP code structure}
-\commandref{omp-code}
+Directives look like \indextermsub{cpp}{directives}, but they
+are actually handled by the compiler, not the preprocessor.
+In C/C++, a~directive is followed by a single command or a block
+in curly braces; in Fortran there is a matching end directive
+for every opening directive.
+
+\Level 2 {Parallel regions}
+\commandref{omp-parallel}
+
+The simplest way to create a parallel region is through the 
+\indexpragma{parallel} pragma. In~C this is followed by a block,
+in Fortran you conclude the block with \texttt{end parallel}.
+\begin{verbatim}
+#pragma omp parallel
+{
+  // this is executed by all threads
+}
+\end{verbatim}
+It would be pointless to have the block be executed identically by
+all threads, so you will probably use the function
+\indextermtt{omp_get_thread_num}, to find out which thread you are,
+and execute work that is individual to that thread.
+There is also a function
+\indextermtt{omp_get_num_threads} to find out the total number of threads.
+Both these functions give a number relative to the current team;
+recall from figure~\ref{fig:forkjoin} that new teams can be created recursively.
+
+\begin{exercise}
+  What happens if you call \n{omp_get_thread_num} and \n{omp_get_num_threads}
+  outside a parallel region?
+\end{exercise}
+
+\Level 2 {Thread data}
+\commandref{sec:ompdata}
+
+A thread has access to variables of two kinds. Variables on the
+\indexterm{heap} are typically created by a call to \indextermtt{malloc}
+(in~C) or \indextermtt{new} (in~C++). Threads that are spawned have
+the same type of access to them.
+
+There are also variables on the \indexterm{stack}, which have a local
+\indexterm{scope}. Thread access to such variables is more complicated,
+since each thread has its own \indexterm{context}. Most relevant to our story,
+the context can contain local copies of variables, that is, each thread
+has a variable, say~\n{x}, but they are local to each thread context.
+Thus, one thread setting the value of its instance of~\n{x} has no influence on what
+another thread sees as the value of its instance of~\n{x}.
+
+To use the technical term, there are
+\begin{itemize}
+\item \indexterm{shared variables},
+  where each thread refers to the same data item, and 
+\item \indexterm{private variables},
+  where each thread has its own instance.
+\end{itemize}
+%
+\begin{figure}[ht]
+\includegraphics[scale=.1]{fork-join-vars}
+\caption{Locality of variables in threads}
+\label{fig:threadvars}
+\end{figure}
+%
+This is illustrated in figure~\ref{fig:threadvars}.
+
+When a new \emph{thread team}\index{thread!team!and variable access} is created,
+there are various mechanisms for indicating which variables are shared
+and which are private.
+\begin{itemize}
+\item By default, any variable declared in the surrounding scope is
+  shared. Thus, in the following code segment, each thread sets the
+  value of~\n{x}, and its value after the parallel region is
+  indeterminate because you do not know in what sequence the threads
+  performed the update.
+\begin{verbatim}
+int x;
+#omp parallel
+{
+  x = omp_get_thread_num();
+}
+// what is the value of x?
+\end{verbatim}
+\item Any variable declared inside the parallel region is private. In
+  the following code segment the variable~\n{x} is local to the
+  thread: the value that is set by one thread does not interfere with
+  what other threads do.
+\begin{verbatim}
+#omp parallel
+{
+  double x;
+  x = // some dynamic value
+  ... = .... x ....
+}
+\end{verbatim}
+  Since the parallel region is also a \indexterm{lexical scope}, the
+  variable~\n{x} does not exist after the parallel region. (In Fortran
+  this mechanism of local allocation does not exist, so this question
+  does not come up.)
+\item In a parallel loop, the loop variable is private, even though it may
+  have been declared outside the parallel construct.
+\item A variable declared in the surrounding scope can explicitly be
+  declared private or shared by adding a \indexpragma{private}
+  or \indexpragma{shared} clause respectively to the OpenMP
+  directive. In the following fragment, each 
+  For the behaviour of shared variables, the default, see the point above.
+\item Unless otherwise stated, private variables are undefined at the
+  start of the parallel region, and disappear at the end; shared
+  variables become undefined after the parallel region.
+\item Data allocated on the \indexterm{heap} is
+  shared\footnote{However, note that the C~and~Fortran standards do
+    not actually define a~heap. Therefore it is wise to spell out your
+    intentions.}.
+\end{itemize}
+
+\Level 1 {OpenMP code structure}
+\commandref{omp-code-structure}
 
 OpenMP is largely based on directives: instructions to the compiler
 and runtime that are hidden in comment-like structures. In Fortran,
@@ -64,8 +214,20 @@ the directive is explicitly closed with
 !$OMP END construct
 \end{verbatim}
 
-There are also a couple of OpenMP routines, and for that
-you need to include
+Above, you saw the \indexpragma{parallel} directive: when a thread
+encounters it, it spawns new threads to form a \indextermbus{thread}{team}.
+This team stays active during the execution of the \indexterm{structured block}
+that follows, after which only the master thread remains. However,
+in addition to this lexical description of thread activity, the thread team
+also stays intact in any code that is dynamically encountered. For instance,
+any subroutines called the OpenMP \indexterm{construct} are also executed
+in parallel.
+
+\Level 1 {Some externalities}
+
+\Level 2 {Compiling}
+
+Your file or Fortran module needs to contain
 \begin{verbatim}
 #include "omp.h"
 \end{verbatim}
@@ -74,8 +236,6 @@ in C, and
 use omp_lib
 \end{verbatim}
 for Fortran.
-
-\Level 2 {Compiling}
 
 OpenMP is handled by extensions to your regular compiler, typically by
 adding an option to your commandline:
@@ -106,121 +266,7 @@ The most important one is \indextermtt{OMP_NUM_THREADS}:
 export OMP_NUM_THREADS=8
 \end{verbatim}
 which sets the number of threads that a program will use.
-
-\Level 0 {Background on threads}
-
-When an OpenMP program starts, on the \indextermsub{master}{thread} 
-is active.
-OpenMP directives create parallel regions
-\begin{figure}[ht]
-\includegraphics[scale=.08]{fork-join}
-\caption{Thread creation and deletion during parallel execution}
-\label{fig:forkjoin}
-\end{figure}
-in which a \indextermbus{thread}{team} is active. 
-The thread team can be spawned by the master thread,
-or recursively by another thread. This is illustrated
-in figure~\ref{fig:forkjoin}.
-
-\Level 1 {Parallel regions}
-\commandref{omp-parallel}
-
-The simplest way to create a parallel region is through the 
-\indexpragma{parallel} pragma. In~C this is followed by a block,
-in Fortran you conclude the block with \texttt{end parallel}.
-\begin{verbatim}
-#pragma omp parallel
-{
-  // this is executed by all threads
-}
-\end{verbatim}
-It would be pointless to have the block be executed identically by
-all threads, so you will probably use the functions
-\indextermtt{omp_get_thread_num}, to find out which thread you are, and
-\indextermtt{omp_get_num_threads}, to find out the total number of threads.
-Both these functions give a number relative to the current team;
-recall from figure~\ref{fig:forkjoin} that new teams can be created recursively.
-
-\begin{exercise}
-  What happens if you call \n{omp_get_thread_num} and \n{omp_get_num_threads}
-  outside a parallel region?
-\end{exercise}
-
-\Level 1 {Thread data}
-\commandref{sec:ompdata}
-
-A thread has access to variables of two kinds. Variables on the
-\indexterm{heap} are typically created by a call to \indextermtt{malloc}
-(in~C) or \indextermtt{new} (in~C++). Threads that are spawned have
-the same type of access to them.
-
-There are also variables on the \indexterm{stack}, which have a local
-\indexterm{scope}. Thread access to such variables is more complicated,
-since each thread has its own \indexterm{context}. Most relevant to our story,
-the context can contain local copies of variables, that is, each thread
-has a variable, say~\n{x}, but they are local to each thread context.
-Thus, one thread setting its~\n{x} has no influence on what
-another thread sees as the value of its~\n{x}.
-
-To use the technical term, there are
-\begin{itemize}
-\item \indexterm{shared variables},
-  where each thread refers to the same data item, and 
-\item \indexterm{private variables},
-  where each thread has its own instance.
-\end{itemize}
-%
-\begin{figure}[ht]
-\includegraphics[scale=.1]{fork-join-vars}
-\caption{Locality of variables in threads}
-\label{fig:threadvars}
-\end{figure}
-%
-This is illustrated in figure~\ref{fig:threadvars}.
-
-When a new \emph{thread team}\index{thread!team!and variable access} is created,
-there are various mechanisms for indicating which variables are shared
-and which are private.
-\begin{itemize}
-\item Any variable declared inside the parallel region is private. In
-  the following code segment the variable~\n{x} is local to the
-  thread: the value that is set by one thread does not interfere with
-  what other threads do.
-\begin{verbatim}
-#omp parallel
-{
-  double x;
-  x = // some dynamic value
-  ... = .... x ....
-}
-\end{verbatim}
-\item By default, any variable declared in the surrounding scope is
-  shared. Thus, in the following code segment, each thread sets the
-  value of~\n{x}, and its value after the parallel region is
-  indeterminate.
-\begin{verbatim}
-int x;
-#omp parallel
-{
-  x = omp_get_thread_num();
-}
-// what is the value of x?
-\end{verbatim}
-\item In a parallel loop, the loop variable is private, even though it may
-  have been declared outside the parallel construct.
-\item A variable declared in the surrounding scope can explicitly be
-  declared private or shared by adding a \indexpragma{private}
-  or \indexpragma{shared} clause respectively to the OpenMP
-  directive. In the following fragment, each 
-  For the behaviour of shared variables, the default, see the point above.
-\item Unless otherwise stated, private variables are undefined at the
-  start of the parallel region, and disappear at the end; shared
-  variables become undefined after the parallel region.
-\item Data allocated on the \indexterm{heap} is
-  shared\footnote{However, note that the C~and~Fortran standards do
-    not actually define a~heap. Therefore it is wise to spell out your
-    intentions.}.
-\end{itemize}
+See section~\ref{ref:omp-environ} for a list of all environment variables.
 
 \Level 0 {Controlling thread data}
 
@@ -246,7 +292,7 @@ Note that this will lead to an explosion in memory use; in fact, for large array
 \begin{verbatim}
 double *a; a = (double*) malloc( some_size );
 \end{verbatim}
-can not be private with \n{private(a)}: this only gives each thread 
+can not be made private with \n{private(a)}: this only gives each thread 
 a private pointer, but these pointers all point to the same memory location.
 \end{itemize}
 
@@ -333,12 +379,13 @@ The parallel regions of section~\ref{sec:parallelregion} were a case of \ac{SPMD
 where the same code gets executed by all workers. In contrast to this, OpenMP has \indexterm{work sharing}
 constructs, where the work is split up between the threads in a team. The work sharing constructs are:
 \begin{itemize}
-\item \texttt{for/do} the threads divide up the loop iterations among
+\item \texttt{for/do} The threads divide up the loop iterations among
   themselves; see~\ref{sec:omp-for}.
-\item \texttt{sections} the threads divide a fixed number of sections
+\item \texttt{sections} The threads divide a fixed number of sections
   between themselves; see section~\ref{sec:omp-sections}.
-\item \texttt{single} the section is executed by a single thread; section~\ref{sec:omp-single}.
+\item \texttt{single} The section is executed by a single thread; section~\ref{sec:omp-single}.
 \item \texttt{task}
+\item \texttt{workshare} Can parallelize Fortran array syntax.
 \end{itemize}
 
 \Level 1 {Loop parallelism}
@@ -472,12 +519,17 @@ contains the \emph{last} location where \n{a[i]} is zero.
 \Level 1 {Sections}
 \commandref{omp-sections}
 
+\indexpragma{sections}
+
 \Level 1 {Single/master}
 \commandref{omp-single}
 \indexpragma{master}
 \indexpragma{single}
 
-These pragmas can for instance be used to print tracing information.
+The \indexpragma{single} and \indexpragma{master} pragma
+limit the execution of a block to a single thread. 
+This can for instance be used to print tracing information
+or doing \emph{I/O}\index{I/O!in OpenMP} operations.
 \begin{verbatim}
 #pragma omp parallel
 {
@@ -486,6 +538,47 @@ These pragmas can for instance be used to print tracing information.
   // parallel stuff
 }
 \end{verbatim}
+Another use of \n{single} is to perform initializations
+in a parallel region:
+\begin{verbatim}
+#pragma omp parallel
+{
+  int a;
+  #pragma omp single
+    a = f(); // some computation
+  #pragma omp sections
+    // various different computations using a
+}
+\end{verbatim}
+\begin{exercise}
+  Can you do this initialization using a clause on the \n{parallel}
+  directive?
+\end{exercise}
+
+The point of the single directive in this last example is that the
+computation needs to be done only once, because of the shared memory.
+Since it's a work sharing construct there is an \emph{implicit
+  barrier}\index{implicit barrier!after single directive} after it,
+which guarantees that all threads have the correct value in their
+local memory (see section~\ref{sec:omp:flush}.
+
+\begin{exercise}
+  What is the difference between this approach and how the same
+  computation would be parallelized in MPI?
+\end{exercise}
+
+The \texttt{master} directive, also enforces execution
+on a single thread, specifically the master thread of the team,
+but it does not have the synchronization through the implicit barrier.
+
+\Level 1 {Fortran array syntax parallelization}
+\commandref{fortran-workshare}
+
+The \n{parallel do} directive is used to parallelize loops,
+and this applies to both C and Fortran. However, Fortran also
+has implied loops in its \emph{array syntax}\index{Fortran!array syntax}.
+To parallelize array syntax you can use the \indexpragma{workshare}
+directive.
 
 \Level 0 {Reductions}
 \commandref{reduction}
@@ -533,23 +626,6 @@ double result = 0;
   that is more efficient? Time both codes.
 \end{exercise}
 
-Another strategy would be to
-`duplicate' the global variable and gather the contributions later:
-\begin{verbatim}
-double result,local_results[3];
-#pragma omp parallel
-{
-  int num = omp_get_thread_num();
-  if (num==0)      local_results[num] = f(x)
-  else if (num==1) local_results[num] = g(x)
-  else if (num==2) local_results[num] = h(x)
-}
-result = local_results[0]+local_results[1]+local_results[2]
-\end{verbatim}
-and this may work if you are just dealing with a few function invocates. 
-However, If you use local results for a parallel loop beware of \indexterm{false sharing}; 
-see \HPSCref{sec:falseshare} for an explanation.
-
 The easiest way to effect a reduction is of course to the use the \indextermtt{reduction}
 clause. Adding this to an \n{omp for} loop has the following effect:
 \begin{itemize}
@@ -563,6 +639,52 @@ clause. Adding this to an \n{omp for} loop has the following effect:
 This is one of those cases where the parallel execution can have a slightly different
 value from the one that is computed sequentially, because floating point operations
 are not associative. See~\HPSCref{sec:roundoff-parallel} for more explanation.
+
+If your code can not be easily structure as a reduction, you can 
+realize the above scheme by hand by
+`duplicating' the global variable and gather the contributions later.
+This example presumes three threads, and gives each a location of their
+own to store the result computed on that thread:
+\begin{verbatim}
+double result,local_results[3];
+#pragma omp parallel
+{
+  int num = omp_get_thread_num();
+  if (num==0)      local_results[num] = f(x)
+  else if (num==1) local_results[num] = g(x)
+  else if (num==2) local_results[num] = h(x)
+}
+result = local_results[0]+local_results[1]+local_results[2]
+\end{verbatim}
+While this code is correct, it may be inefficient because of a
+phenomemon called \indexterm{false sharing}. Even though the threads write
+to separate variables, those variables are likely to be on the same 
+\indexterm{cacheline} (see \HPSCref{sec:falseshare} for an explanation).
+This means that the cores will be wasting a lot of time and bandwidth updating
+each other's copy of this cacheline.
+
+False sharing can be prevent by giving each thread its own cacheline:
+\begin{verbatim}
+double result,local_results[3][8];
+#pragma omp parallel
+{
+  int num = omp_get_thread_num();
+  if (num==0)      local_results[num][1] = f(x)
+// et cetera
+}
+\end{verbatim}
+A more elegant solution gives each thread a true local variable,
+and uses a critical section to sum these, at the very end:
+\begin{verbatim}
+double result = 0;
+#pragma omp parallel
+{
+  double local_result;
+  local_result = .....
+#pragam omp critical
+  result += local_result;
+}
+\end{verbatim}
 
 \Level 0 {Synchronization}
 \index{synchronization!in OpenMP|(}
@@ -598,25 +720,45 @@ This can be guaranteed with a \indexpragma{barrier} pragma:
 }
 \end{verbatim}
 
-\Level 1 {Mutual exclusion: \texttt{critical} and \texttt{atomic}}
-\commandref{critical}
+\Level 1 {Mutual exclusion}
 
 Sometimes it is necessary to let only one thread execute a piece of code.
 Such a piece of code is called a \indexterm{critical section}, and
-there are two pragmas for critical sections: \indexpragma{critical} and \indexpragma{atomic}.
-The second one is more limited but has performance advantages.
+OpenMP has several mechanisms for realizing this.
 
 The most common use of critical sections is to update a variable. Since updating
 involves reading the old value, and writing back the new, this has the possibility
 for a \indexterm{race condition}: another thread reads the current value
 before the first can update it; the second thread the updates to the wrong value.
 
-Thus:
+Critical sections are an easy way to turn an existing code into a correct parallel code.
+However, there are disadvantages to this, and sometimes a more drastic rewrite
+is called for.
+
+\begin{exercise}
+  Suppose some part of a loop iteration updates a variable. Discuss qualitatively
+  the difference between:
+  \begin{itemize}
+  \item  turning the update statement into a critical section, versus
+  \item letting the threads accumulate into a private variable, and summing these
+    after the loop.
+  \end{itemize}  
+  Do an Ahmdal-style quantitative analysis of the first case, assuming that you do $n$ iterations
+  on $p$ threads, and each iteration has a critical section that takes a fraction~$f$.
+\end{exercise}
+
+\Level 2 {\texttt{critical} and \texttt{atomic}}
+\commandref{critical}
+
+There are two pragmas for critical sections: \indexpragma{critical} and \indexpragma{atomic}.
+The second one is more limited but has performance advantages.
+
+The typical application of a critical section is to update a variable:
 \begin{verbatim}
 #pragma omp parallel
 {
   int mytid = omp_get_thread_num();
-  double tmp = some_function();
+  double tmp = some_function(mytid);
 #pragma omp critical
   sum += tmp;
 }
@@ -684,26 +826,132 @@ Each time the structured block is encountered, a new task is generated.
 }
 \end{verbatim}
 
-\Level 0 {Dependency analysis}
-
-\Level 1 {Anti/output dependencies}
-
-\begin{verbatim}
-for (i=0; i<N-1; i++) 
-  A[i] = A[i+1]
-\end{verbatim}
-becomes
-\begin{verbatim}
-for (i=0; i<N-1; i++) 
-  tmp[i] = A[i+1]
-for (i=0; i<N-1; i++) 
-  A[i] = tmp[i]
-\end{verbatim}
-which can be individually parallelized.
-
 \Level 0 {Stuff}
 
 \Level 1 {Timing}
+\commandref{omp-timing}
+
+OpenMP has a wall clock timer routine \indexcommand{omp_get_wtime}
+with resolution \indexcommand{omp_get_wtick}.
+
+\begin{exercise}
+  Use the timing routines to demonstrate speedup from using
+  multiple threads.
+  \begin{itemize}
+  \item Write a code segment that takes a measurable amount of time, that is,
+    it should take a multiple of the tick time.
+  \item Write a parallel loop and measure the speedup. You can for instance do this
+\begin{verbatim}
+for (int use_threads=1; use_threads<=nthreads; use_threads++) {
+#pragma omp parallel for num_threads(use_threads)
+    for (int i=0; i<nthreads; i++) {
+        .....
+    }
+    if (use_threads==1)
+      time1 = tend-tstart;
+    else // compute speedup
+\end{verbatim}
+\item In order to prevent the compiler from optimizing your loop away, let
+  the body compute a result and use a reduction to preserve these results.
+  \end{itemize}
+\end{exercise}
+
+\Level 1 {Dependency analysis}
+\index{data dependencies|(}
+\index{flow dependency|see{data dependencies}}
+\index{anti dependency|see{data dependencies}}
+\index{output dependency|see{data dependencies}}
+
+Whether loop iterations can be executed independently
+depends on relations between data accessed in the iterations.
+Iterations are of course independent if a data item
+is read in two different iterations, but if the same
+item is read in one iteration and written in another,
+or written in two different iterations,
+we need to do further analysis.
+
+Analysis of \emph{data dependencies} can be performed
+by a compiler, but compilers take, of necessity,
+a conservative approach. This means that iterations
+may be independent, but can not be recognized as such by
+a compiler. Therefore, OpenMP shifts this responsibility
+to the programmer.
+
+The three types of dependencies are:
+\begin{itemize}
+\item flow dependencies, or `read-after-write';
+\item anti dependencies, or `write-after-read'; and
+\item output dependencies, or `write-after-write'.
+\end{itemize}
+
+\begin{verbatim}
+for (i) {
+  y[i] = t;
+  x[i+1] = y[i+1];
+  t = x[i];
+}
+\end{verbatim}
+
+\Level 2 {Flow dependencies}
+
+Flow dependencies, or read-afer-write,
+are not a problem if the read and write occur in the same
+loop iteration:
+\begin{verbatim}
+for (i=0; i<N; i++) {
+  x[i] = .... ;
+  .... = ... x[i] ... ;
+}
+\end{verbatim}
+On the other hand, if the read happens in a later iteration,
+there is no simple way to parallelize the loop:
+\begin{verbatim}
+for (i=0; i<N; i++) {
+  .... = ... x[i] ... ;
+  x[i+1] = .... ;
+}
+\end{verbatim}
+This usually requires rewriting the code.
+
+\Level 2 {Anti dependencies}
+
+The simplest case of write-after-read is a reduction:
+\begin{verbatim}
+for (i=0; i<N; i++) {
+  t = t + .....
+}
+\end{verbatim}
+This can be dealt with by explicit declaring the loop to be a reduction,
+or to use any of the other strategies in section~\ref{sec:reduction}.
+
+If the read and write are on an array the situation is more complicated.
+The iterations in this fragment
+\begin{verbatim}
+for (i=0; i<N; i++) {
+  x[i] = ... x[i+1] ... ;
+}
+\end{verbatim}
+can not be executed in arbitrary order as such. However, conceptually there
+is no dependency. We can solve this by introducing a temporary array:
+\begin{verbatim}
+for (i=0; i<N; i++)
+  xtmp[i] = x[i];
+for (i=0; i<N; i++) {
+  x[i] = ... xtmp[i+1] ... ;
+}
+\end{verbatim}
+This is an example of a transformation that a compiler is unlikely
+to perform, since it can greatly affect the memory demands of the program.
+Thus, this is left to the programmer.
+
+\Level 2 {Output dependencies}
+
+The case of write-after-write does not occur by itself:
+if a variable is written twice in sequence without an intervening
+read, the first write can be removed without changing the meaning of the program.
+Thus, this case reduces to a flow dependency.
+
+\index{data dependencies|)}
 
 \Level 1 {Thread safety}
 \index{thread-safe|(}
@@ -801,6 +1049,49 @@ while (1) {
   if (flag_read==1) break;
 }
 \end{verbatim}
+
+\Level 1 {Overhead costs}
+
+Code parallelization ideally divides the running time of your program
+by the number of parallel processing entities. In practice, the following
+factors counteract this.
+
+\Level 2 {Amdahl effects}
+
+Any code will have parts that are not parallelizable. Amdahl's law
+(see~\HPSCref{sec:amdahl}) quantizes the effect this has on parallel speedup.
+In an OpenMP code, the sections that are executed by a single thread
+will play the role of the sequential part.
+
+\Level 2 {Thread overhead}
+
+At the start of an OpenMP program, a pool of threads is created. This
+incurs a one-time overhead that will probably be amortized over the
+total runtime.
+
+Work sharing constructs act as if they create a new team of threads every time.
+In practice, the program probably keeps a pool of threads around that are dormant
+in between parallel sections. This means that there is no thread creation overhead
+associated with the start of a parallel section.
+
+\Level 2 {Load balance}
+
+On the other hand, at the end of a work sharing construct there is a barrier,
+so an unbalanced load distribution will decrease the parallel efficiency.
+If loop iterations are not uniform in their running time, it may pay off
+to use dynamic rather than static scheduling.
+
+On the other other hand, dynamic scheduling has overhead of its own,
+since it involves the operating system.
+
+\Level 2 {Synchronization}
+
+Various synchronization constructs, such as critical sections, as well as
+dynamic loop scheduling, are realized through \indexterm{operating system}
+functions. These are often quite costly, taking many thousands of cycles.
+Thus, the \indextermsub{cost of a }{critical sections} goes far beyond
+the Amdahl cost of the loss of paralellism. Critical sections should be used only
+if the parallel work far outweighs it.
 
 \Level 0 {Idioms}
 

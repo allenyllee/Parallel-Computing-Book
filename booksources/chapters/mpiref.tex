@@ -25,8 +25,8 @@ the proper header file, \indexterm{mpi.h} or \indexterm{mpif.h}.
 #include "mpi.h" // for C
 #include "mpif.h" ! for Fortran
 \end{verbatim}
-For \indexterm{Fortran90}, many MPI installations also have an MPI
-module, so you can write
+For \emph{Fortran90}\index{Fortran!Fortran90}, many MPI installations
+also have an MPI module, so you can write
 \begin{verbatim}
 use mpi
 \end{verbatim}
@@ -81,29 +81,6 @@ parameter is broadcast to all processes.
 For Fortran:
 %
 \verbatimsnippet{usage-f}
-
-\Level 1 {MPI ranks and communicator sizes}
-\commandreflabel{rank-size}
-
-Every MPI process has its own local storage. So if you pretend that all these
-small arrays are really together one big array, you need to know where each 
-piece fits in the whole. For this you need to know at the very least
-how many processes there are and what the rank of a process is.
-
-The following example creates a distributed array that will contains
-the values of a function at equidistant points in the interval~$[0,1]$.
-The code implements this as follows:
-\begin{enumerate}
-\item each process has an array of 10 points,
-\item so the distributed array has a length of 10 times the number of processes;
-\item of this array, each process has 10 points, starting at 10 times
-  the process id.
-\item To fill in values in the local array, the process iterates only
-  over its local points,
-\item but it needs to calculate the global coordinate of those points.
-\end{enumerate}
- 
-\verbatimsnippet{local}
 
 \Level 1 {Send and receive buffers}
 
@@ -337,6 +314,14 @@ does not know this value a~priori, so has to specify an upper bound.
 
 \verbatimsnippet{packunpack}
 
+You can precompute the size of the required buffer as follows:
+\begin{verbatim}
+int MPI_Pack_size(
+  int incount, MPI_Datatype datatype,
+  MPI_Comm comm, int *size);
+\end{verbatim}
+Add one time \indexmpishow{MPI_BSEND_OVERHEAD}.
+
 \Level 0 {Blocking communication}
 \commandreflabel{blocking}
 
@@ -503,9 +488,51 @@ Contrast this with the example in section~\ref{ref:mpi-source}.
 
 \begin{fortrannote}
   The \n{index} parameter is the index in the array of requests,
-  so it uses \emph{1-based indexing}\index{fortran!1-based indexing}.
+  so it uses \emph{1-based indexing}\index{Fortran!1-based indexing}.
 \end{fortrannote}
 \verbatimsnippet{waitforany-f}
+
+\Level 1 {Buffered communication}
+\commandreflabel{buffered}
+
+\indexmpishow{MPI_Buffer_attach}
+\begin{verbatim}
+int MPI_Buffer_attach(
+  void *buffer,int size);
+\end{verbatim}
+where the size is indicated in bytes.
+The possible error codes are
+\begin{itemize}
+\item \n{MPI_SUCCESS} the routine completed successfully.
+\item \indexmpishow{MPI_ERR_BUFFER} The buffer pointer is invalid;
+  this typically means that you have supplied a null pointer.
+\item \indexmpishow{MPI_ERR_INTERN} An internal error in MPI has been detected.
+\end{itemize}
+
+The buffer is detached with \indexmpishow{MPI_Buffer_detach}:
+\begin{verbatim}
+int MPI_Buffer_detach(
+  void *buffer, int *size);
+\end{verbatim}
+This returns the address and size of the buffer; the call blocks
+until all buffered messages have been delivered.
+
+You can compute the needed size of the buffer with \indexmpishow{MPI_Pack_size};
+  see section~\ref{ref:pack}.
+
+\indexmpishow{MPI_Bsend}
+\begin{verbatim}
+int MPI_Bsend(
+  const void *buf, int count, MPI_Datatype datatype, 
+  int dest, int tag, MPI_Comm comm)
+\end{verbatim}
+The asynchronous version is \indexmpishow{MPI_Ibsend}.
+
+You can force delivery by
+\begin{verbatim}
+MPI_Buffer_detach( &b, &n );
+MPI_Buffer_attach( b, n );
+\end{verbatim}
 
 \Level 1 {Persistent communication}
 \commandreflabel{persistent}

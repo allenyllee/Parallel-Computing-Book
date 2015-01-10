@@ -17,7 +17,7 @@ full programs can be found in the repository for this book
 \Level 0 {Basics}
 
 \Level 1 {OpenMP setup}
-\commandreflabel{omp-code}
+%\commandreflabel{omp-code}
 
 If you use OMP commands in a program file, be sure to include
 the proper header file \indexterm{omp.h}.
@@ -32,6 +32,46 @@ use omp_lib
 The \indexterm{structured block} that follows a pragma is basically a block 
 that gets executed as a whole: you can not jump into or out of it.
 
+\Level 1 {Directives}
+\commandreflabel{omp-directives}
+\index{directives|(textbf}
+
+Directives in C/C++ are case-sensitive. Directives can be broken over
+multiple lines by escaping the line end.
+
+Directives in Fortran start with a \indextermbus{directive}{sentinel}.
+If you break a directive over more than one line, all but the last line
+need to have a continuation character, and each line needs to have the sentinel:
+\begin{verbatim}
+!$OMP parallel do &
+!%OMP   copyin(x),copyout(y)
+\end{verbatim}
+The directives are case-insensitive.
+
+\index{directives|)}
+
+\Level 1 {Code and execution structure}
+\commandreflabel{omp-code-structure}
+
+Here are a couple of important concepts:
+\begin{definition}
+\item[structured block] An OpenMP directive is followed by an
+  \indexterm{structured block}; in C~this is a single statement, a
+  compound statement, or a block in braces; In Fortran it is
+  delimited by the directive and its matching `\n{end}' directive.
+
+  A~structured block can not be jumped into, so it can not start with a
+  labeled statement, or contain a jump statement leaving the block.
+\item[construct] An OpenMP \indexterm{construct} is the section of code
+  starting with a directive and spanning the following structured block,
+  plus in Fortran the end-directive. This is a lexical concept: it contains
+  the statements directly enclosed, and not any subroutines called from them.
+\item[region of code] A \indexterm{region of code} is defined as all statements
+  that are dynamically encountered while executing the code of an OpenMP construct.
+  This is a dynamic concept: unlike a `construct', it does include any subroutines
+  that are called from the code in the structured block.
+\end{definition}
+
 \Level 0 {Thread stuff}
 
 \Level 1 {Creating parallel threads}
@@ -40,7 +80,11 @@ that gets executed as a whole: you can not jump into or out of it.
 \indexpragma{parallel}
 \verbatimsnippet{hello-who-omp}
 
-\indexpragma{parallel for}
+If the structure block consists only of a \n{for}/\n{do} or \n{sections} region,
+you can use the combined directives
+\indexpragma{parallel for},
+\indexpragma{parallel do},
+\indexpragma{parallel sections}.
 
 \Level 0 {Controlling thread data}
 \commandreflabel{sec:ompdata}
@@ -143,7 +187,7 @@ Logical operator reductions: \n{&,&&,|,||,^}
 Fortran: 
 
 \Level 0 {Worksharing}
-\commandreflabel{workshare}
+\commandreflabel{work sharing}
 \index{worksharing constructs|(textbf}
 
 The OpenMP \emph{worksharing constructs} serve to distribute work
@@ -187,6 +231,15 @@ $! omp end parallel
   }
 }
 \end{verbatim}
+
+\Level 1 {Fortran \texttt{workshare}}
+\commandref{fortran-workshare}
+
+The \indexpragma{workshare} directive exists only in Fortran.
+It can be used to parallelize
+the implied loops in \emph{array syntax}\index{Fortran!array syntax},
+as well as  \emph{forall}\index{Fortran!forall loops} loops.
+
 \index{worksharing constructs|)}
 
 \Level 0 {Synchronization}
@@ -320,33 +373,52 @@ Here are the various schedules you can set with the
   \item[static] value:~1. The modifier parameter is the \indexterm{chunk} size. Set by using value  \indextermtt{omp_sched_static}
 \end{description}
 
-\Level 0 {Runtime library routine}
+\Level 0 {Internal control variables}
+\label{ref:omp-environ}
+\index{OpenMP!environment variables|(textbf}
+\index{OpenMP!library routines|(textbf}
+\index{Internal Control Variable (ICV)|(textbf}
 
+OpenMP has a number of settings that can be set through \emph{environment variables},
+and both queried and set through \emph{library routines}. These settings are called
+\emph{\acfp{ICV}}: an OpenMP implementation behaves as if there is an internal variable
+storing this setting.
+
+First, there are 4 \acp{ICV} that behave as if each thread has its own copy of them.
+The default is implementation-defined unless otherwise noted.
 \begin{itemize}
-\item\indextermtt{omp_set_num_threads}: set the number of threads that OpenMP will use.
+  \item It may be possible to adjust dynamically the number of threads
+    for a parallel region. Varriable: \indextermtt{OMP_DYNAMIC};
+    routines: \indextermtt{omp_set_dynamic},
+    \indextermtt{omp_get_dynamic}.
+  \item If a code contains \indextermsub{nested}{parallel regions},
+    the inner regions may create new teams, or they may be executed by
+    the single thread that encounters them. Variable:
+    \indextermtt{OMP_NESTED}; routines \indextermtt{omp_set_nested},
+    \indextermtt{omp_get_nested}. Allowed values are \n{TRUE} and
+    \n{FALSE}; the default is false.
+  \item The number of threads used for an encountered parallel region
+    can be controlled. Variable: \indextermtt{OMP_NUM_THREADS};
+    routines \indextermtt{omp_set_num_threads},
+    \indextermtt{omp_get_max_threads}.
+    \item The schedule for a parallel loop can be set. Variable:
+      \indextermtt{OMP_SCHEDULE}; routines
+      \indextermtt{omp_set_schedule}, \indextermtt{omp_get_schedule}.
+\end{itemize}
+
+Other settings:
+\begin{itemize}
 \item\indextermtt{omp_get_num_threads}: query the number of threads
   active at the current place in the code; this can be lower than what
   was set with \n{omp_set_num_threads}. For a meaningful answer, this
   should be done in a parallel region.
 \item\indextermtt{omp_get_thread_num}
-\item\indextermtt{omp_get_max_threads}
 \item\indextermtt{omp_in_parallel}: test if you are in a parallel region
-\item\indextermtt{omp_set_dynamic(int)}: OpenMP can decide from one
-  parallel region to another how many threads to use. Turn on
-  with~\n{1} and off with~\n{0}.
-\item\indextermtt{omp_get_dynamic}: query whether dynamic mode is on.
 \item\indextermtt{omp_get_num_procs}: query the physical number of cores available.
 \end{itemize}
 
-\Level 0 {Tasks}
-\commandreflabel{omp:task}
-
-\Level 0 {Stuff}
-
-\Level 1 {Environment variables}
-\index{OpenMP!environment variables|(}
+Other environment variables:
 \begin{itemize}
-\item \indextermtt{OMP_NUM_THREADS}
 \item \indextermtt{OMP_STACKSIZE} controls the amount of space that is
   allocated as per-thread \indexterm{stack}; the space for private
   variables.
@@ -369,9 +441,18 @@ Here are the various schedules you can set with the
   minimize data movement; on the other hand, it may increase load
   imbalance.
 \end{itemize}
+
 \index{OpenMP!environment variables|)}
+\index{OpenMP!library routines|)}
+\index{Internal Control Variable (ICV)|)}
+
+\Level 0 {Tasks}
+\commandreflabel{omp:task}
+
+\Level 0 {Stuff}
 
 \Level 1 {Timing}
+\commandreflabel{omp-timing}
 
 To do \indextermsub{OpenMP}{timing} you can use any system utility;
 however there is a dedicated routine \indexcommand{omp_get_wtime}
@@ -424,8 +505,8 @@ export GOMP_CPU_AFFINITY=0-63
 \item There is an implicit flush of all variables at the start and end 
   of a \emph{parallel region}\index{parallel region!flush at}.
 \item There is a flush at each barrier, whether explicit or implicit,
-  such as at the end of a \emph{workshare construct}\index{workshare
-    construct!flush at}.
+  such as at the end of a \emph{work sharing}\index{workshare
+    !flush after}.
 \item At entry and exit of a \emph{critical section}\index{critical
   section!flush at}
 \item When a \emph{lock}\index{lock!flush at} is set or unset.

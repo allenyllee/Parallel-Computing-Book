@@ -219,6 +219,29 @@ program in \indexterm{Fortran}.)
 Using these calls, the simplest MPI programs does this:
 \verbatimsnippet{hello}
 
+\Level 1 {MPI ranks and communicator sizes}
+\commandreflabel{rank-size}
+
+Every MPI process has its own local storage. So if you pretend that all these
+small arrays are really together one big array, you need to know where each 
+piece fits in the whole. For this you need to know at the very least
+how many processes there are and what the rank of a process is.
+
+The following example creates a distributed array that will contains
+the values of a function at equidistant points in the interval~$[0,1]$.
+The code implements this as follows:
+\begin{enumerate}
+\item each process has an array of 10 points,
+\item so the distributed array has a length of 10 times the number of processes;
+\item of this array, each process has 10 points, starting at 10 times
+  the process id.
+\item To fill in values in the local array, the process iterates only
+  over its local points,
+\item but it needs to calculate the global coordinate of those points.
+\end{enumerate}
+ 
+\verbatimsnippet{local}
+
 \Level 0 {Point-to-point communication}
 
 MPI has two types of message passing routines: point-to-point and
@@ -551,7 +574,7 @@ for (p=0; p<nrequests ; p++)
   requests, and it does not matter in what sequence they are
   satisfied. Using this routine is easier to code than the loop above,
   and it could be more efficient.
-\item The `waitall' routine is good if you have need all nonblocking
+\item The `waitall' routine is good if you need all nonblocking
   communications to be finished before you can proceed with the rest
   of the program. However, sometimes it is possible to take action as
   each request is satisfied. In that case you could use
@@ -627,6 +650,23 @@ Above we used \n{MPI_Irecv}, but we could have used the \n{MPI_Recv}
 routine.  There is nothing special about a non-blocking or synchronous
 message once it arrives; the \n{MPI_Recv} call can match any of the
 send routines you have seen so far (but not \n{MPI_Sendrecv}).
+
+\Level 1 {Buffered communication}
+\commandref{buffered}
+
+By now you have probably got the notion that managing buffer
+space in MPI is important: data has to be somewhere, either in
+user-allocated arrays or in system buffers. Buffered sends are yet another
+way of managing buffer space.
+\begin{enumerate}
+\item You allocate your own buffer space, and you attach it to your process;
+\item You use the \indexmpishow{MPI_Bsend} call for sending;
+\item You detach the buffer when you're done with the buffered sends.
+\end{enumerate}
+
+There can be only one buffer per process; its size should be enough
+for all outstanding \indexmpishow{MPI_Bsend} calls that are simultaneously
+outstanding, plus \indexmpishow{MPI_BSEND_OVERHEAD}.
 
 \Level 1 {Persistent communication}
 \commandref{persistent}
@@ -1034,6 +1074,16 @@ Passive target synchronization needs another mechanism entirely.  Here
 the target process needs to have a background task (process, thread,
 daemon,\ldots) running that listens for requests to lock the
 window. This can potentially be expensive.
+
+\Level 2 {The origin of one-sided communication in ShMem}
+
+The \indextermbus{Cray}{T3E} had a library called \indexterm{shmem}
+which offered a type of shared memory. Rather than having a true
+global address space it worked by supporting variables that were
+guaranteed to be identical between processors, and indeed, were
+guaranteed to occupy the same location in memory. Variables could be
+declared to be shared a `symmetric' pragma or directive; their values
+could be retrieved or set by \n{shmem_get} and \n{shmem_put} calls.
 
 \index{communication!one-sided, implementation of|)}
 \index{communication!one-sided|)}
@@ -1887,11 +1937,11 @@ terms of those communicators, and this can be done with
 `inter-communicators'.
 
 \begin{verbatim}
-MPI_INTERCOMM_CREATE (local_comm, local_leader, bridge_comm, remote_leader, tag, newintercomm, ierr)
+MPI_Intercomm_create (local_comm, local_leader, bridge_comm, remote_leader, tag, newintercomm, ierr)
 \end{verbatim}
 After this, the intercommunicator can be used in collectives such as
 \begin{verbatim}
-MPI_BCAST (buff, count, dtype, root, comm, ierr)
+MPI_Bcast (buff, count, dtype, root, comm, ierr)
 \end{verbatim}
 \begin{itemize}
 \item In group~A, the root process passes \n{MPI_ROOT} as
@@ -2368,16 +2418,6 @@ it is possible that the origin process may hang until
 the target process makes an MPI call.
 
 \index{progress|)}
-
-\Level 1 {The origin of one-sided communication in ShMem}
-
-The \indextermbus{Cray}{T3E} had a library called \indexterm{shmem}
-which offered a type of shared memory. Rather than having a true
-global address space it worked by supporting variables that were
-guaranteed to be identical between processors, and indeed, were
-guaranteed to occupy the same location in memory. Variables could be
-declared to be shared a `symmetric' pragma or directive; their values
-could be retrieved or set by \n{shmem_get} and \n{shmem_put} calls.
 
 \Level 0 {Review questions}
 

@@ -99,6 +99,12 @@
 
 \newcommand{\indexterm}[1]{\emph{#1}\index{#1}}
 \newcommand{\indextermtt}[1]{\texttt{\emph{#1}}\index{#1|n}}
+%% \newcommand{\indextermfunctionn}[1]{\texttt{\emph{#1}}\index{#1|n}}
+%% \def\indextermfunction#{\bgroup\catcode`\_=12\relax
+%%   \def\nnext{\expandafter\indextermfunctionn\expandafter{\next}\egroup}%
+%%   \afterassignment\nnext \def\next}
+\let\indextermfunction\indextermtt
+
 \newcommand{\indextermp}[1]{\emph{#1s}\index{#1}}
 \newcommand{\indextermsub}[2]{\emph{#1 #2}\index{#2!#1}}
 \newcommand{\indextermsubp}[2]{\emph{#1 #2s}\index{#2!#1}}
