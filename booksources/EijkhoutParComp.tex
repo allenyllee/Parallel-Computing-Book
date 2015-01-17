@@ -204,8 +204,12 @@
   \tmp
   \egroup
 }
+\def\boldtt#1{\textbf{\texttt{#1}}}
+
 \def\indexpragma#1{\texttt{#1}\index{omp!#1|texttt}}
+\def\indexpragmadef#1{\texttt{#1}\index{omp!#1|textbf}}
 \index{pragma|see{for list see under `omp'}}
+\def\indextermdef#1{\emph{#1}\index{#1|textbf}}
 \let\indextermtt\indexmpishow
 \let\indexcommand\indexmpishow
 \def\indexclause#1{\texttt{#1}\index{omp!clause!#1|texttt}}

@@ -29,10 +29,4 @@ R.~Thakur, W.~Gropp, and B.~Toonen.
 \newblock {\em Int'l Journal of High Performance Computing Applications},
   19:119--128, 2005.
 
-\bibitem{Eijkhout:IHPSClulu}
-{Victor Eijkhout with Robert van de Geijn and Edmond Chow}.
-\newblock {\em Introduction to High Performance Scientific Computing}.
-\newblock lulu.com, 2011.
-\newblock \url{http://www.tacc.utexas.edu/~eijkhout/istc/istc.html}.
-
 \end{thebibliography}

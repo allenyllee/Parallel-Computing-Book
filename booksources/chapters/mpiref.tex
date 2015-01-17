@@ -280,6 +280,11 @@ structure in memory\footnote{Homework question: what does the language
 The space that MPI takes for a structure type can be queried 
 with \indexmpishow{MPI_Type_extent}.
 
+\begin{verbatim}
+int MPI_Type_extent(
+  MPI_Datatype datatype, MPI_Aint *extent);
+\end{verbatim}
+
 (There is a deprecated function \indexmpishow{MPI_Type_struct} with the same
 functionality.)
 
@@ -1006,6 +1011,13 @@ Scan operations are often useful in index calculations. Suppose that every proce
 has part of a long array, and it knows only how many element it has. The following bit
 computes the global index of its first element.\indexmpi{MPI_Exscan}
 \verbatimsnippet{myfirst}
+
+\Level 1 {User-defined reductions}
+\commandreflabel{mpi:op-create}
+
+\begin{verbatim}
+MPI_Op_create( MPI_User_function *func, int commute, MPI_Op *op);
+\end{verbatim}
 
 \Level 1 {Non-blocking collectives}
 \commandreflabel{mpi3collect}

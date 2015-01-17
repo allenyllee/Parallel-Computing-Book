@@ -17,11 +17,11 @@
 \newcommand\heading[1]{\paragraph{\textbf{#1}}}
 
 {\catcode`\^^I=13 \globaldefs=1
-\newcommand\listing[2]{\begingroup\small\par\vspace{1ex}
+ \newcommand\listing[2]{\begingroup\small\par\vspace{1ex}
   \catcode`\^^I=13 \def^^I{\leavevmode\hspace{40pt}}
   \noindent\fbox{#1}
   \verbatiminput{#2}\endgroup}
-  \newcommand\codelisting[1]{\begingroup\small\par\vspace{1ex}
+ \newcommand\codelisting[1]{\begingroup\small\par\vspace{1ex}
   \catcode`\^^I=13 \def^^I{\leavevmode\hspace{40pt}}
   \noindent\fbox{#1}
   \verbatiminput{#1}\endgroup}

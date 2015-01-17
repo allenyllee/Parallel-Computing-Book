@@ -14,7 +14,7 @@
 \Level 1 {The OpenMP model}
 
 OpenMP is based on on two concepts: the use of of \indexterm{threads}
-and the \indexterm{fork/join} model of
+and the \indextermdef{fork/join model} of
 parallelism. For now you can think of a thread as a sort of process:
 the computer executes a sequence of instructions.
 The fork/join model says that a thread can split itself (`fork')
@@ -113,7 +113,6 @@ recall from figure~\ref{fig:forkjoin} that new teams can be created recursively.
 \end{exercise}
 
 \Level 2 {Thread data}
-\commandref{sec:ompdata}
 
 A thread has access to variables of two kinds. Variables on the
 \indexterm{heap} are typically created by a call to \indextermtt{malloc}
@@ -268,51 +267,26 @@ export OMP_NUM_THREADS=8
 which sets the number of threads that a program will use.
 See section~\ref{ref:omp-environ} for a list of all environment variables.
 
-\Level 0 {Controlling thread data}
+\Level 0 {Creating parallelism}
 
-\Level 1 {Private data}
-\commandref{omp-private}
+The \indexterm{fork/join model} of OpenMP means that you need some way of
+indicating where an activity can be forked for independent execution.
+There are two ways of doing this:
+\begin{enumerate}
+\item You can declare a parallel region and
+  split one thread into a whole team of threads. We will discuss this next
+  in section~\ref{sec:parallelregion}. The division of the work over the threads
+  is controlled by \indexterm{work sharing construct} (section~\ref{sec:work-sharing}).
+\item Alternatively, you can use tasks and indicating one parallel
+  activity at a time. You will see this in section~\ref{sec:omp:task}.
+\end{enumerate}
 
-The \indexpragma{private} directive declares data to have a separate copy 
-in the memory of each thread. By default, such private variables are uninitialized
-at the begin of the parallel region, and any computed value goes away at the end 
-of the parallel region. You can force initialization with \indexclause{firstprivate},
-and preserving the last iteration with \indexclause{lastprivate}.
+Note that OpenMP only indicates how much parallelism is present;
+whether independent activities are in fact executed in parallel
+is a runtime decision. The factors influencing this are discussed
+in section~\ref{sec:omp-howmany}.
 
-Private arrays are tricky.
-\begin{itemize}
-\item In C, if an array is statically defined, e.g.,
-\begin{verbatim}
-double a[2][5];
-\end{verbatim}
-declaring \n{private(a)} will indeed put a copy on in each thread.
-Note that this will lead to an explosion in memory use; in fact, for large arrays you
-  may experience \indextermbus{stack}{overflow}.
-\item Dynamically allocated arrays, e.g.,
-\begin{verbatim}
-double *a; a = (double*) malloc( some_size );
-\end{verbatim}
-can not be made private with \n{private(a)}: this only gives each thread 
-a private pointer, but these pointers all point to the same memory location.
-\end{itemize}
-
-\Level 1 {Default}
-
-As remarked, most data in a parallel section is shared. This default behaviour can be 
-controlled by adding a \indexpragma{default} clause:
-\begin{verbatim}
-#pragma omp parallel default(shared) private(x)
-{ ... }
-#pragma omp parallel default(private) shared(matrix)
-{ ... }
-\end{verbatim}
-and if you want to play it safe:
-\begin{verbatim}
-#pragma omp parallel default(none) private(x) shared(matrix)
-{ ... }
-\end{verbatim}
-
-\Level 0 {Parallel regions}
+\Level 1 {Parallel regions}
 \commandref{parallelregion}
 
 The simplest way to create parallelism in OpenMP is to use
@@ -344,6 +318,35 @@ but other than that \textbf{there are many things wrong with this example}.
 The rest of this section will be about explaining what is wrong here,
 and what can be done about it.
 
+\Level 1 {Just how many threads?}
+\commandref{omp-howmany}
+
+Declaring a parallel region tells OpenMP that a team of threads can be created.
+The actual size of the team depends on various factors (see section~\ref{ref:omp-environ}
+for variables and functions mentioned in this section).
+\begin{itemize}
+\item The \emph{environment variable}\index{OpenMP!environment
+  variables} \indextermtt{OMP_NUM_THREADS} limits the number of
+  threads that can be created.
+\item If you don't set this variable, you can also set this limit
+  dynamically with the \emph{library routine}\index{OpenMP!library
+    routines} \indextermtt{omp_set_num_threads}. This routine takes
+  precedence over the aforementioned environment variable if both are
+  specified.
+\item A limit on the number of threads can also be set as a clause
+  on a parallel region.
+\end{itemize}
+If you specify a greater amount of parallelism than the hardware supports,
+the runtime system will probably ignore your specification and choose a lower value.
+To ask how much parallelism is actually used in your parallel region,
+use \indextermtt{omp_get_num_threads}. To query these hardware limits,
+use \indextermtt{omp_get_num_procs}.
+
+Another limit on the number of threads is imposed when you use nested parallel regions.
+This can arise if you have a parallel region in a subprogram which is sometimes called
+sequentially, sometimes in parallel. The variable \indextermtt{OMP_NESTED} controls
+whether the inner region will create a team of more than one thread.
+
 \Level 1 {Thread data in parallel regions}
 
 Private variables act as is they are created at the start of the parallel region.
@@ -374,10 +377,14 @@ for (...) {
 \end{verbatim}
 
 \Level 0 {Work sharing}
+\commandref{work-sharing}
 
-The parallel regions of section~\ref{sec:parallelregion} were a case of \ac{SPMD} programming,
-where the same code gets executed by all workers. In contrast to this, OpenMP has \indexterm{work sharing}
-constructs, where the work is split up between the threads in a team. The work sharing constructs are:
+The declaration of a \indexterm{parallel region} establishes a team of
+threads. This offers the possibility of parallelism, but to actually
+get meaningful parallel activity you need something more.
+OpenMP uses the concept of a \indexterm{work sharing
+construct}: a way of dividing parallelizable work over a team of threads.
+The work sharing constructs are:
 \begin{itemize}
 \item \texttt{for/do} The threads divide up the loop iterations among
   themselves; see~\ref{sec:omp-for}.
@@ -579,6 +586,56 @@ and this applies to both C and Fortran. However, Fortran also
 has implied loops in its \emph{array syntax}\index{Fortran!array syntax}.
 To parallelize array syntax you can use the \indexpragma{workshare}
 directive.
+
+\Level 0 {Controlling thread data}
+\commandref{sec:ompdata}
+
+In a parallel region there are two types of data: private and shared.
+In this sections we will see the various way you can control what category
+your data falls under; for private data items we also discuss how their values
+relate to shared data.
+
+\Level 1 {Private data}
+\commandref{omp-private}
+
+The \indexpragma{private} directive declares data to have a separate copy 
+in the memory of each thread. By default, such private variables are uninitialized
+at the begin of the parallel region, and any computed value goes away at the end 
+of the parallel region. You can force initialization with \indexclause{firstprivate},
+and preserving the last iteration with \indexclause{lastprivate}.
+
+Private arrays are tricky.
+\begin{itemize}
+\item In C, if an array is statically defined, e.g.,
+\begin{verbatim}
+double a[2][5];
+\end{verbatim}
+declaring \n{private(a)} will indeed put a copy on in each thread.
+Note that this will lead to an explosion in memory use; in fact, for large arrays you
+  may experience \indextermbus{stack}{overflow}.
+\item Dynamically allocated arrays, e.g.,
+\begin{verbatim}
+double *a; a = (double*) malloc( some_size );
+\end{verbatim}
+can not be made private with \n{private(a)}: this only gives each thread 
+a private pointer, but these pointers all point to the same memory location.
+\end{itemize}
+
+\Level 1 {Default}
+
+As remarked, most data in a parallel section is shared. This default behaviour can be 
+controlled by adding a \indexpragma{default} clause:
+\begin{verbatim}
+#pragma omp parallel default(shared) private(x)
+{ ... }
+#pragma omp parallel default(private) shared(matrix)
+{ ... }
+\end{verbatim}
+and if you want to play it safe:
+\begin{verbatim}
+#pragma omp parallel default(none) private(x) shared(matrix)
+{ ... }
+\end{verbatim}
 
 \Level 0 {Reductions}
 \commandref{reduction}

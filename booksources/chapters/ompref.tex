@@ -86,45 +86,6 @@ you can use the combined directives
 \indexpragma{parallel do},
 \indexpragma{parallel sections}.
 
-\Level 0 {Controlling thread data}
-\commandreflabel{sec:ompdata}
-
-\indexpragma{shared}
-
-\Level 1 {Private data}
-\commandreflabel{omp-private}
-
-Data that is declared private with the \indexpragma{private} directive is
-put on a separate \indextermbus{stack}{per thread}. The OpenMP standard
-does not dictate the size of these stacks, but beware of \indextermbus{stack}{overflow}.
-A~typical default
-is a few megabyte; you can control it with the environment variable
-\indextermtt{OMP_STACKSIZE}
-
-\indexpragma{firstprivate}
-\indexpragma{lastprivate}
-\indexpragma{copyin}
-
-\Level 1 {Defaults}
-
-You can add clauses to an \n{omp parallel} pragma
-to specify explicitly what variables are private and what variables shared.
-Note the cases with default behaviour:
-\begin{itemize}
-\item Loop variables in an \n{omp for} are private;
-\item Local variables in the parallel region are private.
-\end{itemize}
-You can alter this default behaviour with the \indexclause{default} clause:
-\begin{itemize}
-\item The \indexclauseoption{default}{none} option is good for debugging, 
-  because it forces you to specify for each variable in the parallel region
-  whether it's private or shared.
-\item The \indexclauseoption{default}{shared} clause means that any private variables
-  need to be declared explicitly.
-\item The \indexclauseoption{default}{private} clause means that any shared variables
-  need to be declared explicitly. This value is not available in~C.
-\end{itemize}
-
 \Level 0 {Parallel regions}
 \commandreflabel{parallelregion}
 
@@ -242,6 +203,45 @@ as well as  \emph{forall}\index{Fortran!forall loops} loops.
 
 \index{worksharing constructs|)}
 
+\Level 0 {Controlling thread data}
+\commandreflabel{sec:ompdata}
+
+\indexpragma{shared}
+
+\Level 1 {Private data}
+\commandreflabel{omp-private}
+
+Data that is declared private with the \indexpragma{private} directive is
+put on a separate \indextermbus{stack}{per thread}. The OpenMP standard
+does not dictate the size of these stacks, but beware of \indextermbus{stack}{overflow}.
+A~typical default
+is a few megabyte; you can control it with the environment variable
+\indextermtt{OMP_STACKSIZE}
+
+\indexpragma{firstprivate}
+\indexpragma{lastprivate}
+\indexpragma{copyin}
+
+\Level 1 {Defaults}
+
+You can add clauses to an \n{omp parallel} pragma
+to specify explicitly what variables are private and what variables shared.
+Note the cases with default behaviour:
+\begin{itemize}
+\item Loop variables in an \n{omp for} are private;
+\item Local variables in the parallel region are private.
+\end{itemize}
+You can alter this default behaviour with the \indexclause{default} clause:
+\begin{itemize}
+\item The \indexclauseoption{default}{none} option is good for debugging, 
+  because it forces you to specify for each variable in the parallel region
+  whether it's private or shared.
+\item The \indexclauseoption{default}{shared} clause means that any private variables
+  need to be declared explicitly.
+\item The \indexclauseoption{default}{private} clause means that any shared variables
+  need to be declared explicitly. This value is not available in~C.
+\end{itemize}
+
 \Level 0 {Synchronization}
 
 \begin{itemize}
@@ -318,17 +318,29 @@ while other threads are still working on the first. Since the two loops use the 
 schedule here, an iteration that uses \n{a[i]} can indeed rely on it that that 
 value has been computed.
 
+\Level 1 {Critical sections}
+\commandreflabel{critical}
+
+The pragmas \indexpragmadef{critical} and \indexpragmadef{atomic}
+are two ways to indicate that a section of code can only be executed
+by one thread at a time.
+
+\begin{verbatim}
+#pragma omp critical [(name)] new-line
+    structured-block
+\end{verbatim}
+
 \Level 1 {Locks}
 
 Create/destroy:
 \begin{verbatim}
-omp_init_lock();
-omp_destroy_lock();
+void omp_init_lock(omp_lock_t *lock);
+void omp_destroy_lock(omp_lock_t *lock);
 \end{verbatim}
 Set and release:
 \begin{verbatim}
-omp_set_lock();
-omp_unset_lock();
+void omp_set_lock(omp_lock_t *lock);
+void omp_unset_lock(omp_lock_t *lock);
 \end{verbatim}
 Since the set call is blocking, there is also 
 \begin{verbatim}

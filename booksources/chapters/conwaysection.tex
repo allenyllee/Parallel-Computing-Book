@@ -1,7 +1,7 @@
 % -*- latex -*-
 \Level 0 {Introduction}
 
-There is not one way to approach parallel programming. 
+There are many ways to approach parallel programming. 
 Of course you need to start with the problem that you want to solve,
 but after that there can be more than one algorithm for that problem,
 you may have a choice of programming systems to use
@@ -30,7 +30,9 @@ types of parallel computers.
 
 (Note. At some points in this discussion there will be references to
 the book `Introduction to High-Performance Scientific Computing' by
-the present author~\cite{Eijkhout:IHPSClulu}.. Such
+the present author\footnote
+{Victor Eijkhout, with Robert van de Geijn and Edmond Chow,
+  Introduction to High Performance Scientific Computing, 2011.}. Such
 references take the form `HPSC-1.2.3' for section 1.2.3 of that book.)
 
 \Level 1 {Conway's Game of Life}
@@ -59,7 +61,7 @@ stand back and see what happens.
   and the second figure morphs into something, then morphs back.
 \end{exercise}
 The Game of Life is hard to illustrate in a book, since it's so dynamic.
-If you search online you can find some great animation.
+If you search online you can find some great animations.
 
 The rules of Life are very simple, but the results can be surprising. For
 instance, some simple shapes, called `gliders', seem to move over the
@@ -102,12 +104,14 @@ def life_count_evaluation( cell,count )
 
 The driver code would then be something like:
 \begin{verbatim}
+# create an initial board; we omit this code
 life_board.create(final_time,N,N)
 
+# now iterate a number of steps on the whole board
 for t in [0:final_time-1]:
     for i in [0:N-1]:
         for j in [0:N-1]:
-            life_board[t+1,i,j] := 
+            life_board[t+1,i,j] = 
                 life_evaluation( life_board[t,i-1:i+1,j-1:j+1] )
 \end{verbatim}
 where we don't worry too much about the edge of the board;
@@ -137,6 +141,11 @@ its computation in a long sequence of steps. We will now explore parallel
 implementations of this algorithm. You'll see that some look very different 
 from this basic code.
 
+\begin{exercise}
+  The second version used a whole temporary board. Can you come
+  up with an implementation that uses just three temporary lines?
+\end{exercise}
+
 \Level 1 {General thoughts on parallelism}
 
 In the rest of this tutorial we will use various types of parallelism
@@ -145,7 +154,6 @@ based on the observation that each point in a Life board undergoes the
 same computation. Then we go on to task parallelism, which is necessary
 when we start
 looking at distributed memory programming on large clusters.
-
 But first we start with some basic thoughts on parallelism.
 
 If you're familiar with programming, you'll have read the 
@@ -153,11 +161,6 @@ above code fragments and agreed that this is a good way to
 solve the problem. You do one time step after another, and
 at each time step you compute 
 a new version of the board, one line after another.
-
-\begin{exercise}
-  The second version used a whole temporary board. Can you come
-  up with an implementation that uses just three temporary lines?
-\end{exercise}
 
 Most programming languages are very explicit about loop constructs: 
 one iteration is done, and then the next, and the next, and so on.
@@ -170,7 +173,8 @@ and where the sequence is more an artifact of the programming language.
 And by the way, \emph{you} have to think about this yourself.
 In a distant past it was thought that programmers could write
 ordinary code, and the compiler would figure out parallelism. This has
-long proved impossible, so programmers these days accept that parallel
+long proved impossible except in limited cases,
+so programmers these days accept that parallel
 code will look differently from sequential code, sometimes very much so.
 
 So let's start looking at Life from a point of analyzing the parallelism.
@@ -202,7 +206,7 @@ we proceeded to the next step. That is, we did the time steps
 sequentially. 
 We also observed that, in each time step, all cells can be updated
 independently, and therefore in parallel. 
-\begin{figure}[ht]
+\begin{figure}[t]
   \includegraphics[scale=.1]{lifecollect}
   \caption{Illustration of data parallelism: all points of the board get the same update treatment}
   \label{fig:lifecollect}
@@ -215,13 +219,7 @@ identically.
 This is illustrated in figure~\ref{fig:lifecollect}.
 
 The fine-grained data parallel model of computing is known as \acf{SIMD}:
-the same instruction is performed on multiple data elements;
-\begin{figure}[ht]
-  \includegraphics[scale=.5]{simd}
-  \caption{SIMD execution of multiple identical instructions}
-  \label{fig:simd}
-\end{figure}
-see figure~\ref{fig:simd}.
+the same instruction is performed on multiple data elements.
 An actual computer will of course not have an instruction for computing
 a Life cell update. Rather, its instructions are things like additions and multiplications.
 Thus, you may need to restructure your code a little for \ac{SIMD}
@@ -261,7 +259,7 @@ described as `two-wide' since they work on two sets of
 current generation of Intel vector instructions is called \acf{AVX},
 and they can be up to `eight-wide'; see figure~\ref{fig:avx}
 for an illustration of four-wide instructions.
-\begin{figure}[ht]
+\begin{figure}[t]
   \includegraphics[scale=.7]{avx}
   \caption{Four-wide vector instructions work on four operand pairs at the same time}
   \label{fig:avx}
@@ -271,7 +269,7 @@ clock cycle, it becomes important to write your code such that the
 processor can actually use all that available parallelism.
 
 Now suppose that you are coding the Game of Life, which is \ac{SIMD} in nature,
-and you want to make sure that is is executed with these vector instructions.
+and you want to make sure that is executed with these vector instructions.
 
 First of all the code needs to have the right structure. The original code
 does not have a lot of parallelism in the inner loop, where it
@@ -310,7 +308,7 @@ operation with vector instructions'. That leaves you with two options:
 The first option is no fun, and beyond the capabilities of most programmers,
 so you'll probably rely on the compiler.
 
-Compilers are pretty smart, but they can not read your mind. If you code is too
+Compilers are pretty smart, but they cannot read your mind. If you code is too
 sophisticated, they may not figure out that vector instructions can be used.
 On the other hand, you can sometimes help the compiler. For instance,
 the operation
@@ -349,10 +347,9 @@ In the previous section you saw that modern CPUs can deal with
 applying the same operation to a sequence of data elements.  In the
 case of vector instructions (above), or in the case of GPUs (next
 section), these identical operations are
-actually done simultaneously. There is a different
-kind of processing that shares many similarities with these
-and that is sometimes also characterized as \ac{SIMD}:
-pipelining.
+actually done simultaneously. In this section we will look
+at \indexterm{pipelining}, which is a different way
+of dealing with identical instructions.
 
 Imagine a car being put together on an assembly line: as the frame comes
 down the line one worker puts on the wheels, another the doors,
@@ -469,13 +466,16 @@ assigning certain board locations to certain processors.
 Since the locations on the board can be updated 
 independently, the processors can then all work in parallel. 
 
-There is a slightly different way of looking at this.
-Rather than going back to basics and reasoning about 
-the problem abstractly,
-you can take the code of the basic, sequential, implementation of Life.
-You know that the two inner loops have independent iterations,
-so is there a way to tell that to the compiler, and let the compiler decide
-how to execute this?
+There is a slightly different way of looking at this.  Rather than
+going back to basics and reasoning about the problem abstractly, you
+can take the code of the basic, sequential, implementation of Life.
+%
+Since the locations can be updated independently, the
+\emph{iterations} of the loop are \emph{independent}\index{independent iterations}
+and can be executed in any order, or in fact simultaneously.
+So is there a way to tell the compiler that the iterations
+are independent, and let the compiler decide
+how to execute them?
 
 The popular \indexterm{OpenMP} system lets the programmer
 supply this information in comments:
@@ -520,8 +520,10 @@ of computing, which are a good match to the innermost components of
 a processor core. However, if you look at parallelism on the level
 of the cores of a processor there are disadvantages to 
 assigning small-grained computations randomly to the cores. 
-(Most of these have something to do with the way memory is designed.
-For a detailed discussion see section~\HPSCref{sec:hierarchy}.)
+Most of these have something to do with the way memory is structured:
+moving such small amounts of work around can be more costly
+than executing them
+(for a detailed discussion see section~\HPSCref{sec:hierarchy}).
 Therefore, we are motivated to look at computations in 
 larger chunks than  a single cell
 update. 
@@ -541,7 +543,7 @@ and so far we have assumed that any processor can execute any instruction.
 
 This is certainly the case with multicore processors,
 where all cores can equally easily read any element from memory.
-\begin{figure}[ht]
+\begin{figure}[t]
   \includegraphics[scale=.1]{shared}
   \caption{Illustration of shared memory: all processors access the
     same memory}
@@ -570,6 +572,13 @@ and `distributed memory programming'.
 \Level 2 {Distributed memory parallelism}
 \label{sec:spmd}
 
+\begin{figure}[t]
+  \includegraphics[scale=.1]{distributed}
+  \caption{Illustration of distributed memory: every processor has its
+    own memory and is connected to others through a network}
+  \label{fig:spmd}
+\end{figure}
+
 \emph{Clusters}\index{clusters},
 also called \indextermsub{distributed}{memory} computers,
 can be thought of
@@ -586,26 +595,19 @@ Since the nodes are also to an extent independent, this type of parallelism is
 called \indexacf{MIMD}: each node has its own data, and executes its own program.
 However, most of the time the nodes will all execute
 the same program, so this model is often called \indexacf{SPMD}; see figure~\ref{fig:spmd}.
-\begin{figure}[ht]
-  \includegraphics[scale=.1]{distributed}
-  \caption{Illustration of distributed memory: every processor has its
-    own memory and is connected to others through a network}
-  \label{fig:spmd}
-\end{figure}
-%
 The advantage of this design is that tying
 together thousands of processors allows you to run very large problems.
 For instance, the almost 13 thousand processors of the Stampede supercomputer\footnote
 {Stampede has more than 6400 nodes, each with 2 Intel Sandy Bridge processors.
 Each node also has an Intel Xeon Phi co-processor, but we don't count those for the moment.}
-\begin{figure}[ht]
+\begin{figure}[t]
   \includegraphics[scale=.75]{stampede-cable}
   \caption{The Stampede supercomputer at the Texas Advanced Supercomputing Center}
   \label{fig:stampede}
 \end{figure}
 (figure~\ref{fig:stampede}) have almost 200 terabytes of memory.
 Parallel programming on such a machine is a little harder
-that what we discussed above.
+than what we discussed above.
 First of all we have to worry about
 how to partition the problem over this \indexterm{distributed memory}.
 But more importantly, our above assumption that each processing element
@@ -616,8 +618,8 @@ problem data without any problem, but this is not true for the `remote' data
 on other nodes.
 In the former case the program simply reads the memory location;
 in the latter case accessing data is only possible because there is a network
-between the processors (in the Stampede picture you can see yellow cabling
-connecting the nodes in each cabinet, and orange cabling overhead that connects the cabinets).
+between the processors: in the Stampede picture you can see yellow cabling
+connecting the nodes in each cabinet, and orange cabling overhead that connects the cabinets.
 Accessing data over the network
 probably involves an operating system call and accessing
 the network card, both of which are slow operations.
@@ -645,7 +647,7 @@ Let's build up the basic structure of an MPI program.
 Througout this example, keep in mind that we are working in \ac{SPMD} mode:
 all processes execute the same program.
 As illustrated in figure~\ref{fig:mpiget}
-\begin{figure}[ht]
+\begin{figure}[t]
   \includegraphics[scale=.1]{mpiget}
   \caption{Processor $p$ receives a line of data from $p-1$ and $p+1$}
   \label{fig:mpiget}
@@ -667,10 +669,12 @@ With this, it is possible to update the data stored on this process:
 tmp_line = my_line.copy()
 my_line = life_line_update(high_line,tmp_line,low_line,N)
 \end{verbatim}
+(We omit the code for \n{life_line_update}, which computes the updated
+cell values on a single line.)
 Unfortunately, there is more to MPI than that. The most common way
 of using the library is through \indextermsub{two-sided}{communication},
 where for each receive action there is a corresponding send action:
-a~process can not just receive data from its neighbours, the neighbours
+a~process cannot just receive data from its neighbours, the neighbours
 have to send the data.
 
 But now we recall the \ac{SPMD} nature of the computation: 
@@ -681,13 +685,16 @@ send and receive calls.
 The following code is closer to the truth.
 \begin{verbatim}
 p = my_processor_number()
+
 # send my data
 my_line.MPI_Send(to=p-1,cells=N)
 my_line.MPI_Send(to=p+1,cells=N)
+
 # get data from neighbours
 high_line = MPI_Receive(from=p-1,cells=N)
 low_line = MPI_Receive(from=p+1,cells=N)
 tmp_line = my_line.copy()
+
 # do the local computation
 my_line = life_line_update(high_line,tmp_line,low_line,N)
 \end{verbatim}
@@ -700,7 +707,7 @@ Conceptually, a process would send a message, which disappears
 somewhere in the network, and goes about its business.
 The receiving process would at some point issue a receive call,
 get the data from the network, and do something with it.
-\begin{figure}
+\begin{figure}[t]
   \leavevmode
   \includegraphics[scale=.08]{send-ideal}\hfill
   \includegraphics[scale=.08]{send-blocking}
@@ -730,17 +737,21 @@ actually doing a receive. This sort of situation is called
   and receives so that there is no deadlock?
 \end{exercise}
 
-The `clever rearrangement' of this exercise is usually not the best way to 
-solve deadlock problems. One solution is to use \indextermsub{one-sided}{communication}.
-Here the idea is that:
-\begin{itemize}
-\item Each processor declares an area, called a `window', that is accessible to other
-  pprocessors; and
-\item Other processors can then put data in another processor's window, or take data
-  from it.
-\end{itemize}
-One-sided communication sounds attractive, but it is often easier and more efficient
-to uses \indextermsub{non-blocking}{communication} calls. Here the send or receive instruction
+Finding a `clever rearrangement' is usually not the best way to 
+solve deadlock problems.
+\begin{comment}
+  One solution is to use \indextermsub{one-sided}{communication}.
+  Here the idea is that:
+  \begin{itemize}
+  \item Each processor declares an area, called a `window', that is accessible to other
+    pprocessors; and
+  \item Other processors can then put data in another processor's window, or take data
+    from it.
+  \end{itemize}
+  One-sided communication sounds attractive, but it is often easier and more efficient
+\end{comment}
+A common solution is
+to use \indextermsub{non-blocking}{communication} calls. Here the send or receive instruction
 only indicates to the system the buffer with send data, or in which to receive data. 
 You then need a second call to ensure that the operation is actually completed.
 
@@ -763,7 +774,7 @@ But the outer iteration has to be done in that order. Right?
 
 Well\ldots
 
-Let's suppose you want to compute the board \emph{two} timesteps from
+Let's suppose you want to compute the board two timesteps from
 now, without explicitly computing the next timestep. Would that be possible?
 
 \begin{exercise}
@@ -779,13 +790,11 @@ now, without explicitly computing the next timestep. Would that be possible?
   further\ldots
 \end{exercise}
 
-This has taught us something about dependence and
-independence. We can update
-the value at \n{i,j} based on
-$3\times3$ current points. 
-Likewise, we can compute the value at \n{i,j} two steps away
-if we know $5\times5$ current points, et cetera.
-
+This exercise makes an important point about dependence and
+independence. If the value at \n{i,j} depends on
+$3\times3$ previous points, and each of these have a similar
+dependence, we can compute the value at \n{i,j} 
+if we know $5\times5$ points two steps away, et cetera.
 The conclusion is that you do not need to finish a whole time step before you 
 can start the next: for each point update only certain other points
 are needed, and not the whole board. If multiple processors are updating the board,
@@ -814,7 +823,7 @@ This concept of computing is also known as \indexterm{dataflow}: data
 flows as output of one operation to another; an~operation can start
 executing when all its inputs are available. Another concept connected
 to this definition of tasks is that of a \acf{DAG}: the dependencies
-between tasks form a graph, and you can not have cycles in this graph,
+between tasks form a graph, and you cannot have cycles in this graph,
 otherwise you could never get started\ldots
 
 You can interpret the MPI examples in terms of tasks.
@@ -829,6 +838,14 @@ productive. In this case, we adopt a \indexterm{master-worker model}:
 there is one master process that keeps a list of tasks, and there are
 a number of worker processors that can execute the tasks. The master executes
 the following program:
+\begin{enumerate}
+\item The master finds which running tasks are finished;
+\item For each scheduled task, if it needs the data of a finished
+  task, mark that the data is available;
+\item Find a task that can now execute, find a processor for it, and
+  execute it there.
+\end{enumerate}
+The pseudo-code for this is:
 \begin{verbatim}
 while there_are_tasks_left():
     for r in running_tasks:
@@ -839,21 +856,14 @@ while there_are_tasks_left():
     p = find_available_processor()
     schedule(t,p)
 \end{verbatim}
-\begin{enumerate}
-\item The master finds which running tasks are finished;
-\item For each scheduled task, if it needs the data of a finished
-  task, mark that the data is available;
-\item Find a task that can now execute, find a processor for it, and
-  execute it there.
-\end{enumerate}
 
 The master-worker model assumes that in general there are more
 available tasks than processors. In the Game of Life we can easily get
-this situation if you divide the board in more subdomains than there
+this situation if you divide the board in more parts than there
 are processing elements. (Why would you do that? This mostly makes
 sense if you think about the memory hierarchy and cache sizes; see
 section~\HPSCref{sec:hierarchy}.) So with
-$N\times N$ subdomains and $T$~time steps, we define the queue
+$N\times N$ divisions of the board and $T$~time steps, we define the queue
 of tasks:
 \begin{verbatim}
 for t in [0:T]:
@@ -883,7 +893,7 @@ processor. This corresponds to a \indexterm{one-dimensional partitioning}
 of the data.
 Sometimes, however, it is a good idea to use a two-dimensional
 one instead.
-\begin{figure}[ht]
+\begin{figure}[t]
   \includegraphics[scale=.15]{onetwod1}
   \caption{One-dimensional and two-dimensional distribution communication}
   \label{fig:onetwod1}
@@ -948,7 +958,7 @@ board. In terms of the amount of memory $M$ you then have:
 \[ M=N^2/P. \]
 
 Let's now consider a one-dimensional distribution. (Left half of figure~\ref{fig:onetwod}.)
-\begin{figure}[ht]
+\begin{figure}[t]
   \includegraphics[scale=.15]{onetwod}
   \caption{One-dimensional and two-dimensional distribution of a Life board}
   \label{fig:onetwod}
@@ -979,9 +989,12 @@ processors only a single item is exchanged.
   constant in $N$ and~$P$.
 \end{exercise}
 
-The previous two exercises demonstrate an important point. Both the
+The previous two exercises demonstrate an important point: different
+parallelization strategies can have different overhead and therefore
+different efficiencies. Both the
 one and two-dimensional distribution lead to a perfect parallelization
-of the work. On the other hand, with the one-dimensional distribution
+of the work. On the other hand, with the two-dimension distribution
+the communication is constant, while with the one-dimensional distribution
 the communication cost goes up with the number of processors, so the
 algorithm becomes less and less efficient.
 
@@ -1011,14 +1024,15 @@ However, there is a way to communicate only once every \emph{two}
 updates. This communication will be larger, but there
 will be savings in the startup cost.
 
-First we must observe that to update a single Life cell 
-by one time step we need the eight cells around it. So to update
-a cell by two time steps we need those eight cells plus the ones around them.
-\begin{figure}[ht]
+\begin{figure}[t]
   \includegraphics[scale=.15]{life-twostep}
   \caption{Two steps of Life updates}
   \label{fig:twostep}
 \end{figure}
+
+First we must observe that to update a single Life cell 
+by one time step we need the eight cells around it. So to update
+a cell by two time steps we need those eight cells plus the ones around them.
 This is illustrated in figure~\ref{fig:twostep}.
 If a processor has the responsibility for updating a subsection of the board,
 it needs the \indexterm{halo region}
@@ -1066,10 +1080,20 @@ called \indexterm{load imbalance}.
 \end{exercise}
 
 Clearly, there is a strong incentive for having a well-balanced
-load between the processors. Unfortunately, sometimes the workload
+load between the processors. How to do this depends on what sort
+of parallelism you are dealing with.
+
+In section~\ref{sec:dag} you saw that in shared memory it can make
+sense to divide the work in more units than there are processors.
+Statistically, this evens out the work balance.
+On the other hand, in distributed memory (section~\ref{sec:mpi})
+such dynamic assignment is not possible, so you have to be careful
+in dividing up the work.
+Unfortunately, sometimes the workload
 changes during the run of a program, and you want to rebalance it.
 Doing so can be tricky, since it requires problem data to be moved,
 and processors have to reallocate and rearrange their data structures.
+This is a very advanced topic, and not at all simple to do.
 
 \endinput
 \begin{review}
