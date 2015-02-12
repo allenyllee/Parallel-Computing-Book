@@ -108,8 +108,36 @@ Both these functions give a number relative to the current team;
 recall from figure~\ref{fig:forkjoin} that new teams can be created recursively.
 
 \begin{exercise}
+  Take the `hello world' program above, and modify it so that you get
+  multiple messages to you screen, saying
+\begin{verbatim}
+  Hello from thread 0 out of 4!
+  Hello from thread 2 out of 4!
+\end{verbatim}
+  and so on. What happens if you set your number of threads larger than the available
+  cores on your computer?
+\end{exercise}
+
+\begin{exercise}
   What happens if you call \n{omp_get_thread_num} and \n{omp_get_num_threads}
   outside a parallel region?
+\end{exercise}
+
+\begin{exercise}
+  Test nested parallelism. First of all, set \n{OMP_NESTED} to
+  \n{TRUE}. Now write an OpenMP program as follows:
+  \begin{enumerate}
+  \item Write a subprogram that contains a parallel region.
+  \item Write a main program with a parallel region; call the subprogram both inside and outside the parallel region.
+    \item Insert print statements 
+      \begin{enumerate}
+      \item in the main program outside the parallel region,
+      \item in the parallel region in the main program,
+      \item in the subprogram outside the parallel region,
+      \item in the parallel region inside the subprogram.
+      \end{enumerate}
+  \end{enumerate}
+  Run your program and count how many print statements of each type you get.
 \end{exercise}
 
 \Level 2 {Thread data}
@@ -416,7 +444,8 @@ adjust the loop bounds:
 A more natural option is to use the
 \indexpragma{parallel for} pragma:
 \begin{verbatim}
-#pragma omp parallel for
+#pragma omp parallel
+#pragma omp for
 for (i=0; i<N; i++) {
   // do something with i
 }
@@ -425,10 +454,12 @@ This has several advantages. For one, you don't have to calculate the loop bound
 for the threads yourself, but you can also tell OpenMP to assign the loop
 iterations according to different schedules (section~\ref{sec:schedule}).
 
-Using \n{parallel for} is actually short hand for using a \n{parallel} pragma,
-which creates the threads, and inside a \n{for} pragma, which spreads the loop 
-iterations over the thread team that encounters the loop. The \n{for} pragma
-does not create threads itself.
+Instead of having two pragmas, one for the parallel region and one for
+worksharing over the loop iterations, you can combine the two:
+\begin{verbatim}
+#pragma omp parallel for
+  for (i=0; .....
+\end{verbatim}
 
 The loop has to satisfy a number of basic constraints, such as that you can not
 jump out of it.
@@ -486,6 +517,31 @@ schedule will then at runtime be read from the
 \indextermtt{OMP_SCHEDULE} environment variable. You can even just
 leave it to the runtime library by specifying
 \indexclauseoption{schedule}{auto}
+
+\begin{exercise}
+  Program the \indexterm{LU factorization} algorithm without pivoting.
+\begin{verbatim}
+for k=1,n:
+  A[k,k] = 1./A[k,k]
+  for i=k+1,n:
+    A[i,k] = A[i,k]/A[k,k]
+    for j=k+1,n:
+      A[i,j] = A[i,j] - A[i,k]*A[k,j]
+\end{verbatim}
+\begin{enumerate}
+\item Argue that it is not possible to parallelize the outer loop.
+\item Argue that it is possible to parallelize both the $i$ and $j$ loops.
+\item Parallelize the algorithm by focusing on the $i$ loop. Why is the algorithm as given here best
+  for a matrix on row-storage? What would you do if the matrix was on column storage?
+\item Argue that with the default schedule, if a row is updated by one thread in one iteration,
+  it may very well be updated by another thread in another. Can you find a way to schedule
+  loop iterations so that this does not happen? What practical reason is there for doing so?
+\end{enumerate}
+\end{exercise}
+
+\Level 2 {Reductions}
+
+There is an extended discussion of reductions in section~\ref{sec:reduction}
 
 \Level 2 {While loops}
 
@@ -578,6 +634,21 @@ The \texttt{master} directive, also enforces execution
 on a single thread, specifically the master thread of the team,
 but it does not have the synchronization through the implicit barrier.
 
+\begin{exercise}
+  Modify the above code to read:
+\begin{verbatim}
+#pragma omp parallel
+{
+  int a;
+  #pragma omp master
+    a = f(); // some computation
+  #pragma omp sections
+    // various different computations using a
+}
+\end{verbatim}
+  This code is no longer correct. Explain.
+\end{exercise}
+
 \Level 1 {Fortran array syntax parallelization}
 \commandref{fortran-workshare}
 
@@ -636,6 +707,21 @@ and if you want to play it safe:
 #pragma omp parallel default(none) private(x) shared(matrix)
 { ... }
 \end{verbatim}
+
+\Level 1 {Persistent data}
+
+Most data in OpenMP parallel regions is either inherited
+from the master thread and therefore shared, or temporary within the scope of the
+region and fully private.
+There is also a mechanism for data that is private to a thread, but not limited
+in lifetime to one parallel region.
+The \indexpragma{threadprivate} pragma is used to declare that each thread
+is to have a private copy of a variable:
+\begin{verbatim}
+#pragma omp threadprivate(var)
+\end{verbatim}
+This variable will then have the lifetime of an ordinary variable,
+but inside a parallel region the private copy is used.
 
 \Level 0 {Reductions}
 \commandref{reduction}
@@ -792,18 +878,6 @@ Critical sections are an easy way to turn an existing code into a correct parall
 However, there are disadvantages to this, and sometimes a more drastic rewrite
 is called for.
 
-\begin{exercise}
-  Suppose some part of a loop iteration updates a variable. Discuss qualitatively
-  the difference between:
-  \begin{itemize}
-  \item  turning the update statement into a critical section, versus
-  \item letting the threads accumulate into a private variable, and summing these
-    after the loop.
-  \end{itemize}  
-  Do an Ahmdal-style quantitative analysis of the first case, assuming that you do $n$ iterations
-  on $p$ threads, and each iteration has a critical section that takes a fraction~$f$.
-\end{exercise}
-
 \Level 2 {\texttt{critical} and \texttt{atomic}}
 \commandref{critical}
 
@@ -820,6 +894,25 @@ The typical application of a critical section is to update a variable:
   sum += tmp;
 }
 \end{verbatim}
+
+\begin{exercise}
+  Consider  a loop where each iteration updates a variable.
+\begin{verbatim}
+#pragma omp parallel for shared(result)
+  for ( i ) {
+      result += some_function_of(i);
+  }
+\end{verbatim}
+  Discuss qualitatively
+  the difference between:
+  \begin{itemize}
+  \item  turning the update statement into a critical section, versus
+  \item letting the threads accumulate into a private variable \n{tmp} as above,
+    and summing these after the loop.
+  \end{itemize}  
+  Do an Ahmdal-style quantitative analysis of the first case, assuming that you do $n$ iterations
+  on $p$ threads, and each iteration has a critical section that takes a fraction~$f$.
+\end{exercise}
 
 A \n{critical} section works by acquiring a lock, which carries a substantial overhead.
 Furthermore, if your code has multiple critical sections, they are all mutually exclusive:
@@ -873,8 +966,8 @@ The \indexpragma{task} pragma is followed by a structured block.
 Each time the structured block is encountered, a new task is generated.
 \begin{verbatim}
 #pragma omp parallel
-{
 #pragma omp single
+{
   while (something) {
     p = ......
 #pragma omp task
@@ -882,6 +975,18 @@ Each time the structured block is encountered, a new task is generated.
   }
 }
 \end{verbatim}
+
+You can indicate task dependencies in two ways:
+\begin{enumerate}
+\item Using the `task wait' directive you can explicitly indicate
+  the \emph{join}\indexterm{fork/join model} of the
+  \emph{forked} tasks. The instruction after the wait directive
+  will therefore be dependent on the spawned tasks.
+\item Each OpenMP task can have a \indexclause{depend}
+  clause, indicating what \indexterm{data dependency} of the task.
+  By indicating what data is produced or absorbed by the tasks,
+  the scheduler can construct the dependency graph for you.
+\end{enumerate}
 
 \Level 0 {Stuff}
 
@@ -1149,6 +1254,12 @@ functions. These are often quite costly, taking many thousands of cycles.
 Thus, the \indextermsub{cost of a }{critical sections} goes far beyond
 the Amdahl cost of the loss of paralellism. Critical sections should be used only
 if the parallel work far outweighs it.
+
+\Level 0 {Performance}
+
+See the EPCC benchmark suite~\cite{epcc-ompbench}.
+
+\endinput
 
 \Level 0 {Idioms}
 
