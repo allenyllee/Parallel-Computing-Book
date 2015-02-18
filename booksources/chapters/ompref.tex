@@ -41,14 +41,16 @@ use omp_lib
 Directives in C/C++ are case-sensitive. Directives can be broken over
 multiple lines by escaping the line end.
 
-Directives in Fortran start with a \indextermbus{directive}{sentinel}.
+Directives in Fortran start with a \indextermdef{sentinel}, commonly~\verb+!$omp+.
 If you break a directive over more than one line, all but the last line
 need to have a continuation character, and each line needs to have the sentinel:
 \begin{verbatim}
 !$OMP parallel do &
 !%OMP   copyin(x),copyout(y)
 \end{verbatim}
-The directives are case-insensitive.
+  The directives are case-insensitive. In
+  \indextermbus{Fortran}{fixed-form source} files, \verb+c$omp+ and
+  \verb+*$omp+ are allowed too.
 
 \index{directives|)}
 
@@ -126,14 +128,21 @@ over threads.
 \Level 1 {Loop parallelism}
 \commandreflabel{omp-for}
 
-The \indexpragma{for} (C) and \indexpragma{do} (Fortran) pragmas
-parallelize the iterations of a loop. 
+The \indexpragma{for} (C) and \indexpragma{do} (Fortran) directives
+tell OpenMP to distribute the iterations of a loop over the threads
+of a team.
 These pragmas do not create a team of threads: they
 take the current team of threads and divide the loop iterations over them.
+This means that the \n{omp for} or \n{omp do} directive needs to be
+inside a parallel region. It is also possible to have a combined
+\n{omp parallel for} or \n{omp parallel do} directive.
+
+There are some restrictions on the loop: basically, OpenMP needs to be
+able to determine in advance how many iterations there will be.
 \begin{itemize}
 \item The loop can not contains \n{break}, \n{return}, \n{exit} statements, or
   \n{goto} to a label outside the loop.
-\item The \n{continue} statement is allowed.
+\item The \n{continue} (C) or \n{cycle} (F) statement is allowed.
 \item The index update has to be an increment (or decrement) by a fixed amount.
 \item The loop index variable is automatically private.
 \end{itemize}
@@ -191,6 +200,24 @@ for (i=0; i<N; i++) {
 
 \Level 2 {Reductions}
 \commandreflabel{reduction}
+
+Many loops are used to compute a reduction: the per-iteration
+results are combined into a final result, such as a sum
+or product. You can solve this by using partial results
+in each thread (or by using an atomic update), but the easiest
+way is to use the \indexclause{reduction} clause.
+
+\begin{verbatim}
+  int sum;
+#pragma omp parallel for reduction(+:sum)
+  for (i=0; i<N; i++)
+    sum  = sum + f(i);
+\end{verbatim}
+
+\begin{exercise}
+  Write a program to test the fact that the partial results
+  are initialized to the unit of the reduction operator.
+\end{exercise}
 
 Arithmetic reductions: $+,*,-,\max,\min$
 
@@ -377,6 +404,8 @@ by one thread at a time.
     structured-block
 \end{verbatim}
 
+Not required to be in a parallel region?
+
 \Level 1 {Locks}
 \label{ompref:locks}
 
@@ -410,7 +439,7 @@ First, there are 4 \acp{ICV} that behave as if each thread has its own copy of t
 The default is implementation-defined unless otherwise noted.
 \begin{itemize}
   \item It may be possible to adjust dynamically the number of threads
-    for a parallel region. Varriable: \indextermtt{OMP_DYNAMIC};
+    for a parallel region. Variable: \indextermtt{OMP_DYNAMIC};
     routines: \indextermtt{omp_set_dynamic},
     \indextermtt{omp_get_dynamic}.
   \item If a code contains \indextermsub{nested}{parallel regions},
@@ -423,10 +452,15 @@ The default is implementation-defined unless otherwise noted.
     can be controlled. Variable: \indextermtt{OMP_NUM_THREADS};
     routines \indextermtt{omp_set_num_threads},
     \indextermtt{omp_get_max_threads}.
-    \item The schedule for a parallel loop can be set. Variable:
-      \indextermtt{OMP_SCHEDULE}; routines
-      \indextermtt{omp_set_schedule}, \indextermtt{omp_get_schedule}.
+  \item The schedule for a parallel loop can be set. Variable:
+    \indextermtt{OMP_SCHEDULE}; routines
+    \indextermtt{omp_set_schedule}, \indextermtt{omp_get_schedule}.
 \end{itemize}
+
+Non-obvious syntax:
+\begin{verbatim}
+export OMP_SCHEDULE="static,100"
+\end{verbatim}
 
 Other settings:
 \begin{itemize}

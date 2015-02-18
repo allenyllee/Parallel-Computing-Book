@@ -377,32 +377,33 @@ whether the inner region will create a team of more than one thread.
 
 \Level 1 {Thread data in parallel regions}
 
-Private variables act as is they are created at the start of the parallel region.
-Sometimes it may be desirable to have them initialized with their prior value;
-the clause \indexpragma{firstprivate} initializes them with the value of the
-surrounding scope. (The \indexpragma{copyin} directive does more or less the same thing.)
-\begin{verbatim}
-double x;
-x = .... // initial value
-#omp parallel firstprivate(x)
-{
-  ... = .... x .... // still the initial value
-}
-\end{verbatim}
+OpenMP is a programming system for shared memory. This means that
+you often want all threads to see the same data; we call this `shared' data.
+However, sometimes you want a thread to have `private' data, for instance
+for intermediate results in a computation.
 
-Private variables also disappear at the end of the parallel region. 
-If you want to preserve the value of a private variable, for instance
-because it computed something interesting, you need to indicate that.
-A~common case is preserving the result of the last iteration of a parallel loop
-which is done with \indexpragma{lastprivate}
+Private variables act as if they are created at the start of the parallel region.
+If a variable by that name already exists in the surrounding scope,
+that variable will become inaccessible. Here is a clear example of a private variable,
+created inside the parallel region:
 \begin{verbatim}
-double x;
-#omp parallel for lastprivate(x)
-for (...) {
-    x = ....
+int x = 5;
+#pragma omp parallel
+{ 
+  int x = 6;
 }
-// now x has the value computed in the last iteration
+// x is still 5
 \end{verbatim}
+This example is pretty much the same:
+\begin{verbatim}
+int x = 5;
+#pragma omp parallel private(x)
+{ 
+  x = 6;
+}
+// x is still 5
+\end{verbatim}
+We will discuss all this in detail in section~\ref{sec:ompdata}.
 
 \Level 0 {Work sharing}
 \commandref{work-sharing}
@@ -454,6 +455,26 @@ This has several advantages. For one, you don't have to calculate the loop bound
 for the threads yourself, but you can also tell OpenMP to assign the loop
 iterations according to different schedules (section~\ref{sec:schedule}).
 
+Figure~\ref{fig:omp-par-do} shows the execution on four threads of
+\begin{verbatim}
+#pragma omp parallel
+{
+  code1();
+#pragma omp for
+  for (i=1; i<=4*N; i++) {
+    code2();
+  }
+  code3();
+}
+\end{verbatim}
+The code before and after the loop is executed identically
+in each thread; the loop iterations are spread over the four threads.
+\begin{figure}[ht]
+  \includegraphics[scale=.1]{parallel-do}
+  \caption{Execution of parallel code inside and outside a loop}
+  \label{fig:omp-par-do}
+\end{figure}
+
 Instead of having two pragmas, one for the parallel region and one for
 worksharing over the loop iterations, you can combine the two:
 \begin{verbatim}
@@ -480,6 +501,12 @@ of iterations and the number of threads (and the \n{chunk} parameter; see later)
 In dynamic schedules, on the other hand, iterations are assigned to threads that
 are unoccupied. Dynamic schedules are a good idea if iterations take an unpredictable
 amount of time, so that \indexterm{load balancing} is needed.
+
+\begin{figure}[ht]
+  \includegraphics[scale=.12]{schedules}
+  \caption{Illustration of the loop scheduling strategies}
+  \label{fig:omp-schedule}
+\end{figure}
 
 The default static schedule is to assign one consecutive block of iterations
 to each thread. If you want different sized blocks you can defined a \indexclauseoption{schedule}{chunk} size:
@@ -510,6 +537,8 @@ overhead for managing the queue of iteration tasks.
 Finally, there is the \indexclauseoption{schedule}{guided} schedule, which gradually decreases the chunk size.
 The thinking here is that large chunks carry the least overhead, but smaller chunks are better
 for load balancing.
+%
+The various schedules are illustrated in figure~\ref{fig:omp-schedule}.
 
 If you don't want to decide on a schedule in your code, you can
 specify the \indexclauseoption{schedule}{runtime} schedule. The actual
@@ -542,6 +571,39 @@ for k=1,n:
 \Level 2 {Reductions}
 
 There is an extended discussion of reductions in section~\ref{sec:reduction}
+
+\Level 2 {\texttt{nowait}}
+
+The implicit barrier at the end of a work sharing construct
+can be cancelled with a \indexclause{nowait} clause.
+This has the effect that threads that are finished can continue
+with the next code in the parallel region:
+\begin{verbatim}
+#pragma omp parallel
+{
+#pragma omp for nowait
+  for (i=0; i<N; i++) { ... }
+  // more parallel code
+}
+\end{verbatim}
+
+In the following example, threads that are finished with the first loop
+can start on the second. Note that this requires both loops to have
+the same schedule.
+\begin{verbatim}
+#pragma omp parallel
+{
+  x = local_computation()
+#pragma omp for nowait
+  for (i=0; i<N; i++) { 
+    x[i] = ... 
+  }
+#pragma omp for 
+  for (i=0; i<N; i++) { 
+    y[i] = ... x[i] ...
+  }
+}
+\end{verbatim}
 
 \Level 2 {While loops}
 
@@ -582,7 +644,57 @@ contains the \emph{last} location where \n{a[i]} is zero.
 \Level 1 {Sections}
 \commandref{omp-sections}
 
-\indexpragma{sections}
+A parallel loop is an example of independent work units that are numbered.
+If you have a pre-determined number of independent work units, 
+the \indexpragma{sections} is more appropriate. In a \n{sections} construct
+can be any number of \indexpragma{section} constructs. These need to be
+independent, and they can be execute by any available thread in the current team,
+including having multiple sections done by the same thread.
+\begin{verbatim}
+#pragma omp sections
+{
+#pragma omp section
+  // one calculation
+#pragma omp section
+  // another calculation
+}
+\end{verbatim}
+
+This construct can be used to divide large blocks of independent work.
+Suppose that in the following line, both \n{f(x)} and \n{g(x)}
+are big calculations:
+\begin{verbatim}
+  y = f(x) + g(x)
+\end{verbatim}
+You could then write
+\begin{verbatim}
+double y1,y2;
+#pragma omp sections
+{
+#pragma omp section
+  y1 = f(x)
+#pragma omp section
+  y2 = g(x)
+}
+y = y1+y2;
+\end{verbatim}
+Instead of using two temporaries, you could also use a critical
+section; see section~\ref{sec:critical}.  However, the best solution
+is have a \n{reduction} clause on the \n{sections} directive:
+\begin{verbatim}
+  y = f(x) + g(x)
+\end{verbatim}
+You could then write
+\begin{verbatim}
+y = 0;
+#pragma omp sections reduction(+:y)
+{
+#pragma omp section
+  y += f(x)
+#pragma omp section
+  y += g(x)
+}
+\end{verbatim}
 
 \Level 1 {Single/master}
 \commandref{omp-single}
@@ -613,10 +725,6 @@ in a parallel region:
     // various different computations using a
 }
 \end{verbatim}
-\begin{exercise}
-  Can you do this initialization using a clause on the \n{parallel}
-  directive?
-\end{exercise}
 
 The point of the single directive in this last example is that the
 computation needs to be done only once, because of the shared memory.
@@ -659,21 +767,81 @@ To parallelize array syntax you can use the \indexpragma{workshare}
 directive.
 
 \Level 0 {Controlling thread data}
-\commandref{sec:ompdata}
+\commandref{ompdata}
 
 In a parallel region there are two types of data: private and shared.
 In this sections we will see the various way you can control what category
 your data falls under; for private data items we also discuss how their values
 relate to shared data.
 
+\Level 1 {Shared data}
+
+In a parallel region, any data declared outside it will be shared:
+any thread using a variable~\n{x} will  the same memory location
+associated with that variable.
+
+Example:
+\begin{verbatim}
+  int x = 5;
+#pragma omp parallel
+  {
+    x = x+1;
+    printf("shared: x is %d\n",x);
+  }
+\end{verbatim}
+All threads increment the same variable, so after the loop it will
+have a value of five plus the number of threads; or maybe less because of the data races
+involved.
+
+Sometimes this global update is what you want; in other cases the
+variable is intended only for intermediate results in a computation.
+In that case 
+there are various ways of creating
+data that is local to a thread, and therefore invisible to other threads.
+
 \Level 1 {Private data}
 \commandref{omp-private}
 
+In the C/C++ language it is possible to declare variables inside
+a \indexterm{lexical scope}; roughly: inside curly braces.
+This concept extends to OpenMP parallel regions and directives:
+any variable declared in a block following an OpenMP directive
+will be local to the executing thread.
+
+Example:
+\begin{verbatim}
+  int x = 5;
+#pragma omp parallel
+  {
+    int x; x = 3;
+    printf("local: x is %d\n",x);
+  }
+\end{verbatim}
+After the parallel region, the outer variable~\n{x} will still have the value~\n{5}.
+
+The Fortran language does not have this concept of scope, so you have to use a
+\indexclause{private} clause:
+\begin{verbatim}
+!$OMP parallel private(x)
+\end{verbatim}
+
 The \indexpragma{private} directive declares data to have a separate copy 
-in the memory of each thread. By default, such private variables are uninitialized
-at the begin of the parallel region, and any computed value goes away at the end 
-of the parallel region. You can force initialization with \indexclause{firstprivate},
-and preserving the last iteration with \indexclause{lastprivate}.
+in the memory of each thread. 
+Such private variables are initialized as they would be in a main program.
+Any computed value goes away at the end 
+of the parallel region. (However, see below.)
+Thus, you should not rely on any initial value, or on the value of the outer variable
+after the region.
+
+\begin{verbatim}
+  int x = 5;
+#pragma omp parallel private(x)
+  {
+    x = x+1; // dangerous
+    printf("private: x is %d\n",x);
+  }
+  printf("after: x is %d\n",x); // also dangerous
+\end{verbatim}
 
 Private arrays are tricky.
 \begin{itemize}
@@ -706,6 +874,37 @@ and if you want to play it safe:
 \begin{verbatim}
 #pragma omp parallel default(none) private(x) shared(matrix)
 { ... }
+\end{verbatim}
+
+Setting \n{default(none)} is useful for debugging. If your code
+behaves differently in parallel from sequential there is probably a data race.
+Specifying the status of every variable is a good way to
+debug this.
+
+\Level 1 {First and last private}
+
+You can force initialization with \indexclause{firstprivate}.
+\begin{verbatim}
+  int t=2;
+#pragma omp parallel firstprivate(t)
+  {
+    t += f( omp_get_thread_num() );
+    g(t);
+  }
+\end{verbatim}
+The variable \n{t} behaves like a private variable, except that it is
+initialized to the outside value.
+
+It is possible to preserve a private variable
+from the last iteration with \indexclause{lastprivate}:
+\begin{verbatim}
+#pragma omp parallel for \
+        lastprivate(tmp)
+for (i=0; i<N; i+) {
+  tmp = ......
+  x[i] = .... tmp ....
+}
+..... tmp ....
 \end{verbatim}
 
 \Level 1 {Persistent data}
