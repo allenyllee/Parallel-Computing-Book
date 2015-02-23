@@ -144,7 +144,8 @@ able to determine in advance how many iterations there will be.
   \n{goto} to a label outside the loop.
 \item The \n{continue} (C) or \n{cycle} (F) statement is allowed.
 \item The index update has to be an increment (or decrement) by a fixed amount.
-\item The loop index variable is automatically private.
+\item The loop index variable is automatically private, and not changes to it
+  inside the loop are allowed.
 \end{itemize}
 
 \Level 2 {Schedules}
@@ -197,6 +198,8 @@ for (i=0; i<N; i++) {
   a[i+1] = a[i] + t
 }
 \end{verbatim}
+Note the separate \n{ordered} construct inside the loop. Without that, nothing
+will actually be ordered.
 
 \Level 2 {Reductions}
 \commandreflabel{reduction}
@@ -275,9 +278,19 @@ as well as  \emph{forall}\index{Fortran!forall loops} loops.
 \index{worksharing constructs|)}
 
 \Level 0 {Controlling thread data}
-\commandreflabel{sec:ompdata}
+\commandreflabel{ompdata}
 
-\indexpragma{shared}
+\Level 1 {Shared data}
+
+Data that existed in the master thread of a team
+is shared between the team. This is default behaviour.
+The clause \indexclause{shared} can be used for completeness,
+for instance if \n{default(none)} is declared.
+
+While shared data is readable and writable by every thread, their view
+of data may not always be consistent. Therefore, reads should be
+preceded by a \indexpragma{flush} command.  Fortunately, in many cases
+this is done by default; see section~\ref{ref:omp:flush}.
 
 \Level 1 {Private data}
 \commandreflabel{omp-private}
@@ -423,6 +436,10 @@ Since the set call is blocking, there is also
 \begin{verbatim}
 omp_test_lock();
 \end{verbatim}
+
+Unsetting a lock needs to be done by the thread that set it.
+
+Lock operations implicitly have a \n{flush}.
 
 \Level 0 {Internal control variables}
 \label{ref:omp-environ}

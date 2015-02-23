@@ -1156,6 +1156,122 @@ histogram, and if the \n{some_function} takes enough time, there are unlikely to
 conflicting writes. The solution then is to create an array of locks, with
 one lock for each \n{count} location.
 
+\Level 1 {Example: Fibonacci computation}
+\index{Fibonacci sequence|(}
+
+The \emph{Fibonacci sequence} is recursively defined as
+\[ F(0)=1,\qquad F(1)=1,\qquad F(n)=F(n-1)+F(n-2)
+\hbox{ for $n\geq2$}.
+\]
+We start by sketching the basic single-threaded solution.
+The naive code looks like:
+\begin{verbatim}
+int main() {
+  value = new int[nmax+1];
+  value[0] = 1;
+  value[1] = 1;
+  fib(10);
+}
+
+int fib(int n) {
+  int i, j, result;
+  if (n>=2) {
+    i=fib(n-1); j=fib(n-2);
+    value[n] = i+j;
+  }
+  return value[n];
+}
+\end{verbatim}
+Howver, this is inefficienty, since most intermediate values will be computed
+more than once. We solve this by keeping track of which results are known:
+\begin{verbatim}
+  ...
+  done = new int[nmax+1];
+  for (i=0; i<=nmax; i++)
+    done[i] = 0;
+  done[0] = 1;
+  done[1] = 1;
+  ...
+int fib(int n) {
+  int i, j;
+  if (!done[n]) {
+    i = fib(n-1); j = fib(n-2);
+    value[n] = i+j; done[n] = 1;
+  }
+  return value[n];
+}
+\end{verbatim}
+The OpenMP parallel solution calls for two different ideas. First of all,
+we parallelize the recursion by using tasks (section~\ref{sec:omp:task}:
+\begin{verbatim}
+int fib(int n) {
+  int i, j;
+  if (n>=2) {
+#pragma omp task shared(i) firstprivate(n)
+    i=fib(n-1);
+#pragma omp task shared(j) firstprivate(n)
+    j=fib(n-2);
+#pragma omp taskwait
+    value[n] = i+j;
+  }
+  return value[n];
+}
+\end{verbatim}
+This computes the right solution, but, as in the naive single-threaded solution,
+it recomputes many of the intermediate values.
+
+A naive addition of the \n{done} array leads to data races, and probably an
+incorrect solution:
+\begin{verbatim}
+int fib(int n) {
+  int i, j, result;
+  if (!done[n]) {
+#pragma omp task shared(i) firstprivate(n)
+    i=fib(n-1);
+#pragma omp task shared(i) firstprivate(n)
+    j=fib(n-2);
+#pragma omp taskwait
+    value[n] = i+j;
+    done[n] = 1;
+  }
+  return value[n];
+}
+\end{verbatim}
+For instance, there is no guarantee that the \n{done} array is updated
+later than the \n{value} array, so a thread can think that \n{done[n-1]}
+is true, but \n{value[n-1]} does not have the right value yet.
+
+One solution to this problem is to use a lock, and make sure that,
+for a given index~\n{n}, the values \n{done[n]} and \n{value[n]}
+are never touched by more than one thread at a time:
+\begin{verbatim}
+int fib(int n)
+{
+  int i, j;
+  omp_set_lock( &(dolock[n]) );
+  if (!done[n]) {
+#pragma omp task shared(i) firstprivate(n)
+    i = fib(n-1);
+#pragma omp task shared(j) firstprivate(n)
+    j = fib(n-2);
+#pragma omp taskwait
+    value[n] = i+j;
+    done[n] = 1;
+  }
+  omp_unset_lock( &(dolock[n]) );
+  return value[n];
+}
+\end{verbatim}
+This solution is correct, optimally efficient in the sense that it
+does not recompute anything, and it uses tasks to obtain a parallel execution.
+
+However, the efficiency of this solution is only up to a constant.
+A~lock is still being set, even if a value is already computed and therefore
+will only be read. This can be solved with a complicated use of critical sections,
+but we will forego this.
+
+\index{Fibonacci sequence|)}
+
 \index{synchronization!in OpenMP|)}
 
 \Level 0 {Tasks}
