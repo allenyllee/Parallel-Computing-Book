@@ -1,12 +1,22 @@
-This is the repository for the textbook
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Parallel Programing in Science and Engineering'
+%%%% by Victor Eijkhout, copyright 2013/4
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    Parallel Computing for Science and Engineering
+This is the repository with sources of the textbook
+
+    Parallel Programing in Science and Engineering
 by
     Victor Eijkhout
-    copyright 2014
 
-The book can be downloaded for free: the pdf file is in
-the source directory.
+The book can be downloaded for free;
+see
+    http://www.tacc.utexas.edu/~eijkhout/istc/istc.html
 
 If you want to format it yourself, do
 

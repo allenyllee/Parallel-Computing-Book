@@ -3,7 +3,7 @@
 !  %%%%
 !  %%%% This program file is part of the book and course 
 !  %%%% "Parallel Computing for Science and Engineering"
-!  %%%% by Victor Eijkhout, copyright 2013/4
+!  %%%% by Victor Eijkhout, copyright 2013-5
 !  %%%%
 !  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 !  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

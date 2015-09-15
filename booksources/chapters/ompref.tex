@@ -10,7 +10,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 This section gives reference information and illustrative examples
-of the use of MPI. While the code snippets given here should be enough,
+of the use of OpenMP. While the code snippets given here should be enough,
 full programs can be found in the repository for this book
 \url{https://bitbucket.org/VictorEijkhout/parallel-computing-book}.
 
@@ -204,11 +204,23 @@ will actually be ordered.
 \Level 2 {Reductions}
 \commandreflabel{reduction}
 
-Many loops are used to compute a reduction: the per-iteration
-results are combined into a final result, such as a sum
-or product. You can solve this by using partial results
-in each thread (or by using an atomic update), but the easiest
+Often, the threads in a team compute partial results which
+need to be combined, for instance in an addition or multiplication.
+This combination is known as a \indextermdef{reduction}.
+You can implement this by using partial results
+in each thread (see the examples in section~\ref{sec:reduction}),
+or by using an atomic update of a shared variable, but the easiest
 way is to use the \indexclause{reduction} clause.
+
+The \n{reduction} clause can be added to various constructs:
+\begin{itemize}
+\item Most commonly it is added to a \n{for} loop; the results
+  of all iterations are then combined.
+\item Similarly, it can be added to a \n{section} construct;
+  the results of the individual \n{section} blocks are then combined.
+\item You can even add it directly to the \n{parallel} directive;
+  this combines the results from the threads in the team that is created.
+\end{itemize}
 
 \begin{verbatim}
   int sum;

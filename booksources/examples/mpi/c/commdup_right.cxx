@@ -3,7 +3,7 @@
    %%%%
    %%%% This program file is part of the book and course
    %%%% "Parallel Computing"
-   %%%% by Victor Eijkhout, copyright 2013
+   %%%% by Victor Eijkhout, copyright 2013/4/5
    %%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -15,6 +15,7 @@
 #include <unistd.h>
 #include "mpi.h"
 
+//snippet rightcatchlib
 class library {
 private:
   MPI_Comm comm;
@@ -33,6 +34,7 @@ public:
   int communication_start();
   int communication_end();
 };
+//snippet end
 
 int main(int argc,char **argv) {
   int ierr;

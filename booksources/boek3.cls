@@ -874,11 +874,11 @@
   \fi}
 \else
    \newcommand*\l@part{%
-     \ifnum \c@tocdepth >-2\relax
+     %\ifnum \c@tocdepth >-2\relax
      \addpenalty{-\@highpenalty}%
      \addvspace{2.25em \@plus \p@}%
      \@regtocline{0}%
-   \fi}
+   }
 \fi
 \if@oldtoc
 \newcommand*\l@chapter[2]{%
@@ -947,7 +947,7 @@
 \setlength\bibindent{1.5em}
 \newcommand*\newblock{}
 \newenvironment{thebibliography}[1]
-     {\chapter*{\bibname}%
+     {%\chapter*{\bibname}%
        \@mkboth{\MakeUppercase\bibname}{\MakeUppercase\bibname}%
       \list{\@biblabel{\@arabic\c@enumiv}}%
            {\settowidth\labelwidth{\@biblabel{#1}}%
@@ -965,20 +965,19 @@
 \renewcommand\newblock{\hskip.11em\@plus.33em\@minus.07em}
 \let\@openbib@code\@empty
 \newenvironment{theindex}{%
-  \if@twocolumn
-    \@restonecolfalse
-  \else
-    \@restonecoltrue
-  \fi
-  \twocolumn[\@makeschapterhead{\indexname}]%
+  %% \if@twocolumn
+  %%   \@restonecolfalse
+  %% \else
+  %%   \@restonecoltrue
+  %% \fi
+  %\twocolumn% [\@makeschapterhead{\indexname}]%
   \@mkboth{\MakeUppercase{\indexname}}{\MakeUppercase{\indexname}}%
   \thispagestyle{plain}\parindent\z@
   \columnseprule \z@
   \columnsep 35\p@
   \parskip\z@ \@plus .3\p@\relax
   \let\item\@idxitem
-  }{%
-  \if@restonecol\onecolumn\else\clearpage\fi}
+}{} %{\if@restonecol\onecolumn\else\clearpage\fi }
 \newcommand*\@idxitem  {\par\hangindent 40\p@}
 \newcommand*\subitem   {\@idxitem\hspace*{20\p@}}
 \newcommand*\subsubitem{\@idxitem\hspace*{30\p@}}
@@ -1004,7 +1003,7 @@
 \newcommand*\contentsname{Contents}
 \newcommand*\listfigurename{List of Figures}
 \newcommand*\listtablename{List of Tables}
-\newcommand*\bibname{Bibliography}
+\newcommand*\bibname{}
 \newcommand*\indexname{Index}
 \newcommand*\figurename{Figure}
 \newcommand*\tablename{Table}

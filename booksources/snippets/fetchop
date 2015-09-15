@@ -2,18 +2,7 @@
 if (mytid==repository) {
   // Processor zero creates a table of inputs
   // and associates that with the window
-  inputs = new float[ninputs];
-  for (int i=0; i<ninputs; i++)
-    inputs[i] = .01 * rand() / (float)RAND_MAX ;
-  MPI_Win_create(inputs,ninputs*sizeof(float),sizeof(float),
-		   MPI_INFO_NULL,comm,&the_window);
-} else {
-  // for all other processors the window is null
-  MPI_Win_create(NULL,0,sizeof(int),
-		   MPI_INFO_NULL,comm,&the_window);
 }
-for (int i=0; i<ninputs; i++) 
-  myjobs[i] = 0;
 if (mytid!=repository) {
   float contribution=(float)mytid,table_element;
   int loc=0;

@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Computing'
-%%%% by Victor Eijkhout, copyright 2012/3
+%%%% by Victor Eijkhout, copyright 2012/3/4/5
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -35,10 +35,12 @@ installations, so you can not compile one file against one \n{mpi.h}
 file and another file, even with the same compiler on the same machine,
 against a different MPI.
 
-Every MPI program has to start with\indexmpi{MPI_Init}
-\begin{verbatim}
-MPI_Init(&argc,&argv);
-\end{verbatim}
+\Level 1 {Initialization / finalization}
+
+Every MPI program has to start with \indextermbus{MPI}{initialization}:
+%
+\mpiRoutineRef{MPI_Init}
+%
 where \indextermtt{argc} and \indextermtt{argv} are the arguments
 of a C language main program:
 \begin{verbatim}
@@ -47,10 +49,25 @@ int main(int argc,char **argv) {
     return 0;
 }
 \end{verbatim}
-The regular way to conclude an MPI program is through\indexmpi{MPI_Finalize}
-\begin{verbatim}
-MPI_Finalize();
-\end{verbatim}
+(It is allowed to pass \n{NULL} for these arguments.)
+
+The commandline arguments \n{argc} and \n{argv} are only guaranteed to
+be passed to process zero, so the best way to pass commandline information
+is by a broadcast (section~\ref{sec:bcast}).
+
+Note that the \n{MPI_Init} call is one of the few that differs between C and Fortran:
+the C~routine takes the commandline arguments, which Fortran lacks.
+
+If MPI is used in a library, MPI can have already been initialized in a main program.
+For this reason, one can test where \n{MPI_Init} has been called with
+%
+\mpiRoutineRef{MPI_Initialized}
+%
+
+The regular way to conclude an MPI program is:
+%
+\mpiRoutineRef{MPI_Finalize}
+%
 but an abnormal end to a run can be forced by\indexmpi{MPI_Abort}
 \begin{verbatim}
 MPI_Abort(comm,value);
@@ -63,24 +80,77 @@ The corresponding Fortran calls are
 \begin{verbatim}
 call MPI_Init(ierr)
 // your code
-call MPI_Finalize()
+call MPI_Finalize(ierr)
 \end{verbatim}
-Note that the \n{MPI_Init} call is one of the few that differs between C and Fortran:
-the C~routine takes the commandline arguments, which Fortran lacks.
 
-Any \indexterm{commandline argument} to the program can only be
-guaranteed to be passed correctly to process zero. Here is a fragment
-of code that shows use of commandline arguments.  The program
-\n{examples/mpi/c/init.c} takes a single integer commandline argument.
-If the user forgets to specify an argument of specifies~\n{-h}, a
-usage message is printed and the program aborts, otherwise the
-parameter is broadcast to all processes.  
-%
-\verbatimsnippet{usage}
-%
-For Fortran:
-%
-\verbatimsnippet{usage-f}
+\Level 2 {Commandline arguments}
+
+The \indexmpishow{MPI_Init} routines takes a reference to \indextermtt{argc}
+and \indextermtt{argv} for the following reason: the \n{MPI_Init} calls
+filters out the arguments to \indexterm{mpirun} or \indexterm{mpiexec},
+thereby lowering the value of \n{argc} and elimitating some of the \n{argv}
+arguments.
+
+On the other hand, the commandline arguments that are meant for \n{mpiexec}
+wind up in the \indexmpishow{MPI_INFO_ENV} object as a set of key/value pairs.
+
+%% Any \indexterm{commandline argument} to the program can only be
+%% guaranteed to be passed correctly to process zero. Here is a fragment
+%% of code that shows use of commandline arguments.  The program
+%% \n{examples/mpi/c/init.c} takes a single integer commandline argument.
+%% If the user forgets to specify an argument of specifies~\n{-h}, a
+%% usage message is printed and the program aborts, otherwise the
+%% parameter is broadcast to all processes.  
+%% %
+%% \verbatimsnippet{usage}
+%% %
+%% For Fortran:
+%% %
+%% \verbatimsnippet{usage-f}
+
+\Level 1 {Startup}
+
+\n{MPI_COMM_SPAWN_MULTIPLE}
+
+Once MPI has been initialized, the \indexmpishow{MPI_INFO_ENV} object contains:
+\begin{itemize}
+\item \n{command}
+  Name of program executed.
+\item  \n{argv}
+  Space separated arguments to command.
+\item  \n{maxprocs}
+  Maximum number of MPI processes to start.
+\item   \n{soft}
+  Allowed values for number of processors.
+\item   \n{host}
+  Hostname.
+\item   \n{arch}
+  Architecture name.
+\item   \n{wdir}
+  Working directory of the MPI process.
+\item   \n{file}
+  Value is the name of a file in which additional information is specified.
+\item   \n{thread_level}
+  Requested level of thread support, if requested before the program started execution.
+\end{itemize}
+Note that these are the requested values; the running program can for instance
+have lower thread support.
+
+\Level 1 {Basic communicator handling}
+\commandreflabel{rank-size}
+
+There are many calls relating to communicators. The simplest are
+\indexmpidef{MPI_Comm_rank}
+\begin{verbatim}
+int MPI_Comm_rank( MPI_Comm comm, int *rank )
+\end{verbatim}
+and \indexmpidef{MPI_Comm_size}
+\begin{verbatim}
+int MPI_Comm_size( MPI_Comm comm, int *size )
+\end{verbatim}
+
+Using these calls, the simplest MPI programs does this:
+\verbatimsnippet{hello}
 
 \Level 1 {Send and receive buffers}
 
@@ -96,6 +166,11 @@ this differs per language:
 \end{itemize}
 
 \Level 0 {Data types}
+\commandreflabel{mpidata}
+
+In this section we discuss the various forms that an
+\indexmpidef{MPI_Datatype} can take: elementary datatypes and derived datatypes.
+We also discuss packed data, which is not an MPI datatype as such.
 
 \Level 1 {Elementary types}
 \commandreflabel{elementary}
@@ -153,10 +228,10 @@ See the example in section~\ref{ref:data:struct}
 \Level 2 {Type create and release calls}
 \commandreflabel{data-commit}
 
-A derived type needs to be committed with \indexmpishow{MPI_Type_commit}:
-\begin{verbatim}
-int MPI_Type_commit (MPI_datatype *datatype)
-\end{verbatim}
+A derived type needs to be committed before it can be used:
+%
+\mpiRoutineRef{MPI_Type_commit}
+%
 The commit call is typically used to find an efficient `flat' representation
 of recursively defined datatypes.
 
@@ -204,6 +279,16 @@ int MPI_Type_vector(
 In this example a vector type is created only on the sender, in order to send
 a strided subset of an array; the receiver receives the data as a contiguous block.
 \verbatimsnippet{vector}
+
+\begin{exercise}
+  \label{ex:stridesend}
+  Let processor~0 have an array~$x$ of length $10P$, where $P$~is the number of processors.
+  Elements $0,P,2P,\ldots,9P$ should go to processor zero, $1,P+1,2P+1,\ldots$ to processor~1,
+  et cetera. Code this as a sequence of send/recv calls, using a vector datatype
+  for the send, and a contiguous buffer for the receive.
+
+  For testing, define the array as $x[i]=i$.
+\end{exercise}
 
 \Level 2 {Indexed data}
 \commandreflabel{data:indexed}
@@ -312,7 +397,7 @@ int MPI_Unpack(
   MPI_Comm comm);
 \end{verbatim}
 
-A packed buffer is sent of received with a datatype of
+A packed buffer is sent or received with a datatype of
 \indexmpishow{MPI_PACKED}. The sending routine uses the \n{position}
 parameter to specify how much data is sent, but the receiving routine
 does not know this value a~priori, so has to specify an upper bound.
@@ -330,24 +415,18 @@ Add one time \indexmpishow{MPI_BSEND_OVERHEAD}.
 \Level 0 {Blocking communication}
 \commandreflabel{blocking}
 
-The basic send command is \indexmpishow{MPI_Send}:
-\begin{verbatim}
-int MPI_Send(void *buf, 
-  int count, MPI_Datatype datatype, int dest, int tag,
-  MPI_Comm comm)
-\end{verbatim}
-\url{http://www.mcs.anl.gov/research/projects/mpi/www/www3/MPI_Send.html}
+The blocking send command:
+%
+\mpiRoutineRef{MPI_Send}
+%
 This routine may not blocking for small messages; to force blocking
 behaviour use \n{MPI_Ssend} with the same argument list.
 \url{http://www.mcs.anl.gov/research/projects/mpi/www/www3/MPI_Ssend.html}
 
-The basic blocking receive command is \indexmpishow{MPI_Recv}:
-\begin{verbatim}
-int MPI_Recv(void *buf, 
-  int count, MPI_Datatype datatype, int source, int tag,
-  MPI_Comm comm, MPI_Status *status)
-\end{verbatim}
-\url{http://www.mcs.anl.gov/research/projects/mpi/www/www3/MPI_Recv.html}
+The basic blocking receive command:
+%
+\mpiRoutineRef{MPI_Recv}
+%
 The \n{count} argument indicates the maximum length of a message; the
 actual length of the received message can be determined 
 from the status object. See section~\ref{ref:mpi-source}
@@ -417,11 +496,11 @@ and inspects the status field to report where the message comes from.
 \commandreflabel{send-recv}
 
 If messsages are send roughly in pairs, the 
-\indexmpishow{MPI_Sendrecv} call is an easy way to prevent deadlock.
+\indexmpidef{MPI_Sendrecv} call is an easy way to prevent deadlock.
 Here you specify both the target of a send and the source of a receive,
 which can be same in case of a pairwise exchange of data,
 but they need not be the same. To swap equal-sized buffers you
-can use \indexmpishow{MPI_Sendrecv_replace}.
+can use \indexmpidef{MPI_Sendrecv_replace}.
 \begin{verbatim}
 int MPI_Sendrecv(
   void *sendbuf, int sendcount, MPI_Datatype sendtype, 
@@ -440,12 +519,12 @@ As an example we set up a ring of three processors: each process sends
 to its right neighbour, and receives from its left neighbour.
 \verbatimsnippet{sendrecvring}
 
-\Level 0 {Non-blocking communication}
+\Level 1 {Non-blocking communication}
 \commandreflabel{nonblocking}
 
 The non-blocking routines have much the same parameter list as the 
 blocking ones, with the addition of an \indexmpishow{MPI_Request} parameter.
-The \n{MPI_Isend} routine does not have an \indexmpishow{MPI_Status} parameter,
+The \indexmpishow{MPI_Isend} routine does not have an \indexmpishow{MPI_Status} parameter,
 which has moved to the `wait' routine.
 \begin{verbatim}
 int MPI_Isend(void *buf,
@@ -453,6 +532,7 @@ int MPI_Isend(void *buf,
   MPI_Comm comm, MPI_Request *request)
 \end{verbatim}
 \url{http://www.mcs.anl.gov/research/projects/mpi/www/www3/MPI_Isend.html}
+\indexmpi{MPI_Irecv}
 \begin{verbatim}
 int MPI_Irecv(void *buf,
   int count, MPI_Datatype datatype, int source, int tag,
@@ -496,6 +576,11 @@ Contrast this with the example in section~\ref{ref:mpi-source}.
   so it uses \emph{1-based indexing}\index{Fortran!1-based indexing}.
 \end{fortrannote}
 \verbatimsnippet{waitforany-f}
+
+\Level 2 {Wait and test calls}
+\commandreflabel{waittest}
+
+\mpiRoutineRef{Testany}
 
 \Level 1 {Buffered communication}
 \commandreflabel{buffered}
@@ -615,11 +700,9 @@ int MPI_Request_get_status(
 \commandreflabel{windows}
 
 C syntax for \indexmpishow{MPI_Win_create}
-\begin{verbatim}
-MPI_Win_create (void *base, MPI_Aint size, 
-  int disp_unit, MPI_Info info, 
-  MPI_Comm comm, MPI_Win *win)
-\end{verbatim}
+%
+\mpiRoutineRef{MPI_Win_create}
+%
 The data array must not be \n{PARAMETER} or \n{static const}.
 
 The size parameter is measured in bytes. In~C this is easily done
@@ -642,29 +725,50 @@ It is always valid to use \indexmpishow{MPI_INFO_NULL}.
 int MPI_Alloc_mem(MPI_Aint size, MPI_Info info, void *baseptr)
 \end{verbatim}
 
+\Level 2 {Window information}
+
+\begin{verbatim}
+MPI_Win_get_attr(win, MPI_WIN_BASE, &base, &flag), 
+MPI_Win_get_attr(win, MPI_WIN_SIZE, &size, &flag), 
+MPI_Win_get_attr(win, MPI_WIN_DISP_UNIT, &disp_unit, &flag), 
+MPI_Win_get_attr(win, MPI_WIN_CREATE_FLAVOR, &create_kind, &flag), and 
+MPI_Win_get_attr(win, MPI_WIN_MODEL, &memory_model, &flag) will return in base a pointer to the start of the window win, and will return in size, disp_unit, create_kind, and memory_model pointers to the size, displacement unit of the window, the kind of routine used to create the window, and the memory model, respectively.
+\end{verbatim}
+
+\begin{verbatim}
+int MPI_Win_get_group(MPI_Win win, MPI_Group *group) 
+MPI_Win_get_group(win, group, ierror) 
+TYPE(MPI_Win), INTENT(IN) :: win 
+TYPE(MPI_Group), INTENT(OUT) :: group 
+INTEGER, OPTIONAL, INTENT(OUT) :: ierror
+\end{verbatim}
+
+\begin{verbatim}
+int MPI_Win_set_info(MPI_Win win, MPI_Info info)
+MPI_Win_set_info(win, info, ierror)
+TYPE(MPI_Win), INTENT(IN) :: win
+TYPE(MPI_Info), INTENT(IN) :: info
+INTEGER, OPTIONAL, INTENT(OUT) :: ierror
+
+int MPI_Win_get_info(MPI_Win win, MPI_Info *info_used)
+MPI_Win_get_info(win, info_used, ierror)
+TYPE(MPI_Win), INTENT(IN) :: win
+TYPE(MPI_Info), INTENT(OUT) :: info_used
+INTEGER, OPTIONAL, INTENT(OUT) :: ierror
+\end{verbatim}
+
 \Level 1 {Remote memory access}
 \commandreflabel{putget}
 
-C interface to \indexmpi{MPI_Put}:
-\begin{verbatim}
-MPI_Put (
-  void *origin_addr, int origin_count, MPI_Datatype origin_datatype,
-  int target_rank,
-  MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype,
-  MPI_Win window)
-\end{verbatim}
-Fortran interface
-\begin{verbatim}
-MPI_Put(origin_addr, origin_count, origin_datatype, target_rank,
-    target_disp, target_count, target_datatype, win, ierror)
-
-<type> :: origin_addr(*)
-INTEGER(KIND=MPI_ADDRESS_KIND) :: target_disp
-INTEGER :: origin_count, origin_datatype,
-    target_rank, target_count, target_datatype,
-    win, ierror
-\end{verbatim}
-
+The \n{MPI_Put} routine is used to put data in the window
+of a target process
+%
+\mpiRoutineRef{MPI_Put}
+%
+The data is written in the buffer of the target window,
+using the window parameters that were specified on the target.
+Specifically, data is written starting at
+\[ \mathtt{window\_base} + \mathtt{target\_disp}\times \mathtt{disp\_unit}. \]
 
 The \indexmpishow{MPI_Get} call is very similar.
 \begin{verbatim}
@@ -692,6 +796,17 @@ MPI_Accumulate (
   MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype,
   MPI_Op op,MPI_Win window)
 \end{verbatim}
+
+\Level 2 {Request-based operations}
+
+Analogous to \n{MPI_Isend} there are request based one-sided operations:
+%
+\mpiRoutineRef{MPI_Rput}
+%
+and similarly \indexmpishow{MPI_Rget} and \indexmpishow{MPI_Raccumulate}.
+
+These only apply to passive target synchronization.
+Any \indexmpishow{MPI_Win_flush...} call also terminates these transfers.
 
 \Level 1 {Active target synchronization}
 \commandreflabel{fence}
@@ -785,6 +900,7 @@ int MPI_Fetch_and_op(const void *origin_addr, void *result_addr,
 \verbatimsnippet{fetchop}
 
 \Level 0 {Collectives}
+\commandreflabel{collective}
 
 \Level 1 {Rooted collectives}
 \commandreflabel{bcast}
@@ -792,20 +908,17 @@ int MPI_Fetch_and_op(const void *origin_addr, void *result_addr,
 The \indexmpishow{MPI_Bcast} call has a single data argument. Its
 value on the root processor is copied to all other processors,
 where any previous value is overwritten.
-\begin{verbatim}
-int MPI_Bcast( void *buffer, int count, MPI_Datatype datatype, int root, 
-               MPI_Comm comm )
-\end{verbatim}
+%
+\mpiRoutineRef{MPI_Bcast}
+%
 There is an example in section~\ref{ref:mpi-init}.
 
 The \indexmpishow{MPI_Reduce} call combines the values from the individual
 processors. In order not to overwrite the input value on the root, 
 this call has two data arguments, a send buffer and a receive buffer.
-\begin{verbatim}
-int MPI_Reduce
-  (void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, 
-   MPI_Op op, int root, MPI_Comm comm)
-\end{verbatim}
+%
+\mpiRoutineRef{MPI_Reduce}
+%
 On processes that are not the root, the receive buffer is ignored. 
 \verbatimsnippet{reduce}
 
@@ -820,6 +933,29 @@ uses the value in the receive buffer as the root's contribution to the operation
 In Fortran the code is less elegant because you can not do
 these address calculations:
 \verbatimsnippet{reduceinplace-f}
+
+\Level 1 {MPI Operators}
+
+The following is the list of predefined \indexmpidef{MPI_OP} values.
+
+\begingroup \tt\catcode`\_=12\relax
+\begin{tabular}{ll}
+  MPI_MAX&maximum\\
+  MPI_MIN&minimum\\
+  MPI_SUM&sum\\
+  MPI_PROD&product\\
+  MPI_LAND&logical and\\
+  MPI_BAND&bitwise and\\
+  MPI_LOR&logical or\\
+  MPI_BOR&bitwise or\\
+  MPI_LXOR&logical xor\\
+  MPI_BXOR&bitwise xor\\
+  MPI_MAXLOC&max value and location\\
+  MPI_MINLOC&min value and location\\
+\end{tabular}
+\endgroup
+All except the last two operate on MPI datatypes;
+the last two operate on a value/index pair.
 
 \Level 1 {Gather and scatter}
 \commandreflabel{gatherscatter}
@@ -899,21 +1035,12 @@ with a source value of \indexmpishow{MPI_ANY_SOURCE}.
 \commandreflabel{allreduce}
 
 The following collectives construct a result on all processes:
-\indexmpishow{MPI_Allgather}
-\begin{verbatim}
-int MPI_Allgather
-  (void *sendbuf, int sendcount, MPI_Datatype sendtype, 
-   void *recvbuf, int recvcount, MPI_Datatype recvtype, 
-  MPI_Comm comm)
-\end{verbatim}
 %
-\indexmpishow{MPI_Allreduce}
-\begin{verbatim}
-int MPI_Allreduce 
-  (void *sendbuf, void *recvbuf, int count, 
-   MPI_Datatype datatype, MPI_Op op, 
-   MPI_Comm comm )
-\end{verbatim}
+\mpiRoutineRef{MPI_Allgather}
+%
+\mpiRoutineRef{MPI_Allreduce}
+%
+\pythonnote{The receive buffer has to be of the same size as the send buffer.}
 %
 \indexmpishow{MPI_Alltoall}
 \begin{verbatim}
@@ -956,12 +1083,7 @@ int MPI_Scatterv
    int root, MPI_Comm comm)
 \end{verbatim}
 
-\begin{verbatim}
-int MPI_Gatherv
-  (void *sendbuf, int sendcnt, MPI_Datatype sendtype,
-   void *recvbuf, int *recvcnts, int *displs, MPI_Datatype recvtype,
-   int root, MPI_Comm comm)
-\end{verbatim}
+\mpiRoutineRef{MPI_Gatherv}
 
 \begin{verbatim}
 int MPI_Allgatherv
@@ -990,16 +1112,15 @@ size of all incoming data.
 \Level 1 {Scan}
 \commandreflabel{scan}
 
-The scan operations are\indexmpi{MPI_Scan}
-\begin{verbatim}
-int MPI_Scan(void* sendbuf, void* recvbuf, 
-    int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm ) 
-\end{verbatim}
-and\indexmpi{MPI_Exscan}
-\begin{verbatim}
-int MPI_Exscan(void* sendbuf, void* recvbuf, 
-    int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm ) 
-\end{verbatim}
+MPI has two routines for scan, or \indexterm{prefix}, operations:
+the inclusive scan
+%
+\mpiRoutineRef{MPI_Scan}
+%
+and the exclusive scan:
+%
+\mpiRoutineRef{MPI_Exscan}
+%
 The \n{MPI_Op} operations do not return an error code.
 
 The result of the exclusive scan is undefined on processor~0,
@@ -1057,7 +1178,9 @@ non-overtaking. This may lead to confusing situations, witness the following sni
 \verbatimsnippet{wrongcatchmain}
 
 This models a main program that does a simple message exchange, and it
-makes two calls to library routines. Unbeknown to the user, the library also issues send and receive calls, and they turn out to interfere:
+makes two calls to library routines. Unbeknown to the user, the
+library also issues send and receive calls, and they turn out to
+interfere:
 
 \verbatimsnippet{wrongcatchlib}
 
@@ -1075,7 +1198,11 @@ Here
 \end{itemize}
 
 The solution is to give the library a separate communicator with
-\indexmpishow{MPI_Comm_dup}. Newly created communicators should be
+\indexmpishow{MPI_Comm_dup}.
+\begin{verbatim}
+int MPI_Comm_dup(MPI_Comm comm, MPI_Comm *newcomm)
+\end{verbatim}
+Newly created communicators should be
 released again with \indexmpishow{MPI_Comm_free}.
 
 \verbatimsnippet{rightcatchmain}
@@ -1096,6 +1223,17 @@ Most of the time, there is no reason to use a relative ranking that is different
 the global ranking, so the \n{MPI_Comm_rank} value of the global communicator
 is a good choice.
 \verbatimsnippet{commsplitrowcol}
+
+There are some predefined colours, named `types', to use in communicator splitting.
+The routine \indexmpishow{MPI_Comm_split_type} looks very much like \n{MPI_Comm_split}:
+%
+\mpiRoutineRef{MPI_Comm_split_type}
+%
+but the \n{split_type} parameters has to be from the following (short) list:
+\begin{itemize}
+\item \indexmpishow{MPI_COMM_TYPE_SHARED}: split the communicator into subcommunicators
+  of processes sharing a memory area.
+\end{itemize}
 
 \Level 1 {Process topologies}
 \commandreflabel{topology}
@@ -1196,8 +1334,43 @@ an error they call \n{MPI_Abort}; if \indexmpishow{MPI_ERRORS_RETURN}
 is the error handler, errors may be silently ignore.
 
 \Level 0 {More utility stuff}
+
+\Level 1 {Context information}
+\commandreflabel{context}
+
+You can query the \indexterm{hostname} of a processor.
+This name need not be unique between different processor ranks.
+%
+\mpiRoutineRef{MPI_Get_processor_name}
+%
+Note that you have to pass in the character storage:
+the character array must be at least \indexmpishow{MPI_MAX_PROCESSOR_NAME} characters long.
+The actual length of the name is returned in the \n{resultlen} parameter.
+
+In C and C++,
+\begin{verbatim}
+  #define MPI_VERSION 2
+  #define MPI_SUBVERSION 2
+\end{verbatim}
+in Fortran,
+\begin{verbatim}
+  INTEGER MPI_VERSION, MPI_SUBVERSION
+  PARAMETER (MPI_VERSION = 2)
+  PARAMETER (MPI_SUBVERSION = 2)
+\end{verbatim}
+For runtime determination,
+\begin{verbatim}
+  MPI_GET_VERSION( version, subversion )
+  OUT version version number (integer)
+  OUT subversion subversion number (integer)
+
+  int MPI_Get_version(int *version, int *subversion)
+  MPI_GET_VERSION(VERSION, SUBVERSION, IERROR)
+  INTEGER VERSION, SUBVERSION, IERROR
+\end{verbatim}
+
 \Level 1 {Timing}
-\commandreflabel{timing}
+\commandreflabel{mpi-timing}
 
 MPI has a \indexterm{wall clock} timer: \indexmpishow{MPI_Wtime}
 \begin{verbatim}
@@ -1232,10 +1405,15 @@ if (mytid==0) printf(``Time synchronized? %d->%d\n'',flag,*v);
 \Level 0 {Multi-threading}
 \commandreflabel{mpi-thread}
 
-\begin{verbatim}
-int MPI_Init_thread( int *argc, char ***argv, int required, int *provided )
-\end{verbatim}
+Hybrid MPI/threaded codes need to replace \indexmpishow{MPI_Init}
+by \n{MPI_Init_thread}:
+%
+\mpiRoutineRef{MPI_Init_thread}
+%
+With the \n{required} parameter the user requests a certain level of support,
+and MPI reports the actual capabilities in the \n{provided} parameter.
 
+The following constants are defined:
 \begin{itemize}
 \item \indexmpishow{MPI_THREAD_SINGLE}: each MPI process can only have
   a single thread.
@@ -1249,3 +1427,14 @@ int MPI_Init_thread( int *argc, char ***argv, int required, int *provided )
 \item \indexmpishow{MPI_THREAD_MULTIPLE}: processes can be fully
   generally multi-threaded.
 \end{itemize}
+These values are monotonically increasing.
+
+After the initialization call, you can query the support level
+with \n{MPI_Query_thread}:
+%
+\mpiRoutineRef{MPI_Query_thread}
+
+In case more than one thread performs communication, the following routine
+can determine whether a thread is the main thread:
+%
+\mpiRoutineRef{MPI_Is_thread_main}

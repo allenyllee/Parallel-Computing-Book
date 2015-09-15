@@ -13,14 +13,14 @@
 
 \Level 1 {The OpenMP model}
 
-OpenMP is based on on two concepts: the use of of \indexterm{threads}
+OpenMP is based on on two concepts: the use of \indexterm{threads}
 and the \indextermdef{fork/join model} of
 parallelism. For now you can think of a thread as a sort of process:
 the computer executes a sequence of instructions.
 The fork/join model says that a thread can split itself (`fork')
 into a number of threads that are identical copies. At some point
 these copies go away and the original thread is left (`join'),
-but while the \indextermsub{team of}{threads} exists,
+but while the \indextermsub{team of}{threads} created by the fork exists,
 you have parallelism available to you. The part of the execution
 between fork and join is known as a \indexterm{parallel region}.
 
@@ -45,26 +45,27 @@ This brings us to the third important concept: that of \indexterm{work sharing}
 constructs. In a team of threads, initially there will be replicated execution;
 a work sharing construct divides available parallelism over the threads.
 
-So there you have it: OpenMP uses teams of threads, and inside
-a parallel region the work is distributed over the threads with a work sharing construct.
-Threads can access shared data, and they have some private data.
+\begin{quote}
+  So there you have it: OpenMP uses teams of threads, and inside
+  a parallel region the work is distributed over the threads with a work sharing construct.
+  Threads can access shared data, and they have some private data.
+\end{quote}
 
 For more on threads, see \HPSCref{sec:threads}.
 
 \Level 1 {OpenMP language constructs}
+\commandref{omp-directives}
 
 Of course, OpenMP is not magic, so you have to tell it when something
-can be done in parallel. This is mostly done through \indexterm{directives},
-and to a lesser extent through library calls.
+can be done in parallel. This is mostly done through \indexterm{directives};
+additional specifications can be done through library calls.
 
-The first thing we want to do is create a parallel region.
+The first thing we want to do is create a team of threads. This
+is done with a \indexterm{parallel region}.
 Here is a very simple example:
 \verbatimsnippet{hello-omp}
 or in Fortran
 \verbatimsnippet{hello-omp-f}
-It prints out the `hello world' message once for each thread. How many
-threads there are can be determined in a number of ways; we will get to that later.
-
 This code corresponds to the model we just discussed:
 \begin{itemize}
 \item Immediately preceding the parallel block, one thread will be
@@ -73,25 +74,36 @@ This code corresponds to the model we just discussed:
 \item At the start of the block, a new \indextermsub{team of}{threads} is
   created, and the thread that was active before the block
   becomes the \emph{master thread}\index{threads!master} of that team.
-\item Each thread in the team then executes the body of the block; it
-  will have access to all variables of the surrounding environment.
+\item After the block only the master thread is active.
+\item Inside the block there is team of threads: each thread in the
+  team executes the body of the block, and it will have access to all
+  variables of the surrounding environment.
+  How many
+  threads there are can be determined in a number of ways; we will get to that later.
 \end{itemize}
 
-\Level 1 {Directives}
-\commandref{omp-directives}
+\begin{exercise}
+  Make a full program based on this fragment. Insert different print statements
+  before, inside, and after the parallel region.
+  Run this example. How many times is each print statement executed?
+\end{exercise}
+
+You see that the \n{parallel} directive
+\begin{itemize}
+\item Is preceded by a special marker: a \n{#pragma omp} for~C/C++,
+  and the \n{!$OMP} \indexterm{sentinel} for Fortran;
+\item Is followed by a single statement or a block in~C/C++,
+  or followed by a block in Fortran which is delimited by an \n{!$omp end} directive.
+\end{itemize}
 
 Directives look like \indextermsub{cpp}{directives}, but they
 are actually handled by the compiler, not the preprocessor.
-In C/C++, a~directive is followed by a single command or a block
-in curly braces; in Fortran there is a matching end directive
-for every opening directive.
 
-\Level 2 {Parallel regions}
+\Level 1 {Parallel regions}
 \commandref{omp-parallel}
 
-The simplest way to create a parallel region is through the 
-\indexpragma{parallel} pragma. In~C this is followed by a block,
-in Fortran you conclude the block with \texttt{end parallel}.
+Above you saw how to create an OpenMP parallel region,
+for instance:
 \begin{verbatim}
 #pragma omp parallel
 {
@@ -99,7 +111,7 @@ in Fortran you conclude the block with \texttt{end parallel}.
 }
 \end{verbatim}
 It would be pointless to have the block be executed identically by
-all threads, so you will probably use the function
+all threads. One way to get a meaningful parallel code is to use the function
 \indextermtt{omp_get_thread_num}, to find out which thread you are,
 and execute work that is individual to that thread.
 There is also a function
@@ -112,9 +124,12 @@ recall from figure~\ref{fig:forkjoin} that new teams can be created recursively.
   multiple messages to you screen, saying
 \begin{verbatim}
   Hello from thread 0 out of 4!
-  Hello from thread 2 out of 4!
+  Hello from thread 1 out of 4!
 \end{verbatim}
-  and so on. What happens if you set your number of threads larger than the available
+  and so on. (The messages may very well appear out of sequence.)
+
+
+  What happens if you set your number of threads larger than the available
   cores on your computer?
 \end{exercise}
 
@@ -140,7 +155,7 @@ recall from figure~\ref{fig:forkjoin} that new teams can be created recursively.
   Run your program and count how many print statements of each type you get.
 \end{exercise}
 
-\Level 2 {Thread data}
+\Level 1 {Thread data}
 
 A thread has access to variables of two kinds. Variables on the
 \indexterm{heap} are typically created by a call to \indextermtt{malloc}
@@ -163,6 +178,15 @@ To use the technical term, there are
   where each thread has its own instance.
 \end{itemize}
 %
+For instance:
+\begin{verbatim}
+  int i; // shared variable
+#pragma omp parallel 
+  {
+    float x; // private variable
+  }
+\end{verbatim}
+%
 \begin{figure}[ht]
 \includegraphics[scale=.1]{fork-join-vars}
 \caption{Locality of variables in threads}
@@ -182,7 +206,7 @@ and which are private.
   performed the update.
 \begin{verbatim}
 int x;
-#omp parallel
+#pragma omp parallel
 {
   x = omp_get_thread_num();
 }
@@ -193,7 +217,7 @@ int x;
   thread: the value that is set by one thread does not interfere with
   what other threads do.
 \begin{verbatim}
-#omp parallel
+#pragma omp parallel
 {
   double x;
   x = // some dynamic value
@@ -204,8 +228,9 @@ int x;
   variable~\n{x} does not exist after the parallel region. (In Fortran
   this mechanism of local allocation does not exist, so this question
   does not come up.)
-\item In a parallel loop, the loop variable is private, even though it may
-  have been declared outside the parallel construct.
+\item In a parallel loop (section~\ref{sec:omp-for}, the loop variable
+  is private, even though it may have been declared outside the
+  parallel construct.
 \item A variable declared in the surrounding scope can explicitly be
   declared private or shared by adding a \indexpragma{private}
   or \indexpragma{shared} clause respectively to the OpenMP
@@ -219,36 +244,6 @@ int x;
     not actually define a~heap. Therefore it is wise to spell out your
     intentions.}.
 \end{itemize}
-
-\Level 1 {OpenMP code structure}
-\commandref{omp-code-structure}
-
-OpenMP is largely based on directives: instructions to the compiler
-and runtime that are hidden in comment-like structures. In Fortran,
-the directives are actually in a comment:
-\begin{verbatim}
-!$OMP construct
-\end{verbatim}
-while in C they are hidden in a \indexterm{pragma}: something that
-is normally meant for the \indextermbus{C}{preprocessor}:
-\begin{verbatim}
-#pragma omp construct
-\end{verbatim}
-After the directive, in~C you usually find a `structured block':
-a single statement or a block in curly braces. In~Fortran,
-the directive is explicitly closed with
-\begin{verbatim}
-!$OMP END construct
-\end{verbatim}
-
-Above, you saw the \indexpragma{parallel} directive: when a thread
-encounters it, it spawns new threads to form a \indextermbus{thread}{team}.
-This team stays active during the execution of the \indexterm{structured block}
-that follows, after which only the master thread remains. However,
-in addition to this lexical description of thread activity, the thread team
-also stays intact in any code that is dynamically encountered. For instance,
-any subroutines called the OpenMP \indexterm{construct} are also executed
-in parallel.
 
 \Level 1 {Some externalities}
 
@@ -511,7 +506,7 @@ amount of time, so that \indexterm{load balancing} is needed.
 The default static schedule is to assign one consecutive block of iterations
 to each thread. If you want different sized blocks you can defined a \indexclauseoption{schedule}{chunk} size:
 \begin{verbatim}
-#omp pragma for schedule(static[,chunk])
+#pragma omp for schedule(static[,chunk])
 \end{verbatim}
 (where the square brackets indicate an optional argument).
 With static scheduling, the compiler will split up the loop iterations at compile time,
@@ -528,7 +523,7 @@ In dynamic scheduling OpenMP will put blocks of iterations
 (the default chunk size is~1) in a task queue, and the threads take one of these
 tasks whenever they are finished with the previous.
 \begin{verbatim}
-#omp pragma for schedule(static[,chunk])
+#pragma omp for schedule(static[,chunk])
 \end{verbatim}
 While this schedule may give good load balancing if the iterations
 take very differing amounts of time to execute, it does carry runtime
@@ -618,7 +613,7 @@ while ( a[i]!=0 && i<imax ) {
 We replace the while loop by a for loop that examines all locations:
 \begin{verbatim}
 result = -1;
-#omp parallel for
+#pragma omp parallel for
 for (i=0; i<imax; i++) {
   if (a[i]!=0 && result<0) result = i;
 }
@@ -633,7 +628,7 @@ in this case (why?).
 A~more efficient solution uses the \indexpragma{lastprivate} pragma:
 \begin{verbatim}
 result = -1;
-#omp parallel for lastprivate(result)
+#pragma omp parallel for lastprivate(result)
 for (i=0; i<imax; i++) {
   if (a[i]!=0) result = i;
 }
@@ -1053,7 +1048,7 @@ of~\n{y} can not proceed until another thread has computed its value of~\n{x}.
 \end{verbatim}
 This can be guaranteed with a \indexpragma{barrier} pragma:
 \begin{verbatim}
-#omp parallel 
+#pragma omp parallel 
 {
   int mytid = omp_get_thread_num();
   x[mytid] = some_calculation();
@@ -1109,8 +1104,12 @@ The typical application of a critical section is to update a variable:
   \item letting the threads accumulate into a private variable \n{tmp} as above,
     and summing these after the loop.
   \end{itemize}  
-  Do an Ahmdal-style quantitative analysis of the first case, assuming that you do $n$ iterations
-  on $p$ threads, and each iteration has a critical section that takes a fraction~$f$.
+  Do an Ahmdal-style quantitative analysis of the first case, assuming
+  that you do $n$ iterations on $p$ threads, and each iteration has a
+  critical section that takes a fraction~$f$.  Assume the number of
+  iterations~$n$ is a multiple of the number of threads~$p$. Also
+  assume the default static distribution of loop iterations over the
+  threads.
 \end{exercise}
 
 A \n{critical} section works by acquiring a lock, which carries a substantial overhead.
@@ -1297,7 +1296,7 @@ Let's look at a simple example using the \indexpragma{task} directive.
 \end{quotation}
 The thread that executes this code segment creates a task,
 which will later be executed, probably by a different thread.
-The exact execution of the task is up to a \indextermbus{task}{scheduler},
+The exact timing of the execution of the task is up to a \indextermbus{task}{scheduler},
 which operates invisible to the user.
 
 Even though the above segment looks like a linear set of statements,
@@ -1310,7 +1309,7 @@ This means that the following code is incorrect:
   { y = g(x); }
   z = h(y);  
 \end{verbatim}
-When the statement computing \n{z} is executed, the task
+Explanation: when the statement computing \n{z} is executed, the task
 computing~\n{y} has only been scheduled;
 it has not necessarily been executed yet.
 
@@ -1367,6 +1366,10 @@ could traverse and process a linked list:
 #pragma omp taskwait
 }
 \end{verbatim}
+One task traverses the linked list creating an independent
+task for each element in the list. These tasks are then
+executed in parallel; their assignment to threads
+is done by the task scheduler.
 
 You can indicate task dependencies in several ways:
 \begin{enumerate}
@@ -1419,8 +1422,30 @@ for (int use_threads=1; use_threads<=nthreads; use_threads++) {
 \index{anti dependency|see{data dependencies}}
 \index{output dependency|see{data dependencies}}
 
-Whether loop iterations can be executed independently
-depends on relations between data accessed in the iterations.
+If two statements refer to the same data item,
+we say that there is a \emph{data dependency} between
+the statements. Such dependencies limit the extent to which
+the execution of the statements can be  rearranged.
+The study of this topic probably started in the 1960s,
+when processors could execute statements \emph{out of order}\index{out-of-order execution}
+to increase throughput. The re-ordering of statements
+was limited by the fact that the execution
+had to obey the \indexterm{program order} semantics:
+the result had to be as if the statements were executed
+strictly in the order in which they appear in the program.
+
+These issues of statement ordering, and therefore of
+data dependencies, arise in OpenMP in two main ways:
+\begin{enumerate}
+\item When a loop is parallelized, the iterations are no longer
+  executed in their program order, so we have to check for dependencies.
+\item The introduction of tasks also means that parts of a program
+  can be executed in a different order from in which they appear
+  in a sequential execution.
+\end{enumerate}
+
+The easiest case of dependency analysis is that of
+detecting that loop iterations can be executed independently.
 Iterations are of course independent if a data item
 is read in two different iterations, but if the same
 item is read in one iteration and written in another,
@@ -1507,6 +1532,16 @@ The case of write-after-write does not occur by itself:
 if a variable is written twice in sequence without an intervening
 read, the first write can be removed without changing the meaning of the program.
 Thus, this case reduces to a flow dependency.
+
+Other output dependencies can easily be removed. In the following code, \n{t}~can be
+declared private, thereby removing the dependency.
+\begin{verbatim}
+for (i=0; i<N; i++) {
+  t = f(i)
+  s += t*t;
+}
+\end{verbatim}
+If the final value of \n{t} is wanted, the \indexpragma{lastprivate} can be used.
 
 \index{data dependencies|)}
 
@@ -1676,7 +1711,39 @@ if the parallel work far outweighs it.
 
 \Level 0 {Performance}
 
-See the EPCC benchmark suite~\cite{epcc-ompbench}.
+%See the EPCC benchmark suite~\cite{epcc-ompbench}.
+
+The performance of an OpenMP code can be influenced by the following\footnote
+{This section is inspired by a presentation by Alexei Strelchenko.}::
+\begin{itemize}
+\item Amdahl effects
+\item Communication
+\item Data affinity
+\item Load imbalance
+\item Synchronization
+\end{itemize}
+
+Sequential code must clearly be kept to a minimum.
+
+Cache coherence induces communication. Some of that is unavoidable,
+but see the next point.
+
+Data is cached, so to minimize communication
+access to it should be as much as possible
+on the same core. This is known as affinity.
+
+Load imbalance can be counteracted by using
+different loop schedules. The loop should be
+on as high a level as possible.
+
+Barriers are a form of synchronization.
+They are expensive by themselves, and they
+expose load imbalance. Implicit barriers happen
+at the end of worksharing constructs; they
+can be removed with \n{nowait}.
+
+
+
 
 \endinput
 

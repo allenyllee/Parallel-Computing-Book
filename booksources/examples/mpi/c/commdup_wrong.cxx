@@ -3,7 +3,7 @@
    %%%%
    %%%% This program file is part of the book and course
    %%%% "Parallel Computing"
-   %%%% by Victor Eijkhout, copyright 2013
+   %%%% by Victor Eijkhout, copyright 2013/4/5
    %%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -15,6 +15,7 @@
 #include <unistd.h>
 #include "mpi.h"
 
+//snippet wrongcatchlib
 class library {
 private:
   MPI_Comm comm;
@@ -30,6 +31,7 @@ public:
   int communication_start();
   int communication_end();
 };
+//snippet end
 
 int main(int argc,char **argv) {
   int ierr;
@@ -39,15 +41,17 @@ int main(int argc,char **argv) {
   int other = 1-mytid, sdata=5,rdata;
   MPI_Request request[2];
   MPI_Status status[2];
-  library my_library(comm);
 
   if (mytid>1) goto skip;
 
-  ierr = MPI_Isend(&sdata,1,MPI_INT,other,1,comm,&(request[0])); CHK(ierr);
+//snippet catchmain
+  library my_library(comm);
+  MPI_Isend(&sdata,1,MPI_INT,other,1,comm,&(request[0]));
   my_library.communication_start();
-  ierr = MPI_Irecv(&rdata,1,MPI_INT,other,MPI_ANY_TAG,comm,&(request[1])); CHK(ierr);
-  ierr = MPI_Waitall(2,request,status); CHK(ierr);
+  MPI_Irecv(&rdata,1,MPI_INT,other,MPI_ANY_TAG,comm,&(request[1]));
+  MPI_Waitall(2,request,status);
   my_library.communication_end();
+//snippet end
   if (status[1].MPI_TAG==2)
     printf("wrong!\n");
 
@@ -56,17 +60,18 @@ int main(int argc,char **argv) {
   return 0;
 }
 
+//snippet catchcalls
 int library::communication_start() {
-  int sdata=6,rdata, ierr;
-  ierr = MPI_Isend(&sdata,1,MPI_INT,other,2,comm,&(request[0])); CHK(ierr);
-  ierr = MPI_Irecv(&rdata,1,MPI_INT,other,MPI_ANY_TAG,comm,&(request[1])); CHK(ierr);
+  int sdata=6,rdata;
+  MPI_Isend(&sdata,1,MPI_INT,other,2,comm,&(request[0]));
+  MPI_Irecv(&rdata,1,MPI_INT,other,MPI_ANY_TAG,comm,&(request[1]));
   return 0;
 }
 
 int library::communication_end() {
   MPI_Status status[2];
-  int ierr;
-  ierr = MPI_Waitall(2,request,status); CHK(ierr);
+  MPI_Waitall(2,request,status);
   return 0;
 }
+//snippet end
 

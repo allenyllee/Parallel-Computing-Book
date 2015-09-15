@@ -26,9 +26,11 @@ int main(int argc,char **argv) {
   int repository = 0, ninputs = ntids-1; //10*ntids;
   float *inputs;
 
+  //snippet fetchop
   if (mytid==repository) {
     // Processor zero creates a table of inputs
     // and associates that with the window
+    //snippet end
     inputs = new float[ninputs];
     for (int i=0; i<ninputs; i++)
       inputs[i] = .01 * rand() / (float)RAND_MAX ;
@@ -38,12 +40,15 @@ int main(int argc,char **argv) {
     // for all other processors the window is null
     MPI_Win_create(NULL,0,sizeof(int),
 		   MPI_INFO_NULL,comm,&the_window);
+  //snippet fetchop
   }
+  //snippet end
 
   // bookkeeping: which jobs did I process?
   int *myjobs = new int[ninputs];
   for (int i=0; i<ninputs; i++) 
     myjobs[i] = 0;
+  //snippet fetchop
   if (mytid!=repository) {
     float contribution=(float)mytid,table_element;
     int loc=0;
@@ -53,6 +58,7 @@ int main(int argc,char **argv) {
        	            repository,loc,MPI_SUM,the_window); CHK(err);
       MPI_Win_unlock(repository,the_window);
   }
+  //snippet end
 
   err = MPI_Win_free(&the_window); CHK(err);
 

@@ -1,0 +1,8 @@
+int MPI_Get_processor_name(char *name, int *resultlen)
+
+MPI_Get_processor_name(name, resultlen, ierror)
+CHARACTER(LEN=MPI_MAX_PROCESSOR_NAME), INTENT(OUT) :: name
+INTEGER, INTENT(OUT) :: resultlen
+INTEGER, OPTIONAL, INTENT(OUT) :: ierror 
+
+MPI.Get_processor_name()

@@ -1,0 +1,10 @@
+// private.c
+{
+  int t = omp_get_thread_num();
+  x = x+t;
+  printf("private: x is %d\n",x);
+}
+printf("after: x is %d\n",x);
+
+return 0;
+}

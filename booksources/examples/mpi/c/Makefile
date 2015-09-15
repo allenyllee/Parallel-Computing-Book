@@ -13,13 +13,13 @@
 info ::
 	@echo "Do: make app (where app=${APPS})"
 
-APPS = hello init recvblock sendblock ssendblock sendrecv \
-    irecv_source \
-    putfence getfence anysource cancel exscan \
+APPS = hello init thread \
+    recvblock sendblock ssendblock sendrecv irecv_source \
+    putfence getfence randomput anysource cancel exscan \
     postwaitwin passive \
     reduce reduceinplace allreduce allreduceinplace gather gatherv \
     reducescatter \
-    contiguous vector indexed struct pack \
+    contiguous vector interleave indexed struct pack \
     commdup_wrong commdup_right cart persist \
     pingpong mvp2d centraldiff 
 
@@ -56,7 +56,7 @@ info ::
 app_dependencies  = tools.o
 .SECONDEXPANSION:
 ${APPS} : $$@.o ${app_dependencies}
-	${CXX} -o $@ $@.o ${app_dependencies}
+	${CC} -o $@ $@.o ${app_dependencies}
 ${patsubst %,%.o,${APPS}} tools.o : tools.h globalinit.c
 
 # rules for submitting to the queue and doing tau analysis
@@ -146,7 +146,7 @@ info ::
 	@echo "make clean       : cleanup but leave executables & slog2"
 	@echo "make total_clean : cleanup including executables & slog2"
 clean ::
-	/bin/rm -rf *.o *~ *.gch a.out *.dSYM MULTI__* events.* \
+	@/bin/rm -rf *.o *~ *.gch a.out *.dSYM MULTI__* events.* \
 	    idev[0-9]*.o[0-9]* ddt.o[0-9]* jobtest.o* tautrace_*
 total_clean : clean 
-	/bin/rm -rf ${APPS} *.slog2 *.ppm
+	@/bin/rm -rf ${APPS} *.slog2 *.ppm

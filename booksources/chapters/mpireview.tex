@@ -1,0 +1,59 @@
+\Level 0 {Review questions}
+
+If you answer that a statement is false, give a one-line explanation.
+\begin{enumerate}
+
+%% system
+\item True or false: \n{mpicc} is a compiler.
+
+\item True or false: \n{mpirun} can only be used for interactive parallel runs.
+
+\item What is the function of a hostfile?
+
+%% communicators
+\item True or false: in each communicator, processes are numbered consecutively from zero.
+
+%% point-to-point
+\item Describe a deadlock scenario involving three processors.
+
+\item True or false: a message sent with \n{MPI_Isend} from one processor can be
+  received with an \n{MPI_Recv} call on another processor.
+
+\item True or false: a message sent with \n{MPI_Send} from one processor can be
+  received with an \n{MPI_Irecv} on another processor.
+
+\item Why does the \n{MPI_Irecv} call not have an \n{MPI_Status} argument?
+
+%% one-sided
+\item What is the relation between the concepts of `origin', `target', `fence',
+  and `window' in one-sided communication.
+
+\item What are the three routines for one-sided data transfer?
+
+%% collective
+\item Give an example of a collective call with and without a root processor.
+
+\item Given a distributed array, meaning that every processor has
+\begin{verbatim}
+double x[N]; // N can vary per processor
+\end{verbatim}
+give the approximate MPI-based code that computes the maximum value
+in the array, and leaves the result on every processor.
+
+%% datatypes
+\item Give two examples of derived datatypes.
+
+\item Give a practical example where the sender uses a different type to send
+  than the receiver uses in the corresponding receive call. Name the types involved.
+\begin{comment}
+
+%% theory
+\item Give a simple model for the time a send operation takes.
+
+\item Give a simple model for the time a broadcast of a single scalar takes.
+
+
+\item 
+\end{comment}
+\end{enumerate}
+

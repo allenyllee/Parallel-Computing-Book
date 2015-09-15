@@ -9,7 +9,7 @@ while (!stop) {
 
   MPI_Recv(&xy,1,coordinate_type,ntids-1,0, comm,&status);
   stop = !workcircle->is_valid_coordinate(xy);
-  if (stop) res = 0;
+  if (stop) break; //res = 0;
   else {
     res = belongs(xy,workcircle->infty);
   }

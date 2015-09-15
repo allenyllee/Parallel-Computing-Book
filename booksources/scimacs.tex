@@ -30,7 +30,7 @@
 \newcommand\setspan[1]{[\![#1]\!]}
 \newcommand\fp[2]{#1\cdot10^{#2}}
 \newcommand\fxp[2]{\langle #1,#2\rangle}
-\def\n#{\bgroup \catcode`\_=12 \catcode`\>=12 \catcode`\<=12 \catcode`\#=12
+\def\n#{\bgroup \catcode`\$=12 \catcode`\_=12 \catcode`\>=12 \catcode`\<=12 \catcode`\#=12
   \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
   \tt \let\next=}
 
@@ -43,9 +43,18 @@
 \newcommand\bbR{\mathbb{R}}
 
 \newtheorem{remark}{Remark}
-\newtheorem{definition}{Definition}
-\newtheorem{theorem}{Theorem}
-\newtheorem{lemma}{Lemma}
+\expandafter\ifx\csname definition\endcsname\relax
+    \newtheorem{definition}{Definition}
+\fi
+\expandafter\ifx\csname theorem\endcsname\relax
+    \newtheorem{theorem}{Theorem}
+\fi
+\expandafter\ifx\csname lemma\endcsname\relax
+    \newtheorem{lemma}{Lemma}
+\fi
+
+\newcommand{\pythonnote}[1]{\begin{quote}\noindent\textsl{Python note}\ \ignorespaces #1\end{quote}}
+
 %% \newenvironment{highermath}
 %%     {\bigskip\begin{quotation}\noindent\emph{MMM}}
 %%     {\end{quotation}\bigskip\noindent\ignorespaces}

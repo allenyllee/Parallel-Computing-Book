@@ -1,0 +1,13 @@
+int MPI_Bcast(
+    void* buffer, int count, MPI_Datatype datatype,
+    int root, MPI_Comm comm)
+
+MPI_Bcast(buffer, count, datatype, root, comm, ierror)
+TYPE(*), DIMENSION(..) :: buffer
+INTEGER, INTENT(IN) :: count, root
+TYPE(MPI_Datatype), INTENT(IN) :: datatype
+TYPE(MPI_Comm), INTENT(IN) :: comm
+INTEGER, OPTIONAL, INTENT(OUT) :: ierror
+
+MPI.Comm.Bcast(self, buf, int root=0)
+MPI.Comm.bcast(self, obj=None, int root=0)

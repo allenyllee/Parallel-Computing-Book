@@ -22,12 +22,6 @@ Torsten Hoefler, Christian Siebert, and Andrew Lumsdaine.
 \newblock Scalable communication protocols for dynamic sparse data exchange.
 \newblock {\em SIGPLAN Not.}, 45(5):159--168, January 2010.
 
-\bibitem{epcc-ompbench}
-Fiona Reid, Mark Bull, and Nicola McDonnell.
-\newblock {\em A Microbenchmark Suite for OpenMP Tasks}, volume 7312, pages
-  271--274.
-\newblock SpringerLink, 2012.
-
 \bibitem{thakur:ijhpca-sync}
 R.~Thakur, W.~Gropp, and B.~Toonen.
 \newblock Optimizing the synchronization operations in {MPI} one-sided

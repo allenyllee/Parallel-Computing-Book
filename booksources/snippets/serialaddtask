@@ -26,9 +26,7 @@ public :
 
     coordinate_to_image(xy,contribution);
     total_tasks++;
-    free_processor++;
-    if (free_processor==ntids-1)
-      // wrap around to the first again
-      free_processor = 0;
+    free_processor = (free_processor+1)%(ntids-1);
+
     return 0;
   };
