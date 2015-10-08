@@ -6,6 +6,8 @@
 %%%% `Parallel Computing'
 %%%% by Victor Eijkhout, copyright 2012/3/4/5
 %%%%
+%%%% THIS FILE DOES NOT SEEM USED ANYMORE
+%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -424,19 +426,10 @@ using \n{MPI_Waitall}.
 \label{fig:jump-nonblock}
 \end{figure}
 
-\begin{exercise}
-  Read section~\HPSCref{sec:pspmvp} and give pseudo-code for the
-    distributed sparse matrix-vector product using the above idiom for
-    using \n{MPI_Test...} calls. Discuss the advantages and
-    disadvantages of this approach. The answer is not going to be
-    black and white: discuss when you expect which approach to be
-    preferable.
-\end{exercise}
-
 The \n{MPI_Wait...} routines are blocking. Thus, they are a good solution if 
 the receiving process can not do anything until the data 
 (or at least \emph{some} data) is actually received.
-The \n{MPI_Test....} calls are themselves non-blocking: they
+The \mpiindexshow{MPI_Test....} calls are themselves non-blocking: they
 test for whether one or more requests have been
 fullfilled, but otherwise immediately return.
 This can be used in the
@@ -454,6 +447,15 @@ while ( not done ) {
     // receive processed data and send new
 }
 \end{verbatim}
+
+\begin{exercise}
+  Read section~\HPSCref{sec:pspmvp} and give pseudo-code for the
+    distributed sparse matrix-vector product using the above idiom for
+    using \n{MPI_Test...} calls. Discuss the advantages and
+    disadvantages of this approach. The answer is not going to be
+    black and white: discuss when you expect which approach to be
+    preferable.
+\end{exercise}
 
 \Level 2 {Test and Probe}
 

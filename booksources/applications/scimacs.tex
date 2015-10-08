@@ -1,0 +1,159 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Introduction to High-Performance Scientific Computing'
+%%%% by Victor Eijkhout, copyright 2012
+%%%%
+%%%% This book is distributed under a Creative Commons Attribution 3.0
+%%%% Unported (CC BY 3.0) license and made possible by funding from
+%%%% The Saylor Foundation \url{http://www.saylor.org}.
+%%%%
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand\furtherreading{\Level 0 {Further Reading}\label{sec:furtherreading-\chapshortname}}
+\newcommand\heading[1]{\paragraph{\textbf{#1}}}
+
+{\catcode`\^^I=13 \globaldefs=1
+ \newcommand\listing[2]{\begingroup\small\par\vspace{1ex}
+  \catcode`\^^I=13 \def^^I{\leavevmode\hspace{40pt}}
+  \noindent\fbox{#1}
+  \verbatiminput{#2}\endgroup}
+ \newcommand\codelisting[1]{\begingroup\small\par\vspace{1ex}
+  \catcode`\^^I=13 \def^^I{\leavevmode\hspace{40pt}}
+  \noindent\fbox{#1}
+  \verbatiminput{#1}\endgroup}
+}
+\newcommand\inv{^{-1}}\newcommand\invt{^{-t}}
+\newcommand\setspan[1]{[\![#1]\!]}
+\newcommand\fp[2]{#1\cdot10^{#2}}
+\newcommand\fxp[2]{\langle #1,#2\rangle}
+\def\n#{\bgroup \catcode`\$=12 \catcode`\_=12 \catcode`\>=12 \catcode`\<=12 \catcode`\#=12
+  \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
+  \tt \let\next=}
+
+\newcommand\diag{\mathop{\mathrm {diag}}}
+\newcommand\argmin{\mathop{\mathrm {argmin}}}
+\newcommand\defined{
+  \mathrel{\lower 5pt \hbox{${\equiv\atop\mathrm{\scriptstyle D}}$}}}
+
+\newcommand\bbP{\mathbb{P}}
+\newcommand\bbR{\mathbb{R}}
+
+\newtheorem{remark}{Remark}
+\expandafter\ifx\csname definition\endcsname\relax
+    \newtheorem{definition}{Definition}
+\fi
+\expandafter\ifx\csname theorem\endcsname\relax
+    \newtheorem{theorem}{Theorem}
+\fi
+\expandafter\ifx\csname lemma\endcsname\relax
+    \newtheorem{lemma}{Lemma}
+\fi
+
+\newcommand{\pythonnote}[1]{\begin{quote}\noindent\textsl{Python note}\ \ignorespaces #1\end{quote}}
+
+%% \newenvironment{highermath}
+%%     {\bigskip\begin{quotation}\noindent\emph{MMM}}
+%%     {\end{quotation}\bigskip\noindent\ignorespaces}
+
+\usepackage{acronym}
+\newwrite\acrowrite
+\openout\acrowrite=acronyms.tex
+\def\acroitem#1#2{\acrodef{#1}{#2}
+    \write\acrowrite{\message{defining #1}\noexpand\acitem{#1}{#2}}
+}
+\acroitem{AVX}{Advanced Vector Extensions}
+\acroitem{BSP}{Bulk Synchronous Parallel}
+\acroitem{CAF}{Co-array Fortran}
+\acroitem{CUDA}{Compute-Unified Device Architecture}
+\acroitem{DAG}{Directed Acyclic Graph}
+\acroitem{DSP}{Digital Signal Processing}
+\acroitem{FPU}{Floating Point Unit}
+\acroitem{FFT}{Fast Fourier Transform}
+\acroitem{FSA}{Finite State Automaton}
+\acroitem{GPU}{Graphics Processing Unit}
+\acroitem{HPC}{High-Performance Computing}
+\acroitem{HPF}{High Performance Fortran}
+\acroitem{ICV}{Internal Control Variable}
+\acroitem{MIC}{Many Integrated Cores}
+\acroitem{MIMD}{Multiple Instruction Multiple Data}
+\acroitem{MPI}{Message Passing Interface}
+\acroitem{MTA}{Multi-Threaded Architecture}
+\acroitem{NUMA}{Non-Uniform Memory Access}
+\acroitem{OS}{Operating System}
+\acroitem{PGAS}{Partitioned Global Address Space}
+\acroitem{PDE}{Partial Diffential Equation}
+\acroitem{PRAM}{Parallel Random Access Machine}
+\acroitem{RDMA}{Remote Direct Memory Access}
+\acroitem{RMA}{Remote Memory Access}
+\acroitem{SAN}{Storage Area Network}
+\acroitem{SaaS}{Software as-a Service}
+\acroitem{SFC}{Space-Filling Curve}
+\acroitem{SIMD}{Single Instruction Multiple Data}
+\acroitem{SIMT}{Single Instruction Multiple Thread}
+\acroitem{SM}{Streaming Multiprocessor}
+\acroitem{SMP}{Symmetric Multi Processing}
+\acroitem{SOR}{Successive Over-Relaxation}
+\acroitem{SP}{Streaming Processor}
+\acroitem{SPMD}{Single Program Multiple Data}
+\acroitem{SPD}{symmetric positive definite}
+\acroitem{SSE}{SIMD Streaming Extensions}
+\acroitem{TLB}{Translation Look-aside Buffer}
+\acroitem{UMA}{Uniform Memory Access}
+\acroitem{UPC}{Unified Parallel C}
+\acroitem{WAN}{Wide Area Network}
+\acresetall
+\closeout\acrowrite
+
+\newcommand{\indexterm}[1]{\emph{#1}\index{#1}}
+\newcommand{\indextermtt}[1]{\texttt{\emph{#1}}\index{#1|n}}
+%% \newcommand{\indextermfunctionn}[1]{\texttt{\emph{#1}}\index{#1|n}}
+%% \def\indextermfunction#{\bgroup\catcode`\_=12\relax
+%%   \def\nnext{\expandafter\indextermfunctionn\expandafter{\next}\egroup}%
+%%   \afterassignment\nnext \def\next}
+\let\indextermfunction\indextermtt
+
+\newcommand{\indextermp}[1]{\emph{#1s}\index{#1}}
+\newcommand{\indextermsub}[2]{\emph{#1 #2}\index{#2!#1}}
+\newcommand{\indextermsubp}[2]{\emph{#1 #2s}\index{#2!#1}}
+\newcommand{\indextermbus}[2]{\emph{#1 #2}\index{#1!#2}}
+\newcommand{\indextermstart}[1]{\emph{#1}\index{#1|(}}
+\newcommand{\indextermend}[1]{\index{#1|)}}
+\newcommand{\indexstart}[1]{\index{#1|(}}
+\newcommand{\indexend}[1]{\index{#1|)}}
+\makeatletter
+\newcommand\indexac[1]{\emph{\ac{#1}}%
+  %\tracingmacros=2 \tracingcommands=2
+  \edef\tmp{\noexpand\index{%
+    \expandafter\expandafter\expandafter
+        \@secondoftwo\csname fn@#1\endcsname%
+    @\acl{#1} (#1)}}\tmp}
+\newcommand\indexacp[1]{\emph{\ac{#1}}%
+  %\tracingmacros=2 \tracingcommands=2
+  \edef\tmp{\noexpand\index{%
+    \expandafter\expandafter\expandafter
+        \@secondoftwo\csname fn@#1\endcsname%
+    @\acl{#1} (#1)}}\tmp}
+\newcommand\indexacf[1]{\emph{\acf{#1}}%
+  \edef\tmp{\noexpand\index{%
+    \expandafter\expandafter\expandafter
+        \@secondoftwo\csname fn@#1\endcsname
+    @\acl{#1} (#1)}}\tmp}
+\newcommand\indexacstart[1]{%
+  \edef\tmp{\noexpand\index{%
+    \expandafter\expandafter\expandafter
+        \@secondoftwo\csname fn@#1\endcsname
+    @\acl{#1} (#1)|(}}\tmp}
+\newcommand\indexacend[1]{%
+  \edef\tmp{\noexpand\index{%
+    \expandafter\expandafter\expandafter
+        \@secondoftwo\csname fn@#1\endcsname
+    @\acl{#1} (#1)|)}}\tmp}
+\makeatother
+
+\def\chaptertitle{\csname\chaptername title\endcsname}
+\def\chaptershorttitle{\csname\chaptername shorttitle\endcsname}
+

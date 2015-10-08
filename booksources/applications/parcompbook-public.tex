@@ -1,0 +1,299 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Parallel Computing'
+%%%% by Victor Eijkhout, copyright 2012
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[11pt,letterpaper,twoside,openany]{boek3}
+%\documentclass{book}
+
+\usepackage{comment,verbatim}
+\makeatletter
+\def\verbatim@startline{\verbatim@line{\leavevmode\kern\unitindent\relax}}
+\makeatother
+
+\newif\ifIncludeAnswers
+\IncludeAnswersfalse
+\input inex
+\includecomment{gpu}
+
+\usepackage{amssymb}
+\usepackage[fleqn]{amsmath}
+\usepackage{graphicx,undertilde,arydshln,wrapfig}
+\usepackage{outliner,times,makeidx,multirow,multicol}
+\usepackage{dirtree}
+
+\usepackage[algo2e,noline,noend]{algorithm2e}
+\newenvironment{displayalgorithm}
+ {\begin{algorithm2e}[H]\leftskip=\unitindent \DontPrintSemicolon
+  \SetKwInOut{Input}{Input}\SetKwInOut{Output}{Output}
+ }
+ {\end{algorithm2e}}
+\newenvironment{displayprocedure}[2]
+ {\everymath{\strut}
+  \begin{procedure}[H]\leftskip=\unitindent\caption{#1(#2)}}
+ {\end{procedure}}
+
+\def\verbatimsnippet#1{\verbatiminput{snippets-public/#1}}
+\newenvironment{question}{\begin{quotation}\textbf{Question.\ }}{\end{quotation}}
+
+\def\svnrev{428}
+\edef\revision{\svnrev}
+\def\lulurevision{}
+
+%
+% page layout
+%
+\usepackage{geometry}
+\addtolength{\textwidth}{.5in}
+\addtolength{\textheight}{.5in}
+\addtolength{\evensidemargin}{-.5in}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}\fancyhead{}\fancyfoot{}
+% remove uppercase from fancy defs
+\makeatletter
+\def\chaptermark#1{\markboth {{\ifnum \c@secnumdepth>\m@ne
+ \thechapter. \ \fi #1}}{}}
+\def\sectionmark#1{\markright{{\ifnum \c@secnumdepth >\z@
+ \thesection. \ \fi #1}}}
+\makeatother
+% now the fancy specs
+%\fancyhead[LE]{\thepage \hskip.5\unitindent/\hskip.5\unitindent \leftmark}
+%\fancyhead[RO]{\rightmark \hskip.5\unitindent/\hskip.5\unitindent \thepage}
+\fancyhead[LE]{\leftmark}
+\fancyfoot[LE]{\thepage}
+\fancyhead[RO]{\rightmark}
+\fancyfoot[RO]{\thepage}
+\fancyfoot[RE]{\footnotesize\sl Parallel Computing -- r\revision}
+\begin{lulu}
+\fancyfoot[RE]{\footnotesize\sl Parallel Computing}
+}
+\end{lulu}
+\fancyfoot[LO]{\footnotesize\sl Victor Eijkhout}
+
+\newwrite\nx
+\newcommand\CHAPTER[2]{
+\Level 0 {#1}\label{ch:#2}
+\def\chapshortname{#2}
+{\SetBaseLevel 1 \input chapters-public/#2
+\write\chapterlist{\chapshortname}
+\openout\nx=exercises-public/\chapshortname-nx.tex
+\write\nx{\arabic{excounter}}
+\closeout\nx
+\SetBaseLevel 0
+}}
+
+\includecomment{tutorials}
+\newcommand\TUTORIAL[2]{
+\vfill\pagebreak \Level 1 {#1}\label{tut:#2}
+\def\chapshortname{#2}\setcounter{excounter}0\relax
+{\SetBaseLevel 2 \input tutorials-public/#2
+\write\chapterlist{\chapshortname}
+\openout\nx=exercises-public/\chapshortname-nx.tex
+\write\nx{\arabic{excounter}}
+\closeout\nx
+\SetBaseLevel 0
+}}
+\newif\ifprojects\projectsfalse
+\newcommand\PROJECT[2]{
+\ifprojects \vfill\pagebreak \else \projectstrue \fi
+\Level 1 {#1}\label{prj:#2}
+\def\chapshortname{#2}
+{\SetBaseLevel 2 \input projects-public/#2
+\write\chapterlist{\chapshortname}
+\openout\nx=exercises-public/\chapshortname-nx.tex
+\write\nx{\arabic{excounter}}
+\closeout\nx
+\SetBaseLevel 0
+}}
+\newcommand\APPENDIX[3]{
+  \vfill\pagebreak \Level 1 {#1}\label{app:#3}
+  \def\chapshortname{#3}
+  {\SetBaseLevel 2 {\index{#2|(}}
+   \setcounter{excounter}0
+   \input appendices-public/#3 {\index{#2|)}}
+   \write\chapterlist{\chapshortname}
+   \openout\nx=exercises-public/\chapshortname-nx.tex
+   \write\nx{\arabic{excounter}}
+   \closeout\nx
+   \SetBaseLevel 0
+}}
+\newcommand\APPENDIXac[3]{
+  \vfill\pagebreak \Level 1 {#1}\label{app:#3}
+  \def\chapshortname{#3}
+  {\SetBaseLevel 2 {\indexacstart{#2}}
+   \setcounter{excounter}0
+   \input appendices-public/#3 {\indexacend{#2}}
+   \write\chapterlist{\chapshortname}
+   \openout\nx=exercises-public/\chapshortname-nx.tex
+   \write\nx{\arabic{excounter}}
+   \closeout\nx
+   \SetBaseLevel 0
+}}
+
+\newcommand\maillink[3]{
+  \href{mailto:eijkhout@tacc.utexas.edu?subject=comment on section #1 "#2"}
+    {comments on this #3?}\par
+}
+\renewcommand\maillink[3]{}
+
+\OutlineLevelStart0{\chapter{#1}
+  \maillink{arabic{chapter} "#1"}{#1}{chapter}
+}
+\OutlineLevelStart1{\section{#1}
+\maillink{\arabic{chapter}.\arabic{section}}{#1}{section}
+}
+\OutlineLevelCont1{\section{#1}
+\maillink{\arabic{chapter}.\arabic{section}}{#1}{section}
+}
+\OutlineLevelStart2{\subsection{#1}
+  \maillink
+    {\arabic{chapter}.\arabic{section}.\arabic{subsection}}{#1}{subsection}
+}
+\OutlineLevelStart3{\subsubsection{#1}}
+\setcounter{secnumdepth}{4}
+\OutlineLevelStart4{\paragraph{\bf #1}}
+
+\input scimacs
+\input exmacs-public
+\input tutmacs
+
+{ \catcode`\_=13
+\gdef\indexmpishow#{\bgroup \catcode`\_=13 \def_{\char95\discretionary{}{}{}}
+  \catcode`\>=12 \catcode`\<=12
+  \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
+  \tt \afterassignment\mpitoindex\edef\indexedmpi}
+\global\let\indextermtt\indexmpishow
+\gdef\indexmpi#{\bgroup \catcode`\_=13 \def_{\char95\discretionary{}{}{}}
+  \catcode`\>=12 \catcode`\<=12
+  \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
+  \tt \def\n##1{}\afterassignment\mpitoindex\edef\indexedmpi}
+}
+\def\mpitoindex{%\tracingmacros=2
+  \edef\tmp{\noexpand\n{\indexedmpi}%
+            \noexpand\index{\indexedmpi@{\noexpand\tt{\indexedmpi}}}}%
+  \tmp
+  \egroup
+}
+
+\newcommand\commandref[1]{\label{sec:#1}
+  \begin{quotation}
+    \small\sl\noindent The reference for the commands introduced here
+    can be found in section~\ref{ref:#1}.
+  \end{quotation}\nobreak}
+\newcommand\commandreflabel[1]{\label{ref:#1}
+  \begin{quotation}
+    \small\sl\noindent This reference section gives the syntax for
+    routines introduced in section~\ref{sec:#1}.
+  \end{quotation}\nobreak}
+\newcommand\commandrefexercise[1]{\label{#1-exec}
+  \begin{quotation}
+    \small\sl\noindent The exercises in this section are about the
+    routines introduced in section~\ref{#1}; 
+    for the reference information see section~\ref{#1-ref}.
+  \end{quotation}}
+
+\usepackage{xr-hyper}
+\usepackage[pdftex,colorlinks]{hyperref}
+\hypersetup{bookmarksopen=true}
+\externaldocument[HPSC-]{../scicompbook/scicompbook}
+\newcommand\HPSCref[1]{HPSC-\nobreak\ref{HPSC-#1}}
+\usepackage[all]{hypcap}
+
+\makeindex
+
+\def\publicdraft{{\bf\normalsize \relax Public draft - open for comments}}
+\def\revdate{\escapechar-1\relax 0th edition 2013}%\ --\ \string\revision \revision}
+\begin{lulu}
+\def\publicdraft{}
+\def\revdate{1st edition 2013}
+\end{lulu}
+
+\newwrite\chapterlist \openout\chapterlist=chapternames.tex
+
+\begin{document}
+
+\author{Victor Eijkhout}
+\title{Parallel Computing\\ for\\ Science and Engineering}
+\expandafter\date\expandafter{\revdate}
+\maketitle
+\publicdraft
+\vfill\pagebreak 
+
+\input copyright
+\vfill\pagebreak 
+\input introduction
+\vfill\pagebreak 
+
+{\setcounter{tocdepth}{1}
+\tableofcontents
+\setcounter{tocdepth}{2}
+}
+\CHAPTER{MPI}{mpi}
+\CHAPTER{Ruminations on parallelism}{patterns}
+\CHAPTER{Hybrid computing}{hybrid}
+\CHAPTER{Support libraries}{libraries}
+
+\vfill\pagebreak
+\appendix
+\makeatletter
+\renewcommand\exercisenumber{\Alph{chapter}.\arabic{section}.\arabic{excounter}}
+\makeatother
+\setcounter{tocdepth}{1}
+\addcontentsline{toc}{toc}{Appendices}
+
+%\Level 0 {Theoretical background}
+
+%\input appendices-public/blurb
+
+%\APPENDIX{Linear algebra}{linear algebra}{norms}
+
+\Level 0 {Practical tutorials}
+\label{app:practical}
+
+\input tutorials-public/blurb
+
+\TUTORIAL{Managing projects with Make}{make}
+\TUTORIAL{Debugging}{debug}
+\TUTORIAL{Tracing}{tau}
+
+%\Level 0 {Class projects}
+
+%\PROJECT{Cache simulation and analysis}{cache}
+
+%% \Level 0 {Codes}
+%% \label{app:codes}
+%% \input appendices-public/codes
+
+\vfill\pagebreak
+
+\bibliography{parcompbook}
+\bibliographystyle{plain}
+\vfill\pagebreak
+
+\Level 0 {Index and list of acronyms}
+% ???? \def\acitem#1#2{\item[#1]{#2}\index{#1|see{#2}}}
+\def\acitem#1#2{\item[#1] #2}
+\def\acitemi#1#2#3{\item[#1]{#2}\index{#1|see{#3}}}
+\begin{multicols}{2}
+\begin{description}
+%%\item[{ }] List of acronyms
+\input acronyms
+%% \acitem{AMR}{Adaptive Mesh Refinement}
+%% \acitem{PGAS}{Partitioned Global Address Space}
+%% \acitem{RDMA}{Remote Direct Memory Access}
+%% \acitem{RMA}{Remote Memory Access}
+\end{description}
+\end{multicols}
+
+%\index{halo|see{ghost region}}
+\printindex
+
+\newpage
+%\verbatiminput{CHANGES}
+\closeout\chapterlist
+\end{document}

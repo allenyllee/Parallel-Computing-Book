@@ -5,6 +5,8 @@
    %%%% "Parallel Computing"
    %%%% by Victor Eijkhout, copyright 2013-5
    %%%%
+   %%%% anysource.c : receive from any source
+   %%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
@@ -20,6 +22,7 @@ int main(int argc,char **argv) {
 #include "globalinit.c"
 
 
+  //snippet anysource
   if (mytid==ntids-1) {
     int *recv_buffer;
     MPI_Status status;
@@ -41,6 +44,7 @@ int main(int argc,char **argv) {
     sleep(randomwait);
     err = MPI_Send(&randomwait,1,MPI_INT, ntids-1,0,comm); CHK(err);
   }
+  //snippet end
 
   MPI_Finalize();
   return 0;

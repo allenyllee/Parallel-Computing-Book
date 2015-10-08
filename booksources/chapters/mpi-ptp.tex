@@ -516,6 +516,12 @@ MPI_Isend( ... ); MPI_Irecv( ... );
 MPI_Wait( ... );
 \end{verbatim}
 
+\begin{exercise}
+  \label{ex:3ptnonblock}
+  Now use nonblocking send/receive routines to implement
+  the averaging operation on a distributed array.
+\end{exercise}
+
 There is a second motivation for the \n{Isend/Irecv} calls:
 if your hardware supports it, the communication can progress
 while your program can continue to do useful work:
@@ -578,19 +584,10 @@ using \n{MPI_Waitall}.
 \label{fig:jump-nonblock}
 \end{figure}
 
-\begin{exercise}
-  Read section~\HPSCref{sec:pspmvp} and give pseudo-code for the
-    distributed sparse matrix-vector product using the above idiom for
-    using \n{MPI_Test...} calls. Discuss the advantages and
-    disadvantages of this approach. The answer is not going to be
-    black and white: discuss when you expect which approach to be
-    preferable.
-\end{exercise}
-
 The \n{MPI_Wait...} routines are blocking. Thus, they are a good solution if 
 the receiving process can not do anything until the data 
 (or at least \emph{some} data) is actually received.
-The \n{MPI_Test....} calls are themselves non-blocking: they
+The \indexmpishow{MPI_Test....} calls are themselves non-blocking: they
 test for whether one or more requests have been
 fullfilled, but otherwise immediately return.
 This can be used in the
@@ -608,6 +605,15 @@ while ( not done ) {
     // receive processed data and send new
 }
 \end{verbatim}
+
+\begin{exercise}
+  Read section~\HPSCref{sec:pspmvp} and give pseudo-code for the
+    distributed sparse matrix-vector product using the above idiom for
+    using \n{MPI_Test...} calls. Discuss the advantages and
+    disadvantages of this approach. The answer is not going to be
+    black and white: discuss when you expect which approach to be
+    preferable.
+\end{exercise}
 
 \index{communication!non-blocking|)}
 

@@ -5,6 +5,10 @@
    %%%% "Parallel Computing"
    %%%% by Victor Eijkhout, copyright 2013
    %%%%
+   %%%% interleave.cxx : scattering a vector datatype
+   %%%%
+   %%%% NOTE this example does not work
+   %%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
@@ -30,9 +34,10 @@ int main(int argc,char **argv) {
   target = new int[count];
 
   if (mytid==sender) {
-    source = new int[ntids*count*ntids];
+    source = new int[count*ntids*ntids];
     for (int i=0; i<ntids*count; i++)
       source[i] = i;
+    // this is for error detection; these elements should go unused
     for (int i=ntids*count; i<ntids*count*ntids; i++)
       source[i] = -37;
     for (int i=0; i<ntids; i++) {

@@ -135,6 +135,13 @@ For instance, in \indexterm{Monte Carlo codes} a large number of random samples
 is generated and some computation performed on each. This requires each MPI
 process to run an independent random number generator.
 
+\begin{exercise}
+  \label{ex:primetest}
+  Is the number $N=2,000,000,111$ prime?  Let each process test a
+  range of integers, and print out if they find a factor.  You don't
+  have to test all integers~$<N$: any factor is at most~$\sqrt
+  N\approx 45,200$.
+\end{exercise}
 As another example, in \indexterm{Boolean satisfiability} problems
 a number of points in a search space needs to be evaluated. Knowing
 a process's rank is enough to let it generate its own portion of the search space.

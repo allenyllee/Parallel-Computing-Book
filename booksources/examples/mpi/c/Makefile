@@ -56,7 +56,7 @@ info ::
 app_dependencies  = tools.o
 .SECONDEXPANSION:
 ${APPS} : $$@.o ${app_dependencies}
-	${CC} -o $@ $@.o ${app_dependencies}
+	${CXX} -o $@ $@.o ${app_dependencies}
 ${patsubst %,%.o,${APPS}} tools.o : tools.h globalinit.c
 
 # rules for submitting to the queue and doing tau analysis

@@ -83,6 +83,10 @@ call MPI_Init(ierr)
 call MPI_Finalize(ierr)
 \end{verbatim}
 
+You can test whether \n{MPI_Finalize} has been called with
+%
+\mpiRoutineRef{MPI_Finalized}
+
 \Level 2 {Commandline arguments}
 
 The \indexmpishow{MPI_Init} routines takes a reference to \indextermtt{argc}
@@ -254,13 +258,13 @@ After the type free call
 \commandreflabel{data:contiguous}
 
 A contiguous datatype, created with a call to \indexmpishow{MPI_Type_contiguous},
-\begin{verbatim}
-int MPI_Type_contiguous(
-  int count, MPI_Datatype old_type, MPI_Datatype *new_type_p)
-\end{verbatim}
+%
+\mpiRoutineRef{MPI_Type_contiguous}
+%
 consists of a number of elements of a datatype, contiguous in memory.
 Sending one element of a contiguous type is fully equivalent to sending
 a number of elements of the constituent type.
+%
 \verbatimsnippet{contiguous}
 
 \Level 2 {Vector type}
@@ -269,12 +273,8 @@ a number of elements of the constituent type.
 The \indexmpishow{MPI_Type_vector} type can be used to create a type
 of regularly spaced blocks of data. All block lengths need to be the same,
 and the vector type is built out of a single constituent type.
-\begin{verbatim}
-int MPI_Type_vector(
-  int count, int blocklength, int stride,
-  MPI_Datatype old_type, MPI_Datatype *newtype_p
-);
-\end{verbatim}
+%
+\mpiRoutineRef{MPI_Type_vector}
 
 In this example a vector type is created only on the sender, in order to send
 a strided subset of an array; the receiver receives the data as a contiguous block.
@@ -580,7 +580,15 @@ Contrast this with the example in section~\ref{ref:mpi-source}.
 \Level 2 {Wait and test calls}
 \commandreflabel{waittest}
 
-\mpiRoutineRef{Testany}
+Wait calls block until any or all of a set of requests are fullfilled.
+
+\mpiRoutineRef{MPI_Waitany}
+\mpiRoutineRef{MPI_Waitall}
+
+Test calls are non-blocking versions of the corresponding wait calls.
+
+\mpiRoutineRef{MPI_Testany}
+\mpiRoutineRef{MPI_Testall}
 
 \Level 1 {Buffered communication}
 \commandreflabel{buffered}
@@ -1123,7 +1131,8 @@ and the exclusive scan:
 %
 The \n{MPI_Op} operations do not return an error code.
 
-The result of the exclusive scan is undefined on processor~0,
+The result of the exclusive scan is undefined on processor~0
+(\n{None} in python),
 and on processor~1 it is a copy of the send value of processor~1.
 In particular, the \n{MPI_Op} need not be called on these two 
 processors.
@@ -1152,20 +1161,6 @@ int MPI_Ibcast(
   int root, MPI_Comm comm, 
   MPI_Request *request)
 \end{verbatim}
-
-\Level 0 {Cancelling messages}
-
-In section~\ref{sec:mpi-source} we showed a master-worker example where the 
-master accepts in arbitrary order the messages from the workers.
-Here we will show a slightly
-more complicated example, where only the result of the first task to
-complete is needed. Thus, we issue an \n{MPI_Recv}
-with \indexmpishow{MPI_ANY_SOURCE} as source.  When a result comes, we
-broadcast its source to all processes.  All the other workers then use
-this information to cancel their message with
-an \indexmpishow{MPI_Cancel} operation.
-
-\verbatimsnippet{cancel}
 
 \Level 0 {Communicators}
 
@@ -1325,6 +1320,31 @@ call MPI_Win_create( windowdata,window_size,window_element_size,... );
 \end{verbatim}
 
 \index{MPI!Fortran issues|)}
+
+\Level 1 {Cancelling messages}
+
+In section~\ref{sec:mpi-source} we showed a master-worker example where the 
+master accepts in arbitrary order the messages from the workers.
+Here we will show a slightly
+more complicated example, where only the result of the first task to
+complete is needed. Thus, we issue an \n{MPI_Recv}
+with \indexmpishow{MPI_ANY_SOURCE} as source.  When a result comes, we
+broadcast its source to all processes.  All the other workers then use
+this information to cancel their message with
+an \indexmpishow{MPI_Cancel} operation.
+
+\verbatimsnippet{cancel}
+
+\Level 1 {Constants}
+
+MPI constants such as \n{MPI_COMM_WORLD} or \n{MPI_INT} are not
+necessarily statitally defined, such as by a \n{#define} statement:
+the best you can say is that they have a value after
+\indexmpishow{MPI_Init} or \indexmpishow{MPI_Init_thread}.
+That means you can not transfer a compiled MPI file between
+platforms, or even between compilers on one platform.
+However, a working MPI source on one MPI implementation
+will also work on another.
 
 \Level 0 {Error handling}
 \commandreflabel{mpi:error}

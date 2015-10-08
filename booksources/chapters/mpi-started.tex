@@ -6,6 +6,8 @@
 %%%% `Parallel Computing'
 %%%% by Victor Eijkhout, copyright 2012-5
 %%%%
+%%%% mpi-started.tex : introductory chapter about MPI
+%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -160,7 +162,9 @@ The MPI library is written in~C. Thus, its bindings are the most natural
 for that language.
 
 C++ bindings existed at one point, but they were declared deprecated.
-The \indexterm{boost} library has its own version of MPI.
+The \indexterm{boost} library has its own version of MPI.  A~recent
+effort at idiomatic C++ support is \indexterm{MPL}
+\url{http://numbercrunch.de/blog/2015/08/mpl-a-message-passing-library/}.
 
 \index{C!bindings|)}
 \index{C++!bindings|)}
@@ -178,8 +182,9 @@ each routine has a final \indexterm{error return} parameter.
 
 \index{Python!bindings|(}
 
-Although Python bindings exist, they are not defined by the MPI
-standards committee. Instead, they are the work of an individual,
+The \indextermtt{mpi4py} package of \emph{python bindings}
+is not defined by the MPI
+standards committee. Instead, it is the work of an individual,
 \indextermsub{Lisandro}{Dalcin}.
 
 Notable about the Python bindings is that many communication routines
@@ -190,6 +195,18 @@ exist in two variants:
 \item a version that sends \indexterm{numpy} objects; these routines
   have names such as \n{Bcast}. Their syntax can be slightly different.
 \end{itemize}
+The first version looks more `pythonic', is easier to write,
+and can do things like sending python objects,
+but it is also decidedly less efficient since data is packed
+and unpacked with \n{pickle}. As a common sense guideline,
+use the \n{numpy} interface in the performance-critical parts
+of your code, and the native interface only for complicated
+actions in a setup phase.
+
+Codes with \texttt{mpi4py} can be interfaced to other languages
+through Swig or conversion routines.
+
+Data in \texttt{numpy} can be specified as a simple object,
+or \texttt{[data, (count,displ), datatype]}.
 
 \index{Python!bindings|)}
-

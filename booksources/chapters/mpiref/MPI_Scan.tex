@@ -15,3 +15,8 @@ TYPE(MPI_Datatype), INTENT(IN) :: datatype
 TYPE(MPI_Op), INTENT(IN) :: op
 TYPE(MPI_Comm), INTENT(IN) :: comm
 INTEGER, OPTIONAL, INTENT(OUT) :: ierror
+
+res = Intracomm.scan( sendobj=None,recvobj=None,op=MPI.SUM)
+res = Intracomm.exscan( sendobj=None,recvobj=None,op=MPI.SUM)
+Intracomm.Scan( sendbuf,recvbuf,op=MPI.SUM)
+Intracomm.Exscan( sendbuf,recvbuf,op=MPI.SUM)

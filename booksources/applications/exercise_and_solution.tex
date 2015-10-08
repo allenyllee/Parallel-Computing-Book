@@ -1,0 +1,19 @@
+\documentclass[11pt]{artikel3}
+
+\usepackage{comment,graphicx,pslatex}
+\input scimacs
+
+\begin{document}
+
+\section*{Quiz with solution}
+
+\def\exercisefile{null}
+{\endlinechar=-1 \global\read 16 to \exercisefile}
+\message{Formatting exercise \exercisefile}
+\input exercises/\exercisefile
+
+\section*{Solution}
+
+\input answers/\exercisefile
+
+\end{document}

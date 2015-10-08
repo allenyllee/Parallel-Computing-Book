@@ -100,14 +100,18 @@ Directives look like \indextermsub{cpp}{directives}, but they
 are actually handled by the compiler, not the preprocessor.
 
 \Level 1 {Parallel regions}
+\commandref{parallelregion}
 \commandref{omp-parallel}
 
-Above you saw how to create an OpenMP parallel region,
-for instance:
+The simplest way to create parallelism in OpenMP is to use
+the \indexpragma{parallel} pragma. A~block preceded by the \n{omp parallel} pragma
+is executed by a newly created team of threads. 
+This is an instance of the \indexac{SPMD} model: all threads execute the same
+segment of code.
 \begin{verbatim}
 #pragma omp parallel
 {
-  // this is executed by all threads
+  // this is executed by a team of threads
 }
 \end{verbatim}
 It would be pointless to have the block be executed identically by
@@ -118,6 +122,26 @@ There is also a function
 \indextermtt{omp_get_num_threads} to find out the total number of threads.
 Both these functions give a number relative to the current team;
 recall from figure~\ref{fig:forkjoin} that new teams can be created recursively.
+
+For instance, if you program computes
+\begin{verbatim}
+result = f(x)+g(x)+h(x)
+\end{verbatim}
+you could parallelize this as
+\begin{verbatim}
+double result = 0;
+#pragma omp parallel
+{
+  int num = omp_get_thread_num();
+  if (num==0)      result += f(x);
+  else if (num==1) result += g(x);
+  else if (num==2) result += h(x);
+}
+\end{verbatim}
+This example shows how the three functions are computed in parallel,
+but other than that \textbf{there are many things wrong with this example}.
+Further in this section we will explain what is wrong here,
+and what can be done about it.
 
 \begin{exercise}
   Take the `hello world' program above, and modify it so that you get
@@ -157,36 +181,64 @@ recall from figure~\ref{fig:forkjoin} that new teams can be created recursively.
 
 \Level 1 {Thread data}
 
-A thread has access to variables of two kinds. Variables on the
-\indexterm{heap} are typically created by a call to \indextermtt{malloc}
-(in~C) or \indextermtt{new} (in~C++). Threads that are spawned have
-the same type of access to them.
-
-There are also variables on the \indexterm{stack}, which have a local
-\indexterm{scope}. Thread access to such variables is more complicated,
-since each thread has its own \indexterm{context}. Most relevant to our story,
-the context can contain local copies of variables, that is, each thread
-has a variable, say~\n{x}, but they are local to each thread context.
-Thus, one thread setting the value of its instance of~\n{x} has no influence on what
-another thread sees as the value of its instance of~\n{x}.
-
-To use the technical term, there are
-\begin{itemize}
-\item \indexterm{shared variables},
-  where each thread refers to the same data item, and 
-\item \indexterm{private variables},
-  where each thread has its own instance.
-\end{itemize}
-%
-For instance:
+In most programming languages, visibility of data
+is governed by rules on the \indextermbus{scope}{of variables}:
+a~variable is declared in a block, and it is then visible to any
+statement in that block and blocks with a \indextermsub{lexical}{scope}
+contained in it, but not in surrounding blocks:
 \begin{verbatim}
-  int i; // shared variable
-#pragma omp parallel 
+main () {
+  // no variable `x' define here
   {
-    float x; // private variable
+    int x = 5;
+    if (somecondition) { x = 6; }
+    printf("x=%e\n",x); // prints 5 or 6
   }
+  printf("x=%e\n",x); // syntax error: `x' undefined
+}
 \end{verbatim}
-%
+Fortran has simpler rules, since it does not have blocks inside blocks.
+
+OpenMP has similar rules concerning data in parallel regions
+and other OpenMP constructs. First of all, data is visible
+in enclosed scopes:
+\begin{verbatim}
+main() {
+  int x;
+#pragma omp parallel
+  {
+     // you can use and set `x' here
+  }
+  printf("x=%e\n",x); // value depends on what
+                      // happened in the parallel region
+}
+\end{verbatim}
+
+In C, you can redeclare a variable inside a nested scope:
+\begin{verbatim}
+{
+  int x;
+  if (something) {
+    double x; // same name, different entity
+  }
+  x = ... // this refers to the integer again
+}
+\end{verbatim}
+Doing so makes the outer variable inaccessible.
+
+OpenMP has a similar mechanism:
+\begin{verbatim}
+{
+  int x;
+#pragma omp parallel
+  {
+    double x;
+  }
+}
+\end{verbatim}
+There is an important difference: each thread in the team
+gets its own instance of the enclosed variable.
+
 \begin{figure}[ht]
 \includegraphics[scale=.1]{fork-join-vars}
 \caption{Locality of variables in threads}
@@ -195,55 +247,26 @@ For instance:
 %
 This is illustrated in figure~\ref{fig:threadvars}.
 
-When a new \emph{thread team}\index{thread!team!and variable access} is created,
-there are various mechanisms for indicating which variables are shared
-and which are private.
+In addition to such scoped variables, which live on a \indexterm{stack},
+there are variables on the
+\indexterm{heap}, typically created by a call to \indextermtt{malloc}
+(in~C) or \indextermtt{new} (in~C++). Rules for them are more complicated.
+
+Summarizing the above, there are
 \begin{itemize}
-\item By default, any variable declared in the surrounding scope is
-  shared. Thus, in the following code segment, each thread sets the
-  value of~\n{x}, and its value after the parallel region is
-  indeterminate because you do not know in what sequence the threads
-  performed the update.
-\begin{verbatim}
-int x;
-#pragma omp parallel
-{
-  x = omp_get_thread_num();
-}
-// what is the value of x?
-\end{verbatim}
-\item Any variable declared inside the parallel region is private. In
-  the following code segment the variable~\n{x} is local to the
-  thread: the value that is set by one thread does not interfere with
-  what other threads do.
-\begin{verbatim}
-#pragma omp parallel
-{
-  double x;
-  x = // some dynamic value
-  ... = .... x ....
-}
-\end{verbatim}
-  Since the parallel region is also a \indexterm{lexical scope}, the
-  variable~\n{x} does not exist after the parallel region. (In Fortran
-  this mechanism of local allocation does not exist, so this question
-  does not come up.)
-\item In a parallel loop (section~\ref{sec:omp-for}, the loop variable
-  is private, even though it may have been declared outside the
-  parallel construct.
-\item A variable declared in the surrounding scope can explicitly be
-  declared private or shared by adding a \indexpragma{private}
-  or \indexpragma{shared} clause respectively to the OpenMP
-  directive. In the following fragment, each 
-  For the behaviour of shared variables, the default, see the point above.
-\item Unless otherwise stated, private variables are undefined at the
-  start of the parallel region, and disappear at the end; shared
-  variables become undefined after the parallel region.
-\item Data allocated on the \indexterm{heap} is
-  shared\footnote{However, note that the C~and~Fortran standards do
-    not actually define a~heap. Therefore it is wise to spell out your
-    intentions.}.
+\item \indexterm{shared variables},
+  where each thread refers to the same data item, and 
+\item \indexterm{private variables},
+  where each thread has its own instance.
 \end{itemize}
+In addition to using scoping, OpenMP also uses options on the directives
+to control whether data is private or shared.
+
+Many of the difficulties of parallel programming with OpenMP stem
+from the use of shared variables. For instance, if two threads
+update a shared variable, you not guarantee an order on the updates.
+
+We will discuss all this in detail in section~\ref{sec:ompdata}.
 
 \Level 1 {Some externalities}
 
@@ -290,7 +313,8 @@ export OMP_NUM_THREADS=8
 which sets the number of threads that a program will use.
 See section~\ref{ref:omp-environ} for a list of all environment variables.
 
-\Level 0 {Creating parallelism}
+\Level 1 {Creating parallelism}
+\commandref{omp-howmany}
 
 The \indexterm{fork/join model} of OpenMP means that you need some way of
 indicating where an activity can be forked for independent execution.
@@ -308,41 +332,6 @@ Note that OpenMP only indicates how much parallelism is present;
 whether independent activities are in fact executed in parallel
 is a runtime decision. The factors influencing this are discussed
 in section~\ref{sec:omp-howmany}.
-
-\Level 1 {Parallel regions}
-\commandref{parallelregion}
-
-The simplest way to create parallelism in OpenMP is to use
-the \indexpragma{parallel} pragma. A~block preceded by the \n{omp parallel} pragma
-is executed by a newly created team of threads. 
-This is an instance of the \indexac{SPMD} model: all threads execute the same
-segment of code.
-Since it would not be interesting to have all threads do the same calculations,
-you can use the function \indexcommand{omp_get_thread_num} to distinguish 
-between them.
-
-For instance, if you program computes
-\begin{verbatim}
-result = f(x)+g(x)+h(x)
-\end{verbatim}
-you could parallelize this as
-\begin{verbatim}
-double result = 0;
-#pragma omp parallel
-{
-  int num = omp_get_thread_num();
-  if (num==0)      result += f(x);
-  else if (num==1) result += g(x);
-  else if (num==2) result += h(x);
-}
-\end{verbatim}
-This example shows how the three functions are computed in parallel,
-but other than that \textbf{there are many things wrong with this example}.
-The rest of this section will be about explaining what is wrong here,
-and what can be done about it.
-
-\Level 1 {Just how many threads?}
-\commandref{omp-howmany}
 
 Declaring a parallel region tells OpenMP that a team of threads can be created.
 The actual size of the team depends on various factors (see section~\ref{ref:omp-environ}
@@ -369,36 +358,6 @@ Another limit on the number of threads is imposed when you use nested parallel r
 This can arise if you have a parallel region in a subprogram which is sometimes called
 sequentially, sometimes in parallel. The variable \indextermtt{OMP_NESTED} controls
 whether the inner region will create a team of more than one thread.
-
-\Level 1 {Thread data in parallel regions}
-
-OpenMP is a programming system for shared memory. This means that
-you often want all threads to see the same data; we call this `shared' data.
-However, sometimes you want a thread to have `private' data, for instance
-for intermediate results in a computation.
-
-Private variables act as if they are created at the start of the parallel region.
-If a variable by that name already exists in the surrounding scope,
-that variable will become inaccessible. Here is a clear example of a private variable,
-created inside the parallel region:
-\begin{verbatim}
-int x = 5;
-#pragma omp parallel
-{ 
-  int x = 6;
-}
-// x is still 5
-\end{verbatim}
-This example is pretty much the same:
-\begin{verbatim}
-int x = 5;
-#pragma omp parallel private(x)
-{ 
-  x = 6;
-}
-// x is still 5
-\end{verbatim}
-We will discuss all this in detail in section~\ref{sec:ompdata}.
 
 \Level 0 {Work sharing}
 \commandref{work-sharing}
@@ -470,8 +429,8 @@ in each thread; the loop iterations are spread over the four threads.
   \label{fig:omp-par-do}
 \end{figure}
 
-Instead of having two pragmas, one for the parallel region and one for
-worksharing over the loop iterations, you can combine the two:
+If you parallel region only contains a loop, you can combine the
+pragmas for the parallel region and distribution of the loop iterations:
 \begin{verbatim}
 #pragma omp parallel for
   for (i=0; .....
@@ -481,7 +440,7 @@ The loop has to satisfy a number of basic constraints, such as that you can not
 jump out of it.
 
 \Level 2 {Loop schedules}
-\commandref{sec:schedule}
+\commandref{schedule}
 
 Usually you will have many more iterations in a loop than there are threads.
 Thus, there are several ways you can assign your loop iterations to the threads.
@@ -772,7 +731,7 @@ relate to shared data.
 \Level 1 {Shared data}
 
 In a parallel region, any data declared outside it will be shared:
-any thread using a variable~\n{x} will  the same memory location
+any thread using a variable~\n{x} will access the same memory location
 associated with that variable.
 
 Example:
@@ -786,7 +745,8 @@ Example:
 \end{verbatim}
 All threads increment the same variable, so after the loop it will
 have a value of five plus the number of threads; or maybe less because of the data races
-involved.
+involved. See \HPSCref{sec:shared-lock} for an explanation of the issues involved;
+see \ref{sec:critical} for a solution in OpenMP.
 
 Sometimes this global update is what you want; in other cases the
 variable is intended only for intermediate results in a computation.
