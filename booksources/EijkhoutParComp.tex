@@ -27,6 +27,8 @@
 \usepackage{outliner,times,makeidx,multirow,multicol}
 \usepackage{dirtree}
 
+\specialcomment{tacc}{\def\CommentCutFile{tacc.cut}}{}
+
 \usepackage[algo2e,noline,noend]{algorithm2e}
 \newenvironment{displayalgorithm}
  {\begin{algorithm2e}[H]\leftskip=\unitindent \DontPrintSemicolon
@@ -39,12 +41,6 @@
  {\end{procedure}}
 
 \usepackage{listings}
-
-\def\verbatimsnippet#1{\verbatiminput{snippets/#1}}
-\newenvironment{question}{\begin{quotation}\textbf{Question.\ }}{\end{quotation}}
-\newenvironment{fortrannote}
-  {\begin{quotation}\noindent\textsl{Fortran note\ }\ignorespaces}
-  {\end{quotation}}
 
 \def\svnrev{428}
 \edef\revision{\svnrev}

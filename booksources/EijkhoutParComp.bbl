@@ -22,6 +22,12 @@ Torsten Hoefler, Christian Siebert, and Andrew Lumsdaine.
 \newblock Scalable communication protocols for dynamic sparse data exchange.
 \newblock {\em SIGPLAN Not.}, 45(5):159--168, January 2010.
 
+\bibitem{charmpp}
+L.~V. Kale and S.~Krishnan.
+\newblock Charm++: Parallel programming with message-driven objects.
+\newblock In {\em Parallel Programming using C++, G. V. Wilson and P. Lu,
+  editors}, pages 175--213. MIT Press, 1996.
+
 \bibitem{thakur:ijhpca-sync}
 R.~Thakur, W.~Gropp, and B.~Toonen.
 \newblock Optimizing the synchronization operations in {MPI} one-sided

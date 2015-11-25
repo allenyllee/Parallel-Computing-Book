@@ -24,11 +24,19 @@ if nprocs<2:
     print "C'mon, get real...."
     sys.exit(1)
 
+random_number = random.randint(1,nprocs*nprocs)
+print "[%d] random=%d" % (procid,random_number)
+
+max_random = comm.allreduce(random_number,op=MPI.MAX)
+if procid==0:
+    print "Python native:\n  max=%d" % max_random
+
 myrandom = np.empty(1,dtype=np.int)
-myrandom[0] = random.randint(1,nprocs*nprocs)
+myrandom[0] = random_number
 allrandom = np.empty(nprocs,dtype=np.int)
 
-print "[%d] random=%d" % (procid,myrandom[0])
-
 comm.Allreduce(myrandom,allrandom[:1],op=MPI.MAX)
-print "[%d] max=%d" % (procid,allrandom[0])
+
+if procid==0:
+    print "Python numpy:\n  max=%d" % allrandom[0]
+

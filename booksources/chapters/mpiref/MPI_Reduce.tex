@@ -1,7 +1,9 @@
+C:
 int MPI_Reduce(
     const void* sendbuf, void* recvbuf, int count, MPI_Datatype datatype,
     MPI_Op op, int root, MPI_Comm comm)
 
+Fortran:
 MPI_Reduce(sendbuf, recvbuf, count, datatype, op, root, comm, ierror)
 TYPE(*), DIMENSION(..), INTENT(IN) :: sendbuf
 TYPE(*), DIMENSION(..) :: recvbuf
@@ -11,5 +13,6 @@ TYPE(MPI_Op), INTENT(IN) :: op
 TYPE(MPI_Comm), INTENT(IN) :: comm
 INTEGER, OPTIONAL, INTENT(OUT) :: ierror
 
+Python:
 mpi4py.MPI.Comm.Reduce(self, sendbuf, recvbuf, Op op=SUM, int root=0)
 mpi4py.MPI.Comm.reduce(self, sendobj=None, recvobj=None, op=SUM, int root=0)

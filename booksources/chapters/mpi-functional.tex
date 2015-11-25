@@ -24,7 +24,7 @@ If this computer was part of a networked cluster, you called it a \indexterm{nod
 So if you ran an MPI program, each node would have one MPI process;
 %
 \begin{figure}[ht]
-  \includegraphics[scale=.1]{mpi-node1}
+  \includegraphics[scale=.11]{mpi-node1}
   \caption{Cluster structure as of the mid 1990s}
   \label{fig:oldmpi}
 \end{figure}
@@ -37,7 +37,7 @@ more than one processor chip, and each processor chip probably has multiple
 \emph{cores}\index{core}.
 %
 \begin{figure}[ht]
-  \includegraphics[scale=.1]{mpi-node3}
+  \includegraphics[scale=.11]{mpi-node3}
   \caption{Hybrid cluster structure}
   \label{fig:hybridmpi}
 \end{figure}
@@ -52,7 +52,7 @@ model of figure~\ref{fig:purempi} which we will use in most of this part
 of the course.
 %
 \begin{figure}[ht]
-  \includegraphics[scale=.1]{mpi-node2}
+  \includegraphics[scale=.11]{mpi-node2}
   \caption{MPI-only cluster structure}
   \label{fig:purempi}
 \end{figure}
@@ -65,7 +65,7 @@ of this: each core receives an MPI process and you can't immediately see
 whether two cores are on the same node or different nodes.
 
 \Level 1 {Starting and running MPI processes}
-\commandidiom{mpi-init}
+\commandref{mpi-init}
 
 In the \ac{SPMD} model, you start up a set of MPI processes; see section~\ref{sec:mpiexec}.
 Each process is based on the same executable, and executes the exact same instructions.
@@ -79,6 +79,10 @@ Each process is based on the same executable, and executes the exact same instru
 To get a useful MPI program you need at least the calls \indexmpishow{MPI_Init}
 and \indexmpishow{MPI_Finalize} surrounding your code. See section~\ref{ref:mpi-init}
 for their syntax.
+\begin{pythonnote}
+  There are no initialize and finalize calls: the \n{import} statement
+  performs the initialization.
+\end{pythonnote}
 
 \begin{exercise}
   \label{ex:hello2}
@@ -88,17 +92,23 @@ for their syntax.
 \end{exercise}
 
 In the following exercise you will print out the hostname
-of each MPI process; see section~\ref{ref:context}.
+of each MPI process; see section~\ref{ref:context} for the syntax.
 \begin{exercise}
   \label{ex:procname}
   Now use the command \indexmpishow{MPI_Get_processor_name}
   in between the
   init and finalize statement, and print out on what processor your process runs.
   Confirm that you are able to run a program that uses two different nodes.
+
+\begin{tacc}
+TACC nodes have a hostname \n{cRRR-CNN}, where RRR is the rack number, C is the chassis
+number in the rack, and NN is the node number within the chassis. Communication
+is faster inside a rack than between racks!
+\end{tacc}
 \end{exercise}
 
-\Level 1 {Processor identification}
-\commandidiom{rank-size}
+\Level 0 {Processor identification}
+\commandref{rank-size}
 
 Since all processes in an MPI job are instantiations of the same executable,
 you'd think that they all execute the exact same instructions,
@@ -128,12 +138,13 @@ out of a total of~20'.
   reports on how many processes there are in total.
 \end{exercise}
 
-\Level 1 {Functional parallelism}
+\Level 0 {Functional parallelism}
 
 Being able to tell processes apart is already enough for some applications.
+Based on its rank, a processor can find its section of a search space.
 For instance, in \indexterm{Monte Carlo codes} a large number of random samples
-is generated and some computation performed on each. This requires each MPI
-process to run an independent random number generator.
+is generated and some computation performed on each. (This particular example requires each MPI
+process to run an independent random number generator, which is not entirely trivial.)
 
 \begin{exercise}
   \label{ex:primetest}

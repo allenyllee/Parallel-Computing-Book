@@ -76,20 +76,6 @@ Here are a couple of important concepts:
   that are called from the code in the structured block.
 \end{definition}
 
-\Level 0 {Thread stuff}
-
-\Level 1 {Creating parallel threads}
-\commandreflabel{omp-parallel}
-
-\indexpragma{parallel}
-\verbatimsnippet{hello-who-omp}
-
-If the structure block consists only of a \n{for}/\n{do} or \n{sections} region,
-you can use the combined directives
-\indexpragma{parallel for},
-\indexpragma{parallel do},
-\indexpragma{parallel sections}.
-
 \Level 0 {Parallel regions}
 \commandreflabel{parallelregion}
 
@@ -102,6 +88,11 @@ To test whether you are in a parallel region, use
 int omp_in_parallel() // C
 LOGICAL omp_in_parallel() ! F
 \end{verbatim}
+
+\Level 1 {Threading}
+
+The number of threads in the team is controlled by \n{OMP_NUM_THREADS}
+or the \indextermtt{num_threads} clause on the \n{parallel} directive.
 
 The number of threads used can differ between parallel regions. This is known
 as \indexterm{dynamic mode}. You can set this with
@@ -117,6 +108,16 @@ for (i=0; i<n; i++) {
    ...
 }
 \end{verbatim}
+
+\verbatimsnippet{hello-who-omp}
+
+\Level 1 {Combining with worksharing}
+
+If the structured block consists only of a \n{for}/\n{do} or \n{sections} worksharing construct,
+you can use the combined directives
+\indexpragma{parallel for},
+\indexpragma{parallel do},
+\indexpragma{parallel sections}.
 
 \Level 0 {Worksharing}
 \commandreflabel{work-sharing}
@@ -337,6 +338,25 @@ You can alter this default behaviour with the \indexclause{default} clause:
 \item The \indexclauseoption{default}{private} clause means that any shared variables
   need to be declared explicitly. This value is not available in~C.
 \end{itemize}
+
+\Level 1 {Threadprivate}
+\commandref{threadprivate}
+
+Variables declared outside an OpenMP parallel region can be declared
+\indexpragmadef{threadprivate}: each thread will get a private copy
+as if in a parallel region. However, the variable's parallel lifetime is not limited
+to a parallel region, but will instead be governed by ordinary scoping rules.
+\begin{verbatim}
+int i; double d;
+#pragma omp threadprivate(i,d)
+\end{verbatim}
+
+\begin{fortrannote}
+  Common blocks can be made thread-private with the syntax
+\begin{verbatim}
+$!OMP threadprivate( /blockname/ )
+\end{verbatim}
+\end{fortrannote}
 
 \Level 0 {Synchronization}
 

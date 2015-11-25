@@ -13,7 +13,7 @@
 ################################################################
 
 import numpy as np
-import random
+import random # random.randint(1,N), random.random()
 from mpi4py import MPI
 
 comm = MPI.COMM_WORLD

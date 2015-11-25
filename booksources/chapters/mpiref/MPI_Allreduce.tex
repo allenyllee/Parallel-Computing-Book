@@ -1,7 +1,9 @@
+C:
 int MPI_Allreduce(const void* sendbuf,
   void* recvbuf, int count, MPI_Datatype datatype,
   MPI_Op op, MPI_Comm comm)
 
+Semantics:
 IN sendbuf: starting address of send buffer (choice)
 OUT recvbuf: starting address of receive buffer (choice)
 IN count: number of elements in send buffer (non-negative integer)
@@ -9,6 +11,7 @@ IN datatype: data type of elements of send buffer (handle)
 IN op: operation (handle)
 IN comm: communicator (handle)
 
+Fortran:
 MPI_Allreduce(sendbuf, recvbuf, count, datatype, op, comm, ierror)
 TYPE(*), DIMENSION(..), INTENT(IN) :: sendbuf
 TYPE(*), DIMENSION(..) :: recvbuf
@@ -19,4 +22,7 @@ TYPE(MPI_Comm), INTENT(IN) :: comm
 INTEGER, OPTIONAL, INTENT(OUT) :: ierror
 
 
-Allreduce(self, sendbuf, recvbuf, Op op=SUM)
+Python native:
+recvobj = MPI.Comm.allreduce(self, sendobj, op=SUM)
+Python numpy:
+MPI.Comm.Allreduce(self, sendbuf, recvbuf, Op op=SUM)

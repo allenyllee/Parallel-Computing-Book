@@ -51,7 +51,7 @@ A~related point is that it is easy to install: there are free implementations
 that you can download and install on any computer that has a Unix-like
 operating system, even if that is not a parallel machine.
 
-\Level 1 {History}
+\Level 0 {History}
 
 Before the MPI standard was developed in 1993-4, there were many
 libraries for distributed memory computing, often proprietary
@@ -62,11 +62,11 @@ have included many of these features.
 
 Since MPI was designed by a large number of academic and commercial
 participants, it quickly became a standard. A~few packages
-from the pre-MPI era, such as \indexterm{Charmpp},
+from the pre-MPI era, such as \indexterm{Charmpp}~\cite{charmpp},
 are still in use since they support mechanisms that do not exist
 in MPI.
 
-\Level 1 {Basic model}
+\Level 0 {Basic model}
 \label{sec:mpiexec}
 
 Here we sketch the two most common scenarios for using MPI. In the
@@ -117,7 +117,7 @@ an \ac{SPMD} mode of execution: all hosts execute the same program.
 It is possible for different hosts to execute different programs,
 but we will not consider that in this book.
 
-\Level 1 {Making and running an MPI program}
+\Level 0 {Making and running an MPI program}
 
 MPI is a library, called from programs in ordinary programming languages
 such as C/C++ or Fortran. To compile such a program you use your regular
@@ -151,9 +151,9 @@ on each, and if you only have your laptop it can start a few instances
 there. In the latter case you will of course not get great
 performance, but at least you can test your code for correctness.
 
-\Level 1 {Language bindings}
+\Level 0 {Language bindings}
 
-\Level 2 {C/C++}
+\Level 1 {C/C++}
 \index{MPI!C/C++ bindings|see{C/C++, bindings}}
 \index{C!bindings|(}
 \index{C++!bindings|(}
@@ -169,16 +169,21 @@ effort at idiomatic C++ support is \indexterm{MPL}
 \index{C!bindings|)}
 \index{C++!bindings|)}
 
-\Level 2 {Fortran}
+\Level 1 {Fortran}
 
 \index{Fortran!bindings|(}
 
-The Fortran bindings for MPI look very much like the C~ones, except that
+The \emph{Fortran bindings} for MPI look very much like the C~ones, except that
 each routine has a final \indexterm{error return} parameter.
+
+\begin{fortrannote}
+  Other Fortran-specific differences will be indicated with a note
+  like this.
+\end{fortrannote}
 
 \index{Fortran!bindings|)}
 
-\Level 2 {Python}
+\Level 1 {Python}
 
 \index{Python!bindings|(}
 

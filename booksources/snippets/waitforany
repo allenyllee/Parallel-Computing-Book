@@ -1,7 +1,7 @@
 // irecv_source.c
 if (mytid==ntids-1) {
   int *recv_buffer;
-  MPI_Request *request;
+  MPI_Request *request; MPI_Status status;
   recv_buffer = (int*) malloc((ntids-1)*sizeof(int));
   request = (MPI_Request*) malloc((ntids-1)*sizeof(MPI_Request));
 
@@ -11,6 +11,8 @@ if (mytid==ntids-1) {
   }
   for (int p=0; p<ntids-1; p++) {
     int index,sender;
-    MPI_Waitany(ntids-1,request,&index,MPI_STATUS_IGNORE);
+    MPI_Waitany(ntids-1,request,&index,&status); //MPI_STATUS_IGNORE);
+    if (index!=status.MPI_SOURCE)
+	printf("Mismatch index %d vs source %d\n",index,status.MPI_SOURCE);
     printf("Message from %d: %d\n",index,recv_buffer[index]);
   }

@@ -34,9 +34,10 @@ int main(int argc,char **argv) {
   // Initialize the random number generator
   srand((int)(mytid*(double)RAND_MAX/ntids));
 
+//snippet waitforany
   if (mytid==ntids-1) {
     int *recv_buffer;
-    MPI_Request *request;
+    MPI_Request *request; MPI_Status status;
     recv_buffer = (int*) malloc((ntids-1)*sizeof(int));
     request = (MPI_Request*) malloc((ntids-1)*sizeof(MPI_Request));
 
@@ -46,17 +47,20 @@ int main(int argc,char **argv) {
     }
     for (int p=0; p<ntids-1; p++) {
       int index,sender;
-      MPI_Waitany(ntids-1,request,&index,MPI_STATUS_IGNORE);
+      MPI_Waitany(ntids-1,request,&index,&status); //MPI_STATUS_IGNORE);
+      if (index!=status.MPI_SOURCE)
+	printf("Mismatch index %d vs source %d\n",index,status.MPI_SOURCE);
       printf("Message from %d: %d\n",index,recv_buffer[index]);
     }
+//snippet end
   } else {
     float randomfraction = (rand() / (double)RAND_MAX);
-    int randomwait = (int) ( ntids * randomfraction );
-    printf("process %d waits for %e/%d=%d\n",
-	   mytid,randomfraction,ntids,randomwait);
+    int randomwait = (int) ( 2* ntids * randomfraction );
+    printf("process %d waits for %d\n",mytid,randomwait);
     sleep(randomwait);
-    ierr = MPI_Send(&randomwait,1,MPI_INT, ntids-1,0,comm); CHK(ierr);
+    ierr = MPI_Send(&mytid,1,MPI_INT, ntids-1,0,comm); CHK(ierr);
   }
+//snippet end
 
   MPI_Finalize();
   return 0;

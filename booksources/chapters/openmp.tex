@@ -101,7 +101,6 @@ are actually handled by the compiler, not the preprocessor.
 
 \Level 1 {Parallel regions}
 \commandref{parallelregion}
-\commandref{omp-parallel}
 
 The simplest way to create parallelism in OpenMP is to use
 the \indexpragma{parallel} pragma. A~block preceded by the \n{omp parallel} pragma
@@ -524,6 +523,8 @@ for k=1,n:
 
 \Level 2 {Reductions}
 
+So far we have focused on loops with independent iterations.
+Reductions are a common type of loop with dependencies.
 There is an extended discussion of reductions in section~\ref{sec:reduction}
 
 \Level 2 {\texttt{nowait}}
@@ -670,9 +671,9 @@ or doing \emph{I/O}\index{I/O!in OpenMP} operations.
 Another use of \n{single} is to perform initializations
 in a parallel region:
 \begin{verbatim}
+int a;
 #pragma omp parallel
 {
-  int a;
   #pragma omp single
     a = f(); // some computation
   #pragma omp sections
@@ -699,9 +700,9 @@ but it does not have the synchronization through the implicit barrier.
 \begin{exercise}
   Modify the above code to read:
 \begin{verbatim}
+int a;
 #pragma omp parallel
 {
-  int a;
   #pragma omp master
     a = f(); // some computation
   #pragma omp sections
@@ -863,6 +864,7 @@ for (i=0; i<N; i+) {
 \end{verbatim}
 
 \Level 1 {Persistent data}
+\commandref{threadprivate}
 
 Most data in OpenMP parallel regions is either inherited
 from the master thread and therefore shared, or temporary within the scope of the
@@ -876,6 +878,14 @@ is to have a private copy of a variable:
 \end{verbatim}
 This variable will then have the lifetime of an ordinary variable,
 but inside a parallel region the private copy is used.
+
+The typical application for thread-private variables is in
+\indexterm{random number generation}.
+A random number generator needs saved state, since it computes each next value
+from the current one. To have a parallel generator, each thread will create
+and initialize a private `current value' variable. This will persist
+even when the execution is not in a parallel region; it gets updated only
+in a parallel region.
 
 \Level 0 {Reductions}
 \commandref{reduction}
@@ -1345,6 +1355,14 @@ You can indicate task dependencies in several ways:
   By indicating what data is produced or absorbed by the tasks,
   the scheduler can construct the dependency graph for you.
 \end{enumerate}
+
+\Level 0 {Version 4 functionality}
+
+\Level 1 {SIMD}
+
+\indexpragma{simd}
+
+\indexpragma{declare simd}
 
 \Level 0 {Stuff}
 

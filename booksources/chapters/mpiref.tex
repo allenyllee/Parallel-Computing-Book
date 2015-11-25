@@ -287,6 +287,9 @@ a strided subset of an array; the receiver receives the data as a contiguous blo
   et cetera. Code this as a sequence of send/recv calls, using a vector datatype
   for the send, and a contiguous buffer for the receive.
 
+  For simplicity, skip the send to/from zero. What is the most elegant
+  solution if you want to include that case?
+
   For testing, define the array as $x[i]=i$.
 \end{exercise}
 
@@ -451,15 +454,28 @@ you force the send call to be blocking by using \n{MPI_Ssend}:
 \verbatimsnippet{ssendblock}
 
 \Level 1 {Receive status}
-\commandreflabel{mpi-source}
+\commandreflabel{mpi-status}
 
 Any time you receive data, there can be an \indexmpishow{MPI_Status}
-object describing the data that was received. This can be necessary if
+object describing the data that was received.
+%
+\mpiRoutineRef{MPI_Status}
+\begin{fortrannote}
+  In Fortran there is no \n{MPI_Status} type, instead an integer array
+  is created by the user.
+\end{fortrannote}
+\begin{pythonnote}
+  The status object is created as a python object. See also section~\ref{sec:python-stuff}.
+\end{pythonnote}
+
+The use of a status parameter can be necessary if
 you use \indexmpishow{MPI_ANY_SOURCE} or \indexmpishow{MPI_ANY_TAG} in
 the description of the receive message. If you are not interested in
 the status information, you can use the values
-\indexmpishow{MPI_STATUS_IGNORE} or (for \indexmpishow{MPI_Waitall},
-\indexmpishow{MPI_Waitany}) \indexmpishow{MPI_STATUSES_IGNORE}.
+\indexmpishow{MPI_STATUS_IGNORE} for \indexmpishow{MPI_Wait} and
+\indexmpishow{MPI_Waitany},
+or \indexmpishow{MPI_STATUSES_IGNORE} for \indexmpishow{MPI_Waitall}
+and \indexmpishow{MPI_Waitsome}.
 
 A receive call has a \n{count} parameter, but this describes the length
 of the buffer, not the amount of data expected. That quantity
@@ -476,16 +492,14 @@ MPI_Get_count(INTEGER status(MPI_STATUS_SIZE),INTEGER datatype,
 The status object is returned when the message is received. Thus, with
 \n{MPI_Recv} it is returned explicitly,
 but with \n{MPI_Irecv} it is returned from the \n{MPI_Wait...} call.
-\begin{fortrannote}
-  In Fortran the \n{MPI_Status} object needs to be explicitly created:
-\begin{verbatim}
-integer status(MPI_STATUS_SIZE)
-\end{verbatim}
-\end{fortrannote}
 
 In section~\ref{sec:mpi-source} we mentioned the master-worker model
 as one opportunity for inspecting the \indexmpishow{MPI_SOURCE} field
-of the \indexmpishow{MPI_Status} object. Here is a small example: 
+of the \indexmpishow{MPI_Status} object.
+%
+\mpiRoutineRef{MPI_SOURCE}
+%
+Here is a small example: 
 the tasks perform a variable amount of work (modeled here by a random wait)
 before sending a message to the master. The master waits for any source,
 and inspects the status field to report where the message comes from.
@@ -1048,7 +1062,9 @@ The following collectives construct a result on all processes:
 %
 \mpiRoutineRef{MPI_Allreduce}
 %
-\pythonnote{The receive buffer has to be of the same size as the send buffer.}
+\begin{pythonnote}
+  The receive buffer has to be of the same size as the send buffer.
+\end{pythonnote}
 %
 \indexmpishow{MPI_Alltoall}
 \begin{verbatim}
@@ -1320,6 +1336,20 @@ call MPI_Win_create( windowdata,window_size,window_element_size,... );
 \end{verbatim}
 
 \index{MPI!Fortran issues|)}
+
+\Level 1 {Python issues}
+\label{sec:python-stuff}
+
+\Level 2 {Arrays of objects}
+
+Objects of type \n{MPI.Status} or \n{MPI.Request} often need to be created
+in an array, for instance when looping through a number of \n{Isend} calls.
+In that case the following idiom may come in handy:
+\begin{verbatim}
+requests = [ None ] * nprocs
+for p in range(nprocs):
+  requests[p] = comm.Irecv( ... )
+\end{verbatim}
 
 \Level 1 {Cancelling messages}
 

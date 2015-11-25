@@ -14,7 +14,7 @@ info ::
 	@echo "Do: make app (where app=${APPS})"
 
 APPS = hello init thread \
-    recvblock sendblock ssendblock sendrecv irecv_source \
+    recvblock sendblock ssendblock sendrecv irecv_source irecvnonblock \
     putfence getfence randomput anysource cancel exscan \
     postwaitwin passive \
     reduce reduceinplace allreduce allreduceinplace gather gatherv \

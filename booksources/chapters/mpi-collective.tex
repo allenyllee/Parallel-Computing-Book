@@ -9,8 +9,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%\input chapters/mpi-idiom-collective
-
 \Level 0 {Working with global information}
 \commandidiom{collective}
 \index{collectives|(}
@@ -23,7 +21,13 @@ information that needs to be shared with all.
 For this sort of operation, MPI
 has \indexterm{collectives}.
 
-There are various cases.
+There are various cases,
+\begin{figure}[ht]
+  \includegraphics[scale=.8]{collective_comm}  
+  \caption{The four most common collectives}
+  \label{fig:collectives}
+\end{figure}
+the most common ones are illustrated in figure~\ref{fig:collectives}.
 
 Above, you saw how each process can perform its own computation
 with its own result. You may want to summarize these results
@@ -48,7 +52,7 @@ it is called a \indexterm{scatter}.
   How would you realize the following scenarios with MPI collectives?
   \begin{itemize}
   \item Let each process compute a random number. You want to print the
-    maximum of these numbers printed to your screen.
+    maximum of these numbers to your screen.
   \item Each process computes a random number again. Now you want to
     scale these numbers by their maximum. 
   \item Let each process compute a random number. You want to print on what processor the
@@ -135,6 +139,12 @@ is specified as
   \n{MPI_INTEGER} and \n{MPI_REAL} for Fortran, or more complicated types.
   See section~\ref{ref:mpidata} for details.
 \end{itemize}
+\begin{pythonnote}
+  In python it is both possible to send objects, and to send
+  more C-like buffers. The two possibilities correspond to
+  different routine names; the buffers have to be created as \n{numpy}
+  objects.
+\end{pythonnote}
 
 \begin{exercise}
   \label{ex:argv-bcast}
@@ -168,14 +178,34 @@ operators; section~\ref{ref:mpi:op-create}.
   finds and prints the maximum generated value. Let each process print its value,
   just to check the correctness of your program.
 
+\end{exercise}
+
   Here is how you initialize the random number generator uniquely on each process:
+
+{\footnotesize
 \begin{verbatim}
+C:
+
 // Initialize the random number generator
 srand((int)(mytid*(double)RAND_MAX/ntids));
 // compute a random number
 randomfraction = (rand() / (double)RAND_MAX);
 \end{verbatim}
-\end{exercise}
+\begin{verbatim}
+Fortran:
+
+  integer :: randsize
+  integer,allocatable,dimension(:) :: randseed
+  real :: random_value
+
+  call random_seed(size=randsize)
+  allocate(randseed(randsize))
+  do i=1,randsize
+     randseed(i) = 1023*mytid
+  end do
+  call random_seed(put=randseed)
+\end{verbatim}
+}
 
 Collective operations can also take an array argument, instead of just a scalar.
 In that case, the operation is applied pointwise to each location in the array.

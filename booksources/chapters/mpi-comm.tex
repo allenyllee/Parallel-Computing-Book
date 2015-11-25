@@ -152,6 +152,16 @@ Because of the SPMD nature of the program, you are now doing in parallel
 a broadcast in every processor column. Such operations often appear
 in \indexterm{dense linear algebra}.
 
+\begin{exercise}
+  \label{ex:rowcolcomm}
+  Organize your processors in a grid, and make subcommunicators for
+  the rows and columns. Do a broadcast from the first row and column
+  through the columns and rows respectively.
+
+  If you let the broadcast value be the column/row number, then
+  processor $(i,j)$ winds up with the numbers $i$~and~$j$. Test this.
+\end{exercise}
+
 As an example of communicator splitting, consider the recursive
 algorithm for \indextermbus{matrix}{transposition}.
 Processors are organized in a square grid. The matrix is divided

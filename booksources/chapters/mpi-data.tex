@@ -205,6 +205,13 @@ by replacing the index expression by \n{mat+1}.
   you send these elements with a single transfer?
 \end{exercise}
 
+\begin{exercise}
+  \label{ex:col-to-row}
+  Allocate a matrix on processor zero, using Fortran column-major storage.
+  Using $P$ sendrecv calls, distribute the rows of this matrix among the
+  processors.
+\end{exercise}
+
 \Level 2 {Indexed type}
 \commandref{data:indexed}
 

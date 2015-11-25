@@ -9,7 +9,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%\input chapters/mpi-idiom-ptp
 \Level 0 {Distributed computing and distributed data}
 
 One reason for using MPI is that sometimes you need to work on
@@ -46,7 +45,10 @@ for (int ilocal=0; ilocal<nlocal; ilocal++) {
 
 \begin{exercise}
   \label{ex:sumsquares}
-  We want to compute $\sum_{n=1}^Nn^2$, and we do that as follows.
+  We want to compute $\sum_{n=1}^Nn^2$, and we do that as follows
+  by filling in an array and summing the elements. (Yes, you can do it
+  without an array, but for purposes of the exercise do it with.)
+
   Read in the global \n{N} parameter, and make sure that it is a multiple
   of the number $P$ of processors. Your code should produce an error message and
   exit immediately if it doesn't.
@@ -101,6 +103,10 @@ see section~\ref{sec:allreduce}.
   distributed vector of size~$N$ with elements $x[i]=i$,
   and compute~$x^tx$.
   As before, the right value is $(2N^3+3N^2+N)/6$.
+
+  Use the inner product value to scale to vector so that it has
+  norm~1.
+  Check that your computation is correct.
 \end{exercise}
 
 \Level 0 {Local information exchange}
@@ -633,9 +639,18 @@ allocate a large enough receive buffer, and do a regular receive to
 have the data copied.
 
 \Level 2 {Wildcards in the receive call}
-\commandref{mpi-source}
+\commandref{mpi-status}
 
-In some applications it makes sense that a message can come from 
+With some receive calls you know everything about the message in advance:
+its source, tag, and size. In other cases you want to leave some options
+open, and inspect the message for them after it was received.
+To do this, the receive call has a \emph{status}\index{status!of receive call}
+parameter.
+This status is a property of the actually received messsage, so \n{MPI_Irecv}
+does not have a status parameter, but \n{MPI_Wait} does.
+
+Here are some of the uses of the status:
+\heading{Source} In some applications it makes sense that a message can come from 
 one of a number of processes. In this case, it is possible to specify
 \indexmpishow{MPI_ANY_SOURCE} as the source. To find out where the message actually
 came from, you would use the \indexmpishow{MPI_SOURCE} field of the status object

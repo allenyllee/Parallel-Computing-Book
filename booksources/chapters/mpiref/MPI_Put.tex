@@ -1,8 +1,10 @@
+C:
 int MPI_Put(
   const void *origin_addr, int origin_count, MPI_Datatype origin_datatype,
   int target_rank, MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype,
   MPI_Win win)
 
+Semantics:
 IN origin_addr: initial address of origin buffer (choice)
 IN origin_count: number of entries in origin buffer (non-negative integer)
 IN origin_datatype: datatype of each entry in origin buffer (handle)
@@ -12,6 +14,7 @@ IN target_count: number of entries in target buffer (non-negative integer)
 IN target_datatype: datatype of each entry in target buffer (handle)
 IN win: window object used for communication (handle)
 
+Fortran:
 MPI_Put(origin_addr, origin_count, origin_datatype,
   target_rank, target_disp, target_count, target_datatype, win, ierror)
 TYPE(*), DIMENSION(..), INTENT(IN), ASYNCHRONOUS :: origin_addr
