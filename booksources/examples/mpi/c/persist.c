@@ -5,6 +5,8 @@
    %%%% "Parallel Computing"
    %%%% by Victor Eijkhout, copyright 2013-5
    %%%%
+   %%%% persist.c : test of persistent communication
+   %%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */

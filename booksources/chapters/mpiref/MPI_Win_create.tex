@@ -14,6 +14,6 @@ TYPE(MPI_Win), INTENT(OUT) :: win
 INTEGER, OPTIONAL, INTENT(OUT) :: ierror
 
 Python:
-Create
-   (type cls, memory, int disp_unit=1,
+MPI.Win.Create
+   (memory, int disp_unit=1,
     Info info=INFO_NULL, Intracomm comm=COMM_SELF)

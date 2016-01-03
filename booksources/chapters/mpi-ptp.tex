@@ -940,21 +940,23 @@ calls in a single epoch. Hence, we can characterize an epoch as an
 as an \indextermsub{exposure}{epoch} on the target.
 
 Assertions are an integer parameter: you can add or logical-or values.
-The value zero is always correct. There are two types of parameters.
-Local assertions are:
-\begin{itemize}
-  \item\indexmpishow{MPI_MODE_NOSTORE} The preceding epoch did not store
-    anything in this window.
-  \item\indexmpishow{MPI_MODE_NOPUT} The following epoch will not store
-    anything in this window.
-\end{itemize}
-Global assertions:
-\begin{itemize}
-  \item\indexmpishow{MPI_MODE_NOPRECEDE} This process made no \ac{RMA}
-    calls in the preceding epoch.  
-  \item\indexmpishow{MPI_MODE_NOSUCCEED} This process will make no
-    \ac{RMA} calls in the next epoch.
-\end{itemize}
+The value zero is always correct. For further information, see
+section~\ref{sec:mpi-assert}.
+
+%% Local assertions are:
+%% \begin{itemize}
+%%   \item\indexmpishow{MPI_MODE_NOSTORE} The preceding epoch did not store
+%%     anything in this window.
+%%   \item\indexmpishow{MPI_MODE_NOPUT} The following epoch will not store
+%%     anything in this window.
+%% \end{itemize}
+%% Global assertions:
+%% \begin{itemize}
+%%   \item\indexmpishow{MPI_MODE_NOPRECEDE} This process made no \ac{RMA}
+%%     calls in the preceding epoch.  
+%%   \item\indexmpishow{MPI_MODE_NOSUCCEED} This process will make no
+%%     \ac{RMA} calls in the next epoch.
+%% \end{itemize}
 
 \index{window|)}
 

@@ -23,3 +23,7 @@ TYPE(MPI_Datatype), INTENT(IN) :: origin_datatype, target_datatype
 INTEGER(KIND=MPI_ADDRESS_KIND), INTENT(IN) :: target_disp
 TYPE(MPI_Win), INTENT(IN) :: win
 INTEGER, OPTIONAL, INTENT(OUT) :: ierror
+
+Python:
+
+win.Put(self, origin, int target_rank, target=None)

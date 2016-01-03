@@ -134,6 +134,7 @@ sends the data.
 New MPI data types are created by
 \begin{itemize}
 \item \indexmpishow{MPI_Type_contiguous}
+\item \indexmpishow{MPI_Type_create_subarray}
 \item \indexmpishow{MPI_Type_vector}
 \item \indexmpishow{MPI_Type_struct}
 \item \indexmpishow{MPI_Type_indexed}
@@ -211,6 +212,17 @@ by replacing the index expression by \n{mat+1}.
   Using $P$ sendrecv calls, distribute the rows of this matrix among the
   processors.
 \end{exercise}
+
+\Level 2 {Subarray type}
+
+The vector datatype can be used for blocks in an array of dimension
+more than~2 by using it recursively. However, this gets
+tedious. Instead, there is an explicit subarray type
+%
+\mpiRoutineRef{MPI_Type_create_subarray}
+%
+This describes the dimensionality and extent of the array, and
+the starting point (the `upper left corner') and extent of the subarray.
 
 \Level 2 {Indexed type}
 \commandref{data:indexed}
