@@ -3,7 +3,9 @@
    %%%%
    %%%% This program file is part of the book and course
    %%%% "Parallel Computing"
-   %%%% by Victor Eijkhout, copyright 2013-5
+   %%%% by Victor Eijkhout, copyright 2013-6
+   %%%%
+   %%%% vector.c : vector datatype
    %%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -25,12 +27,15 @@ int main(int argc,char **argv) {
   int sender = 0, receiver = 1, the_other = 1-mytid,
     count = 5,stride=2;
   double *source,*target;
+  //snippet vector
   source = (double*) malloc(stride*count*sizeof(double));
   target = (double*) malloc(count*sizeof(double));
+  //snippet end
 
   for (i=0; i<stride*count; i++)
     source[i] = i+.5;
 
+  //snippet vector
   MPI_Datatype newvectortype;
   if (mytid==sender) {
     MPI_Type_vector(count,1,stride,MPI_DOUBLE,&newvectortype);
@@ -45,6 +50,7 @@ int main(int argc,char **argv) {
     MPI_Get_count(&recv_status,MPI_DOUBLE,&recv_count);
     ASSERT(recv_count==count);
   }
+  //snippet end
   
   if (mytid==receiver) {
     for (i=0; i<count; i++)

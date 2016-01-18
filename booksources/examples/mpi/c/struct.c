@@ -3,7 +3,9 @@
    %%%%
    %%%% This program file is part of the book and course
    %%%% "Parallel Computing"
-   %%%% by Victor Eijkhout, copyright 2013-5
+   %%%% by Victor Eijkhout, copyright 2013-6
+   %%%%
+   %%%% struct.c : illustrating type struct
    %%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -23,11 +25,13 @@ int main(int argc,char **argv) {
     return -1;
   }
   int sender = 0, receiver = 1, the_other = 1-mytid;
+  //snippet structure
   struct object {
     char c;
     double x[2];
     int i;
   };
+  //snippet end
 
   if (mytid==sender)
     printf("Structure has size %d, naive size %d\n",
@@ -39,6 +43,7 @@ int main(int argc,char **argv) {
     myobject.x[1] = 1.5; myobject.i = 37;
   }
 
+  //snippet structure
   MPI_Datatype newstructuretype;
   int structlen = 3;
   int blocklengths[structlen]; MPI_Datatype types[structlen];
@@ -63,6 +68,7 @@ int main(int argc,char **argv) {
     MPI_Recv(&myobject,1,newstructuretype,the_other,0,comm,MPI_STATUS_IGNORE);
   }
   MPI_Type_free(&newstructuretype);
+  //snippet end
   
   if (mytid==receiver) {
     printf("%c %e %e %d\n",myobject.c,myobject.x[0],myobject.x[1],myobject.i);

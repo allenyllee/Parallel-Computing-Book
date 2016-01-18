@@ -5,6 +5,8 @@
    %%%% "Parallel Computing"
    %%%% by Victor Eijkhout, copyright 2013-5
    %%%%
+   %%%% thread.c : initializing MPI for multi-threaded
+   %%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
@@ -19,6 +21,7 @@ int main(int argc,char **argv) {
   MPI_Comm comm;
   int mytid=-1,ntids,threading,err;
   
+  //snippet thread
   MPI_Init_thread(&argc,&argv,MPI_THREAD_MULTIPLE,&threading);
   comm = MPI_COMM_WORLD;
   MPI_Comm_rank(comm,&mytid);
@@ -33,5 +36,6 @@ int main(int argc,char **argv) {
     }
   }
   MPI_Finalize();
+  //snippet end
   return 0;
 }

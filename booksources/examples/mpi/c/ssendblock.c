@@ -3,7 +3,9 @@
    %%%%
    %%%% This program file is part of the book and course
    %%%% "Parallel Computing"
-   %%%% by Victor Eijkhout, copyright 2013-5
+   %%%% by Victor Eijkhout, copyright 2013-6
+   %%%%
+   %%%% ssendblock.c : with synchronous sends not eager limit applies
    %%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -21,6 +23,7 @@ int main(int argc,char **argv) {
 #include "globalinit.c"
 
   if (mytid>1) goto skip;
+  //snippet ssendblock
   other = 1-mytid;
   sendbuf = (int*) malloc(sizeof(int));
   recvbuf = (int*) malloc(sizeof(int));
@@ -28,6 +31,7 @@ int main(int argc,char **argv) {
   MPI_Ssend(sendbuf,size,MPI_INT,other,0,comm);
   MPI_Recv(recvbuf,size,MPI_INT,other,0,comm,&status);
   printf("This statement is not reached\n");
+  //snippet end
   free(sendbuf); free(recvbuf);
   
  skip:

@@ -3,7 +3,9 @@
    %%%%
    %%%% This program file is part of the book and course
    %%%% "Parallel Computing"
-   %%%% by Victor Eijkhout, copyright 2013-5
+   %%%% by Victor Eijkhout, copyright 2013-6
+   %%%%
+   %%%% pingpong.c : ping-pong with blocking send and recv
    %%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -19,6 +21,7 @@ int main(int argc,char **argv) {
 #include "globalinit.c"
 
 #define NEXPERIMENTS 100
+  //snippet pingpong
   int src = 0,tgt = ntids/2;
   double t, send=1.1,recv;
   if (mytid==src) {
@@ -35,6 +38,7 @@ int main(int argc,char **argv) {
       MPI_Send(&recv,1,MPI_DOUBLE,src,0,comm);
     }
   }
+  //snippet end
 
   MPI_Finalize();
   return 0;

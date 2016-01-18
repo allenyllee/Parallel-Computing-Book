@@ -3,7 +3,9 @@
    %%%%
    %%%% This program file is part of the book and course
    %%%% "Parallel Computing"
-   %%%% by Victor Eijkhout, copyright 2013-5
+   %%%% by Victor Eijkhout, copyright 2013-6
+   %%%%
+   %%%% gatherv.c : MPI_Gatherv
    %%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -25,6 +27,7 @@ int main(int argc,char **argv) {
   localdata = (int*) malloc( localsize*sizeof(int) );
   for (i=0; i<localsize; i++)
     localdata[i] = mytid+1;
+  //snippet gatherv
   // we assume that each process has an array "localdata"
   // of size "localsize"
 
@@ -37,12 +40,14 @@ int main(int argc,char **argv) {
   // everyone contributes their info
   MPI_Gather(&localsize,1,MPI_INT,
 	     localsizes,1,MPI_INT,root,comm);
+  //snippet end
   if (mytid==root) {
     printf("Local sizes: ");
     for (i=0; i<ntids; i++)
       printf("%d, ",localsizes[i]);
     printf("\n");
   }
+  //snippet gatherv
   // the root constructs the offsets array
   if (mytid==root) {
     offsets[0] = 0;
@@ -53,6 +58,7 @@ int main(int argc,char **argv) {
   // everyone contributes their data
   MPI_Gatherv(localdata,localsize,MPI_INT,
 	      alldata,localsizes,offsets,MPI_INT,root,comm);
+  //snippet end
   if (mytid==root) {
     int p=0;
     printf("Collected:\n");

@@ -14,8 +14,19 @@ info ::
 
 info ::
 	@echo "make regression"
+TESTS = \
+    allreduce.py anysource.py bcast.py buffertoolarge.py \
+    gatherv.py getfence.py irecvnonblock.py irecv_source.py \
+    hello.py irecvloop.py persist.py putfence.py \
+    pingpong.py scan.py scipingpong.py 
+TESTSWRONG = buffertoosmall.py 
+TESTSNOT = exscan.py
+TESTS_IN_PROGRESS =  interleave.py
 regression :
-	@echo "we will do regression later"
+	@for p in ${TESTS} ; do \
+	    echo "Testing $$p" ; \
+	    mpirun -np 4 /opt/local/bin/python2.7 $$p ; \
+	done
 
 info ::
 	@echo "make listsources"

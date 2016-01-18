@@ -44,14 +44,14 @@ int main(int argc,char **argv) {
 
   if (mytid>1) goto skip;
 
-//snippet catchmain
+
   library my_library(comm);
   MPI_Isend(&sdata,1,MPI_INT,other,1,comm,&(request[0]));
   my_library.communication_start();
   MPI_Irecv(&rdata,1,MPI_INT,other,MPI_ANY_TAG,comm,&(request[1]));
   MPI_Waitall(2,request,status);
   my_library.communication_end();
-//snippet end
+
   if (status[1].MPI_TAG==2)
     printf("wrong!\n");
 

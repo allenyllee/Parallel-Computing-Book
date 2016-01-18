@@ -3,7 +3,9 @@
    %%%%
    %%%% This program file is part of the book and course
    %%%% "Parallel Computing"
-   %%%% by Victor Eijkhout, copyright 2013-5
+   %%%% by Victor Eijkhout, copyright 2013-6
+   %%%%
+   %%%% contiguous.c : using contiguous data type
    %%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -30,6 +32,7 @@ int main(int argc,char **argv) {
   for (i=0; i<count; i++)
     source[i] = i+.5;
 
+  //snippet contiguous
   MPI_Datatype newvectortype;
   if (mytid==sender) {
     MPI_Type_contiguous(count,MPI_DOUBLE,&newvectortype);
@@ -44,6 +47,7 @@ int main(int argc,char **argv) {
     MPI_Get_count(&recv_status,MPI_DOUBLE,&recv_count);
     ASSERT(count==recv_count);
   }
+  //snippet end
   
   if (mytid==receiver) {
     for (i=0; i<count; i++)

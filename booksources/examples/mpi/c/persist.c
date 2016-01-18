@@ -3,7 +3,7 @@
    %%%%
    %%%% This program file is part of the book and course
    %%%% "Parallel Computing"
-   %%%% by Victor Eijkhout, copyright 2013-5
+   %%%% by Victor Eijkhout, copyright 2013-6
    %%%%
    %%%% persist.c : test of persistent communication
    %%%%
@@ -54,6 +54,7 @@ int main(int argc,char **argv) {
 
   // Now persistent communication
   for (int cnt=0,s=1; cnt<NSIZES; s*=10,cnt++) {
+  //snippet persist
     if (mytid==src) {
       MPI_Send_init(send,s,MPI_DOUBLE,tgt,0,comm,requests+0);
       MPI_Recv_init(recv,s,MPI_DOUBLE,tgt,0,comm,requests+1);
@@ -71,6 +72,7 @@ int main(int argc,char **argv) {
 	MPI_Send(recv,s,MPI_DOUBLE,src,0,comm);
       }
     }
+  //snippet end
   }
   if (mytid==src) {
     for (int cnt=0,s=1; cnt<NSIZES; s*=10,cnt++) {

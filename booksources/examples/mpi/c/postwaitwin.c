@@ -1,3 +1,16 @@
+/* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   %%%%
+   %%%% This program file is part of the book and course
+   %%%% "Parallel Computing"
+   %%%% by Victor Eijkhout, copyright 2013-6
+   %%%%
+   %%%% postwaitwin.c : active target synchronization with post/wait/etc
+   %%%%
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
 #include <stdlib.h>
 #include <mpi.h>
 #include <stdio.h>
@@ -20,6 +33,7 @@ int main(int argc,char **argv) {
     origin = 0; target = ntids-1;
     MPI_Comm_group(comm,&all_group);
 
+  //snippet postwaittwo
     if (mytid==origin) {
       MPI_Group_incl(all_group,1,&target,&two_group);
       // access
@@ -36,6 +50,7 @@ int main(int argc,char **argv) {
       MPI_Win_post(two_group,0,the_window);
       MPI_Win_wait(the_window);
     }
+  //snippet end
     if (mytid==target)
       printf("Got the following: %d\n",other_number);
     

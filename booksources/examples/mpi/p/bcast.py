@@ -5,7 +5,7 @@
 ####
 #### This program file is part of the book and course
 #### "Parallel Computing"
-#### by Victor Eijkhout, copyright 2013-5
+#### by Victor Eijkhout, copyright 2013-6
 ####
 #### bcast.py : broadcast of numpy float
 ####
@@ -27,6 +27,7 @@ if nprocs<2:
 root = 1
 dsize = 10
 
+#snippet bcastp
 # first native
 if procid==root:
     buffer = [ 5.0 ] * dsize
@@ -42,5 +43,4 @@ if procid==root:
 comm.Bcast( buffer,root=root )
 if not all( buffer==5.0 ):
     print "Something wrong on proc %d: numpy buffer <<%s>>" % (procid,str(buffer))
-
-    
+#snippet end

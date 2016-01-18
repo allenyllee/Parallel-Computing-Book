@@ -3,7 +3,9 @@
    %%%%
    %%%% This program file is part of the book and course
    %%%% "Parallel Computing"
-   %%%% by Victor Eijkhout, copyright 2013
+   %%%% by Victor Eijkhout, copyright 2013-6
+   %%%%
+   %%%% mvp2d.cxx : use Reduce_scatter and lots of group stuff
    %%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -67,10 +69,12 @@ public:
     if (mytid==0) 
       printf("Setting up environment on %dx%d processors\n",ntids_i,ntids_j);
     make_transpose_communicator();
+  //snippet commsplitrowcol
     row_number = ntids % ntids_i;
     col_number = ntids / ntids_j;
     MPI_Comm_split(global_comm,row_number,mytid,&row_comm);
     MPI_Comm_split(global_comm,col_number,mytid,&col_comm);
+  //snippet end
     return;
   }
 };
@@ -111,6 +115,7 @@ int main(int argc,char **argv) {
       *local_x = new double[size_x],
       *local_y = new double[size_y],
       *local_matrix = new double[size_x*size_y];
+    //snippet mvp2d
     MPI_Allgather(&my_x,1,MPI_DOUBLE,
        	  local_x,1,MPI_DOUBLE,environ.col_comm);
     bli_dgemv( BLIS_NO_TRANSPOSE,
@@ -127,6 +132,7 @@ int main(int argc,char **argv) {
     // 		local_x,1,0.e0,local_y,1);
     MPI_Reduce_scatter(local_y,&my_y,&ione,MPI_DOUBLE,
 	  MPI_SUM,environ.row_comm);
+    //snippet end
   }
 
   MPI_Finalize();

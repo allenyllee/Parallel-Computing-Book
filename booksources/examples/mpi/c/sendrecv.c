@@ -3,7 +3,9 @@
    %%%%
    %%%% This program file is part of the book and course
    %%%% "Parallel Computing"
-   %%%% by Victor Eijkhout, copyright 2013-5
+   %%%% by Victor Eijkhout, copyright 2013-6
+   %%%%
+   %%%% sendrecv.c : ring communication through sendrecv
    %%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -30,13 +32,17 @@ int main(int argc,char **argv) {
   if (mytid>2)
     goto skip;
 
+  //snippet sendrecvring
   right = (mytid+1)%3; left = (mytid+2)%3;
+  //snippet end
   my_data = 10*mytid;
   reference_data = 10*left;
 
+  //snippet sendrecvring
   MPI_Sendrecv( &my_data,1,MPI_INTEGER, right,0,
 		&other_data,1,MPI_INTEGER, left,0,
 		comm,MPI_STATUS_IGNORE);
+  //snippet end
   if (other_data!=reference_data)
     printf("Error on process %d: received %d from %d, expected %d\n",
 	   mytid,other_data,left,reference_data);

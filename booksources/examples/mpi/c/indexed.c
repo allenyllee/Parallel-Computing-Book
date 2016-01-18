@@ -3,7 +3,9 @@
    %%%%
    %%%% This program file is part of the book and course
    %%%% "Parallel Computing"
-   %%%% by Victor Eijkhout, copyright 2013-5
+   %%%% by Victor Eijkhout, copyright 2013-6
+   %%%%
+   %%%% indexed.c : MPI_Type_indexed
    %%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -26,10 +28,12 @@ int main(int argc,char **argv) {
     count = 5,totalcount = 15;
   int *source,*target;
   int *indices,*blocklengths;
+  //snippet indexed
   indices = (int*) malloc(count*sizeof(int));
   blocklengths = (int*) malloc(count*sizeof(int));
   source = (int*) malloc(totalcount*sizeof(int));
   target = (int*) malloc(count*sizeof(int));
+  //snippet end
 
   indices[0] = 2; indices[1] = 3; indices[2] = 5;
   indices[3] = 7; indices[4] = 11;
@@ -38,6 +42,7 @@ int main(int argc,char **argv) {
   for (i=0; i<totalcount; ++i)
     source[i] = i;
 
+  //snippet indexed
   MPI_Datatype newvectortype;
   if (mytid==sender) {
     MPI_Type_indexed(count,blocklengths,indices,MPI_INT,&newvectortype);
@@ -52,6 +57,7 @@ int main(int argc,char **argv) {
     MPI_Get_count(&recv_status,MPI_INT,&recv_count);
     ASSERT(recv_count==count);
   }
+  //snippet end
   
   if (mytid==receiver) {
     int i=3,val=7;

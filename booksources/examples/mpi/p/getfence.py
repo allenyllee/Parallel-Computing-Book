@@ -5,7 +5,7 @@
 ####
 #### This program file is part of the book and course
 #### "Parallel Computing"
-#### by Victor Eijkhout, copyright 2013-5
+#### by Victor Eijkhout, copyright 2013-6
 ####
 #### getfence.py : use fences and Get calls
 ####
@@ -26,6 +26,7 @@ if nprocs<2:
 other = nprocs-1-procid
 mydata = random.random()
 
+#snippet getfencep
 if procid==0 or procid==nprocs-1:
     win_mem = np.empty( 1,dtype=np.float64 )
     win = MPI.Win.Create( win_mem,comm=comm )
@@ -40,6 +41,7 @@ if procid==0 or procid==nprocs-1:
     print "[%d] putting %e" % (procid,mydata)
     win.Put( putdata,other )
 win.Fence()
+#snippet end
 
 # see what you got
 if procid==0 or procid==nprocs-1:

@@ -3,7 +3,9 @@
    %%%%
    %%%% This program file is part of the book and course
    %%%% "Parallel Computing"
-   %%%% by Victor Eijkhout, copyright 2013-5
+   %%%% by Victor Eijkhout, copyright 2013-6
+   %%%%
+   %%%% sendblock.c : illustration of the eager limit
    %%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -30,6 +32,7 @@ int main(int argc,char **argv) {
   /* we only use processors 0 and 1 */
   int other;
   if (mytid>1) goto skip;
+  //snippet sendblock
   other = 1-mytid;
   /* loop over increasingly large messages */
   for (int size=1; size<2000000000; size*=10) {
@@ -48,6 +51,7 @@ int main(int argc,char **argv) {
       printf("Send did not block for size %d\n",size);
     free(sendbuf); free(recvbuf);
   }
+  //snippet end
   
  skip:
   MPI_Finalize();

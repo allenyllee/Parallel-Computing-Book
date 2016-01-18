@@ -3,7 +3,9 @@
    %%%%
    %%%% This program file is part of the book and course
    %%%% "Parallel Computing"
-   %%%% by Victor Eijkhout, copyright 2013-5
+   %%%% by Victor Eijkhout, copyright 2013-6
+   %%%%
+   %%%% cancel.c : cancelling a send operation
    %%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -34,6 +36,7 @@ int main(int argc,char **argv) {
   // Initialize the random number generator
   srand((int)(mytid*(double)RAND_MAX/ntids));
 
+  //snippet cancel
   if (mytid==ntids-1) {
     MPI_Status status;
     ierr = MPI_Recv(dummy,0,MPI_INT, MPI_ANY_SOURCE,0,comm,
@@ -56,6 +59,7 @@ int main(int argc,char **argv) {
       ierr = MPI_Cancel(&request); CHK(ierr);
     }
   }
+  //snippet end
 
   MPI_Finalize();
   return 0;

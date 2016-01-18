@@ -3,7 +3,9 @@
    %%%%
    %%%% This program file is part of the book and course
    %%%% "Parallel Computing"
-   %%%% by Victor Eijkhout, copyright 2013-5
+   %%%% by Victor Eijkhout, copyright 2013-6
+   %%%%
+   %%%% pack.c : use pack and unpack to send data
    %%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -35,12 +37,15 @@ int main(int argc,char **argv) {
   int buflen = 1000,
     position;
   char *buffer = malloc(buflen);
+  //snippet packunpack
   if (mytid==sender) {
+  //snippet end
     int len=2*sizeof(int)+nsends*sizeof(double);
     if (len>buflen) {
       printf("Not enough buffer space, need %d\n",len);
       return -4;
     }
+  //snippet packunpack
     MPI_Pack(&nsends,1,MPI_INT,buffer,buflen,&position,comm);
     for (i=0; i<nsends; i++) {
       double value = rand()/(double)RAND_MAX;
@@ -58,7 +63,10 @@ int main(int argc,char **argv) {
     }
     MPI_Unpack(buffer,buflen,&position,&irecv_value,1,MPI_INT,comm);
     ASSERT(irecv_value==nsends);
+  //snippet end
+  //snippet packunpack
   }
+  //snippet end
 
   MPI_Finalize();
   return 0;

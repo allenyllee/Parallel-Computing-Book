@@ -44,15 +44,17 @@ int main(int argc,char **argv) {
   int other = 1-mytid, sdata=5,rdata;
   MPI_Request request[2];
   MPI_Status status[2];
-  library my_library(comm);
 
   if (mytid>1) goto skip;
 
+  //snippet catchmain
+  library my_library(comm);
   ierr = MPI_Isend(&sdata,1,MPI_INT,other,1,comm,&(request[0])); CHK(ierr);
   my_library.communication_start();
   ierr = MPI_Irecv(&rdata,1,MPI_INT,other,MPI_ANY_TAG,comm,&(request[1])); CHK(ierr);
   ierr = MPI_Waitall(2,request,status); CHK(ierr);
   my_library.communication_end();
+  //snippet end
 
   if (status[1].MPI_TAG==2)
     printf("wrong!\n");

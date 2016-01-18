@@ -5,6 +5,8 @@
    %%%% "Parallel Computing"
    %%%% by Victor Eijkhout, copyright 2013-5
    %%%%
+   %%%% reducescatter.c : simple illustration of reduce_scatter
+   %%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
@@ -18,8 +20,10 @@ int main(int argc,char **argv) {
 
 #include "globalinit.c"
 
+  //snippet reducescatter
   // record what processes you will communicate with
   int *recv_requests;
+  //snippet end
   int *counts,nrecv_requests=0,nsend_requests;
   recv_requests = (int*) malloc(ntids*sizeof(int));
   counts = (int*) malloc(ntids*sizeof(int));
@@ -37,14 +41,17 @@ int main(int argc,char **argv) {
   for (i=0; i<ntids; i++)
     printf("%d ",recv_requests[i]);
   printf("\n");
+  //snippet reducescatter
   // find how many procs want to communicate with you
   MPI_Reduce_scatter
     (recv_requests,&nsend_requests,counts,MPI_INT,
     MPI_SUM,comm);
+  //snippet end
   printf("[%d]: %d requests\n",mytid,nsend_requests);
   MPI_Request *mpi_requests,irequest=0;
   mpi_requests = (MPI_Request*) malloc((nrecv_requests+nsend_requests)*sizeof(MPI_Request));
   int msg=1;
+  //snippet reducescatter
   // send a msg to the selected processes
   for (i=0; i<ntids; i++)
     if (recv_requests[i]>0)
@@ -55,6 +62,7 @@ int main(int argc,char **argv) {
     MPI_Irecv(&msg,1,MPI_INT,MPI_ANY_SOURCE,MPI_ANY_TAG,comm,
         mpi_requests+irequest++);
   MPI_Waitall(irequest,mpi_requests,MPI_STATUSES_IGNORE);
+  //snippet end
 
   MPI_Finalize();
   return 0;

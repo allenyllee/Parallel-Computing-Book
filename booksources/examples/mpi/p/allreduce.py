@@ -24,6 +24,7 @@ if nprocs<2:
     print "C'mon, get real...."
     sys.exit(1)
 
+#snippet allreducep
 random_number = random.randint(1,nprocs*nprocs)
 print "[%d] random=%d" % (procid,random_number)
 
@@ -36,6 +37,7 @@ myrandom[0] = random_number
 allrandom = np.empty(nprocs,dtype=np.int)
 
 comm.Allreduce(myrandom,allrandom[:1],op=MPI.MAX)
+#snippet end
 
 if procid==0:
     print "Python numpy:\n  max=%d" % allrandom[0]

@@ -3,7 +3,9 @@
    %%%%
    %%%% This program file is part of the book and course
    %%%% "Parallel Computing"
-   %%%% by Victor Eijkhout, copyright 2013-5
+   %%%% by Victor Eijkhout, copyright 2013-6
+   %%%%
+   %%%% reduce.c : reduction
    %%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -18,6 +20,7 @@ int main(int argc,char **argv) {
 
 #include "globalinit.c"
 
+  //snippet reduce
   float myrandom = (float) rand()/(float)RAND_MAX,
     result;
   int target_proc = ntids-1;
@@ -28,6 +31,7 @@ int main(int argc,char **argv) {
   if (mytid==target_proc)
     printf("Result %6.3f compared to ntids/2=%5.2f\n",
            result,ntids/2.);
+  //snippet end
 
   MPI_Finalize();
   return 0;
