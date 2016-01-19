@@ -1,0 +1,317 @@
+% -*- latex -*-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Parallel Computing'
+%%%% by Victor Eijkhout, copyright 2012-6
+%%%%
+%%%% mpiexamples.tex : MPI example codes
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\Level 0 {A}
+
+\indexmpishow{MPI_Allgatherv}
+
+Prior to the actual gatherv call, we need to construct the count and
+displacement arrays. The easiest way is to use a reduction.
+
+\verbatimsnippet{allgathervc}
+
+In python the receive buffer has to contain the counts and
+displacements arrays.
+
+\verbatimsnippet{allgathervp}
+
+\indexmpishow{MPI_Allreduce}
+
+We give each process a random number, and sum these numbers together.
+The result should be approximate $1/2$ times the number of processes.
+
+\verbatimsnippet{allreducec}
+
+Using the \indexmpishow{MPI_IN_PLACE} specifier:
+
+\verbatimsnippet{allreduceinplace}
+
+For Python we illustrate both the native and the numpy variant. In the
+numpy variant we create an array for the receive buffer, even though
+only one element is used.
+
+\verbatimsnippet{allreducep}
+
+\Level 0 {B}
+
+\indexmpishow{MPI_Bcast}
+
+In python we illustrate the native and numpy variants. In the native
+variant the result is given as a function return; in the numpy variant
+the send buffer is reused.
+%
+\verbatimsnippet{bcastp}
+
+\Level 0 {C}
+
+\indexmpishow{MPI_Cancel}
+
+Cancelling a send operation:
+
+\verbatimsnippet{cancel}
+
+\indexmpishow{MPI_Cart...}
+
+\verbatimsnippet{cart}
+\verbatimsnippet{cartshift}
+
+\indexmpishow{MPI_Comm_dup}
+
+Giving a library its own communicator.
+
+\verbatimsnippet{rightcatchlib}
+\verbatimsnippet{catchmain}
+
+\Level 0 {E}
+
+\indexmpishow{MPI_Exscan}
+
+Exclusive scan:
+%
+\verbatimsnippet{myfirst}
+%
+\verbatimsnippet{exscanp}
+
+\Level 0 {F}
+
+\indexmpishow{MPI_Fetch_and_op}
+
+A root process has a table of data; the other processes do 
+atomic gets and update of that data using \indexterm{passive target
+  synchronization} through \indexmpishow{MPI_Win_lock}.
+%
+\verbatimsnippet{fetchop}
+
+\Level 0 {G}
+
+\indexmpishow{MPI_Gather}
+
+Gather data onto a root. Only the root allocates the gather buffer.
+\verbatimsnippet{gather}
+
+\indexmpishow{MPI_Gatherv}
+
+Gather irregularly sized data onto a root. We first need an
+\n{MPI_Gather} to determine offsets.
+%
+\verbatimsnippet{gatherv}
+%
+\verbatimsnippet{gathervp}
+
+\indexmpishow{MPI_Get}
+
+One process does a one-sided get from another. This also illustrates
+setting size parameters in
+\indexmpishow{MPI_Win_create}. Synchronization is done with
+\indexmpishow{MPI_Win_fence}.
+%
+\verbatimsnippet{getfence}
+
+We make a null window on processes that do not participate.
+%
+\verbatimsnippet{getfencep}
+
+\Level 0 {I}
+
+\indexmpishow{MPI_Init_thread}
+
+The \n{Init_thread} call takes the requested level of thread support
+and reports back what the provided level is.
+%
+\verbatimsnippet{thread}
+
+\Level 0 {P}
+
+\indexmpishow{MPI_Pack}
+%
+Use packing to make a self-documenting message: the first element is
+an integer describing how many doubles follow. The
+\indexmpishow{MPI_Unpack} call inspects the integer, then calls unpack
+on the integers the appropriate number of times.
+%
+\verbatimsnippet{packunpack}
+
+\indexmpishow{MPI_Put}
+
+A one-sided \indexmpishow{MPI_Put} with active target synchronization
+through the use of fences. This is more or less the same as the
+\n{MPI_Get} example above.
+%
+\verbatimsnippet{putblock}
+%
+\verbatimsnippet{putblockp}
+
+\Level 0 {R}
+
+\indexmpishow{MPI_Recv}
+
+Using the \indexmpishow{MPI_ANY_SOURCE} specifier. We retrieve the
+actual source from the \indexmpishow{MPI_Status} object through the
+\indexmpishow{MPI_SOURCE} field.
+%
+\verbatimsnippet{anysource}
+%
+\verbatimsnippet{anysourcep}
+
+\indexmpishow{MPI_Reduce}
+
+A reduction onto a root process.
+%
+\verbatimsnippet{reduce}
+
+A reduction with reuse of the receive buffer through
+\indexmpishow{MPI_IN_PLACE}.
+%
+\verbatimsnippet{reduceinplace}
+
+\indexmpishow{MPI_Reduce_scatter}
+
+A simple illustration.
+%
+\verbatimsnippet{reducescatter}
+
+Use of \n{MPI_Reduce_scatter} to implement the two-dimensional
+matrix-vector product.
+Set up separate row and column communicators with
+\indexmpishow{MPI_Comm_split}, use \n{MPI_Reduce_scatter} to combine
+local products.
+%
+\verbatimsnippet{mvp2d}
+
+\Level 0 {S}
+
+\indexmpishow{MPI_Scan}
+
+In native mode the result is a function return value.
+%
+\verbatimsnippet{scanp}
+
+\indexmpishow{MPI_Send}
+
+A regular ping-pong operation with \indexmpishow{MPI_Send} and
+\indexmpishow{MPI_Recv}. We repeat the experiment multiple times to
+get a reliable measurement of the time taken.
+%
+\verbatimsnippet{pingpong}
+
+\indexmpishow{MPI_Send_init}
+
+Persistent communication is setup up on the sending process with
+\indexmpishow{MPI_Send_init} and \indexmpishow{MPI_Recv_init}, then
+performed with \indexmpishow{MPI_Startall}. The receiver is using
+regular sends and receives.
+%
+\verbatimsnippet{persist}
+%
+\verbatimsnippet{persistp}
+
+\indexmpishow{MPI_Sendrecv}
+
+We set up a ring structure and use \n{MPI_Sendrecv} to communicate
+between pairs.
+%
+\verbatimsnippet{sendrecvring}
+
+\indexmpishow{MPI_Ssend}
+
+Using \n{MPI_Ssend} messages that would fall under the
+\indexterm{eager limit} do block.
+%
+\verbatimsnippet{ssendblock}
+
+\Level 0 {T}
+
+\indexmpishow{MPI_Type_contiguous}
+
+We send a contiguous data type of double and receive it as an array of
+separate doubles; we use \indexmpishow{MPI_Get_count} to ensure that
+we got the right amount of data.
+%
+\verbatimsnippet{contiguous}
+
+\indexmpishow{MPI_Type_indexed}
+
+We send an indexed data type and receive as separate integers.
+%
+\verbatimsnippet{indexed}
+
+\indexmpishow{MPI_Type_struct}
+
+A struct data type can consist of different elementary datatypes, so
+in addition to the displacements and blocklengths we now have an array
+of MPI datatypes. Also note how the displacement computation is done
+in bytes.
+%
+\verbatimsnippet{structure}
+
+\indexmpishow{MPI_Type_vector}
+
+Send a strided data object with \n{Type_vector} and receive it as
+individual doubles. Use \indexmpishow{MPI_Get_count} to inspect the
+\n{MPI_Status} object.
+%
+\verbatimsnippet{vector}
+
+\Level 0 {W}
+
+\indexmpishow{MPI_Waitall}
+
+Post non-blocking \indexmpishow{MPI_Irecv} and
+\indexmpishow{MPI_Isend} to/from all others, then use \n{MPI_Waitall}
+on the array of requests.
+%
+\verbatimsnippet{irecvall}
+
+In python creating the array for the returned requests is somewhat
+tricky.
+%
+\verbatimsnippet{irecvallp}
+
+\indexmpishow{MPI_Waitany}
+
+Each process except for the root does a blocking send; the root
+posts \indexmpishow{MPI_Irecv} from all other processors, then loops
+with \n{MPI_Waitany} until all requests have come in. Use
+\indexmpishow{MPI_SOURCE} to test the index parameter of the wait
+call.
+%
+\verbatimsnippet{waitforany}
+
+In python creating the array for the returned requests is somewhat
+tricky.
+%
+\verbatimsnippet{waitforanyp}
+
+\indexmpishow{MPI_Win_lock}
+
+See the \n{Fetch_and_op} example.
+
+\indexmpishow{MPI_Win_start}
+
+A one-sided \indexmpishow{MPI_Put} using active target synchronization:
+use \indexmpishow{MPI_Win_start} and \indexmpishow{MPI_Win_complete}
+on the origin, and \indexmpishow{MPI_Win_post} and
+\indexmpishow{MPI_Win_wait} on the target.
+%
+\verbatimsnippet{postwaittwo}
+
+\indexmpishow{MPI_Win_create}
+
+See the \n{MPI_Get} example.
+
+\indexmpishow{MPI_Win_fence}
+
+One process does \indexmpishow{MPI_Put} operations, randomly on one of
+two other processes. We use a fence for active target synchronization.
+%
+\verbatimsnippet{randomput}

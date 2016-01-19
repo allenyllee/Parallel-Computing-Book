@@ -1,0 +1,13 @@
+// irecvloop.c
+MPI_Request requests = 
+  (MPI_Request*) malloc( 2*ntids*sizeof(MPI_Request) );
+recv_buffers = (int*) malloc( ntids*sizeof(int) );
+send_buffers = (int*) malloc( ntids*sizeof(int) );
+for (int p=0; p<ntids; p++) {
+  int left_p = (p-1) % ntids,
+    right_p = (p+1) % ntids;
+  send_buffer[p] = ntids-p;
+  MPI_Isend(sendbuffer+p,1,MPI_INT, right_p,0, requests+2*p);
+  MPI_Irecv(recvbuffer+p,1,MPI_INT, left_p,0, requests+2*p+1);
+}
+MPI_Waitall(2*ntids,requests,MPI_STATUSES_IGNORE);
