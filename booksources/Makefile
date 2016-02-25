@@ -3,7 +3,7 @@
 ####
 #### This is the makefile for the book
 #### `Parallel Programming in MPI and OpenMP'
-#### by Victor Eijkhout, copyright 2012-5
+#### by Victor Eijkhout, copyright 2012-6
 ####
 ################################################################
 ################################################################

@@ -4,13 +4,12 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Computing'
-%%%% by Victor Eijkhout, copyright 2012/3/4/5
+%%%% by Victor Eijkhout, copyright 2012-6
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \Level 0 {Working with global information}
-\commandidiom{collective}
 \index{collectives|(}
 
 If all processes have individual data, for instance the result
@@ -80,9 +79,6 @@ Finally, there are some advanced topics in collectives.
 \item User-defined reduction operators; section~\ref{sec:mpi:op-create}.
 \end{itemize}
 
-\index{collectives|)}
-
-%\input chapters/mpi-intro-collective
 \Level 0 {Collectives}
 \commandref{collective}
 
@@ -105,7 +101,7 @@ call this routine; not to do so is an error that will
 manifest itself in `hanging' code. One such example is
 \n{MPI_Win_fence}.
 
-\Level 1 {Rooted collectives: broadcast, reduce}
+\Level 0 {Rooted collectives: broadcast, reduce}
 \commandref{bcast}
 
 One simple collective is the broadcast, where one process has some
@@ -113,7 +109,7 @@ data that needs to be shared with all others. One scenario is that
 processor zero can parse the commandline arguments of the executable
 and send the values to all other processors.
 Another scenario is that you want one processor to read data from file
-and send it to the other processors: that is likely to be more efficient
+and send it to the other processors: this is likely to be more efficient
 than having every process open the file.
 
 The broadcast call has the following structure:
@@ -125,7 +121,7 @@ Typically, it will be the root of a broadcast tree.
 The \n{comm} argument is a communicator:
 for now you can use \n{MPI_COMM_WORLD}.
 Unlike with send/receive there is no message tag,
-because collectives are blocking, so you can have only one active at a
+because collectives are blocking, so you can have only one collective active at a
 time. 
 
 The data in a broadcast (or any other MPI operation for that matter)
@@ -140,10 +136,10 @@ is specified as
   See section~\ref{ref:mpidata} for details.
 \end{itemize}
 \begin{pythonnote}
-  In python it is both possible to send objects, and to send
-  more C-like buffers. The two possibilities correspond to
-  different routine names; the buffers have to be created as \n{numpy}
-  objects.
+  In python it is both possible to send objects, and to send more
+  C-like buffers. The two possibilities correspond (see
+  section~\ref{sec:python-bind}) to different routine names; the
+  buffers have to be created as \n{numpy} objects.
 \end{pythonnote}
 
 \begin{exercise}
@@ -177,35 +173,13 @@ operators; section~\ref{ref:mpi:op-create}.
   Write a program where each process computes a random number, and process~0
   finds and prints the maximum generated value. Let each process print its value,
   just to check the correctness of your program.
+\begin{book}
+  (See~\ref{ch:random} for a discussion of random number generation.)
+\end{book}
 
+  Now let each process scale its value by this maximum.
 \end{exercise}
 
-  Here is how you initialize the random number generator uniquely on each process:
-
-{\footnotesize
-\begin{verbatim}
-C:
-
-// Initialize the random number generator
-srand((int)(mytid*(double)RAND_MAX/ntids));
-// compute a random number
-randomfraction = (rand() / (double)RAND_MAX);
-\end{verbatim}
-\begin{verbatim}
-Fortran:
-
-  integer :: randsize
-  integer,allocatable,dimension(:) :: randseed
-  real :: random_value
-
-  call random_seed(size=randsize)
-  allocate(randseed(randsize))
-  do i=1,randsize
-     randseed(i) = 1023*mytid
-  end do
-  call random_seed(put=randseed)
-\end{verbatim}
-}
 
 Collective operations can also take an array argument, instead of just a scalar.
 In that case, the operation is applied pointwise to each location in the array.
@@ -217,7 +191,7 @@ In that case, the operation is applied pointwise to each location in the array.
   Code it. Was your prediction right?
 \end{exercise}
 
-\Level 1 {Rooted collectives: gather and scatter}
+\Level 0 {Rooted collectives: gather and scatter}
 \commandref{gatherscatter}
 
 In the \indexmpishow{MPI_Scatter} operation, the root spreads information to
@@ -257,7 +231,7 @@ sendbuffer; instead, it is the amount of data sent to each process.
   a short program.
 \end{exercise}
 
-\Level 1 {Variable-size-input collectives}
+\Level 0 {Variable-size-input collectives}
 \commandref{v-collective}
 
 In the gather and scatter call above each processor received or sent
@@ -295,7 +269,7 @@ outbuffer, array-of-outcounts, array-of-displacements, outtype
 \end{verbatim}
 and you have just seen how to construct that information.
 
-\Level 1 {Scan operations}
+\Level 0 {Scan operations}
 \commandref{scan}
 
 The \indexmpishow{MPI_Scan} operation also performs a reduction, but it keeps 
@@ -360,12 +334,12 @@ first subsequent place where $y_i=1$. To implement this, you need a user-defined
 This operator is not communitative, and it needs to be declared as such
 with \indexmpishow{MPI_Op_create}; see section~\ref{ref:mpi:op-create}
 
-\Level 1 {User-defined reductions}
+\Level 0 {User-defined reductions}
 \commandref{mpi:op-create}
 
 For use in reductions and scans it is possible to define your own operator.
 
-\Level 1 {Reduce-scatter}
+\Level 0 {Reduce-scatter}
 \commandref{reducescatter}
 
 There are several MPI collectives that are functionally equivalent to
@@ -402,7 +376,7 @@ Using \indexmpishow{MPI_Reduce_scatter} the process goes as follows:
   \n{MPI_Irecv} calls, with a source of \indexmpishow{MPI_ANY_SOURCE}.
 \end{itemize}
 
-\Level 1 {`All'-type collectives}
+\Level 0 {`All'-type collectives}
 \commandref{allreduce}
 
 In many applications the result of a collective is needed on all processes.
@@ -421,7 +395,7 @@ Thus, MPI has the following operations:
 \item \indexmpishow{MPI_Alltoall}, \indexmpishow{MPI_Alltoallv}.
 \end{itemize}
 
-\Level 1 {Non-blocking collectives}
+\Level 0 {Non-blocking collectives}
 \commandref{mpi3collect}
 
 Above you have seen how the `Isend' and `Irecv' routines can overlap communication
@@ -450,7 +424,7 @@ This can also be used for 3D FFT operations~\cite{Hoefler:case-for-nbc}.
 Occasionally, a non-blocking collective can be used for non-obvious purposes,
 such as the \indexmpishow{MPI_Ibarrier} in~\cite{Hoefler:2010:SCP}.
 
-\Level 1 {Barrier and all-to-all}
+\Level 0 {Barrier and all-to-all}
 \commandref{barrier}
 
 There are two collectives we have not mentioned yet. A~barrier is a
@@ -465,7 +439,7 @@ The all-to-all call is a generalization of a scatter and gather: every
 process is scattering an array of data, and every process is gathering
 an array of data. There is also a `v' variant of this routine.
 
-\Level 1 {Performance of collectives}
+\Level 0 {Performance of collectives}
 
 It is easy to visualize a broadcast as in figure~\ref{fig:bcast-simple}:
 see figure~\ref{fig:bcast-simple}.
@@ -501,7 +475,7 @@ communication time now depend on the number of processors? The theory
 of the complexity of collectives is described in more detail in
 \HPSCref{sec:collective}; see also~\cite{Chan2007Collective}.
 
-\Level 1 {Collectives and synchronization}
+\Level 0 {Collectives and synchronization}
 
 Collectives, other than a barrier, have a synchronizing effect between processors.
 For instance, in
@@ -574,4 +548,4 @@ However, it is equally possible to have this execution:
   does its part of the broadcast.
 \end{enumerate}
 
-
+\index{collectives|)}

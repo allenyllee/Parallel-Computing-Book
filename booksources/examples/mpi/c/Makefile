@@ -3,9 +3,10 @@
 ####
 #### This makefile is part of the source of 
 #### "Parallel Computing for Science and Engineering"
-#### by Victor Eijkhout, copyright 2013/4
+#### by Victor Eijkhout, copyright 2013-6
 ####
-#### This is the makefile for the examples/mpi/c
+#### This is the makefile for the C examples
+####     in examples/mpi/c
 ####
 ################################################################
 ################################################################
@@ -17,7 +18,7 @@ APPS = hello init thread \
     recvblock sendblock ssendblock sendrecv irecv_source irecvnonblock \
     putfence getfence randomput anysource cancel exscan \
     postwaitwin passive \
-    reduce reduceinplace allreduce allreduceinplace gather gatherv \
+    reduce reduceinplace allreduce allreduceinplace gather gatherv allgatherv \
     reducescatter \
     contiguous vector interleave indexed struct pack \
     commdup_wrong commdup_right cart persist \
@@ -113,12 +114,12 @@ info ::
 init_args = 5
 noap = `make listapps`
 regression : total_clean
-	@for app in init ; do \
+	@for app in `make listapps` ; do \
 	  make $$app >/dev/null 2>&1 ; \
 	  if [ ! -e $$app ] ; then \
 	    echo "Application <<$$app>> failed to build" ; \
 	  fi ; \
-	done
+	done ; echo "Finished regression building"
 aprun :
 	  else \
 	    eval appargs=\"\\\$${$${app}_args}\" ; \
@@ -148,5 +149,4 @@ info ::
 clean ::
 	@/bin/rm -rf *.o *~ *.gch a.out *.dSYM MULTI__* events.* \
 	    idev[0-9]*.o[0-9]* ddt.o[0-9]* jobtest.o* tautrace_*
-total_clean : clean 
 	@/bin/rm -rf ${APPS} *.slog2 *.ppm

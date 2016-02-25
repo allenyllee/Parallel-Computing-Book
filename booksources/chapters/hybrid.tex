@@ -54,3 +54,15 @@ will be seen by each MPI process.
   threads block. This does away with the need for polling.
 \item You can not send to a thread number.
 \end{itemize}
+
+\begin{exercise}
+Consider the 2D heat equation and explore the mix of MPI/OpenMP
+parallelism:
+\begin{itemize}
+\item Give each node one MPI process that is fully multi-threaded.
+\item Give each core an MPI process and don't use multi-threading.
+\end{itemize}
+Discuss theoretically why the former can give higher performance.
+Implement both schemes as special cases of the general hybrid case,
+and run tests to find the optimal mix.
+\end{exercise}

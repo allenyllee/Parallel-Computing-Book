@@ -1,27 +1,26 @@
+/* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   %%%%
+   %%%% This program file is part of the book and course
+   %%%% "Parallel Computing"
+   %%%% by Victor Eijkhout, copyright 2013-6
+   %%%%
+   %%%% hello.c : simple hello world
+   %%%%
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
 #include <stdlib.h>
 #include <stdio.h>
+#include <mpi.h>
 
-#include "omp.h"
+int main(int argc,char ** argv) {
 
-int main(int argc,char **argv) {
+#include "globalinit.c"
 
-  int mythread,nthreads;
-  nthreads = omp_get_num_threads();
-  mythread = omp_get_thread_num();
-  printf("Hello from %d out of %d outside the region\n",mythread,nthreads);
+  printf("processor [%d] says hello!\n",mytid);
 
-  {
-    int mythread,nthreads;
-    nthreads = omp_get_num_threads();
-    mythread = omp_get_thread_num();
-    printf("Hello from %d out of %d inside the region\n",mythread,nthreads);
-  }
-
-  {
-    nthreads = omp_get_num_threads();
-    mythread = omp_get_thread_num();
-    printf("Hello from %d out of %d inside the nonprivate region\n",mythread,nthreads);
-  }
-
+  MPI_Finalize();
   return 0;
 }

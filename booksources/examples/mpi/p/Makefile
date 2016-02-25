@@ -3,9 +3,10 @@
 ####
 #### This makefile is part of the source of 
 #### "Parallel Computing for Science and Engineering"
-#### by Victor Eijkhout, copyright 2013/4
+#### by Victor Eijkhout, copyright 2013-6
 ####
-#### This is the makefile for the examples/mpi/p
+#### This is the makefile for the python examples
+####     in examples/mpi/p
 ####
 ################################################################
 ################################################################

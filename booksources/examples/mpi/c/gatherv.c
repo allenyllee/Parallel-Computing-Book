@@ -25,7 +25,7 @@ int main(int argc,char **argv) {
   int *localsizes=NULL,*offsets=NULL,*localdata=NULL,*alldata=NULL;
   // create local data
   localdata = (int*) malloc( localsize*sizeof(int) );
-  for (i=0; i<localsize; i++)
+  for (int i=0; i<localsize; i++)
     localdata[i] = mytid+1;
   //snippet gatherv
   // we assume that each process has an array "localdata"
@@ -43,7 +43,7 @@ int main(int argc,char **argv) {
   //snippet end
   if (mytid==root) {
     printf("Local sizes: ");
-    for (i=0; i<ntids; i++)
+    for (int i=0; i<ntids; i++)
       printf("%d, ",localsizes[i]);
     printf("\n");
   }
@@ -51,7 +51,7 @@ int main(int argc,char **argv) {
   // the root constructs the offsets array
   if (mytid==root) {
     offsets[0] = 0;
-    for (i=0; i<ntids; i++)
+    for (int i=0; i<ntids; i++)
       offsets[i+1] = offsets[i]+localsizes[i];
     alldata = (int*) malloc( offsets[ntids]*sizeof(int) );
   }
@@ -62,7 +62,7 @@ int main(int argc,char **argv) {
   if (mytid==root) {
     int p=0;
     printf("Collected:\n");
-    for (i=0; i<ntids; i++) {
+    for (int i=0; i<ntids; i++) {
       int j;
       printf("  %d:",i);
       for (j=0; j<localsizes[i]-1; j++)

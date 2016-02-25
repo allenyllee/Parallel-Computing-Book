@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Computing'
-%%%% by Victor Eijkhout, copyright 2012/3
+%%%% by Victor Eijkhout, copyright 2012-6
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -52,6 +52,57 @@ a work sharing construct divides available parallelism over the threads.
 \end{quote}
 
 For more on threads, see \HPSCref{sec:threads}.
+
+\Level 1 {Getting started with OpenMP programming}
+
+\Level 2 {Compiling}
+\index{OpenMP!compiling|(}
+
+Your file or Fortran module needs to contain
+\begin{verbatim}
+#include "omp.h"
+\end{verbatim}
+in C, and 
+\begin{verbatim}
+use omp_lib
+\end{verbatim}
+for Fortran.
+
+OpenMP is handled by extensions to your regular compiler, typically by
+adding an option to your commandline:
+\begin{verbatim}
+# gcc
+gcc -o foo foo.c -fopenmp
+# Intel compiler
+icc -o foo foo.c -openmp
+\end{verbatim}
+If you have separate compile and link stages, you need that option in both.
+
+When you use the openmp compiler option, a \indexterm{cpp} variable \indextermtt{_OPENMP}
+will be defined. Thus, you can have conditional compilation by writing
+\begin{verbatim}
+#ifdef _OPENMP
+   ...
+#else
+   ...
+#endif
+\end{verbatim}
+
+\index{OpenMP!compiling|)}
+
+\Level 2 {Running an OpenMP program}
+\index{OpenMP!running|(}
+
+You run an OpenMP program by invoking it the regular way (for instance \n{./a.out}),
+but its behaviour is influenced by some \indextermbus{OpenMP}{environment variables}.
+The most important one is \indextermtt{OMP_NUM_THREADS}:
+\begin{verbatim}
+export OMP_NUM_THREADS=8
+\end{verbatim}
+which sets the number of threads that a program will use.
+See section~\ref{ref:omp-environ} for a list of all environment variables.
+
+\index{OpenMP!running|)}
 
 \Level 1 {OpenMP language constructs}
 \commandref{omp-directives}
@@ -130,7 +181,7 @@ you could parallelize this as
 \begin{verbatim}
 double result = 0;
 #pragma omp parallel
-{
+{ // this is not the right way to do it....
   int num = omp_get_thread_num();
   if (num==0)      result += f(x);
   else if (num==1) result += g(x);
@@ -163,7 +214,8 @@ and what can be done about it.
 
 \begin{exercise}
   Test nested parallelism. First of all, set \n{OMP_NESTED} to
-  \n{TRUE}. Now write an OpenMP program as follows:
+  \n{TRUE} if that's not the default on your system.
+  Now write an OpenMP program as follows:
   \begin{enumerate}
   \item Write a subprogram that contains a parallel region.
   \item Write a main program with a parallel region; call the subprogram both inside and outside the parallel region.
@@ -267,51 +319,6 @@ update a shared variable, you not guarantee an order on the updates.
 
 We will discuss all this in detail in section~\ref{sec:ompdata}.
 
-\Level 1 {Some externalities}
-
-\Level 2 {Compiling}
-
-Your file or Fortran module needs to contain
-\begin{verbatim}
-#include "omp.h"
-\end{verbatim}
-in C, and 
-\begin{verbatim}
-use omp_lib
-\end{verbatim}
-for Fortran.
-
-OpenMP is handled by extensions to your regular compiler, typically by
-adding an option to your commandline:
-\begin{verbatim}
-# gcc
-gcc -o foo foo.c -fopenmp
-# Intel compiler
-icc -o foo foo.c -openmp
-\end{verbatim}
-If you have separate compile and link stages, you need that option in both.
-
-When you use the openmp compiler option, a \indexterm{cpp} variable \indextermtt{_OPENMP}
-will be defined. Thus, you can have conditional compilation by writing
-\begin{verbatim}
-#ifdef _OPENMP
-   ...
-#else
-   ...
-#endif
-\end{verbatim}
-
-\Level 2 {Running an OpenMP program}
-
-You run an OpenMP program by invoking it the regular way (for instance \n{./a.out}),
-but its behaviour is influenced by some \indextermbus{OpenMP}{environment variables}.
-The most important one is \indextermtt{OMP_NUM_THREADS}:
-\begin{verbatim}
-export OMP_NUM_THREADS=8
-\end{verbatim}
-which sets the number of threads that a program will use.
-See section~\ref{ref:omp-environ} for a list of all environment variables.
-
 \Level 1 {Creating parallelism}
 \commandref{omp-howmany}
 
@@ -336,8 +343,8 @@ Declaring a parallel region tells OpenMP that a team of threads can be created.
 The actual size of the team depends on various factors (see section~\ref{ref:omp-environ}
 for variables and functions mentioned in this section).
 \begin{itemize}
-\item The \emph{environment variable}\index{OpenMP!environment
-  variables} \indextermtt{OMP_NUM_THREADS} limits the number of
+\item The \emph{environment variable}\index{OpenMP!environment variables}
+  \indextermtt{OMP_NUM_THREADS} limits the number of
   threads that can be created.
 \item If you don't set this variable, you can also set this limit
   dynamically with the \emph{library routine}\index{OpenMP!library
@@ -438,6 +445,24 @@ pragmas for the parallel region and distribution of the loop iterations:
 The loop has to satisfy a number of basic constraints, such as that you can not
 jump out of it.
 
+\begin{exercise}
+  \label{ex:omp-pi}
+  Compute $\pi$ by \indexterm{numerical integration}. We use the fact that $\pi$
+  is the area of the unit circle, and we approximate this by computing
+  the area of a quarter circle using \indexterm{Riemann sums}.
+  \begin{itemize}
+  \item Let $f(x)=\sqrt{1-x^2}$ be the function that describes the
+    quarter circle for $x=0\ldots 1$;
+  \item Then we compute \[ \pi/4\approx\sum_{i=0}^{N-1} \Delta x
+    f(x_i) \qquad \hbox{where $x_i=i\Delta x$ and $\Delta x=1/N$} \]
+  \end{itemize}
+  Write a program for this, and parallelize it using OpenMP parallel
+  for directives. Use different numbers of cores and compute the
+  speedup you attain over the sequential computation. Is there a
+  performance difference between the OpenMP code with 1~thread and the
+  sequential code?
+\end{exercise}
+
 \Level 2 {Loop schedules}
 \commandref{schedule}
 
@@ -499,6 +524,60 @@ schedule will then at runtime be read from the
 \indextermtt{OMP_SCHEDULE} environment variable. You can even just
 leave it to the runtime library by specifying
 \indexclauseoption{schedule}{auto}
+
+\begin{exercise}
+  \label{ex:omp-pi-adapt}
+  %
+  We continue with exercise~\ref{ex:omp-pi}.  We add `adaptive
+  integration': where needed, the program refines the step
+  size\footnote{It doesn't actually do this in a mathematically
+    sophisticated way, so this code is more for the sake of the
+    example.}.  This means that the iterations no longer take a
+  predictable amount of time.
+
+\begin{minipage}{.3\linewidth}\small
+\begin{verbatim}
+for (i=0; i<nsteps; i++) {
+ double
+   x = i*h,x2 = (i+1)*h,
+   y = sqrt(1-x*x),y2 = sqrt(1-x2*x2),
+   slope = (y-y2)/h;
+ if (slope>15) slope = 15;
+ int
+   samples = 1+(int)slope,
+   is;
+ for (is=0; is<samples; is++) {
+   double
+     hs = h/samples,
+     xs = x+ is*hs,
+     ys = sqrt(1-xs*xs);
+   quarterpi += hs*ys;
+   nsamples++;
+ }
+}
+pi = 4*quarterpi;
+\end{verbatim}
+\end{minipage}
+
+\begin{enumerate}
+\item Use the \n{omp parallel for} construct to parallelize the loop.
+  As in the previous lab, you may at first see an incorrect result.
+  Use the \n{reduction} clause to fix this.
+\item Your code should now see a decent speedup, using up to 8~cores.
+  However, it is possible to get completely linear speedup. For this
+  you need to adjust the schedule.
+
+  Start by using \n{schedule(static,$n$)}. Experiment with values
+  for~$n$.  When can you get a better speedup? Explain this.
+\item Since this code is somewhat dynamic, try \n{schedule(dynamic)}.
+  This will actually give a fairly bad result. Why?  Use
+  \n{schedule(dynamic,$n$)} instead, and experiment with values
+  for~$n$.
+\item Finally, use \n{schedule(guided)}, where OpenMP uses a
+  heuristic.  What results does that give?
+\end{enumerate}
+     
+\end{exercise}
 
 \begin{exercise}
   Program the \indexterm{LU factorization} algorithm without pivoting.
@@ -869,8 +948,9 @@ for (i=0; i<N; i+) {
 Most data in OpenMP parallel regions is either inherited
 from the master thread and therefore shared, or temporary within the scope of the
 region and fully private.
-There is also a mechanism for data that is private to a thread, but not limited
-in lifetime to one parallel region.
+There is also a mechanism for \emph{thread-private
+  data}\index{thread!private data},
+which is not limited in lifetime to one parallel region.
 The \indexpragma{threadprivate} pragma is used to declare that each thread
 is to have a private copy of a variable:
 \begin{verbatim}
@@ -887,6 +967,14 @@ and initialize a private `current value' variable. This will persist
 even when the execution is not in a parallel region; it gets updated only
 in a parallel region.
 
+\begin{exercise}
+  \label{ex:random-mandel}
+  Calculate the area of the \indexterm{Mandelbrot set} by random
+  sampling. Initialize the random number generator separately for each
+  thread; then use a parallel loop to evaluate the points.
+  Explore performance implications of the different loop scheduling strategies.
+\end{exercise}
+
 \Level 0 {Reductions}
 \commandref{reduction}
 
@@ -895,7 +983,7 @@ or otherwise combined.
 In section~\ref{sec:parallelregion} you saw an example, and it was stated that the
 solution given there was not very good.
 
-The problem in that example was the race condition involving the \n{result}
+The problem in that example was the \indexterm{race condition} involving the \n{result}
 variable. The simplest solution is to eliminate the race condition
 by declaring a \indexterm{critical section}:
 \begin{verbatim}
@@ -933,8 +1021,9 @@ double result = 0;
   that is more efficient? Time both codes.
 \end{exercise}
 
-The easiest way to effect a reduction is of course to the use the \indextermtt{reduction}
-clause. Adding this to an \n{omp for} loop has the following effect:
+The easiest way to effect a reduction is of course to use the \indextermtt{reduction}
+clause. Adding this to an \n{omp for} or an \n{omp sections} construct
+has the following effect:
 \begin{itemize}
 \item OpenMP will make a copy of the reduction variable per thread,
   initialized to the identity of the reduction operator, for instance
@@ -1124,6 +1213,48 @@ but that is unnecessarily restrictive. If there are enough bins in the
 histogram, and if the \n{some_function} takes enough time, there are unlikely to be
 conflicting writes. The solution then is to create an array of locks, with
 one lock for each \n{count} location.
+
+\begin{exercise}
+  \label{ex:loc-deadlock}
+  %% https://computing.llnl.gov/tutorials/openMP/samples/C/omp_bug5.c
+  %% I think this is fundamentally broken
+  In the following code, one process sets array~A and then uses it to
+  update~B; the other process sets array~B and then uses it to
+  update~A.
+  Argue that this code can deadlock. How could you fix this?
+\begin{verbatim}
+#pragma omp parallel shared(a, b, nthreads, locka, lockb)
+  #pragma omp sections nowait
+    {
+    #pragma omp section
+      {
+      omp_set_lock(&locka);
+      for (i=0; i<N; i++)
+        a[i] = ..
+
+      omp_set_lock(&lockb);
+      for (i=0; i<N; i++)
+        b[i] = .. a[i] ..
+      omp_unset_lock(&lockb);
+      omp_unset_lock(&locka);
+      }
+
+    #pragma omp section
+      {
+      omp_set_lock(&lockb);
+      for (i=0; i<N; i++)
+        b[i] = ...
+
+      omp_set_lock(&locka);
+      for (i=0; i<N; i++)
+        a[i] = .. b[i] ..
+      omp_unset_lock(&locka);
+      omp_unset_lock(&lockb);
+      }
+    }  /* end of sections */
+  }  /* end of parallel region */
+\end{verbatim}
+\end{exercise}
 
 \Level 1 {Example: Fibonacci computation}
 \index{Fibonacci sequence|(}
@@ -1355,6 +1486,50 @@ You can indicate task dependencies in several ways:
   By indicating what data is produced or absorbed by the tasks,
   the scheduler can construct the dependency graph for you.
 \end{enumerate}
+
+\begin{exercise}
+  Use the above approach to find the smallest factor of a large
+  number (using $2,000,000,111$ as test case): generate a task for each
+  trial factor.
+  \begin{itemize}
+  \item Make sure you save only the smallest factor.
+  \item Once a factor has been found, you should stop generating
+    tasks.
+    Let tasks that `should not have been generated' print out a message.
+  \end{itemize}
+\end{exercise}
+
+
+\Level 1 {Tree traversal}
+
+\begin{comment}
+Pre-order traversal while duplicating nodes and edges can make a
+complete duplicate of a binary tree. It can also be used to make a
+prefix expression (Polish notation) from expression trees: traverse
+the expression tree pre-orderly.
+
+In-order traversal is very commonly used on binary search trees
+because it returns values from the underlying set in order, according
+to the comparator that set up the binary search tree (hence the name).
+
+Post-order traversal while deleting or freeing nodes and values can
+delete or free an entire binary tree. It can also generate a postfix
+representation of a binary tree.
+
+If you know you need to explore the roots before inspecting any
+leaves, you pick pre-order because you will encounter all the roots
+before all of the leaves.
+
+If you know you need to explore all the leaves before any nodes, you
+select post-order because you don't waste any time inspecting roots in
+search for leaves.
+
+If you know that the tree has an inherent sequence in the nodes, and
+you want to flatten the tree back into its original sequence, than an
+in-order traversal should be used. The tree would be flattened in the
+same way it was created. A pre-order or post-order traversal might not
+unwind the tree back into the sequence which was used to create it.
+\end{comment}
 
 \Level 0 {Version 4 functionality}
 

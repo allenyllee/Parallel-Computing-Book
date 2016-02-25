@@ -16,7 +16,7 @@ more data than can fit in the memory of a single processor.
 With distributed memory, each processor then gets a part
 of the whole data structure and only works on that.
 
-So let's say we have a large number array, and we want to
+So let's say we have a large array, and we want to
 distribute the data over the processors.
 That means that, with \n{p} processes and \n{n}~elements
 per processor, we have a total of $\n{n}\cdot\n{p}$ elements.
@@ -31,8 +31,13 @@ We sometimes say that \n{data} is the local part
 of a \indexterm{distributed array} with a total size of
 $\n{n}\cdot\n{p}$ elements.
 However, this array only exists
-conceptually: you have to write your code in such a way that
-it acts like you're working with a large distributed array.
+conceptually: each processor has an array with lowest index zero,
+and you have to translate that yourself to an index in the global
+array.
+In other words, you have to write your code in such a way that
+it acts like you're working with a large array that is distributed
+over the processors, while
+actually manipulating only the local arrays on the processors.
 
 Your typical code then looks like
 \begin{verbatim}
@@ -144,7 +149,6 @@ MPI realizes this through matched send and receive calls:
 \end{itemize}
 
 \Level 1 {Send example: ping-pong}
-\commandref{blocking}
 
 A simple scenario for information exchange between just two processes
 is the \indexterm{ping-pong}: process~A sends data to process~B, which
@@ -176,10 +180,18 @@ You will also need the timer calls of section~\ref{sec:mpi-timing}.
 \begin{exercise}
   \label{ex:pingpong}
   Implement the ping-pong program. Add a timer using \n{MPI_Wtime}.
-  For the \n{status} argument of the receive call, use \indexmpishow{MPI_STATUS_IGNORE}.
+  For the \n{status} argument of the receive call, use
+  \indexmpishow{MPI_STATUS_IGNORE}.
+  Make sure to run each experiment multiple times. (What variance do
+  you see?)
 
-  Then modify the program
-  to use longer messages. How does the timing increase with message size?
+  \begin{itemize}
+  \item Run your code with the two communicating processes first on
+    the same node, then on different nodes. Do you see a difference?
+  \item Then modify the program
+    to use longer messages. How does the timing increase with message size?
+  \end{itemize}
+  For bonus points, can you do a regression to determine~$\alpha,\beta$?
 \end{exercise}
 
 \begin{exercise}
@@ -196,11 +208,14 @@ that the message can come from any source rather than a specific one. The status
 object then allows you to find out where the message actually came from.
 
 \Level 1 {Blocking communication}
+\commandref{blocking}
 \index{communication!blocking|(textbf}
 
 The use of \indexmpishow{MPI_Send} and \indexmpishow{MPI_Recv}
 is known as \emph{blocking communication}: when your code reaches a
 send or receive call, it blocks until the call is succesfully completed.
+For a receive call it is clear that the receiving code will wait until
+the data has actually come in, but for a send call this is more subtle.
 
 You may be tempted to think that the send call puts the data somewhere
 in the network, and the sending code can progress,
@@ -218,11 +233,11 @@ But this ideal scenario is not realistic: it assumes that somewhere
 in the network there is buffer capacity for all messages that are in
 transit.
 This is not the case: data resides on the sender, and the sending call blocks,
-until the receiver has received all of it.
+until the receiver has received all of it. (There is a exception for
+small messages, as explained in the next section.)
 
 \Level 1 {Problems with blocking communication}
 
-But there is a more insidious, more serious problem.
 Suppose two process need to exchange data, and consider the following
 pseudo-code, which purports to exchange data between processes 0 and~1:
 \begin{verbatim}
@@ -259,7 +274,7 @@ if ( /* I am processor 0 */ ) {
 }
 \end{verbatim}
 
-There is even a third, even more subtle problem with blocking
+There is a second, even more subtle problem with blocking
 communication. Consider the scenario where every processor needs to
 pass data to its successor, that is, the processor with the next
 higher rank. The basic idea would be to first send to your successor,
@@ -316,14 +331,15 @@ figure~\ref{fig:serialization}.
 
 It is possible to orchestrate your processes to get an efficient and
 deadlock-free execution, but doing so is a bit cumbersome.
-There are better solutions which we will
-explore next.
 
 \begin{exercise}
   The above solution treated every processor equally. Can you come up
   with a solution that uses blocking sends and receives, but does not
   suffer from the serialization behaviour?
 \end{exercise}
+
+There are better solutions which we will
+explore next.
 
 \index{communication!blocking|)}
 
@@ -341,7 +357,11 @@ MPI_Sendrecv( /* send data */ ....
 \end{verbatim}
 
 The sendrecv call works great if every process is paired up.
-Hosever, in cases such as the right-shift this is true for all but
+You would then write
+\begin{verbatim}
+sendrecv(from=predecessor,to=successor);
+\end{verbatim}
+However, in cases such as the right-shift this is true for all but
 the first and last. 
 MPI allows for the following variant which makes the code slightly 
 more homogeneous:
@@ -370,7 +390,9 @@ section~\ref{sec:send-recv}
   \label{ex:3ptsendrecv}
   Implement the above right-shift scheme using \n{MPI_Sendrecv}.
   If you have TAU installed, make a trace. Does it look different
-  from the serialized send/recv code?
+  from the serialized send/recv code? If you don't have TAU, run your
+  code with different numbers of processes and show that the runtime
+  is essentially constant.
 \end{exercise}
 
 This call makes it easy to exchange data between two processors: both

@@ -47,7 +47,7 @@ int main(int argc,char **argv) {
     }
   //snippet packunpack
     MPI_Pack(&nsends,1,MPI_INT,buffer,buflen,&position,comm);
-    for (i=0; i<nsends; i++) {
+    for (int i=0; i<nsends; i++) {
       double value = rand()/(double)RAND_MAX;
       MPI_Pack(&value,1,MPI_DOUBLE,buffer,buflen,&position,comm);
     }
@@ -58,7 +58,7 @@ int main(int argc,char **argv) {
     double xrecv_value;
     MPI_Recv(buffer,buflen,MPI_PACKED,other,0,comm,MPI_STATUS_IGNORE);
     MPI_Unpack(buffer,buflen,&position,&nsends,1,MPI_INT,comm);
-    for (i=0; i<nsends; i++) {
+    for (int i=0; i<nsends; i++) {
       MPI_Unpack(buffer,buflen,&position,&xrecv_value,1,MPI_DOUBLE,comm);
     }
     MPI_Unpack(buffer,buflen,&position,&irecv_value,1,MPI_INT,comm);

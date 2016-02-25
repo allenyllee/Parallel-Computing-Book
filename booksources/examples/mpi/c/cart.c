@@ -50,7 +50,7 @@ int main(int argc,char **argv) {
 
   int rank_left,rank_right,rank_up,rank_down;
   char indata[4]; int idata=0,sdata=0;
-  for (i=0; i<4; i++)
+  for (int i=0; i<4; i++)
     indata[i] = 32;
   //snippet cartshift
   char mychar = 65+mytid;
@@ -70,7 +70,7 @@ int main(int argc,char **argv) {
   //snippet end
   MPI_Waitall(irequest,requests,MPI_STATUSES_IGNORE);
   printf("[%d] %s\n",mytid,indata);
-  /* for (i=0; i<4; i++) */
+  /* for (int i=0; i<4; i++) */
   /*   sdata += indata[i]; */
   /* printf("[%d] %d,%d,%d,%d sum=%d\n",mytid,indata[0],indata[1],indata[2],indata[3],sdata); */
   if (mytid==0)

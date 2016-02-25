@@ -29,7 +29,7 @@ int main(int argc,char **argv) {
   source = (double*) malloc(count*sizeof(double));
   target = (double*) malloc(count*sizeof(double));
 
-  for (i=0; i<count; i++)
+  for (int i=0; i<count; i++)
     source[i] = i+.5;
 
   //snippet contiguous
@@ -50,7 +50,7 @@ int main(int argc,char **argv) {
   //snippet end
   
   if (mytid==receiver) {
-    for (i=0; i<count; i++)
+    for (int i=0; i<count; i++)
       if (target[i]!=source[i])
 	printf("location %d %e s/b %e\n",i,target[i],source[i]);
   }

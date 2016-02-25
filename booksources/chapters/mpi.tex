@@ -11,16 +11,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% \input chapters/mpi-intro-func
-
-% \input chapters/mpi-intro-ptp
-
-% \input chapters/mpi-intro-collective
-
-% \input chapters/mpi-intro-data
-
-% \input chapters/mpi-intro-comm
-
 \Level 0 {Synchronization}
 \index{synchronization!in MPI|(}
 
@@ -214,6 +204,11 @@ writing to a temporary file.
 \commandref{mpi-fortran}
 \index{MPI!Fortran issues|(}
 
+MPI is typically written in C, what if you program \emph{Fortran}?
+
+Assumed shape arrays can be a problem: they need to be copied. 
+That's a problem with Isend.
+
 \begin{itemize}
 \item Fortran routines have the same prototype as C~routines except for the addition
   of an integer error parameter.
@@ -389,16 +384,6 @@ debugger. For an open source solution you can
 use \indexterm{valgrind}, but that requires some setup during
 installation. See \url{http://valgrind.org/docs/manual/mc-manual.html#mc-manual.mpiwrap}
 for details.
-
-\Level 1 {Fortran language issues}
-\index{Fortran|(}
-
-MPI is typically written in C, what if you program \emph{Fortran}?
-
-Assumed shape arrays can be a problem: they need to be copied. 
-That's a problem with Isend.
-
-\index{Fortran|)}
 
 \Level 1 {Determinism}
 \label{sec:mpi-semantics}

@@ -32,7 +32,7 @@ int main(int argc,char **argv) {
   target = (double*) malloc(count*sizeof(double));
   //snippet end
 
-  for (i=0; i<stride*count; i++)
+  for (int i=0; i<stride*count; i++)
     source[i] = i+.5;
 
   //snippet vector
@@ -53,7 +53,7 @@ int main(int argc,char **argv) {
   //snippet end
   
   if (mytid==receiver) {
-    for (i=0; i<count; i++)
+    for (int i=0; i<count; i++)
       if (target[i]!=source[stride*i])
 	printf("location %d %e s/b %e\n",i,target[i],source[stride*i]);
   }

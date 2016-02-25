@@ -24,8 +24,8 @@ int main(int argc,char **argv) {
 
   int *localsizes=NULL;
   // create local data
-  localdata = (int*) malloc( localsize*sizeof(int) );
-  for (i=0; i<localsize; i++)
+  int *localdata = (int*) malloc( localsize*sizeof(int) );
+  for (int i=0; i<localsize; i++)
     localdata[i] = mytid+1;
   //snippet gather
   // we assume that each process has a value "localsize"
@@ -40,7 +40,7 @@ int main(int argc,char **argv) {
   //snippet end
   if (mytid==root) {
     printf("Local sizes: ");
-    for (i=0; i<ntids; i++)
+    for (int i=0; i<ntids; i++)
       printf("%d, ",localsizes[i]);
     printf("\n");
   }

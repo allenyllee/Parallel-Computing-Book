@@ -3,7 +3,7 @@
    %%%%
    %%%% This program file is part of the book and course
    %%%% "Parallel Computing"
-   %%%% by Victor Eijkhout, copyright 2013/4/5
+   %%%% by Victor Eijkhout, copyright 2013-6
    %%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -45,29 +45,29 @@ int main(int argc,char **argv) {
   MPI_Request request[2];
   MPI_Status status[2];
 
-  if (mytid>1) goto skip;
+  if (mytid>1) { MPI_Finalize(); return 0; }
 
   //snippet catchmain
   library my_library(comm);
-  ierr = MPI_Isend(&sdata,1,MPI_INT,other,1,comm,&(request[0])); CHK(ierr);
+  MPI_Isend(&sdata,1,MPI_INT,other,1,comm,&(request[0]));
   my_library.communication_start();
-  ierr = MPI_Irecv(&rdata,1,MPI_INT,other,MPI_ANY_TAG,comm,&(request[1])); CHK(ierr);
-  ierr = MPI_Waitall(2,request,status); CHK(ierr);
+  MPI_Irecv(&rdata,1,MPI_INT,other,MPI_ANY_TAG,
+	    comm,&(request[1]));
+  MPI_Waitall(2,request,status);
   my_library.communication_end();
   //snippet end
 
   if (status[1].MPI_TAG==2)
     printf("wrong!\n");
 
- skip:
   MPI_Finalize();
   return 0;
 }
 
 int library::communication_start() {
   int sdata=6,rdata, ierr;
-  ierr = MPI_Isend(&sdata,1,MPI_INT,other,2,comm,&(request[0])); CHK(ierr);
-  ierr = MPI_Irecv(&rdata,1,MPI_INT,other,MPI_ANY_TAG,comm,&(request[1])); CHK(ierr);
+  MPI_Isend(&sdata,1,MPI_INT,other,2,comm,&(request[0]));
+  MPI_Irecv(&rdata,1,MPI_INT,other,MPI_ANY_TAG,comm,&(request[1]));
   return 0;
 }
 

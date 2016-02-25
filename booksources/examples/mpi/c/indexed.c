@@ -27,25 +27,26 @@ int main(int argc,char **argv) {
   int sender = 0, receiver = 1, the_other = 1-mytid,
     count = 5,totalcount = 15;
   int *source,*target;
-  int *indices,*blocklengths;
+  int *displacements,*blocklengths;
+
   //snippet indexed
-  indices = (int*) malloc(count*sizeof(int));
+  displacements = (int*) malloc(count*sizeof(int));
   blocklengths = (int*) malloc(count*sizeof(int));
   source = (int*) malloc(totalcount*sizeof(int));
   target = (int*) malloc(count*sizeof(int));
   //snippet end
 
-  indices[0] = 2; indices[1] = 3; indices[2] = 5;
-  indices[3] = 7; indices[4] = 11;
-  for (i=0; i<count; ++i)
+  displacements[0] = 2; displacements[1] = 3; displacements[2] = 5;
+  displacements[3] = 7; displacements[4] = 11;
+  for (int i=0; i<count; ++i)
     blocklengths[i] = 1;
-  for (i=0; i<totalcount; ++i)
+  for (int i=0; i<totalcount; ++i)
     source[i] = i;
 
   //snippet indexed
   MPI_Datatype newvectortype;
   if (mytid==sender) {
-    MPI_Type_indexed(count,blocklengths,indices,MPI_INT,&newvectortype);
+    MPI_Type_indexed(count,blocklengths,displacements,MPI_INT,&newvectortype);
     MPI_Type_commit(&newvectortype);
     MPI_Send(source,1,newvectortype,the_other,0,comm);
     MPI_Type_free(&newvectortype);

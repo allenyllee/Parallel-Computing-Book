@@ -1,5 +1,13 @@
 If you've never heard the name \indexterm{Mandelbrot set}, you
-probably recognize the picture. Its formal definition is as follows:
+probably recognize the picture; figure~\ref{fig:mandelbrotset}
+%
+\begin{figure}[ht]
+\includegraphics{mandelbrot}
+\label{fig:mandelbrotset}
+\caption{The Mandelbrot set}
+\end{figure}
+%
+Its formal definition is as follows:
 \begin{quotation}\noindent
   A point $c$ in the complex plane is part of the Mandelbrot set if 
   the series $x_n$ defined by 
@@ -20,7 +28,7 @@ constructs.  This program has been set up as a
 \indexterm{master-worker} model: there is one master processor (for a
 change this is the last processor, rather than zero) which gives out
 work to, and accepts results from, the worker processors. It then
-takes the resuls and construct an image file from them.
+takes the results and constructs an image file from them.
 
 \Level 0 {Invocation}
 

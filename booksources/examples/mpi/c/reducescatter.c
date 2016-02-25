@@ -27,18 +27,18 @@ int main(int argc,char **argv) {
   int *counts,nrecv_requests=0,nsend_requests;
   recv_requests = (int*) malloc(ntids*sizeof(int));
   counts = (int*) malloc(ntids*sizeof(int));
-  for (i=0; i<ntids; i++) {
+  for (int i=0; i<ntids; i++) {
     recv_requests[i] = 0;
     counts[i] = 1;
   }
 
   // generate random requests
-  for (i=0; i<ntids; i++)
+  for (int i=0; i<ntids; i++)
     if ( (float) rand()/(float)RAND_MAX > .8 ) {
       recv_requests[i] = 1; nrecv_requests++;
     }
   printf("[%d]: ",mytid);
-  for (i=0; i<ntids; i++)
+  for (int i=0; i<ntids; i++)
     printf("%d ",recv_requests[i]);
   printf("\n");
   //snippet reducescatter
@@ -53,12 +53,12 @@ int main(int argc,char **argv) {
   int msg=1;
   //snippet reducescatter
   // send a msg to the selected processes
-  for (i=0; i<ntids; i++)
+  for (int i=0; i<ntids; i++)
     if (recv_requests[i]>0)
       MPI_Isend(&msg,1,MPI_INT, /*to:*/ i,0,comm,
         mpi_requests+irequest++);
   // do as many receives as you know are coming in
-  for (i=0; i<nsend_requests; i++)
+  for (int i=0; i<nsend_requests; i++)
     MPI_Irecv(&msg,1,MPI_INT,MPI_ANY_SOURCE,MPI_ANY_TAG,comm,
         mpi_requests+irequest++);
   MPI_Waitall(irequest,mpi_requests,MPI_STATUSES_IGNORE);

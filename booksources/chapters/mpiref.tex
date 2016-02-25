@@ -303,11 +303,9 @@ of a series of blocks of items, all of the same type. However, where the
 vector type was described by a single stride and blocklength,
 with \indexmpishow{MPI_Type_indexed}
 you can specify the location and length of each block.
-\begin{verbatim}
-int MPI_Type_indexed(
-  int count, int blocklens[], int indices[],
-  MPI_Datatype old_type, MPI_Datatype *newtype);
-\end{verbatim}
+%
+\mpiRoutineRef{MPI_Type_indexed}
+%
 The following example picks items that are on prime number-indexed
 locations.
 \verbatimsnippet{indexed}
@@ -442,7 +440,9 @@ always blocks:
 \verbatimsnippet{recvblock}
 On the other hand, if we put the send call before the receive,
 code may not block for small messages
-that fall under the \indexterm{eager limit}. In this example we send
+that fall under the \indexterm{eager limit}.
+
+In this example we send
 gradually larger messages. From the screen output you can see what
 the largest message was that fell under the eager limit; after that the code
 hangs because of a deadlock.
@@ -451,6 +451,9 @@ hangs because of a deadlock.
 %
 \verbatimsnippet{sendblock-f}
 %
+\verbatimsnippet{sendblockp}
+
+
 If you want a code to behave the same for all message sizes,
 you force the send call to be blocking by using \n{MPI_Ssend}:
 \verbatimsnippet{ssendblock}
@@ -1021,7 +1024,6 @@ int MPI_Fetch_and_op(const void *origin_addr, void *result_addr,
 \verbatimsnippet{fetchop}
 
 \Level 0 {Collectives}
-\commandreflabel{collective}
 
 \Level 1 {Rooted collectives}
 \commandreflabel{bcast}

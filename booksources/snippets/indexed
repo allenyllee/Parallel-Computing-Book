@@ -1,11 +1,11 @@
 // indexed.c
-indices = (int*) malloc(count*sizeof(int));
+displacements = (int*) malloc(count*sizeof(int));
 blocklengths = (int*) malloc(count*sizeof(int));
 source = (int*) malloc(totalcount*sizeof(int));
 target = (int*) malloc(count*sizeof(int));
 MPI_Datatype newvectortype;
 if (mytid==sender) {
-  MPI_Type_indexed(count,blocklengths,indices,MPI_INT,&newvectortype);
+  MPI_Type_indexed(count,blocklengths,displacements,MPI_INT,&newvectortype);
   MPI_Type_commit(&newvectortype);
   MPI_Send(source,1,newvectortype,the_other,0,comm);
   MPI_Type_free(&newvectortype);

@@ -4,7 +4,7 @@
 ####
 #### This program file is part of the book and course
 #### "Parallel Computing"
-#### by Victor Eijkhout, copyright 2013-5
+#### by Victor Eijkhout, copyright 2013-6
 ####
 #### mpi.py : initializing comm world
 ####

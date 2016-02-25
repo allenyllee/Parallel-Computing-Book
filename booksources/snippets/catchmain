@@ -1,6 +1,7 @@
 library my_library(comm);
-ierr = MPI_Isend(&sdata,1,MPI_INT,other,1,comm,&(request[0])); CHK(ierr);
+MPI_Isend(&sdata,1,MPI_INT,other,1,comm,&(request[0]));
 my_library.communication_start();
-ierr = MPI_Irecv(&rdata,1,MPI_INT,other,MPI_ANY_TAG,comm,&(request[1])); CHK(ierr);
-ierr = MPI_Waitall(2,request,status); CHK(ierr);
+MPI_Irecv(&rdata,1,MPI_INT,other,MPI_ANY_TAG,
+	    comm,&(request[1]));
+MPI_Waitall(2,request,status);
 my_library.communication_end();
