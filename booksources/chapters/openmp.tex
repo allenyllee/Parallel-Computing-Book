@@ -606,6 +606,43 @@ So far we have focused on loops with independent iterations.
 Reductions are a common type of loop with dependencies.
 There is an extended discussion of reductions in section~\ref{sec:reduction}
 
+\Level 2 {Ordered iterations}
+
+Iterations in a parallel loop that are execution in parallel do not
+execute in lockstep. That means that in
+\begin{verbatim}
+#pragma omp parallel for
+for ( ... i ... ) {
+  ... f(i) ...
+  printf("something with %d\n",i);
+}
+\end{verbatim}
+it is not true that all function evaluations happen more or less at
+the same time, followed by all print statements. The print statements
+can really happen in any order. The \indexclause{ordered} clause
+coupled with the \indexpragma{ordered} directive can
+force execution in the right order:
+\begin{verbatim}
+#pragma omp parallel for ordered
+for ( ... i ... ) {
+  ... f(i) ...
+#pragma omp ordered
+  printf("something with %d\n",i);
+}
+\end{verbatim}
+Example code structure:
+\begin{verbatim}
+#pragma omp parallel for shared(y) ordered
+for ( ... i ... ) {
+  int x = f(i)
+#pragma omp ordered
+  y[i] += f(x)
+  z[i] = g(y[i])
+}
+\end{verbatim}
+There is a limitation:
+each iteration can encounter only one \n{ordered} directive.
+
 \Level 2 {\texttt{nowait}}
 
 The implicit barrier at the end of a work sharing construct
@@ -1113,6 +1150,21 @@ This can be guaranteed with a \indexpragma{barrier} pragma:
   x[mytid] = some_calculation();
 #pragma omp barrier
   y[mytid] = x[mytid]+x[mytid+1];
+}
+\end{verbatim}
+
+Apart from the barrier directive, which inserts an explicit barrier,
+OpenMP has \emph{implicit barriers}\index{omp!barrier!implicit} after
+a load sharing construct. Thus the following code is well defined:
+\begin{verbatim}
+#pragma omp parallel 
+{
+#pragma omp for
+  for (int mytid=0; mytid<number_of_threads; mytid++)
+    x[mytid] = some_calculation();
+#pragma omp for
+  for (int mytid=0; mytid<number_of_threads-1; mytid++)
+    y[mytid] = x[mytid]+x[mytid+1];
 }
 \end{verbatim}
 

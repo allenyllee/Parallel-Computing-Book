@@ -456,6 +456,36 @@ Do they compute the same thing?
 
 \vfill\pagebreak
 
+\Level 1 {Barriers}
+
+Are the following two code fragments well defined?
+\begin{multicols}{2}
+\lstset{language=C}
+\begin{lstlisting}
+#pragma omp parallel 
+{
+#pragma omp for
+for (mytid=0; mytid<nthreads; mytid++)
+  x[mytid] = some_calculation();
+#pragma omp for
+for (mytid=0; mytid<nthreads-1; mytid++)
+  y[mytid] = x[mytid]+x[mytid+1];
+}
+\end{lstlisting}
+\columnbreak
+\begin{lstlisting}
+#pragma omp parallel 
+{
+#pragma omp for
+for (mytid=0; mytid<nthreads; mytid++)
+  x[mytid] = some_calculation();
+#pragma omp for nowait
+for (mytid=0; mytid<nthreads-1; mytid++)
+  y[mytid] = x[mytid]+x[mytid+1];
+}
+\end{lstlisting}
+\end{multicols}
+
 \Level 1 {Data scope}
 
 The following program is supposed to initialize as many

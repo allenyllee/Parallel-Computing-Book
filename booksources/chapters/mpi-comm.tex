@@ -154,12 +154,19 @@ in \indexterm{dense linear algebra}.
 
 \begin{exercise}
   \label{ex:rowcolcomm}
-  Organize your processors in a grid, and make subcommunicators for
-  the rows and columns. Do a broadcast from the first row and column
-  through the columns and rows respectively.
+  Organize your processes in a grid, and make subcommunicators for
+  the rows and columns. Initialize all processes in the first row with
+  their column number and the ones in the first column with their row
+  number; all others should be set to zero. Use a gather operation to
+  print out this state of affairs.
+  
+  Now do a broadcast from the first row and column
+  through the columns and rows respectively;
+  processor $(i,j)$ winds up with the numbers $i$~and~$j$. Again use a
+  gather to print this out.
 
-  If you let the broadcast value be the column/row number, then
-  processor $(i,j)$ winds up with the numbers $i$~and~$j$. Test this.
+  Run your code on different number of processes, for instance a
+  number of rows and columns that is a power of~2, or that is a prime number.
 \end{exercise}
 
 As an example of communicator splitting, consider the recursive
