@@ -1137,11 +1137,9 @@ of the \n{recvcounts[i]} values, followed by a scatter where process~\n{i}
 receives \n{recvcounts[i]} values. (Since the amount of data to be scattered
 depends on the process, this is in fact equivalent to \indexmpishow{MPI_Scatterv}
 rather than a regular scatter.)
-\begin{verbatim}
-int MPI_Reduce_scatter
-  (void* sendbuf, void* recvbuf, int *recvcounts, MPI_Datatype datatype, 
-   MPI_Op op, MPI_Comm comm)
-\end{verbatim}
+%
+\mpiRoutineRef{MPI_Reduce_scatter}
+%
 For instance, if all \n{recvcounts[i]} values are~1, the sendbuffer has one element
 for each process, and the receive buffer has length~1.
 
@@ -1311,9 +1309,9 @@ Here
 
 The solution is to give the library a separate communicator with
 \indexmpishow{MPI_Comm_dup}.
-\begin{verbatim}
-int MPI_Comm_dup(MPI_Comm comm, MPI_Comm *newcomm)
-\end{verbatim}
+%
+\mpiRoutineRef{MPI_Comm_dup}
+%
 Newly created communicators should be
 released again with \indexmpishow{MPI_Comm_free}.
 
@@ -1326,10 +1324,9 @@ The command \indexmpishow{MPI_Comm_split} takes a communicator, and
 divides it into a number of disjoint communicators. It does this by
 assigning processes to the same subcommunicator if they have the same
 user-specified `colour' value.
-\begin{verbatim}
-int MPI_Comm_split(MPI_Comm comm, int color, int key, 
-                   MPI_Comm *newcomm)
-\end{verbatim}
+%
+\mpiRoutineRef{MPI_Comm_split}
+%
 The ranking of processes in the new communicator is determined by a `key' value.
 Most of the time, there is no reason to use a relative ranking that is different from
 the global ranking, so the \n{MPI_Comm_rank} value of the global communicator

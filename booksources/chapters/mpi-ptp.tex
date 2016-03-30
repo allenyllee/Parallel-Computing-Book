@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Computing'
-%%%% by Victor Eijkhout, copyright 2012/3/4/5
+%%%% by Victor Eijkhout, copyright 2012-6
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -69,6 +69,14 @@ for (int ilocal=0; ilocal<nlocal; ilocal++) {
   \end{itemize}
   To debug your program, first start with $N=P$.\\
   (Did you allocate your array as real numbers? Why are integers not a good idea?)
+\end{exercise}
+
+\begin{exercise}
+  In exercise~\ref{ex:sumsquares} you worked with a distributed array,
+  computing a local quantity and combining that into a global
+  quantity.
+  Why is it not a good idea to gather the whole distributed array on a
+  single processor, and do all the computation locally?
 \end{exercise}
 
 If the array size is not perfectly divisible by the number of processors,
@@ -427,7 +435,8 @@ The following exercise lets you implement a sorting algorithm with the send-rece
   \label{ex:exchangesort}
   A very simple sorting algorithm is \indextermsub{exchange}{sort}:
   pairs of processors compare data, and if necessary exchange. The
-  elementary step is called a \indexterm{compare-and-swap}: in a pair
+  elementary step is called a \indexterm{compare-and-swap}\footnote
+  {There is an \n{MPI\_Compare\_and\_swap} call. Do not use that.}: in a pair
   of processors each sends their data to the other; one keeps the
   minimum values, and the other the maximum.
   For simplicity, in this exercise we give each processor just a single number.
@@ -439,7 +448,10 @@ The following exercise lets you implement a sorting algorithm with the send-rece
   \end{itemize}
   You need to repeat this $P/2$ times, where $P$~is the number of processors.
 
-  Use \n{MPI_PROC_NULL} for the edge cases.
+  Implement this algorithm using \n{MPI_Sendrecv}. (You can use
+  \n{MPI_PROC_NULL} for the edge cases, but that is not strictly necessary.)
+  Use a gather call to print the global state of the distributed array
+  at the beginning and end of the sorting process.
 \end{exercise}
 
 \Level 1 {Irregular data exchange}
@@ -499,6 +511,12 @@ problems. The main advantage of these routines is that you have full
 control about where the data is: if the send call returns
 the data has been successfully received, and the send buffer can be used for
 other purposes or de-allocated.  
+
+\begin{figure}[ht]
+  \includegraphics[scale=.1]{send-nonblocking}
+  \caption{Non-blocking send}
+  \label{fig:send-nonblocking}
+\end{figure}
 
 By constrast, the non-blocking calls \indexmpishow{MPI_Isend} and \indexmpishow{MPI_Irecv}
 do not wait for their counterpart: in effect they tell the runtime
@@ -773,7 +791,7 @@ outstanding, plus \indexmpishow{MPI_BSEND_OVERHEAD}.
 \commandref{persistent}
 \index{communication!persistent|(textbf}
 
-An \n{Isend} or \n{Irecv} call as an \n{MPI_Request} parameter. This
+An \n{Isend} or \n{Irecv} call has an \n{MPI_Request} parameter. This
 is an object that gets created in the send/recv call, and deleted in
 the wait call. You can imagine that this carries some overhead, and if
 the same communication is repeated many times you may want to avoid

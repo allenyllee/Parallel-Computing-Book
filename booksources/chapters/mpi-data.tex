@@ -4,15 +4,13 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Computing'
-%%%% by Victor Eijkhout, copyright 2012/3/4/5
+%%%% by Victor Eijkhout, copyright 2012-6
 %%%%
 %%%% mpi-data.tex : discussion of MPI datatypes
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% \input chapters/mpi-intro-data
-\Level 0 {Data types}
 \index{datatype|(}
 
 In the examples you have seen so far, every time data was sent,
@@ -43,7 +41,7 @@ The datatypes you have dealt with so far are known as
 \indextermsub{elementary}{datatypes}; irregular objects
 are known as \indextermsub{derived}{datatypes}.
 
-\Level 1 {Elementary data types}
+\Level 0 {Elementary data types}
 \commandref{elementary}
 \index{datatype!elementary|(}
 
@@ -66,7 +64,7 @@ MPI_Send( &x,1,MPI_DOUBLE, ..... )
 
 \index{datatype!elementary|)}
 
-\Level 1 {Derived datatypes}
+\Level 0 {Derived datatypes}
 \commandref{derived-types}
 \index{datatype!derived|(}
 
@@ -107,7 +105,7 @@ With MPI data types you can solve these problems in several ways.
 And you can combine these mechanisms to get irregularly spaced
 heterogeneous data, et cetera.
 
-\Level 2 {Datatype signatures}
+\Level 1 {Datatype signatures}
 \label{sec:signature}
 \index{datatype!signature|(}
 
@@ -128,7 +126,7 @@ sends the data.
 
 \index{datatype!signature|)}
 
-\Level 2 {Basic calls}
+\Level 1 {Basic calls}
 \commandref{data-commit}
 
 New MPI data types are created by
@@ -144,7 +142,7 @@ It is necessary to call \indexmpishow{MPI_Type_commit} which makes MPI
 do the indexing calculations for the data type.  When you no longer
 need the data type, you call \indexmpishow{MPI_Type_free}.
 
-\Level 2 {Contiguous type}
+\Level 1 {Contiguous type}
 \commandref{data:contiguous}
 
 The simplest derived type is the `contiguous' type,
@@ -159,7 +157,7 @@ one item of a contiguous type and multiple items of the constituent type.
 \end{figure}
 This is illustrated in figure~\ref{fig:data-contiguous}.
 
-\Level 2 {Vector type}
+\Level 1 {Vector type}
 \commandref{data:vector}
 
 The simplest non-contiguous datatype is the `vector' type, constructed with
@@ -213,7 +211,7 @@ by replacing the index expression by \n{mat+1}.
   processors.
 \end{exercise}
 
-\Level 2 {Subarray type}
+\Level 1 {Subarray type}
 
 The vector datatype can be used for blocks in an array of dimension
 more than~2 by using it recursively. However, this gets
@@ -224,7 +222,7 @@ tedious. Instead, there is an explicit subarray type
 This describes the dimensionality and extent of the array, and
 the starting point (the `upper left corner') and extent of the subarray.
 
-\Level 2 {Indexed type}
+\Level 1 {Indexed type}
 \commandref{data:indexed}
 
 The indexed datatype, constructed with \indexmpishow{MPI_Type_indexed}
@@ -233,7 +231,7 @@ You need to supply an array of index locations, plus an array of blocklengths
 with a separate blocklength for each index. The total number of elements sent
 is the sum of the blocklengths.
 
-\Level 2 {Struct type}
+\Level 1 {Struct type}
 \commandref{data:struct}
 
 The structure type, created with \indexmpishow{MPI_Type_create_struct},
@@ -260,7 +258,7 @@ in use.
 
 \index{datatype!derived|)}
 
-\Level 1 {Big data types}
+\Level 0 {Big data types}
 
 The \n{size} parameter in MPI send and receive calls is of type integer,
 meaning that it's maximally~$2^{31}-1$. These day computers are big enough
@@ -287,7 +285,7 @@ as follows.
   returns its result as a \n{MPI_Count}.
 \end{itemize}
 
-\Level 1 {Packing}
+\Level 0 {Packing}
 \commandref{pack}
 
 One of the reasons for derived datatypes is dealing with non-contiguous data.

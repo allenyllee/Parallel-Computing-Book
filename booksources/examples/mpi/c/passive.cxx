@@ -25,12 +25,14 @@ int main(int argc,char **argv) {
 
   // Create the table in fake shared memory
   MPI_Win the_window;
-  int repository = 0, ninputs = ntids-1; //10*ntids;
+  int
+    repository = 0, // process that keeps the repository
+    ninputs = ntids-1;
   float *inputs;
 
   //snippet fetchop
   if (mytid==repository) {
-    // Processor zero creates a table of inputs
+    // Repository processor creates a table of inputs
     // and associates that with the window
     //snippet end
     inputs = new float[ninputs];
@@ -54,11 +56,12 @@ int main(int argc,char **argv) {
   if (mytid!=repository) {
     float contribution=(float)mytid,table_element;
     int loc=0;
-      MPI_Win_lock(MPI_LOCK_EXCLUSIVE,repository,0,the_window);
-      // read the table element by getting the result from adding zero
-      err = MPI_Fetch_and_op(&contribution,&table_element,MPI_FLOAT,
-       	            repository,loc,MPI_SUM,the_window); CHK(err);
-      MPI_Win_unlock(repository,the_window);
+    MPI_Win_lock(MPI_LOCK_EXCLUSIVE,repository,0,the_window);
+    // read the table element by getting the result from adding zero
+    err = MPI_Fetch_and_op
+      (&contribution,&table_element,MPI_FLOAT,
+       repository,loc,MPI_SUM,the_window); CHK(err);
+    MPI_Win_unlock(repository,the_window);
   }
   //snippet end
 

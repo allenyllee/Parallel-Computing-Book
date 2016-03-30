@@ -152,9 +152,11 @@ are actually handled by the compiler, not the preprocessor.
 
 \Level 1 {Parallel regions}
 \commandref{parallelregion}
+\index{parallel region|(}
 
 The simplest way to create parallelism in OpenMP is to use
 the \indexpragma{parallel} pragma. A~block preceded by the \n{omp parallel} pragma
+is called a \emph{parallel region}; it
 is executed by a newly created team of threads. 
 This is an instance of the \indexac{SPMD} model: all threads execute the same
 segment of code.
@@ -218,17 +220,41 @@ and what can be done about it.
   Now write an OpenMP program as follows:
   \begin{enumerate}
   \item Write a subprogram that contains a parallel region.
-  \item Write a main program with a parallel region; call the subprogram both inside and outside the parallel region.
+  \item\label{ex:nest:sub} Write a main program with a parallel region; call the subprogram both inside and outside the parallel region.
     \item Insert print statements 
       \begin{enumerate}
       \item in the main program outside the parallel region,
       \item in the parallel region in the main program,
-      \item in the subprogram outside the parallel region,
+      \item\label{ex:nest:sub:sub} in the subprogram outside the parallel region,
       \item in the parallel region inside the subprogram.
       \end{enumerate}
   \end{enumerate}
   Run your program and count how many print statements of each type you get.
 \end{exercise}
+
+Writing subprograms that are called in a parallel region illustrates
+the following point: directives are evaluation with respect to the
+\emph{dynamic scope}\index{parallel region!dynamic scope} of the
+parallel region, not just the lexical scope. In the following example:
+\begin{verbatim}
+#pragma omp parallel
+{
+  f();
+}
+void f() {
+#pragma omp for
+  for ( .... ) {
+    ...
+  }
+}
+\end{verbatim}
+the body of the function~\n{f} falls in the dynamic scope of the
+parallel region, so the for loop will be parallelized.
+
+If the function may be called both from inside and outside parallel
+regions, you can test which is the case with \indextermtt{omp_in_parallel}.
+
+\index{parallel region|)}
 
 \Level 1 {Thread data}
 
@@ -365,27 +391,15 @@ This can arise if you have a parallel region in a subprogram which is sometimes 
 sequentially, sometimes in parallel. The variable \indextermtt{OMP_NESTED} controls
 whether the inner region will create a team of more than one thread.
 
-\Level 0 {Work sharing}
-\commandref{work-sharing}
-
-The declaration of a \indexterm{parallel region} establishes a team of
-threads. This offers the possibility of parallelism, but to actually
-get meaningful parallel activity you need something more.
-OpenMP uses the concept of a \indexterm{work sharing
-construct}: a way of dividing parallelizable work over a team of threads.
-The work sharing constructs are:
-\begin{itemize}
-\item \texttt{for/do} The threads divide up the loop iterations among
-  themselves; see~\ref{sec:omp-for}.
-\item \texttt{sections} The threads divide a fixed number of sections
-  between themselves; see section~\ref{sec:omp-sections}.
-\item \texttt{single} The section is executed by a single thread; section~\ref{sec:omp-single}.
-\item \texttt{task}
-\item \texttt{workshare} Can parallelize Fortran array syntax.
-\end{itemize}
-
-\Level 1 {Loop parallelism}
+\Level 0 {Loop parallelism}
 \commandref{omp-for}
+
+Loop parallelism is a very common type of parallelism in scientific
+codes, so OpenMP has an easy mechanism for it.
+OpenMP parallel loops are a first example of OpenMP `worksharing'
+constructs (see section~\ref{sec:work-sharing} for the full list):
+constructs that take an amount of work and distribute it over the
+available threads in a parallel region.
 
 The parallel execution of a loop can be handled a number of different ways.
 For instance, you can create a parallel region around the loop, and
@@ -463,7 +477,7 @@ jump out of it.
   sequential code?
 \end{exercise}
 
-\Level 2 {Loop schedules}
+\Level 1 {Loop schedules}
 \commandref{schedule}
 
 Usually you will have many more iterations in a loop than there are threads.
@@ -482,7 +496,7 @@ amount of time, so that \indexterm{load balancing} is needed.
 
 \begin{figure}[ht]
   \includegraphics[scale=.12]{schedules}
-  \caption{Illustration of the loop scheduling strategies}
+  \caption{Illustration of the scheduling strategies of loop iterations}
   \label{fig:omp-schedule}
 \end{figure}
 
@@ -600,13 +614,54 @@ for k=1,n:
 \end{enumerate}
 \end{exercise}
 
-\Level 2 {Reductions}
+\Level 1 {Reductions}
 
 So far we have focused on loops with independent iterations.
 Reductions are a common type of loop with dependencies.
 There is an extended discussion of reductions in section~\ref{sec:reduction}
 
-\Level 2 {Ordered iterations}
+\Level 1 {Collapsing nested loops}
+
+In general, the more work there is to divide over a number of threads,
+the more efficient the parallelization will be. In the context of
+parallel loops, it is possible to increase the amount of work by
+parallelizing all levels of loops instead of just the outer one.
+
+Example: in
+\begin{verbatim}
+for ( i=0; i<N; i++ )
+  for ( j=0; j<N; j++ )
+    A[i][j] = B[i][j] + C[i][j] 
+\end{verbatim}
+all $N^2$ iterations are independent, but a regular \n{omp for}
+directive will only parallelize one level. The \indexclause{collapse}
+clause will parallelize more than one level:
+\begin{verbatim}
+#pragma omp for collapse(2)
+for ( i=0; i<N; i++ )
+  for ( j=0; j<N; j++ )
+    A[i][j] = B[i][j] + C[i][j] 
+\end{verbatim}
+It is only possible to collapse perfectly nested loops, that is, the
+loop body of the outer loop can consist only of the inner loop; there
+can be no statements before or after the inner loop in the loop body
+of the outer loop. That is, the two loops in
+\begin{verbatim}
+for (i=0; i<N; i++) {
+  y[i] = 0.;
+  for (j=0; j<N; j++)
+    y[i] + A[i][j] * x[j]
+  }
+\end{verbatim}
+can not be collapsed.
+
+\begin{exercise}
+  Can you rewrite the preceding code example so that it can be
+  collapsed?
+  Do timing tests to see if you can notice the improvement from collapsing.
+\end{exercise}
+
+\Level 1 {Ordered iterations}
 
 Iterations in a parallel loop that are execution in parallel do not
 execute in lockstep. That means that in
@@ -643,7 +698,7 @@ for ( ... i ... ) {
 There is a limitation:
 each iteration can encounter only one \n{ordered} directive.
 
-\Level 2 {\texttt{nowait}}
+\Level 1 {\texttt{nowait}}
 
 The implicit barrier at the end of a work sharing construct
 can be cancelled with a \indexclause{nowait} clause.
@@ -676,7 +731,7 @@ the same schedule.
 }
 \end{verbatim}
 
-\Level 2 {While loops}
+\Level 1 {While loops}
 
 OpenMP can only handle `for' loops: \indexterm{while loops} can not
 be parallelized. So you have to find a way around that. While loops
@@ -711,6 +766,25 @@ for (i=0; i<imax; i++) {
 \end{verbatim}
 You have now solved a slightly different problem: the result variable
 contains the \emph{last} location where \n{a[i]} is zero.
+
+\Level 0 {Work sharing}
+\commandref{work-sharing}
+
+The declaration of a \indexterm{parallel region} establishes a team of
+threads. This offers the possibility of parallelism, but to actually
+get meaningful parallel activity you need something more.
+OpenMP uses the concept of a \indexterm{work sharing
+construct}: a way of dividing parallelizable work over a team of threads.
+The work sharing constructs are:
+\begin{itemize}
+\item \texttt{for/do} The threads divide up the loop iterations among
+  themselves; see~\ref{sec:omp-for}.
+\item \texttt{sections} The threads divide a fixed number of sections
+  between themselves; see section~\ref{sec:omp-sections}.
+\item \texttt{single} The section is executed by a single thread; section~\ref{sec:omp-single}.
+\item \texttt{task} See section~\ref{sec:omp:task}.
+\item \texttt{workshare} Can parallelize Fortran array syntax.
+\end{itemize}
 
 \Level 1 {Sections}
 \commandref{omp-sections}
@@ -826,6 +900,17 @@ int a;
 }
 \end{verbatim}
   This code is no longer correct. Explain.
+\end{exercise}
+
+Above we motivated the \n{single} directive as a way of initializing
+shared variables. It is also possible to use \n{single} to initialize
+private variables. In that case you add the \indexclause{copyprivate}
+clause. This is a good solution if setting the variable takes~I/O.
+
+\begin{exercise}
+  Give two other ways to initialize a private variable, with all
+  threads receiving the same value. Can you give scenarios where each
+  of the three strategies would be preferable?
 \end{exercise}
 
 \Level 1 {Fortran array syntax parallelization}
@@ -993,8 +1078,8 @@ is to have a private copy of a variable:
 \begin{verbatim}
 #pragma omp threadprivate(var)
 \end{verbatim}
-This variable will then have the lifetime of an ordinary variable,
-but inside a parallel region the private copy is used.
+The variable needs be a file variable in~C, or program variable or
+common block in Fortran.
 
 The typical application for thread-private variables is in
 \indexterm{random number generation}.
@@ -1118,6 +1203,13 @@ double result = 0;
   result += local_result;
 }
 \end{verbatim}
+
+\begin{exercise}
+  The maximum and minimum reductions were not added to OpenMP until
+  version~3.1. Write a parallel loop that computes the maximum and
+  minimum values in an array. Discuss the various options. Do timings
+  to evaluate the speedup that is attained and to find the best option.
+\end{exercise}
 
 \Level 0 {Synchronization}
 \index{synchronization!in OpenMP|(}
@@ -1452,6 +1544,54 @@ which will later be executed, probably by a different thread.
 The exact timing of the execution of the task is up to a \indextermbus{task}{scheduler},
 which operates invisible to the user.
 
+The way tasks and threads interact is different from the worksharing
+constructs you've seen so far. Typically, one thread will generate the
+tasks, adding them to a queue, from which all threads can take and
+execute them. This leads to the following idiom:
+\begin{verbatim}
+#pragma omp parallel
+#pragma omp single
+{
+  ...
+#pragma omp task
+  { ... }
+  ...
+}
+\end{verbatim}
+\begin{enumerate}
+\item A parallel region creates a team of threads;
+\item a single thread then creates the tasks, adding them to a queue
+  that belongs to the team,
+\item and all the threads in that team (possibly including the one
+  that generated the tasks) 
+\end{enumerate}
+
+With tasks it becomes possible to parallelize processes that did not
+fit the earlier OpenMP constructs. For instance, if a certain
+operation needs to be applied to all elements of a linked list, you
+can have one thread go down the list, generating a task for each
+element of the list.
+
+Another concept that was hard to parallelize earlier is the `while
+loop'. This does not fit the requirement for OpenMP parallel loops
+that the loop bound needs to be known before the loop executes.
+
+\begin{exercise}
+  Use tasks to find the smallest factor of a large
+  number (using $2,000,000,111$ as test case): generate a task for each
+  trial factor.
+  \begin{itemize}
+  \item Make sure you save only the smallest factor.
+  \item Once a factor has been found, you should stop generating
+    tasks.
+    Let tasks that should not have been generated, meaning that they
+    test a candidate larger than the factor found, print out a message.
+  \end{itemize}
+\end{exercise}
+
+
+\Level 1 {Task dependencies}
+
 Even though the above segment looks like a linear set of statements,
 it is impossible to say when
 the code after the \n{task} directive will be executed.
@@ -1539,22 +1679,57 @@ You can indicate task dependencies in several ways:
   the scheduler can construct the dependency graph for you.
 \end{enumerate}
 
+\Level 1 {Task groups}
+
+Another mechanism for dealing with tasks is the
+\indexpragma{taskgroup}: a task group is a code block that can
+contain \indexpragma{task} directives; all these tasks need to be
+finished before any statement after the block is executed.
+
+A task group is somewhat similar to having a \indexpragma{taskwait}
+directive after the block. The big difference is that that
+\n{taskwait} directive does not wait for tasks that are recursively
+generated, while a \n{taskgroup} does.
+
+Inside a task group it is also possible to put a partial ordering on
+tasks through use of the \indexclause{depend} clause. For example, in
+\begin{verbatim}
+#pragma omp task
+  x = f()
+#pragma omp task
+  y = g(x)
+\end{verbatim}
+it is conceivable that the second task is executed before the first,
+possibly leading to an incorrect result. This is remedied by specifying:
+\begin{verbatim}
+#pragma omp task depend(out:x)
+  x = f()
+#pragma omp task depend(in:x)
+  y = g(x)
+\end{verbatim}
+
+As an example, consider computing an array of Fibonacci values:
+%
+\verbatimsnippet{fiboarray}
+%
+If you simply turn each calculation into a task, results will be
+unpredictable (confirm this!) since tasks can be executed in any sequence.
+To solve this, we put dependencies on the tasks:
+%
+\verbatimsnippet{fibotaskdepend}
+
 \begin{exercise}
-  Use the above approach to find the smallest factor of a large
-  number (using $2,000,000,111$ as test case): generate a task for each
-  trial factor.
-  \begin{itemize}
-  \item Make sure you save only the smallest factor.
-  \item Once a factor has been found, you should stop generating
-    tasks.
-    Let tasks that `should not have been generated' print out a message.
-  \end{itemize}
+  An array of binomial coefficients can be computed as follows:
+  %
+  \verbatimsnippet{binomialarray}
+  %
+  Putting a single task group around the double loop, and use
+  \n{depend} clauses to make the execution satisfy the proper dependencies.
 \end{exercise}
 
-
+\begin{comment}
 \Level 1 {Tree traversal}
 
-\begin{comment}
 Pre-order traversal while duplicating nodes and edges can make a
 complete duplicate of a binary tree. It can also be used to make a
 prefix expression (Polish notation) from expression trees: traverse

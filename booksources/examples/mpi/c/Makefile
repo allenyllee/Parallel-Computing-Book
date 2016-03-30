@@ -21,7 +21,7 @@ APPS = hello init thread \
     reduce reduceinplace allreduce allreduceinplace gather gatherv allgatherv \
     reducescatter \
     contiguous vector interleave indexed struct pack \
-    commdup_wrong commdup_right cart persist \
+    commdup_wrong commdup_right commsplit cart persist \
     pingpong mvp2d centraldiff 
 
 listapps :

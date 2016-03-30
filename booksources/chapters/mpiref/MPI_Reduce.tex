@@ -14,5 +14,5 @@ TYPE(MPI_Comm), INTENT(IN) :: comm
 INTEGER, OPTIONAL, INTENT(OUT) :: ierror
 
 Python:
-mpi4py.MPI.Comm.Reduce(self, sendbuf, recvbuf, Op op=SUM, int root=0)
-mpi4py.MPI.Comm.reduce(self, sendobj=None, recvobj=None, op=SUM, int root=0)
+comm.Reduce(self, sendbuf, recvbuf, Op op=SUM, int root=0)
+comm.reduce(self, sendobj=None, recvobj=None, op=SUM, int root=0)

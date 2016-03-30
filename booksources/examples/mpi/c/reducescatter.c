@@ -34,7 +34,7 @@ int main(int argc,char **argv) {
 
   // generate random requests
   for (int i=0; i<ntids; i++)
-    if ( (float) rand()/(float)RAND_MAX > .8 ) {
+    if ( (float) rand()/(float)RAND_MAX < 2./ntids ) {
       recv_requests[i] = 1; nrecv_requests++;
     }
   printf("[%d]: ",mytid);

@@ -19,7 +19,8 @@ TESTS = \
     allreduce.py anysource.py bcast.py buffertoolarge.py \
     gatherv.py getfence.py irecvnonblock.py irecv_source.py \
     hello.py irecvloop.py persist.py putfence.py \
-    pingpong.py scan.py scipingpong.py 
+    pingpong.py scan.py scipingpong.py \
+    commdup.py commsplit.py
 TESTSWRONG = buffertoosmall.py 
 TESTSNOT = exscan.py
 TESTS_IN_PROGRESS =  interleave.py

@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Computing'
-%%%% by Victor Eijkhout, copyright 2012/3
+%%%% by Victor Eijkhout, copyright 2012-6
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -169,6 +169,14 @@ effect equivalent to setting the environment variable
 void omp_set_schedule (omp_sched_t kind, int modifier);
 \end{verbatim}
 
+\begin{tabular}{llll}
+  Type&environment variable&clause&modifier default\\
+        &{\tt OMP\_SCHEDULE\char`\=}&{\tt schedule( ... )}& \\
+  static&{static[,n]}&{static[,n]}&$N/\mathit{nthreads}$\\
+  dynamic&{dynamic[,n]}&{dynamic[,n]}&$1$\\
+  guided&{guided[,n]}&{guided[,n]}
+\end{tabular}
+
 Here are the various schedules you can set with the
 \n{schedule}\index{schedule!clause} clause:
 \begin{description}
@@ -237,9 +245,14 @@ The \n{reduction} clause can be added to various constructs:
 
 Arithmetic reductions: $+,*,-,\max,\min$
 
-Logical operator reductions: \n{&,&&,|,||,^}
+Logical operator reductions in C: \n{& && | || ^}
 
-Fortran additionally has max and min.
+Logical operator reductions in Fortran:
+\n{.and. .or. .eqv. .neqv. .iand. .ior. .ieor.}
+
+The initialization values are mostly self-evident, such as zero for
+addition and one for multiplication. For min and max they are
+respectively the maximal and minimal representable value of the result type.
 
 \Level 1 {Master and single}
 
@@ -340,23 +353,40 @@ You can alter this default behaviour with the \indexclause{default} clause:
 \end{itemize}
 
 \Level 1 {Threadprivate}
-\commandref{threadprivate}
+\commandreflabel{threadprivate}
 
 Variables declared outside an OpenMP parallel region can be declared
 \indexpragmadef{threadprivate}: each thread will get a private copy
-as if in a parallel region. However, the variable's parallel lifetime is not limited
-to a parallel region, but will instead be governed by ordinary scoping rules.
+as if in a parallel region. 
 \begin{verbatim}
 int i; double d;
 #pragma omp threadprivate(i,d)
 \end{verbatim}
+In C/C++ the variables need to be file variables or be static;
+in Fortran they need
+to be declared at program level.
 
 \begin{fortrannote}
-  Common blocks can be made thread-private with the syntax
+  Named common blocks can be made thread-private with the syntax
 \begin{verbatim}
 $!OMP threadprivate( /blockname/ )
 \end{verbatim}
 \end{fortrannote}
+
+Threadprivate variables require \indextermtt{OMP_DYNAMIC} to be
+switched off.
+
+\Level 1 {Data in dynamic scope}
+
+Functions that are called from a parallel region fall in the
+\emph{dynamic scope}\index{parallel region!dynamic scope} of that
+parallel region. The rules for variables in that function are as follows:
+\begin{itemize}
+\item Any variables locally defined to the function are private.
+\item \n{static} variables in C and \n{save} variables in Fortran
+  are shared.
+\item The function arguments inherit their status from the calling environment.
+\end{itemize}
 
 \Level 0 {Synchronization}
 
@@ -410,8 +440,8 @@ but the second code has more overhead in creating the team of threads a second t
 
 At the end of a parallel region the team of threads is dissolved and
 only the master thread continues. Therefore, there is an
-\emph{implicit barrier at the end of a parallel region}\index{parallel
-  region!barrier at the end of}.
+\emph{implicit barrier at the end of a parallel region}%
+\index{parallel region!barrier at the end of}.
 
 There is some \emph{barrier behaviour}\index{omp!for!barrier
   behaviour} associated with \n{omp for} loops and other
@@ -518,7 +548,8 @@ Other settings:
   was set with \n{omp_set_num_threads}. For a meaningful answer, this
   should be done in a parallel region.
 \item\indextermtt{omp_get_thread_num}
-\item\indextermtt{omp_in_parallel}: test if you are in a parallel region
+\item\indextermtt{omp_in_parallel}: test if you are in a parallel
+  region (see for instance section~\ref{sec:parallelregion}).
 \item\indextermtt{omp_get_num_procs}: query the physical number of cores available.
 \end{itemize}
 
