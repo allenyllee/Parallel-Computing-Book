@@ -1691,7 +1691,9 @@ directive after the block. The big difference is that that
 \n{taskwait} directive does not wait for tasks that are recursively
 generated, while a \n{taskgroup} does.
 
-Inside a task group it is also possible to put a partial ordering on
+\Level 1 {Task dependencies}
+
+It is possible to put a partial ordering on
 tasks through use of the \indexclause{depend} clause. For example, in
 \begin{verbatim}
 #pragma omp task
@@ -1717,6 +1719,28 @@ unpredictable (confirm this!) since tasks can be executed in any sequence.
 To solve this, we put dependencies on the tasks:
 %
 \verbatimsnippet{fibotaskdepend}
+
+\begin{exercise}
+Consider the following code:
+\begin{verbatim}
+for i in [1:N]:
+    x[0,i] = some_function_of(i)
+    x[i,0] = some_function_of(i)
+
+for i in [1:N]:
+    for j in [1:N]:
+        x[i,j] = x[i-1,j]+x[i,j-1]
+\end{verbatim}
+\begin{itemize}
+\item Observe that the second loop nest is not amenable to OpenMP loop
+  parallelism.
+\item Can you think of a way to realize the computation with OpenMP
+  loop parallelism? Hint: you need to rewrite the code so that the
+  same operations are done in a different order.
+\item Use tasks with dependencies to make this code parallel without
+  any rewriting: the only change is to add OpenMP directives.
+\end{itemize}
+\end{exercise}
 
 \begin{exercise}
   An array of binomial coefficients can be computed as follows:
