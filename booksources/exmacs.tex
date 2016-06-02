@@ -1,9 +1,10 @@
+% -*- latex
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Introduction to High-Performance Scientific Computing'
-%%%% by Victor Eijkhout, copyright 2012
+%%%% by Victor Eijkhout, copyright 2012-6
 %%%%
 %%%% This book is distributed under a Creative Commons Attribution 3.0
 %%%% Unported (CC BY 3.0) license and made possible by funding from
@@ -59,4 +60,17 @@
    \par
   }
   {\par}
+
+%pyskipbegin
+{ \catcode`\_=13
+  \gdef\mpiexample{\bgroup
+    \catcode`\_=13 \def_{\char95\discretionary{}{}{}}
+    \afterassignment\mpiexampleprint
+    \edef\mpiexamplenext }
+  \gdef\mpiexampleprint{
+    \Level 2 {\tt \mpiexamplenext}
+    \indexmpiex{\mpiexamplenext}
+    \egroup }
+}
+%pyskipend
 

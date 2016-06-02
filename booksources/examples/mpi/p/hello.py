@@ -12,13 +12,13 @@
 ################################################################
 ################################################################
 
+#snippet hellop
 from mpi4py import MPI
 
 comm = MPI.COMM_WORLD
+nprocs = comm.Get_size()
+procno = comm.Get_rank()
 
-ntids = comm.Get_size()
-mytid = comm.Get_rank()
-
-if mytid==0:
-    print "Starting %d processes" % ntids
+print "Starting processes %d out of %d" % (procno,nprocs)
+#snippet end
 

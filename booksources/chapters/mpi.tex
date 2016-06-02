@@ -80,50 +80,6 @@ Some points.
 
 \Level 0 {Leftover topics}
 
-\Level 1 {Getting message information}
-
-In some circumstances the recipient may not know all details of a message.
-\begin{itemize}
-\item If you are expecting multiple incoming messages, it may be most
-  efficient to deal with them in the order in which they arrive. For
-  that, you have to be able to ask `who did this message come from,
-  and what is in it'.
-\item Maybe you know the sender of a message, but the amount of data
-  is unknown. In that case you can overallocate your receive buffer,
-  and after the message is received ask how big it was, or you can
-  `probe' an incoming message and allocate enough data when you find
-  out how much data is being sent.
-\end{itemize}
-
-\Level 2 {Status object}
-
-The receive calls you saw above has a status argument. If you 
-precisely know what is going to be sent, this argument tells you 
-nothing new. Therefore, there is a special value \indexmpishow{MPI_STATUS_IGNORE}
-that you can supply instead of a status object, which tells MPI that the 
-status does not have to be reported. For routines such as \indexmpishow{MPI_Waitany}
-where an array of statuses is needed, you can supply \indexmpishow{MPI_STATUSES_IGNORE}.
-
-However, if you expect data from multiple senders,
-or the amount of data is indeterminate, the status will give
-you that information.
-
-The \indexmpishow{MPI_Status} object is a structure with the following 
-freely accessible members:
-\n{MPI_SOURCE}, \n{MPI_TAG}, and \n{MPI_ERROR}. There is also opaque 
-information: the amount of data received can be retrieved by 
-a function call to \indexmpishow{MPI_Get_count}.
-\begin{verbatim}
-int MPI_Get_count(
-  MPI_Status *status,
-  MPI_Datatype datatype,
-  int *count
-);
-\end{verbatim}
-This may be necessary since the \n{count} argument to \n{MPI_Recv} is 
-the buffer size, not an indication of the actually expected number of
-data items.
-
 \Level 1 {Error handling}
 \commandref{mpi:error}
 
@@ -423,6 +379,65 @@ it is possible that the origin process may hang until
 the target process makes an MPI call.
 
 \index{progress|)}
+
+\Level 0 {Subtleties with processor synchronization}
+\label{sec:handshake}
+
+Blocking communication involves a complicated dialog between the two
+processors involved. Processor one says `I~have this much data to
+send; do you have space for that?', to which processor two replies
+`yes, I~do; go ahead and send', upon which processor one does the
+actual send. This back-and-forth (technically known as
+a \indexterm{handshake}) takes a certain amount of communication
+overhead. For this reason, network hardware will sometimes forgo the
+handshake for small messages, and just send them regardless, knowing
+that the other process has a small buffer for such occasions.
+
+%This behaviour is not dictated by the standard: it is up to the implementation
+%to make this optimization for small messages.
+
+One strange side-effect of this strategy is that a code that
+should \indexterm{deadlock} according to the MPI specification does
+not do so. In effect, you may be shielded from you own programming
+mistake! Of course, if you then run a larger problem, and the small
+message becomes larger than the threshold, the deadlock will suddenly
+occur. So you find yourself in the situation that a bug only manifests
+itself on large problems, which are usually harder to debug. In this
+case, replacing every \n{MPI_Send} with a \indexmpishow{MPI_Ssend} will force the
+handshake, even for small messages.
+
+Conversely, you may sometimes wish to avoid the handshake on large
+messages. MPI as a solution for this: the \indexmpishow{MPI_Rsend} (`ready
+send') routine sends its data immediately, but it needs the receiver
+to be ready for this. How can you guarantee that the receiving process
+is ready? You could for instance do the following (this uses
+non-blocking routines, which are explained below in
+section~\ref{sec:nonblocking}):
+\begin{verbatim}
+if ( receiving ) {
+  MPI_Irecv()   // post non-blocking receive
+  MPI_Barrier() // synchronize
+else if ( sending ) {
+  MPI_Barrier() // synchronize
+  MPI_Rsend()   // send data fast
+\end{verbatim}
+When the barrier is reached, the receive has been posted, so it is safe 
+to do a ready send. However, global barriers are not a good idea.
+Instead you would just synchronize the two processes involved.
+\begin{exercise}
+  Give pseudo-code for a scheme where you synchronize the two
+  processes through the exchange of a blocking zero-size message.
+\end{exercise}
+
+\Level 0 {The origin of one-sided communication in ShMem}
+
+The \indextermbus{Cray}{T3E} had a library called \indexterm{shmem}
+which offered a type of shared memory. Rather than having a true
+global address space it worked by supporting variables that were
+guaranteed to be identical between processors, and indeed, were
+guaranteed to occupy the same location in memory. Variables could be
+declared to be shared a `symmetric' pragma or directive; their values
+could be retrieved or set by \n{shmem_get} and \n{shmem_put} calls.
 
 \Level 0 {Literature}
 

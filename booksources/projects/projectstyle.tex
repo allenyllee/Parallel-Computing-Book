@@ -90,7 +90,22 @@ and scaling tests you will often see a drop in (relative) performance
 going from one node to two.  Therefore you need to run your code in a
 variety of scenarios, using more than one node.
 
+\paragraph*{Reporting scaling}
+
+If you do a scaling analysis, a graph reporting runtimes should not
+have a linear time axis: a logarithmic graph is much easier to
+read. A~speedup graph can also be informative.
+
+Some algorithms are mathematically equivalent in their sequential and
+parallel versions. Others, such as iterative processes, can take more
+operations in parallel than sequentially, for instance because the
+number of iterations goes up. In this case, report both the speedup of
+a single iteration, and the total improvement of running the full
+algorithm in parallel.
+
 \paragraph*{Repository organization}
 
-If you submit your work through a repository, make sure you organize your submissions in subdirectories,
-and that you give a clear name to all files.
+If you submit your work through a repository, make sure you organize
+your submissions in subdirectories, and that you give a clear name to
+all files. Object files and binaries should not be in a repository
+since they are dependent on hardware and things like compilers.

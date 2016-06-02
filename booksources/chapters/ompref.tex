@@ -19,292 +19,9 @@ The definitive information on OpenMP can be found on
 \url{http://openmp.org/wp/resources/} where the one
 by Tim Mattson is particularly recommended.
 
-\Level 0 {Basics}
-
-\Level 1 {OpenMP setup}
-%\commandreflabel{omp-code}
-
-If you use OMP library routines, you have to make them known to
-the compiler. In~C/C++ you include the header file \indexterm{omp.h}:
-\begin{verbatim}
-#include "omp.h"
-\end{verbatim}
-In Fortran you use a module:
-\begin{verbatim}
-use omp_lib
-\end{verbatim}
-
-\Level 1 {Directives}
-\commandreflabel{omp-directives}
-\index{directives|(textbf}
-
-Directives in C/C++ are case-sensitive. Directives can be broken over
-multiple lines by escaping the line end.
-
-Directives in Fortran start with a \indextermdef{sentinel}, commonly~\verb+!$omp+.
-If you break a directive over more than one line, all but the last line
-need to have a continuation character, and each line needs to have the sentinel:
-\begin{verbatim}
-!$OMP parallel do &
-!%OMP   copyin(x),copyout(y)
-\end{verbatim}
-  The directives are case-insensitive. In
-  \indextermbus{Fortran}{fixed-form source} files, \verb+c$omp+ and
-  \verb+*$omp+ are allowed too.
-
-\index{directives|)}
-
-\Level 1 {Code and execution structure}
-\commandreflabel{omp-code-structure}
-
-Here are a couple of important concepts:
-\begin{definition}
-\item[structured block] An OpenMP directive is followed by an
-  \indexterm{structured block}; in C~this is a single statement, a
-  compound statement, or a block in braces; In Fortran it is
-  delimited by the directive and its matching `\n{end}' directive.
-
-  A~structured block can not be jumped into, so it can not start with a
-  labeled statement, or contain a jump statement leaving the block.
-\item[construct] An OpenMP \indexterm{construct} is the section of code
-  starting with a directive and spanning the following structured block,
-  plus in Fortran the end-directive. This is a lexical concept: it contains
-  the statements directly enclosed, and not any subroutines called from them.
-\item[region of code] A \indexterm{region of code} is defined as all statements
-  that are dynamically encountered while executing the code of an OpenMP construct.
-  This is a dynamic concept: unlike a `construct', it does include any subroutines
-  that are called from the code in the structured block.
-\end{definition}
-
-\Level 0 {Parallel regions}
-\commandreflabel{parallelregion}
-
-The \indexpragma{parallel} pragma creates a team of threads from the current thread,
-and makes each thread execute the following block.
-
-To test whether you are in a parallel region, use
-\indextermtt{omp_in_parallel}.
-\begin{verbatim}
-int omp_in_parallel() // C
-LOGICAL omp_in_parallel() ! F
-\end{verbatim}
-
-\Level 1 {Threading}
-
-The number of threads in the team is controlled by \n{OMP_NUM_THREADS}
-or the \indextermtt{num_threads} clause on the \n{parallel} directive.
-
-The number of threads used can differ between parallel regions. This is known
-as \indexterm{dynamic mode}. You can set this with
-\indextermtt{omp_set_dynamic} and query with
-\indextermtt{omp_get_dynamic}.
-
-If a region should be executed serially under certain conditions,
-the \indexpragma{if} clause can be used:
-\begin{verbatim}
-#pragma omp parallel if (n>1000)
-#pragma omp for
-for (i=0; i<n; i++) {
-   ...
-}
-\end{verbatim}
-
-\verbatimsnippet{hello-who-omp}
-
-\Level 1 {Combining with worksharing}
-
-If the structured block consists only of a \n{for}/\n{do} or \n{sections} worksharing construct,
-you can use the combined directives
-\indexpragma{parallel for},
-\indexpragma{parallel do},
-\indexpragma{parallel sections}.
-
-\Level 0 {Worksharing}
-\commandreflabel{work-sharing}
-\index{worksharing constructs|(textbf}
-
-The OpenMP \emph{worksharing constructs} serve to distribute work
-over threads.
-
-\Level 1 {Loop parallelism}
-\commandreflabel{omp-for}
-
-The \indexpragma{for} (C) and \indexpragma{do} (Fortran) directives
-tell OpenMP to distribute the iterations of a loop over the threads
-of a team.
-These pragmas do not create a team of threads: they
-take the current team of threads and divide the loop iterations over them.
-This means that the \n{omp for} or \n{omp do} directive needs to be
-inside a parallel region. It is also possible to have a combined
-\n{omp parallel for} or \n{omp parallel do} directive.
-
-There are some restrictions on the loop: basically, OpenMP needs to be
-able to determine in advance how many iterations there will be.
-\begin{itemize}
-\item The loop can not contains \n{break}, \n{return}, \n{exit} statements, or
-  \n{goto} to a label outside the loop.
-\item The \n{continue} (C) or \n{cycle} (F) statement is allowed.
-\item The index update has to be an increment (or decrement) by a fixed amount.
-\item The loop index variable is automatically private, and not changes to it
-  inside the loop are allowed.
-\end{itemize}
-
-\Level 2 {Schedules}
-\commandreflabel{schedule}
-
-The schedule can be declared explicitly, set at runtime
-through the \indextermtt{OMP_SCHEDULE} environment variable, or left up to the runtime system
-by specifying \n{auto}. Especially in the last two cases  you may want to enquire
-what schedule is currently being used with
-\indextermtt{omp_get_schedule}.
-\begin{verbatim}
-int omp_get_schedule(omp_sched_t * kind, int * modifier );
-\end{verbatim}
-
-Its mirror call is \indextermtt{omp_set_schedule}, which sets the
-value that is used when schedule value \n{runtime} is used. It is in
-effect equivalent to setting the environment variable
-\n{OMP_SCHEDULE}.
-\begin{verbatim}
-void omp_set_schedule (omp_sched_t kind, int modifier);
-\end{verbatim}
-
-\begin{tabular}{llll}
-  Type&environment variable&clause&modifier default\\
-        &{\tt OMP\_SCHEDULE\char`\=}&{\tt schedule( ... )}& \\
-  static&{static[,n]}&{static[,n]}&$N/\mathit{nthreads}$\\
-  dynamic&{dynamic[,n]}&{dynamic[,n]}&$1$\\
-  guided&{guided[,n]}&{guided[,n]}
-\end{tabular}
-
-Here are the various schedules you can set with the
-\n{schedule}\index{schedule!clause} clause:
-\begin{description}
-  \item[affinity] Set by using value  \indextermtt{omp_sched_affinity}
-  \item[auto] The schedule is left up to the implementation. Set by
-    using value \indextermtt{omp_sched_auto}
-  \item[dynamic] value:~2. The modifier parameter is the
-    \indexterm{chunk} size; default~1. Set by using value
-    \indextermtt{omp_sched_dynamic}
-  \item[guided] Value:~3. The modifier parameter is the
-    \indextermtt{chunk} size. Set by using value
-    \indextermtt{omp_sched_guided}
-  \item[runtime] Use the value of the \indextermtt{OMP_SCHEDULE}
-    environment variable. Set by using value
-    \indextermtt{omp_sched_runtime}
-  \item[static] value:~1. The modifier parameter is the \indexterm{chunk} size. Set by using value  \indextermtt{omp_sched_static}
-\end{description}
-
-\Level 2 {Ordered loop iterations}
-
-If loop iterations contain code that needs to be executed in the sequence of iterates,
-the \indexpragma{ordered} clause can be used:
-\begin{verbatim}
-#pragma omp for ordered private(t)
-for (i=0; i<N; i++) {
-  t = F(i) // some expensive calculation
-#pragma omp ordered
-  a[i+1] = a[i] + t
-}
-\end{verbatim}
-Note the separate \n{ordered} construct inside the loop. Without that, nothing
-will actually be ordered.
-
-\Level 2 {Reductions}
-\commandreflabel{reduction}
-
-Often, the threads in a team compute partial results which
-need to be combined, for instance in an addition or multiplication.
-This combination is known as a \indextermdef{reduction}.
-You can implement this by using partial results
-in each thread (see the examples in section~\ref{sec:reduction}),
-or by using an atomic update of a shared variable, but the easiest
-way is to use the \indexclause{reduction} clause.
-
-The \n{reduction} clause can be added to various constructs:
-\begin{itemize}
-\item Most commonly it is added to a \n{for} loop; the results
-  of all iterations are then combined.
-\item Similarly, it can be added to a \n{section} construct;
-  the results of the individual \n{section} blocks are then combined.
-\item You can even add it directly to the \n{parallel} directive;
-  this combines the results from the threads in the team that is created.
-\end{itemize}
-
-\begin{verbatim}
-  int sum;
-#pragma omp parallel for reduction(+:sum)
-  for (i=0; i<N; i++)
-    sum  = sum + f(i);
-\end{verbatim}
-
-\begin{exercise}
-  Write a program to test the fact that the partial results
-  are initialized to the unit of the reduction operator.
-\end{exercise}
-
-Arithmetic reductions: $+,*,-,\max,\min$
-
-Logical operator reductions in C: \n{& && | || ^}
-
-Logical operator reductions in Fortran:
-\n{.and. .or. .eqv. .neqv. .iand. .ior. .ieor.}
-
-The initialization values are mostly self-evident, such as zero for
-addition and one for multiplication. For min and max they are
-respectively the maximal and minimal representable value of the result type.
-
-\Level 1 {Master and single}
-
-The \indexpragma{master} and \indexpragma{single} constructs
-are quite similar. They both indicate that a structured block
-is to be executed by only a single thread, and that all other threads
-that encounter the block skip it. However, the \n{master} pragma
-assigns the execution of the block to a specific thread: the master thread.
-Therefore, it is technically not a worksharing construct, and thus
-there is no barrier at the end of it.
-
-The \n{single} pragma does have a barrier, which can be removed with
-\n{nowait}.
-\begin{verbatim}
-$! omp parallel
-..
-$! omp single
-..
-$! omp end single nowait
-..
-$! omp end parallel
-\end{verbatim}
-
-\Level 1 {Sections}
-
-\begin{verbatim}
-#pragma omp parallel
-{
-#pragma omp sections
-  {
-#pragma omp section
-    do_thing_A();
-#pragma omp section
-    do_thing_B();
-#pragma omp section
-    do_thing_C();
-  }
-}
-\end{verbatim}
-
-\Level 1 {Fortran \texttt{workshare}}
-\commandreflabel{fortran-workshare}
-
-The \indexpragma{workshare} directive exists only in Fortran.
-It can be used to parallelize
-the implied loops in \emph{array syntax}\index{Fortran!array syntax},
-as well as  \emph{forall}\index{Fortran!forall loops} loops.
-
-\index{worksharing constructs|)}
+\Level 0 {Reference stuff}
 
 \Level 0 {Controlling thread data}
-\commandreflabel{ompdata}
 
 \Level 1 {Shared data}
 
@@ -326,55 +43,24 @@ put on a separate \indextermbus{stack}{per thread}. The OpenMP standard
 does not dictate the size of these stacks, but beware of \indextermbus{stack}{overflow}.
 A~typical default
 is a few megabyte; you can control it with the environment variable
-\indextermtt{OMP_STACKSIZE}
-
-\indexpragma{firstprivate}
-\indexpragma{lastprivate}
-\indexpragma{copyin}
-
-\Level 1 {Defaults}
-
-You can add clauses to an \n{omp parallel} pragma
-to specify explicitly what variables are private and what variables shared.
-Note the cases with default behaviour:
-\begin{itemize}
-\item Loop variables in an \n{omp for} are private;
-\item Local variables in the parallel region are private.
-\end{itemize}
-You can alter this default behaviour with the \indexclause{default} clause:
-\begin{itemize}
-\item The \indexclauseoption{default}{none} option is good for debugging, 
-  because it forces you to specify for each variable in the parallel region
-  whether it's private or shared.
-\item The \indexclauseoption{default}{shared} clause means that any private variables
-  need to be declared explicitly.
-\item The \indexclauseoption{default}{private} clause means that any shared variables
-  need to be declared explicitly. This value is not available in~C.
-\end{itemize}
-
-\Level 1 {Threadprivate}
-\commandreflabel{threadprivate}
-
-Variables declared outside an OpenMP parallel region can be declared
-\indexpragmadef{threadprivate}: each thread will get a private copy
-as if in a parallel region. 
+\indextermtt{OMP_STACKSIZE}. Its values can be literal or with suffixes:
 \begin{verbatim}
-int i; double d;
-#pragma omp threadprivate(i,d)
+123 456k 567K 678m 789M 246g 357G
 \end{verbatim}
-In C/C++ the variables need to be file variables or be static;
-in Fortran they need
-to be declared at program level.
 
-\begin{fortrannote}
-  Named common blocks can be made thread-private with the syntax
+A normal \indextermbus{Unix}{process} also has a stack, but this is
+independent of the OpenMP stacks for private data. You can query or
+set the Unix stack with \indextermtt{ulimit}:
 \begin{verbatim}
-$!OMP threadprivate( /blockname/ )
+[] ulimit -s
+64000
+[] ulimit -s 8192
+[] ulimit -s
+8192
 \end{verbatim}
-\end{fortrannote}
-
-Threadprivate variables require \indextermtt{OMP_DYNAMIC} to be
-switched off.
+The Unix stack can grow dynamically as space is needed. This does not
+hold for the OpenMP stacks: they are immediately allocated at their
+requested size. Thus it is important not too make them too large.
 
 \Level 1 {Data in dynamic scope}
 
@@ -389,83 +75,6 @@ parallel region. The rules for variables in that function are as follows:
 \end{itemize}
 
 \Level 0 {Synchronization}
-
-\begin{itemize}
-\item \texttt{atomic} Update of a single memory location. Only certain
-  specified syntax pattterns are supported. This was added in order to
-  be able to use hardware support for atomic updates.
-\item \texttt{barrier}: section \ref{ompref:barrier}
-\item \texttt{critical}: section \ref{ref:critical}
-\item \texttt{ordered}
-\item locks: section \ref{ompref:locks}
-\item \texttt{flush}: section \ref{ref:omp:flush}
-\item \texttt{nowait}
-\end{itemize}
-
-\Level 1 {Barriers}
-\label{ompref:barrier}
-
-A barrier is a location in the code that needs to be reached
-by all threads before any of them can continue. There is 
-a directive for declaring an explicit barrier, but 
-there are also implicit barriers associated with certain other 
-directives.
-
-\Level 2 {Explicit barriers}
-\commandreflabel{exbarrier}
-
-You saw an example above where explicit barriers are needed.
-You can sometimes replace an explicit barrier by an implicit one:
-\begin{verbatim}
-#pragma omp parallel
-{
-  // do something
-#pragma omp barrier
-  // do something else
-}
-\end{verbatim}
-is equivalent to
-\begin{verbatim}
-#pragma omp parallel
-{
-  // do something
-}
-#pragma omp parallel
-  // do something else
-}
-\end{verbatim}
-but the second code has more overhead in creating the team of threads a second time.
-
-\Level 2 {Implicit barriers}
-
-At the end of a parallel region the team of threads is dissolved and
-only the master thread continues. Therefore, there is an
-\emph{implicit barrier at the end of a parallel region}%
-\index{parallel region!barrier at the end of}.
-
-There is some \emph{barrier behaviour}\index{omp!for!barrier
-  behaviour} associated with \n{omp for} loops and other
-\emph{worksharing constructs}\index{worksharing constructs!implied
-  barriers at} (see section~\ref{sec:workshare}).  For instance, there
-is an \indexterm{implicit barrier} at the end of the loop. This
-barrier behaviour can be cancelled with the \indexclause{nowait}
-clause.
-
-You will often see the idiom
-\begin{verbatim}
-#pragma omp parallel
-{
-#pragma omp for nowait
-  for (i=0; i<N; i++)
-    a[i] = // some expression
-#pragma omp for
-  for (i=0; i<N; i++)
-    b[i] = ...... a[i] ......
-\end{verbatim}
-Here the \n{nowait} clause implies that threads can start on the second loop
-while other threads are still working on the first. Since the two loops use the same
-schedule here, an iteration that uses \n{a[i]} can indeed rely on it that that 
-value has been computed.
 
 \Level 1 {Critical sections}
 \commandreflabel{critical}
@@ -581,14 +190,6 @@ Other environment variables:
 \index{OpenMP!environment variables|)}
 \index{OpenMP!library routines|)}
 \index{Internal Control Variable (ICV)|)}
-
-\Level 0 {Tasks}
-\commandreflabel{omp:task}
-
-OpenMP v4 has a \indexclause{depend} clause.
-\begin{verbatim}
-#pragma omp task depend(dependency-type: list)
-\end{verbatim}
 
 \Level 0 {Stuff}
 

@@ -1,33 +1,115 @@
+% -*- latex -*-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Computing'
-%%%% by Victor Eijkhout, copyright 2012/3
+%%%% by Victor Eijkhout, copyright 2012-6
+%%%%
+%%%% hybrid.tex : about hybrid computing
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \Level 0 {Discussion}
 
-Hybrid computing decreases the number of messages.
+So far, you have learned to use MPI for distributed memory and OpenMP
+for shared memory parallel programming. However, distribute memory
+architectures actually have a shared memory component, since each
+cluster node is typically of a multicore design. Accordingly, you
+could program your cluster using MPI for inter-node and OpenMP for
+intra-node parallelism.
 
-On the other hand it makes the run more synchronous.
+Say you use 100 cluster nodes, each with 16 cores. You could then
+start 1600 MPI processes, one for each core, but you could also start
+100 processes, and give each access to 16 OpenMP threads.
 
-New version of Amdahl: sections that MPI-parallel but not OpenMP-parallel.
+\begin{tacc}
+In your slurm scripts, the first scenario would be specified \n{-N 100
+-n 1600}, and the second as
+\begin{verbatim}
+#$ SBATCH -N 100
+#$ SBATCH -n 100
 
-Allows overdecomposition on the node.
+export OMP_NUM_THREADS=16
+\end{verbatim}
+\end{tacc}
+
+Between these two extremes, different strategies are possible, for
+instance putting one MPI processor on each \indexterm{socket}.
+
+The performance implications of the pure MPI strategy versus hybrid
+are subtle.
+\begin{itemize}
+\item First of all, we note that there is no obvious speedup: in a
+  well balanced MPI application all cores are busy all the time, so
+  using threading can give no immediate improvement.
+\item Both MPI and OpenMP are subject to Amdahl's law that quantifies
+  the influence of sequential code; in hybrid computing there is a new
+  version of this law regarding the amount of code that is
+  MPI-parallel, but not OpenMP-parallel.
+\item MPI processes run unsynchronized, so small variations in load or
+  in processor behaviour can be tolerated. The frequent barriers in
+  OpenMP constructs make a hybrid code more tightly synchronized, so
+  load balancing becomes more critical.
+\item On the other hand, in OpenMP codes it is easier to divide the
+  work into more tasks than there are threads, so statistically a
+  certain amount of load balancing happens automatically.
+\end{itemize}
+
+\begin{exercise}
+  Review the scalability argument for 1D versus 2D matrix
+  decomposition in \HPSCref{sec:parallel-dense-mvp}. Would you get
+  scalable performance from doing a 1D decomposition (for instance, of
+  the rows) over MPI processes, and decomposing the other directions
+  (the columns) over OpenMP threads?
+\end{exercise}
+
+Another performance argument we need to consider concerns message
+traffic.  If let all threads make MPI calls (see
+section~\ref{sec:init-thread}) there is going to be little
+difference. However, in one popular hybrid computing strategy we would
+keep MPI calls out of the OpenMP regions and have them in effect done
+by the master thread.
+%
+In that case there are only MPI messages
+between nodes, instead of between cores. This leads to a decrease in
+message traffic, though this is hard to quantify. The number of
+messages goes down approximately by the number of cores per node, so
+this is an advantage if the average message size is small. On the
+other hand, the amount of data sent is only reduced if there is
+overlap in content between the messages.
+
+Limiting MPI traffic to the master thread also means that no buffer
+space is needed for the on-node communication.
+
+\Level 0 {Recognizing shared memory}
+\label{mpi-comm-split-type}
+
+MPI's one-sided routines take a very symmetric view of processes:
+each process can access the window of every other process (within a communicator).
+Of course, in practice there will be a difference in performance
+depending on whether the origin and target are actually
+on the same shared memory, or whether they can only communicate through the network.
+For this reason MPI makes it easy to group processes by shared memory domains
+using \indexmpishow{MPI_Comm_split_type}.
+
+\mpiRoutineRef{MPI_Comm_split_type}
+
+In the following example, \n{CORES_PER_NODE} is a platform-dependent
+constant:
+%
+\verbatimsnippet{commsplittype}
 
 \Level 0 {Hybrid MPI-plus-threads execution}
+\label{sec:init-thread}
 
 In hybrid execution, the main question is whether all threads
 are allowed to make MPI calls. To determine this,
 replace the \n{MPI_Init} call by
-\indexmpishow{MPI_Init_thread}:
-\begin{verbatim}
-int MPI_Init_thread
-  ( int *argc, char ***argv, int required, int *provided )
-\end{verbatim}
+%
+\mpiRoutineRef{MPI_Init_thread}
+%
 Here the \n{required} and \n{provided} parameters can take the following
 values:
 \begin{description}

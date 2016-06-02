@@ -11,59 +11,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%pyskipbegin
-{ \catcode`\_=13
-  \gdef\mpiexample{\bgroup
-    \catcode`\_=13 \def_{\char95\discretionary{}{}{}}
-    \afterassignment\mpiexampleprint
-    \edef\mpiexamplenext }
-  \gdef\mpiexampleprint{
-    \Level 1 {\tt \mpiexamplenext}
-    \indexmpiex{\mpiexamplenext}
-    \egroup }
-}
-%pyskipend
-
 \Level 0 {A}
 
-\mpiexample{MPI_Allgatherv}
-
-Prior to the actual gatherv call, we need to construct the count and
-displacement arrays. The easiest way is to use a reduction.
-
-\verbatimsnippet{allgathervc}
-
-In python the receive buffer has to contain the counts and
-displacements arrays.
-
-\verbatimsnippet{allgathervp}
-
-\mpiexample{MPI_Allreduce}
-
-We give each process a random number, and sum these numbers together.
-The result should be approximate $1/2$ times the number of processes.
-
-\verbatimsnippet{allreducec}
-
-Using the \indexmpishow{MPI_IN_PLACE} specifier:
-
-\verbatimsnippet{allreduceinplace}
-
-For Python we illustrate both the native and the numpy variant. In the
-numpy variant we create an array for the receive buffer, even though
-only one element is used.
-
-\verbatimsnippet{allreducep}
-
 \Level 0 {B}
-
-\mpiexample{MPI_Bcast}
-
-In python we illustrate the native and numpy variants. In the native
-variant the result is given as a function return; in the numpy variant
-the send buffer is reused.
-%
-\verbatimsnippet{bcastp}
 
 \Level 0 {C}
 
@@ -93,16 +43,6 @@ again recursively.
 \verbatimsnippet{commsplit}
 \verbatimsnippet{commsplitp}
 
-\Level 0 {E}
-
-\mpiexample{MPI_Exscan}
-
-Exclusive scan:
-%
-\verbatimsnippet{myfirst}
-%
-\verbatimsnippet{exscanp}
-
 \Level 0 {F}
 
 \mpiexample{MPI_Fetch_and_op}
@@ -112,6 +52,8 @@ atomic gets and update of that data using \indexterm{passive target
   synchronization} through \indexmpishow{MPI_Win_lock}.
 %
 \verbatimsnippet{fetchop}
+%
+\verbatimsnippet{fetchopp}
 
 \Level 0 {G}
 
@@ -119,15 +61,6 @@ atomic gets and update of that data using \indexterm{passive target
 
 Gather data onto a root. Only the root allocates the gather buffer.
 \verbatimsnippet{gather}
-
-\mpiexample{MPI_Gatherv}
-
-Gather irregularly sized data onto a root. We first need an
-\n{MPI_Gather} to determine offsets.
-%
-\verbatimsnippet{gatherv}
-%
-\verbatimsnippet{gathervp}
 
 \mpiexample{MPI_Get}
 
@@ -153,15 +86,6 @@ and reports back what the provided level is.
 
 \Level 0 {P}
 
-\mpiexample{MPI_Pack}
-%
-Use packing to make a self-documenting message: the first element is
-an integer describing how many doubles follow. The
-\indexmpishow{MPI_Unpack} call inspects the integer, then calls unpack
-on the integers the appropriate number of times.
-%
-\verbatimsnippet{packunpack}
-
 \mpiexample{MPI_Put}
 
 A one-sided \indexmpishow{MPI_Put} with active target synchronization
@@ -174,60 +98,7 @@ through the use of fences. This is more or less the same as the
 
 \Level 0 {R}
 
-\mpiexample{MPI_Recv}
-
-Using the \indexmpishow{MPI_ANY_SOURCE} specifier. We retrieve the
-actual source from the \indexmpishow{MPI_Status} object through the
-\indexmpishow{MPI_SOURCE} field.
-%
-\verbatimsnippet{anysource}
-%
-\verbatimsnippet{anysourcep}
-
-\mpiexample{MPI_Reduce}
-
-A reduction onto a root process.
-%
-\verbatimsnippet{reduce}
-
-A reduction with reuse of the receive buffer through
-\indexmpishow{MPI_IN_PLACE}.
-%
-\verbatimsnippet{reduceinplace}
-
-\mpiexample{MPI_Reduce_scatter}
-
-A simple illustration.
-%
-\verbatimsnippet{reducescatter}
-
-Use of \n{MPI_Reduce_scatter} to implement the two-dimensional
-matrix-vector product.
-Set up separate row and column communicators with
-\indexmpishow{MPI_Comm_split}, use \n{MPI_Reduce_scatter} to combine
-local products.
-%
-\verbatimsnippet{mvp2d}
-
 \Level 0 {S}
-
-\mpiexample{MPI_Scan}
-
-In native mode the result is a function return value.
-%
-\verbatimsnippet{scanp}
-
-\mpiexample{MPI_Send}
-
-A regular ping-pong operation with \indexmpishow{MPI_Send} and
-\indexmpishow{MPI_Recv}. We repeat the experiment multiple times to
-get a reliable measurement of the time taken.
-%
-\verbatimsnippet{pingpong}
-%
-\verbatimsnippet{pingpongp}
-%
-\verbatimsnippet{pingpongpp}
 
 \mpiexample{MPI_Send_init}
 
@@ -240,13 +111,6 @@ regular sends and receives.
 %
 \verbatimsnippet{persistp}
 
-\mpiexample{MPI_Sendrecv}
-
-We set up a ring structure and use \n{MPI_Sendrecv} to communicate
-between pairs.
-%
-\verbatimsnippet{sendrecvring}
-
 \mpiexample{MPI_Ssend}
 
 Using \n{MPI_Ssend} messages that would fall under the
@@ -256,68 +120,7 @@ Using \n{MPI_Ssend} messages that would fall under the
 
 \Level 0 {T}
 
-\mpiexample{MPI_Type_contiguous}
-
-We send a contiguous data type of double and receive it as an array of
-separate doubles; we use \indexmpishow{MPI_Get_count} to ensure that
-we got the right amount of data.
-%
-\verbatimsnippet{contiguous}
-
-\mpiexample{MPI_Type_indexed}
-
-We send an indexed data type and receive as separate integers.
-%
-\verbatimsnippet{indexed}
-%
-\verbatimsnippet{indexp}
-
-\mpiexample{MPI_Type_struct}
-
-A struct data type can consist of different elementary datatypes, so
-in addition to the displacements and blocklengths we now have an array
-of MPI datatypes. Also note how the displacement computation is done
-in bytes.
-%
-\verbatimsnippet{structure}
-
-\mpiexample{MPI_Type_vector}
-
-Send a strided data object with \n{Type_vector} and receive it as
-individual doubles. Use \indexmpishow{MPI_Get_count} to inspect the
-\n{MPI_Status} object.
-%
-\verbatimsnippet{vector}
-
 \Level 0 {W}
-
-\mpiexample{MPI_Waitall}
-
-Post non-blocking \indexmpishow{MPI_Irecv} and
-\indexmpishow{MPI_Isend} to/from all others, then use \n{MPI_Waitall}
-on the array of requests.
-%
-\verbatimsnippet{irecvall}
-
-In python creating the array for the returned requests is somewhat
-tricky.
-%
-\verbatimsnippet{irecvallp}
-
-\mpiexample{MPI_Waitany}
-
-Each process except for the root does a blocking send; the root
-posts \indexmpishow{MPI_Irecv} from all other processors, then loops
-with \n{MPI_Waitany} until all requests have come in. Use
-\indexmpishow{MPI_SOURCE} to test the index parameter of the wait
-call.
-%
-\verbatimsnippet{waitforany}
-
-In python creating the array for the returned requests is somewhat
-tricky.
-%
-\verbatimsnippet{waitforanyp}
 
 \mpiexample{MPI_Win_lock}
 

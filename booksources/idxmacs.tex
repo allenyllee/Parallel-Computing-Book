@@ -62,11 +62,13 @@
       \tmp\nobreak
   % then input
   \def_{\underscore}\edef\tmp{\noexpand\verbatiminput{mpiref/\indexedmpi}}\tmp
+  { \hskip\unitindent \textsl{\small How to read routine prototypes:~\ref{sec:protos}.}\par }
   \egroup
 }
 } % end of catcode`\_=13
 
-\def\mpiRoutineRef#{\bgroup \small \catcode`\_=13
+\def\RoutineRefStyle{ \small }
+\def\mpiRoutineRef#{\bgroup \RoutineRefStyle \catcode`\_=13
   \afterassignment\mpiRefDisplay\def\indexedmpi
 }
 \def\underscore{_}

@@ -20,6 +20,6 @@ TYPE(MPI_Comm), INTENT(IN) :: comm
 INTEGER, OPTIONAL, INTENT(OUT) :: ierror 
 
 Python native:
-Comm.send(self, obj, int dest, int tag=0)
+MPI.Comm.send(self, obj, int dest, int tag=0)
 Python numpy:
-Comm.Send(self, buf, int dest, int tag=0)
+MPI.Comm.Send(self, buf, int dest, int tag=0)

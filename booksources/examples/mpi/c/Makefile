@@ -20,8 +20,10 @@ APPS = hello init thread \
     postwaitwin passive \
     reduce reduceinplace allreduce allreduceinplace gather gatherv allgatherv \
     reducescatter \
-    contiguous vector interleave indexed struct pack \
-    commdup_wrong commdup_right commsplit cart persist \
+    contiguous vector interleave indexed struct pack subarray \
+    commdup_wrong commdup_right commsplit commsplittype \
+    cart persist \
+    spawn_manager spawn_worker \
     pingpong mvp2d centraldiff 
 
 listapps :
@@ -48,10 +50,10 @@ DEBUG_flag = -O0 -g
 info ::
 	@echo "    debug flag: DEBUG=DEBUG/OPT (default: ${DEBUG})]"
 %.o : %.c
-	${CC} ${${DEBUG}_flag} -D${DEBUG} \
+	${CC} ${${DEBUG}_flag} -D${DEBUG} -DCORES_PER_NODE=16 \
 	  -c $*.c
 %.o : %.cxx
-	${CXX} ${${DEBUG}_flag} -D${DEBUG} \
+	${CXX} ${${DEBUG}_flag} -D${DEBUG} -DCORES_PER_NODE=16 \
 	  -c $*.cxx
 
 app_dependencies  = tools.o
