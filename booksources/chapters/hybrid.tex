@@ -3,15 +3,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%
 %%%% This text file is part of the source of 
-%%%% `Parallel Computing'
+%%%% `Parallel Programming in MPI and OpenMP'
 %%%% by Victor Eijkhout, copyright 2012-6
 %%%%
 %%%% hybrid.tex : about hybrid computing
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\Level 0 {Discussion}
 
 So far, you have learned to use MPI for distributed memory and OpenMP
 for shared memory parallel programming. However, distribute memory
@@ -35,8 +33,44 @@ export OMP_NUM_THREADS=16
 \end{verbatim}
 \end{tacc}
 
-Between these two extremes, different strategies are possible, for
-instance putting one MPI processor on each \indexterm{socket}.
+There is a third choice, in between these extremes, that makes
+sense. A~cluster node often has more than one socket, so you could put
+one MPI process on each \indexterm{socket}, and use a number of
+threads equal to the number of cores per socket.
+
+\begin{tacc}
+The script for this would be:
+\begin{verbatim}
+#$ SBATCH -N 100
+#$ SBATCH -n 200
+
+export OMP_NUM_THREADS=8
+ibrun tacc_affinity yourprogram
+\end{verbatim}
+
+The \indextermtt{tacc_affinity} script unsets the following variables:
+\begin{verbatim}
+export MV2_USE_AFFINITY=0
+export MV2_ENABLE_AFFINITY=0
+export VIADEV_USE_AFFINITY=0
+export VIADEV_ENABLE_AFFINITY=0
+\end{verbatim}
+If you don't use \n{tacc_affinity} you may want to do this by hand,
+otherwise \indextermtt{mvapich2} will use its own affinity rules.
+\end{tacc}
+
+\begin{figure}[ht]
+  \includegraphics[scale=.13]{hybrid}
+  \caption{Three modes of MPI/OpenMP usage on a multi-core cluster}
+  \label{fig:hybrid-modes}
+\end{figure}
+%
+Figure~\ref{fig:hybrid-modes} illustrates these three modes: pure MPI
+with no threads used; one MPI process per node and full
+multi-threading; two MPI processes per node, one per socket, and
+multiple threads on each socket.
+
+\Level 0 {Discussion}
 
 The performance implications of the pure MPI strategy versus hybrid
 are subtle.
@@ -55,6 +89,8 @@ are subtle.
 \item On the other hand, in OpenMP codes it is easier to divide the
   work into more tasks than there are threads, so statistically a
   certain amount of load balancing happens automatically.
+\item Each MPI process has its own buffers, so hybrid takes less
+  buffer overhead.
 \end{itemize}
 
 \begin{exercise}
@@ -83,7 +119,7 @@ overlap in content between the messages.
 Limiting MPI traffic to the master thread also means that no buffer
 space is needed for the on-node communication.
 
-\Level 0 {Recognizing shared memory}
+\Level 0 {Recognizing shared memory in MPI}
 \label{mpi-comm-split-type}
 
 MPI's one-sided routines take a very symmetric view of processes:
@@ -116,14 +152,19 @@ values:
 \item[\texttt{MPI\_THREAD\_SINGLE}]\indexmpi{MPI_THREAD_SINGLE} Only a
   single thread will execute.
 \item[\texttt{MPI\_THREAD\_FUNNELLED}]\indexmpi{MPI_THREAD_FUNNELLED}
-  The program may use multiple threads, but only the mean thread will
+  The program may use multiple threads, but only the main thread will
   make MPI calls.
+
+  The main thread is usually the one selected by the
+  \indexpragma{master} directive, but technically it is the only that
+  executes \indexmpishow{MPI_Init_thread}. If you call this routine in
+  a parallel region, the main thread may be different from the master.
 \item[\texttt{MPI\_THREAD\_SERIAL}]\indexmpi{MPI_THREAD_SERIAL} The
   program may use multiple threads, all of which may make MPI calls,
   but there will never be simultaneous MPI calls in more than one
   thread.
-\item[\texttt{MPI\_THREAD\_MULTIPLE}]\indexmpi{MPI_THREAD_MULTIPLE}Multiple
-  threads may MPI calls, without restrictions.
+\item[\texttt{MPI\_THREAD\_MULTIPLE}]\indexmpi{MPI_THREAD_MULTIPLE}
+  Multiple threads may issue MPI calls, without restrictions.
 \end{description}
 
 The \emph{mpirun}\index{mpirun!and environment variables}
@@ -134,7 +175,8 @@ will be seen by each MPI process.
 \begin{itemize}
 \item It is possible to use blocking sends in threads, and let the
   threads block. This does away with the need for polling.
-\item You can not send to a thread number.
+\item You can not send to a thread number: use the MPI
+  \indextermbus{message}{tag} to send to a specific thread.
 \end{itemize}
 
 \begin{exercise}
@@ -148,3 +190,4 @@ Discuss theoretically why the former can give higher performance.
 Implement both schemes as special cases of the general hybrid case,
 and run tests to find the optimal mix.
 \end{exercise}
+

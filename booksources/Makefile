@@ -1,3 +1,4 @@
+# -*- makefile -*-
 ################################################################
 ################################################################
 ####
@@ -13,9 +14,9 @@ info ::
 	@echo "to format the book"
 
 pdf :
-	TEXINPUTS=${TEXINPUTS}:graphics pdflatex EijkhoutParComp
-	TEXINPUTS=${TEXINPUTS}:graphics pdflatex EijkhoutParComp
-	TEXINPUTS=${TEXINPUTS}:graphics pdflatex EijkhoutParComp
+	TEXINPUTS=${TEXINPUTS}:graphics:mpireference pdflatex EijkhoutParComp
+	TEXINPUTS=${TEXINPUTS}:graphics:mpireference pdflatex EijkhoutParComp
+	TEXINPUTS=${TEXINPUTS}:graphics:mpireference pdflatex EijkhoutParComp
 	cp EijkhoutParComp.pdf ../
 clean ::
 	@rm -f EijkhoutParComp.pdf acronyms.tex chapternames.tex

@@ -6,6 +6,13 @@ Ernie Chan, Marcel Heimlich, Avi Purkayastha, and Robert van~de Geijn.
 \newblock {\em Concurrency and Computation: Practice and Experience},
   19:1749--1783, 2007.
 
+\bibitem{goglin:hwloc}
+Brice Goglin.
+\newblock {Managing the Topology of Heterogeneous Cluster Nodes with Hardware
+  Locality (hwloc)}.
+\newblock In {\em {International Conference on High Performance Computing \&
+  Simulation (HPCS 2014)}}, Bologna, Italy, July 2014. {IEEE}.
+
 \bibitem{Gropp:UsingMPI1}
 W.~Gropp, E.~Lusk, and A.~Skjellum.
 \newblock {\em Using {MPI}}.

@@ -3,7 +3,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%
 %%%% This text file is part of the source of 
-%%%% `Parallel Computing'
+%%%% `Parallel Programming in MPI and OpenMP'
 %%%% by Victor Eijkhout, copyright 2012-6
 %%%%
 %%%% mpi-ptp.tex : about point-to-point communication
@@ -61,7 +61,9 @@ for (int ilocal=0; ilocal<nlocal; ilocal++) {
   exit immediately if it doesn't.
 
   \begin{itemize}
-  \item Now allocate the local parts: each processor should allocate only $N/P$ elements.
+  \item Now allocate the local parts: each processor should allocate
+    only $N/P$ elements.\\
+    (Allocate your array as real numbers. Why are integers not a good idea?)
   \item On each processor, initialize the local array
     so that the $i$-th location of the distributed array
     (for $i=0,\ldots,N-1$)
@@ -70,7 +72,6 @@ for (int ilocal=0; ilocal<nlocal; ilocal++) {
     The right value is $(2N^3+3N^2+N)/6$. Is that what you get?
   \end{itemize}
   To debug your program, first start with $N=P$.\\
-  (Did you allocate your array as real numbers? Why are integers not a good idea?)
 \end{exercise}
 
 \begin{exercise}

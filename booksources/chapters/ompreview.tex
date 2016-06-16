@@ -1,3 +1,16 @@
+% -*- latex -*-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the lecture slides for
+%%%% `Parallel Programming in MPI and OpenMP'
+%%%% by Victor Eijkhout, copyright 2012-6
+%%%%
+%%%% ompreview.tex : OpenMP concepts review
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \Level 0 {Concepts review}
 
 \begin{multicols}{2}
@@ -389,6 +402,25 @@ What errors and potential problems do you see in this code? How would you fix th
 
 
 \vfill\pagebreak
+
+\Level 2 {}
+
+Assume two threads. What does the following program output?
+
+\begin{lstlisting}
+int a;
+#pragma omp parallel private(a) {
+  ...
+  a = 0;
+  #pragma omp for
+  for (int i = 0; i < 10; i++)
+  {
+    #pragma omp atomic
+    a++; }
+  #pragma omp single
+    printf("a=%e\n",a);
+}
+\end{lstlisting}
 
 \Level 1 {Reductions}
 

@@ -61,7 +61,7 @@
       \edef\tmp{\noexpand\index{\indexedmpi@{\noexpand\tt{\indexedmpi}}|textbf}}
       \tmp\nobreak
   % then input
-  \def_{\underscore}\edef\tmp{\noexpand\verbatiminput{mpiref/\indexedmpi}}\tmp
+  \def_{\underscore}\edef\tmp{\noexpand\verbatiminput{\indexedmpi}}\tmp
   { \hskip\unitindent \textsl{\small How to read routine prototypes:~\ref{sec:protos}.}\par }
   \egroup
 }
@@ -87,6 +87,7 @@
 \index{pragma|see{for list see under `omp'}}
 \def\indextermdef#1{\emph{#1}\index{#1|textbf}}
 \let\indextermtt\indexmpishow
+\let\indextermttdef\indexmpidef
 \let\indexcommand\indexmpishow
 \def\indexclause#1{\texttt{#1}\index{omp clause!#1}} % |texttt -> page number. hm.
 \def\indexclauseoption#1#2{\texttt{#2}\index{omp clause!#1!#2}} % |texttt -> page number. hm.

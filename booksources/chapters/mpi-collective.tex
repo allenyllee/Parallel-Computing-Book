@@ -3,7 +3,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%
 %%%% This text file is part of the source of 
-%%%% `Parallel Computing'
+%%%% `Parallel Programming in MPI and OpenMP'
 %%%% by Victor Eijkhout, copyright 2012-6
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -92,6 +92,22 @@ There are more collectives or variants on the above.
   process has reached the barrier (section~\ref{sec:barrier}).
 \end{itemize}
 
+In many applications the result of a collective is needed on all processes.
+For instance, if $x,y$ are distributed vector objects, and you want to compute
+\[ y- (x^ty)x \]
+you need the inner product value on all processors. You could do this
+by writing a reduction followed by a broadcast, but more efficient
+algorithms exist.  Surprisingly, an `all-gather' operation takes as
+long as a rooted gather (see~\HPSCref{sec:collective} for details).
+
+Thus, MPI has the following operations:
+\begin{itemize}
+\item \indexmpishow{MPI_Allreduce} is equivalent to a \indexmpishow{MPI_Reduce} followed by a broadcast.
+\item \indexmpishow{MPI_Allgather} is equivalent to a \indexmpishow{MPI_Gather} followed by a broadcast.
+\item \indexmpishow{MPI_Allgatherv} is equivalent to an \indexmpishow{MPI_Gatherv} followed by a broadcast.
+\item \indexmpishow{MPI_Alltoall}, \indexmpishow{MPI_Alltoallv}.
+\end{itemize}
+
 Finally, there are some advanced topics in collectives.
 \begin{itemize}
 \item Non-blocking collectives; section~\ref{sec:mpi3collect}.
@@ -112,24 +128,5 @@ Finally, there are some advanced topics in collectives.
 
 %% more stuff
 \input chapters/mpi-morecollective
-
-\Level 0 {`All'-type collectives}
-\commandref{allreduce}
-
-In many applications the result of a collective is needed on all processes.
-For instance, if $x,y$ are distributed vector objects, and you want to compute
-\[ y- (x^ty)x \]
-you need the inner product value on all processors. You could do this
-by writing a reduction followed by a broadcast, but more efficient
-algorithms exist.  Surprisingly, an `all-gather' operation takes as
-long as a rooted gather (see~\HPSCref{sec:collective} for details).
-
-Thus, MPI has the following operations:
-\begin{itemize}
-\item \indexmpishow{MPI_Allreduce} is equivalent to a \indexmpishow{MPI_Reduce} followed by a broadcast.
-\item \indexmpishow{MPI_Allgather} is equivalent to a \indexmpishow{MPI_Gather} followed by a broadcast.
-\item \indexmpishow{MPI_Allgatherv} is equivalent to an \indexmpishow{MPI_Gatherv} followed by a broadcast.
-\item \indexmpishow{MPI_Alltoall}, \indexmpishow{MPI_Alltoallv}.
-\end{itemize}
 
 \index{collectives|)}

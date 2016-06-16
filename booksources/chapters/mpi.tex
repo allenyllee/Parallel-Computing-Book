@@ -3,8 +3,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%
 %%%% This text file is part of the source of 
-%%%% `Parallel Computing'
-%%%% by Victor Eijkhout, copyright 2012-5
+%%%% `Parallel Programming in MPI and OpenMP'
+%%%% by Victor Eijkhout, copyright 2012-6
 %%%%
 %%%% mpi.tex : leftover MPI topics
 %%%%
@@ -51,36 +51,7 @@ call, which is after the barrier.
 
 \index{synchronization!in MPI|)}
 
-\Level 0 {Hybrid programming: MPI and threads}\
-\commandref{mpi-thread}
-
-It is not automatic that a program or a library is
-\indexterm{thread-safe}.  A user can request a certain level of
-multi-threading with \indexmpishow{MPI_Init_thread}, and the system
-will respond what the highest supported level is.
-
-MPI can be thread-safe on the following levels:
-\begin{itemize}
-\item An MPI implementation can forbid any multi-threading;
-\item it can allow one thread to make MPI calls;
-\item it can allow one thread \emph{at a time} to make MPI calls;
-\item it can allow arbitrary multi-threaded behaviour in MPI calls.
-\end{itemize}
-
-Some points.
-\begin{itemize}
-\item MPI can not distinguish between threads: the communicator rank
-  identifies a process, and is therefore identical for all threads.
-\item A message sent to a process can be received by any thread that
-  has issued a receive call with the right source/tag specification.
-\item Multi-threaded calls to an MPI routine have the semantics of an
-  unspecified sequence of calls.
-\item A blocking MPI call only blocks the thread that makes it.
-\end{itemize}
-
-\Level 0 {Leftover topics}
-
-\Level 1 {Error handling}
+\Level 0 {Error handling}
 \commandref{mpi:error}
 
 Errors in normal programs can be tricky to deal with; errors in
@@ -156,7 +127,7 @@ One cases where errors can be handled is that of \emph{MPI file
 permissions, code can possibly progress without writing data, or
 writing to a temporary file.
 
-\Level 1 {Fortran issues}
+\Level 0 {Fortran issues}
 \commandref{mpi-fortran}
 \index{MPI!Fortran issues|(}
 
@@ -176,7 +147,7 @@ That's a problem with Isend.
 
 \index{MPI!Fortran issues|)}
 
-\Level 1 {Fault tolerance}
+\Level 0 {Fault tolerance}
 \label{mpi:tolerant}
 
 Processors are not completely reliable, so it may happen that one
@@ -190,25 +161,22 @@ First of all, one of the possible MPI error return codes
 (section~\ref{mpi:error}) is \n{MPI_ERR_COMM}, which can be returned
 if a processor in the communicator is unavailable. You may want to
 catch this error, and add a `replacement processor' to the
-program. For this, the \n{MPI_Comm_spawn} can be used:
-\begin{verbatim}
-int MPI_Comm_spawn(char *command, char *argv[], int maxprocs, MPI_Info info, 
-                  int root, MPI_Comm comm, MPI_Comm *intercomm,
-                  int array_of_errcodes[])
-\end{verbatim}
+program. For this, the \indexmpishow{MPI_Comm_spawn} can be used
+(see~\ref{sec:mpi-dynamic} for details).
+%
 But this requires a change of program design: the communicator
 containing the new process(es) is not part of the
 old \n{MPI_COMM_WORLD}, so it is better to set up your code as a
 collection of inter-communicators to begin with.
 
-\Level 1 {Context information}
+\Level 0 {Context information}
 \commandref{context}
 
 The \indextermbus{MPI}{version} is available through two parameters
 \indexmpishow{MPI_VERSION} and \indexmpishow{MPI_SUBVERSION}
 or the function \indexmpishow{MPI_Get_version}.
 
-\Level 1 {Timing}
+\Level 0 {Timing}
 \commandref{mpi-timing}
 \index{timing!MPI|(}
 
@@ -231,7 +199,7 @@ t = MPI_Wtime();
 t = MPI_Wtime()-t;
 \end{verbatim}
 
-\Level 2 {Global timing}
+\Level 1 {Global timing}
 
 However, if you try to time a parallel application you will most likely
 get different times for each process, so you would have to take the
@@ -249,7 +217,7 @@ t = MPI_Wtime()-t;
   This scheme also has some overhead associated with it. How would you measure that?
 \end{exercise}
 
-\Level 2 {Local timing}
+\Level 1 {Local timing}
 \label{sec:ping-time}
 
 Now suppose you want to measure the time for a single send. It is not possible
@@ -279,7 +247,7 @@ your running time, for instance by increasing the amount of data.
 
 \index{timing!MPI|)}
 
-\Level 1 {Profiling}
+\Level 0 {Profiling}
 \commandref{profile}
 
 MPI allows you to write your own profiling interface. To make this possible,
@@ -296,52 +264,7 @@ show up in the stack trace.
 
 Does the standard mandate this?
 
-\Level 1 {Debugging}
-\label{sec:debug}
-
-There are various ways of debugging an MPI program. Typically there
-are two cases. In the simple case your program can have a serious
-error in logic which shows up even with small problems and a small
-number of processors. In the more difficult case your program can only
-be run on large scale, or the problem only shows up when you run at
-large scale. For the second case you, unfortunately, need a dedicated
-debugging tool, and of course the good ones are expensive. In the
-first case there are some simpler solutions.
-
-\Level 2 {Small scale debugging}
-
-If your program hangs or crashes even with small numbers of
-processors, you can try debugging on your local desktop or laptop
-computer:
-\begin{verbatim}
-mpirun -np <n> xterm -e gdb yourprogram
-\end{verbatim}
-This starts up a number of X~terminals, each of which runs your
-program. The magic of \n{mpirun} makes sure that they all collaborate
-on a parallel execution of that program. If your program needs
-commandline arguments, you have to type those in every xterm:
-\begin{verbatim}
-run <argument list>
-\end{verbatim}
-See appendix~\ref{tut:debug} for more about debugging with~\n{gdb}.
-
-This approach is not guaranteed to work, since it depends on
-your \n{ssh} setup; see the discussion
-in \url{http://www.open-mpi.org/faq/?category=debugging#serial-debuggers}.
-
-\Level 2 {Large scale debugging}
-
-Check out \indexterm{ddt} or \indexterm{TotalView}.
-
-\Level 2 {Memory debugging of MPI programs}
-
-The commercial parallel debugging tools typically have a memory
-debugger. For an open source solution you can
-use \indexterm{valgrind}, but that requires some setup during
-installation. See \url{http://valgrind.org/docs/manual/mc-manual.html#mc-manual.mpiwrap}
-for details.
-
-\Level 1 {Determinism}
+\Level 0 {Determinism}
 \label{sec:mpi-semantics}
 \index{MPI!semantics|(}
 
@@ -362,7 +285,7 @@ it may actually arrive earlier in the lower transport layer.
 
 \index{MPI!semantics|)}
 
-\Level 1 {Progress}
+\Level 0 {Progress}
 \index{progress|(}
 
 Non-blocking communication implies that messages make \emph{progress}
