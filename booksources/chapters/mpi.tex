@@ -52,7 +52,7 @@ call, which is after the barrier.
 \index{synchronization!in MPI|)}
 
 \Level 0 {Error handling}
-\commandref{mpi:error}
+\label{sec:mpi:error}
 
 Errors in normal programs can be tricky to deal with; errors in
 parallel programs can be even harder. This is because in addition to
@@ -128,7 +128,7 @@ permissions, code can possibly progress without writing data, or
 writing to a temporary file.
 
 \Level 0 {Fortran issues}
-\commandref{mpi-fortran}
+\label{sec:mpi-fortran}
 \index{MPI!Fortran issues|(}
 
 MPI is typically written in C, what if you program \emph{Fortran}?
@@ -170,14 +170,14 @@ old \n{MPI_COMM_WORLD}, so it is better to set up your code as a
 collection of inter-communicators to begin with.
 
 \Level 0 {Context information}
-\commandref{context}
+\label{sec:context}
 
 The \indextermbus{MPI}{version} is available through two parameters
 \indexmpishow{MPI_VERSION} and \indexmpishow{MPI_SUBVERSION}
 or the function \indexmpishow{MPI_Get_version}.
 
 \Level 0 {Timing}
-\commandref{mpi-timing}
+\label{sec:mpi-timing}
 \index{timing!MPI|(}
 
 Timing of parallel programs is tricky. On each node you can use a timer,
@@ -248,7 +248,7 @@ your running time, for instance by increasing the amount of data.
 \index{timing!MPI|)}
 
 \Level 0 {Profiling}
-\commandref{profile}
+\label{sec:profile}
 
 MPI allows you to write your own profiling interface. To make this possible,
 every routine \n{MPI_Something} calls a routine \n{PMPI_Something} that 

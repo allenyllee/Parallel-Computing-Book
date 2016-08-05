@@ -36,7 +36,7 @@ preceded by a \indexpragma{flush} command.  Fortunately, in many cases
 this is done by default; see section~\ref{ref:omp:flush}.
 
 \Level 1 {Private data}
-\commandreflabel{omp-private}
+\label{sec:ref:omp-private}
 
 Data that is declared private with the \indexpragma{private} directive is
 put on a separate \indextermbus{stack}{per thread}. The OpenMP standard
@@ -77,7 +77,7 @@ parallel region. The rules for variables in that function are as follows:
 \Level 0 {Synchronization}
 
 \Level 1 {Critical sections}
-\commandreflabel{critical}
+\label{sec:ref:critical}
 
 The pragmas \indexpragmadef{critical} and \indexpragmadef{atomic}
 are two ways to indicate that a section of code can only be executed
@@ -115,7 +115,7 @@ Lock operations implicitly have a \n{flush}.
 \Level 0 {Stuff}
 
 \Level 1 {Timing}
-\commandreflabel{omp-timing}
+\label{sec:ref:omp-timing}
 
 To do \indextermsub{OpenMP}{timing} you can use any system utility;
 however there is a dedicated routine \indexcommand{omp_get_wtime}
@@ -163,7 +163,7 @@ export GOMP_CPU_AFFINITY=0-63
 \end{verbatim}
 
 \Level 1 {Relaxed memory model}
-\commandreflabel{omp:flush}
+\label{sec:ref:omp:flush}
 
 \indexpragma{flush}
 

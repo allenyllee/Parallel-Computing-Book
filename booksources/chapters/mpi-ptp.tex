@@ -147,7 +147,7 @@ allocate a large enough receive buffer, and do a regular receive to
 have the data copied.
 
 \Level 1 {Wildcards in the receive call}
-\commandref{mpi-status}
+\label{sec:mpi-status}
 
 With some receive calls you know everything about the message in advance:
 its source, tag, and size. In other cases you want to leave some options
@@ -295,7 +295,7 @@ MPI_Buffer_attach( b, n );
 \end{verbatim}
 
 \Level 1 {Persistent communication}
-\commandref{persistent}
+\label{sec:persistent}
 \index{communication!persistent|(textbf}
 
 An \n{Isend} or \n{Irecv} call has an \n{MPI_Request} parameter. This

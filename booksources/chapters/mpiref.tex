@@ -19,7 +19,7 @@ full programs can be found in the repository for this book
 \Level 0 {Communicators}
 
 \Level 1 {Communicator duplication}
-\commandreflabel{comm-dup}
+\label{sec:ref:comm-dup}
 
 In section~\ref{sec:mpi-semantics} it was explained that MPI messages are 
 non-overtaking. This may lead to confusing situations, witness the following snippet:
@@ -57,7 +57,7 @@ released again with \indexmpishow{MPI_Comm_free}.
 \verbatimsnippet{rightcatchmain}
 
 \Level 1 {Splitting communicators}
-\commandreflabel{comm-split}
+\label{sec:ref:comm-split}
 
 The command \indexmpishow{MPI_Comm_split} takes a communicator, and
 divides it into a number of disjoint communicators. It does this by
@@ -84,10 +84,10 @@ but the \n{split_type} parameters has to be from the following (short) list:
 \end{itemize}
 
 \Level 1 {Process topologies}
-\commandreflabel{topology}
+\label{sec:ref:topology}
 
 \Level 2 {Cartesian grid topology}
-\commandreflabel{cartesian}
+\label{sec:ref:cartesian}
 
 The cartesian topology is specified by giving
 \indexmpishow{MPI_Cart_create} the sizes of the processor grid along
@@ -136,7 +136,7 @@ around this, such as sending a number of
 \indexmpishow{MPI_Type_contiguous} blocks that add up to more than~$2^{31}$.
 
 \Level 1 {Fortran issues}
-\commandreflabel{mpi-fortran}
+\label{sec:ref:mpi-fortran}
 \index{MPI!Fortran issues|(}
 
 \Level 2 {Data types}
@@ -226,7 +226,7 @@ However, a working MPI source on one MPI implementation
 will also work on another.
 
 \Level 0 {Error handling}
-\commandreflabel{mpi:error}
+\label{sec:ref:mpi:error}
 
 MPI operators (\indexmpishow{MPI_Op}) do not return an error code. In case of
 an error they call \n{MPI_Abort}; if \indexmpishow{MPI_ERRORS_RETURN}
@@ -284,7 +284,7 @@ Attributes are:
 \end{itemize}
 
 \Level 0 {Timing}
-\commandreflabel{mpi-timing}
+\label{sec:ref:mpi-timing}
 
 MPI has a \indexterm{wall clock} timer: \indexmpishow{MPI_Wtime}
 %
@@ -310,10 +310,10 @@ if (mytid==0) printf(``Time synchronized? %d->%d\n'',flag,*v);
 %\indexmpi{MPI_Wtime} can be either a function or a macro.
 
 %\Level 1 {Profiling}
-%\commandreflabel{profile}
+%\label{sec:ref:profile}
 
 \Level 0 {Multi-threading}
-\commandreflabel{mpi-thread}
+\label{sec:ref:mpi-thread}
 
 Hybrid MPI/threaded codes need to replace \indexmpishow{MPI_Init}
 by \n{MPI_Init_thread}:

@@ -19,7 +19,7 @@ APPS = hello init thread \
     putfence getfence randomput anysource cancel exscan \
     postwaitwin passive \
     reduce reduceinplace allreduce allreduceinplace gather gatherv allgatherv \
-    reducescatter \
+    reducescatter trueextent \
     contiguous vector interleave indexed struct pack subarray \
     commdup_wrong commdup_right commsplit commsplittype \
     cart persist \

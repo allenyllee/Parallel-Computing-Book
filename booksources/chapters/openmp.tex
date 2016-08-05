@@ -60,7 +60,26 @@ The runtime functions are:
 %\item \indextermttdef{omp_}
 \end{itemize}
 
-First, there are 4 \acp{ICV} that behave as if each thread has its own copy of them.
+Here are the OpenMP \emph{environment variables}:
+\begin{itemize}
+\item \indextermttdef{OMP_CANCELLATION} Set whether cancellation is activated
+\item \indextermtt{OMP_DISPLAY_ENV} Show OpenMP version and environment variables
+\item \indextermttdef{OMP_DEFAULT_DEVICE} Set the device used in target regions
+\item \indextermttdef{OMP_DYNAMIC} Dynamic adjustment of threads
+\item \indextermttdef{OMP_MAX_ACTIVE_LEVELS} Set the maximum number of nested parallel
+  regions
+\item \indextermttdef{OMP_MAX_TASK_PRIORITY} Set the maximum task priority value
+\item \indextermttdef{OMP_NESTED} Nested parallel regions
+\item \indextermttdef{OMP_NUM_THREADS} Specifies the number of threads to use
+\item \indextermttdef{OMP_PROC_BIND} Whether theads may be moved between CPUs
+\item \indextermttdef{OMP_PLACES} Specifies on which CPUs the theads should be placed
+\item \indextermttdef{OMP_STACKSIZE} Set default thread stack size
+\item \indextermttdef{OMP_SCHEDULE} How threads are scheduled
+\item \indextermttdef{OMP_THREAD_LIMIT} Set the maximum number of threads
+\item \indextermttdef{OMP_WAIT_POLICY} How waiting threads are handled
+\end{itemize}
+
+There are 4 \acp{ICV} that behave as if each thread has its own copy of them.
 The default is implementation-defined unless otherwise noted.
 \begin{itemize}
   \item It may be possible to adjust dynamically the number of threads
@@ -157,7 +176,7 @@ directives as \n{pragma omp parallel for simd}.
 \Level 0 {Stuff}
 
 \Level 1 {Timing}
-\commandref{omp-timing}
+\label{sec:omp-timing}
 
 OpenMP has a wall clock timer routine \indexcommand{omp_get_wtime}
 with resolution \indexcommand{omp_get_wtick}.
@@ -347,8 +366,8 @@ routine implements a \indexterm{random number generator}.
 
 \index{thread-safe|)}
 
-\Level 1 {Relaxed memory model}
-\commandref{omp:flush}
+\Level 1 {The OpenMP memory model}
+\label{sec:omp:flush}
 
 \Level 2 {Thread synchronization}
 
@@ -410,6 +429,62 @@ while (1) {
 }
 \end{verbatim}
 
+\Level 2 {Data races}
+\index{data race|see{race condition}}
+\index{race condition!in OpenMP|(}
+
+OpenMP, being based on shared memory, has a potential for \emph{race
+  conditions}. These happen when two threads access the same data
+item. The problem with race conditions is that programmer convenience
+runs counter to efficient execution. For this reason, OpenMP simply
+does not allow some things that would be desirable.
+
+The basic rule about multiple-thread access of a single data item is:
+\begin{quote}
+  Any memory location that is \emph{written} by one thread, can not be
+  \emph{read} by another thread in the same parallel region, if no
+  synchronization is done.
+\end{quote}
+To start with that last clause: any workshare construct ends with an
+\indextermsub{implicit}{barrier}, so data written before that barrier
+can safely be read after it.
+
+As an illustration of a possible problem:
+\begin{verbatim}
+c = d = 0;
+#pragma omp sections
+{
+#pragma omp section
+  { a = 1; c = b; }
+#pragma omp section
+  { b = 1; d = a; }
+}
+\end{verbatim}
+Under any reasonable interpretation of parallel execution,
+the possible values for \n{c,d} are $1,1$ $0,1$ or~$1,0$.
+This is known as \indexterm{sequential consistency}:
+the parallel outcome is consistent with a sequential execution that
+interleaves the parallel computations, respecting their local statement orderings.
+(See also~\HPSCref{sec:seq-consist}.)
+
+However, without synchronization, threads are allowed to maintain a value for a
+variable locally that is not the same as the stored value. In this
+example, that means that the thread executing the first section need
+not write its value of~\n{a} to memory, and likewise \n{b}~in the
+second thread, so $0,0$~is in fact a possible outcome.
+
+In order to resolve multiple accesses:
+\begin{enumerate}
+\item Thread one reads the variable.
+\item Thread one flushes the variable.
+\item Thread two flushes the variable.
+\item Thread two reads the variable.
+\end{enumerate}
+
+% \url{https://software.intel.com/es-es/forums/intel-moderncode-for-parallel-architectures/topic/610017}
+
+\index{race condition!in OpenMP|)}
+  
 \Level 1 {Accelerators}
 
 In OpenMP 4.0 there is support for offloading work to an

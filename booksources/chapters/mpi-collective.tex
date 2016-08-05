@@ -10,7 +10,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \Level 0 {Working with global information}
-\index{collectives|(}
 
 If all processes have individual data, for instance the result
 of a local computation, you may want to bring that information
@@ -18,33 +17,51 @@ together, for instance to find the maximal computed value
 or the sum of all values. Conversely, sometimes one processor has
 information that needs to be shared with all.
 For this sort of operation, MPI
-has \indexterm{collectives}.
+has \indextermdef{collectives}.
 
-There are various cases,
+There are various cases, illustrated in figure~\ref{fig:collectives},
 \begin{figure}[ht]
   \includegraphics[scale=.8]{collective_comm}  
   \caption{The four most common collectives}
   \label{fig:collectives}
 \end{figure}
-the most common ones are illustrated in figure~\ref{fig:collectives}.
+which you can (sort of) motivated by considering some classroom activities:
+\begin{itemize}
+\item The teacher tells the class when the exam will be. This is a
+  \indextermdef{broadcast}: the same item of information goes to everyone.
+\item After the exam, the teacher performs a \indextermdef{gather}
+  operation to collect the invidivual exams.
+\item On the other hand, when the teacher computes the average grade,
+  each student has an individual number, but these are now combined to
+  compute a single number. This is a \indextermdef{reduction}.
+\item Now the teacher has a list of grades and gives each student their
+  grade. This is a \indextermdef{scatter} operation, where one process
+  has multiple data items, and gives a different one to all the other
+  processes.
+\end{itemize}
 
-Above, you saw how each process can perform its own computation
-with its own result. You may want to summarize these results
-on one process, known as the \indexterm{root process},
-for instance to print them out.
-If you perform an operation on the data from the processors,
-for instance to compute the maximum value, this is known
-as a \indexterm{reduction} (section~\ref{sec:bcast}).
-On the other hand, if you need to collect and preserve
-all computation results, the operation is known
-as a \indexterm{gather} (section~\ref{sec:gatherscatter}).
+This story is a little different from what happens with MPI
+processes, because these are more symmetric; the process doing the
+reducing and broadcasting is no different from the others.
+Any process can function as the \indexterm{root process} in such a
+collective.
 
-Conversely, one process can have data that needs to be
-spread to all others, for instance because it reads it from file.
-If the same item needs to be sent to all processes, this
-is known as \indexterm{broadcast}.
-If the root process sends individual data to each process,
-it is called a \indexterm{scatter}.
+\begin{comment}
+  for instance to print them out.
+  If you perform an operation on the data from the processors,
+  for instance to compute the maximum value, this is known
+  as a \indexterm{reduction} (section~\ref{sec:bcast}).
+  On the other hand, if you need to collect and preserve
+  all computation results, the operation is known
+  as a \indexterm{gather} (section~\ref{sec:gatherscatter}).
+
+  Conversely, one process can have data that needs to be
+  spread to all others, for instance because it reads it from file.
+  If the same item needs to be sent to all processes, this
+  is known as \indexterm{broadcast}.
+  If the root process sends individual data to each process,
+  it is called a \indexterm{scatter}.
+\end{comment}
 
 \begin{exercise}
   \label{ex:collective-cases}
@@ -59,8 +76,52 @@ it is called a \indexterm{scatter}.
   \end{itemize}
 \end{exercise}
 
+\Level 1 {Practical use of collectives}
+
+Collectives are quite common in scientific applications. For instance,
+if one process reads data from disc or the commandline, it can use a
+broadcast or a gather to get the information to other
+processes. Likewise, at the end of a program run, a~gather or
+reduction can be used to collect summary information about the program
+run.
+
+However, a more common scenario is 
+that the result of a collective is needed on all processes.
+
+Consider the computation of the \indexterm{standard deviation}:
+\[ \sigma = \sqrt{\frac1N \sum_i^N (x_i-\mu) }
+\qquad\hbox{where}\qquad \mu = \frac{\sum_i^Nx_i}N
+\]
+and assume that every processor stores just one~$x_i$ value.
+The calculation of the average~$\mu$ is a reduction, but then every
+process needs to compute~$x_i-\mu$ for its value~$x_i$. Thus $\mu$~is
+needed everywhere. You can compute this by doing a reduction followed
+by a broadcast, but it is better to use a so-called
+\indexterm{allreduce} operation, which does the reduction and leaves
+the result on all processors.
+    
+For instance, if $x,y$ are distributed vector objects, and you want to compute
+\[ y- (x^ty)x \]
+which is part of the Gramm-Schmidt algorithm; see~\HPSCref{app:gram-schmidt}.
+Now you need the inner product value on all processors. You could do this
+by writing a reduction followed by a broadcast:
+\begin{verbatim}
+// compute local value
+localvalue = innerproduct( x[ localpart], y[ localpart ] );
+// compute inner product on the root
+Reduce( localvalue, reducedvalue, root );
+// send root value to all other from the root
+Broadcast( reducedvalue, root );
+\end{verbatim}
+or combine the last two steps in an allreduce,
+Surprisingly, an allreduce operation takes as
+long as a rooted reduction (see~\HPSCref{sec:collective} for details),
+and therefore half the time of a reduction followed by a broadcast.
+
+\Level 1 {Collectives in MPI}
+
 Collectives are operations that involve all processes in a
-communicator. (See section~\ref{sec:collective} for an informal listing.)
+communicator. %%(See section~\ref{sec:collectiveslist} for an informal listing.)
 A~collective is a
 single call, and it blocks on all processors.
 That does not mean that
@@ -87,18 +148,10 @@ There are more collectives or variants on the above.
   computes the sum (or other operation) on the values of lower-numbered processors.
   For this, you use a \indexterm{scan} collective (section~\ref{sec:scan}).
 \item If every processor needs to broadcast to every other, you use an
-  \indexterm{all-to-all} operation (section~\ref{sec:allreduce}).
+  \indexterm{all-to-all} operation (section~\ref{sec:alltoall}).
 \item A barrier is an operation that makes all processes wait until every
   process has reached the barrier (section~\ref{sec:barrier}).
 \end{itemize}
-
-In many applications the result of a collective is needed on all processes.
-For instance, if $x,y$ are distributed vector objects, and you want to compute
-\[ y- (x^ty)x \]
-you need the inner product value on all processors. You could do this
-by writing a reduction followed by a broadcast, but more efficient
-algorithms exist.  Surprisingly, an `all-gather' operation takes as
-long as a rooted gather (see~\HPSCref{sec:collective} for details).
 
 Thus, MPI has the following operations:
 \begin{itemize}
@@ -129,4 +182,5 @@ Finally, there are some advanced topics in collectives.
 %% more stuff
 \input chapters/mpi-morecollective
 
-\index{collectives|)}
+%\Level 0 {List of collectives}
+

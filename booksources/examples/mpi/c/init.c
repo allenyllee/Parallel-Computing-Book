@@ -3,7 +3,9 @@
    %%%%
    %%%% This program file is part of the book and course
    %%%% "Parallel Computing"
-   %%%% by Victor Eijkhout, copyright 2013-5
+   %%%% by Victor Eijkhout, copyright 2013-6
+   %%%%
+   %%%% init.c : use bcast to communicate commandline arguments
    %%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -19,6 +21,7 @@ int main(int argc,char **argv) {
 
 #include "globalinit.c"
 
+  //snippet usage
   if (mytid==0) {
     if ( argc==1 || // the program is called without parameter
          ( argc>1 && !strcmp(argv[1],"-h") ) // user asked for help
@@ -29,6 +32,7 @@ int main(int argc,char **argv) {
     input_argument = atoi(argv[1]);
   }
   MPI_Bcast(&input_argument,1,MPI_INT,0,comm);
+  //snippet end
   printf("Processor %d gets %d\n",mytid,input_argument);
 
   MPI_Finalize();
