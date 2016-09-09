@@ -19,26 +19,13 @@ In the examples you have seen so far, every time data was sent,
 it was as a contiguous buffer with elements of a single type.
 In practice you may want to send heterogeneous data, or
 non-contiguous data.
-Figure~\ref{fig:blasmatrix} indicates one source of irregular
-data:
-%
-\begin{figure}[ht]
-  \includegraphics[scale=.1]{blasmatrix}
-  \caption{Memory layout of a row and column of a matrix in column-major storage}
-  \label{fig:blasmatrix}
-\end{figure}
-%
-with a matrix on \indexterm{column-major storage}, a column is
-stored in contiguous memory. However, a row of such a matrix
-is not contiguous; its elements being separated by a \indexterm{stride}
-equal to the column length.
-
-\begin{exercise}
-  \label{ex:submatrix}
-  How would you describe the memory layout of a submatrix,
-  if the whole matrix has size $M\times N$ and the submatrix $m\times n$?
-\end{exercise}
-
+\begin{itemize}
+\item Communicating the real parts of an array of complex numbers
+  means specifying every other number.
+\item Communicating a C~structure of Fortran type with more than one
+  type of element is not equivalent to sending an array of elements of
+  a single type.
+\end{itemize}
 The datatypes you have dealt with so far are known as
 \indextermsub{elementary}{datatypes}; irregular objects
 are known as \indextermsub{derived}{datatypes}.

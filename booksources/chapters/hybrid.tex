@@ -167,6 +167,18 @@ values:
   Multiple threads may issue MPI calls, without restrictions.
 \end{description}
 
+\begin{tacc}
+  The \indexterm{mvapich} implementation of MPI
+  does have the required threading support, but you need to set this environment variable:  
+\begin{verbatim}
+export MV2_ENABLE_AFFINITY=0
+\end{verbatim}
+  Another solution is to run your code like this:
+\begin{verbatim}
+  ibrun tacc_affinity <my_multithreaded_mpi_executable
+\end{verbatim}
+\end{tacc}
+
 The \emph{mpirun}\index{mpirun!and environment variables}
 program usually propagates \indexterm{environment variables},
 so the value of \indextermtt{OMP_NUM_THREADS} when you call \n{mpirun}

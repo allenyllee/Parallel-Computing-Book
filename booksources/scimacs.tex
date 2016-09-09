@@ -116,51 +116,6 @@
 \acresetall
 \closeout\acrowrite
 
-\newcommand{\indexterm}[1]{\emph{#1}\index{#1}}
-\newcommand{\indextermtt}[1]{\texttt{\emph{#1}}\index{#1|n}}
-%% \newcommand{\indextermfunctionn}[1]{\texttt{\emph{#1}}\index{#1|n}}
-%% \def\indextermfunction#{\bgroup\catcode`\_=12\relax
-%%   \def\nnext{\expandafter\indextermfunctionn\expandafter{\next}\egroup}%
-%%   \afterassignment\nnext \def\next}
-\let\indextermfunction\indextermtt
-
-\newcommand{\indextermp}[1]{\emph{#1s}\index{#1}}
-\newcommand{\indextermsub}[2]{\emph{#1 #2}\index{#2!#1}}
-\newcommand{\indextermsubp}[2]{\emph{#1 #2s}\index{#2!#1}}
-\newcommand{\indextermbus}[2]{\emph{#1 #2}\index{#1!#2}}
-\newcommand{\indextermstart}[1]{\emph{#1}\index{#1|(}}
-\newcommand{\indextermend}[1]{\index{#1|)}}
-\newcommand{\indexstart}[1]{\index{#1|(}}
-\newcommand{\indexend}[1]{\index{#1|)}}
-\makeatletter
-\newcommand\indexac[1]{\emph{\ac{#1}}%
-  %\tracingmacros=2 \tracingcommands=2
-  \edef\tmp{\noexpand\index{%
-    \expandafter\expandafter\expandafter
-        \@secondoftwo\csname fn@#1\endcsname%
-    @\acl{#1} (#1)}}\tmp}
-\newcommand\indexacp[1]{\emph{\ac{#1}}%
-  %\tracingmacros=2 \tracingcommands=2
-  \edef\tmp{\noexpand\index{%
-    \expandafter\expandafter\expandafter
-        \@secondoftwo\csname fn@#1\endcsname%
-    @\acl{#1} (#1)}}\tmp}
-\newcommand\indexacf[1]{\emph{\acf{#1}}%
-  \edef\tmp{\noexpand\index{%
-    \expandafter\expandafter\expandafter
-        \@secondoftwo\csname fn@#1\endcsname
-    @\acl{#1} (#1)}}\tmp}
-\newcommand\indexacstart[1]{%
-  \edef\tmp{\noexpand\index{%
-    \expandafter\expandafter\expandafter
-        \@secondoftwo\csname fn@#1\endcsname
-    @\acl{#1} (#1)|(}}\tmp}
-\newcommand\indexacend[1]{%
-  \edef\tmp{\noexpand\index{%
-    \expandafter\expandafter\expandafter
-        \@secondoftwo\csname fn@#1\endcsname
-    @\acl{#1} (#1)|)}}\tmp}
-\makeatother
 
 \def\chaptertitle{\csname\chaptername title\endcsname}
 \def\chaptershorttitle{\csname\chaptername shorttitle\endcsname}

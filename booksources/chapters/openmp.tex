@@ -6,22 +6,11 @@
 %%%% `Parallel Programming in MPI and OpenMP'
 %%%% by Victor Eijkhout, copyright 2012-6
 %%%%
+%%%% openmp.tex : topics that have not been rolled into their
+%%%%              own chapter yet.
+%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%\Level 0 {Basics}
-
-%\Level 0 {Loop parallelism}
-
-%\Level 0 {Work sharing}
-
-%\Level 0 {Controlling thread data}
-
-%\Level 0 {Reductions}
-
-%\Level 0 {Synchronization}
-
-% \Level 0 {Tasks}
 
 \Level 0 {Runtime functions and internal control variables}
 \label{ref:omp-environ}
@@ -179,7 +168,12 @@ directives as \n{pragma omp parallel for simd}.
 \label{sec:omp-timing}
 
 OpenMP has a wall clock timer routine \indexcommand{omp_get_wtime}
-with resolution \indexcommand{omp_get_wtick}.
+\begin{verbatim}
+double omp_get_wtime(void);
+\end{verbatim}
+The starting point is arbitrary and is different for each program run;
+however, in one run it is identical for all threads.
+This timer has a resolution given by \indexcommand{omp_get_wtick}.
 
 \begin{exercise}
   Use the timing routines to demonstrate speedup from using
@@ -366,125 +360,6 @@ routine implements a \indexterm{random number generator}.
 
 \index{thread-safe|)}
 
-\Level 1 {The OpenMP memory model}
-\label{sec:omp:flush}
-
-\Level 2 {Thread synchronization}
-
-Let's do a \indexterm{producer-consumer} model\footnote{This example
-  is from Intel's excellent OMP course by Tim Mattson}.  This can be
-implemented with sections, where one section, the producer, sets a
-flag when data is available, and the other, the consumer, waits until
-the flag is set.
-\begin{verbatim}
-#pragma omp parallel sections
-{
-  // the producer
-  #pragma omp section
-  {
-    ... do some producing work ...
-    flag = 1;
-  }
-  // the consumer
-  #pragma omp section
-  {
-    while (flag==0) { }
-    ... do some consuming work ...
-  }
-}
-\end{verbatim}
-One reason this doesn't work, is that the compiler will see that the flag is never used
-in the producing section, and that is never changed in the consuming section, so
-it may optimize these statements, to the point of optimizing them away.
-
-The producer then needs to do:
-\begin{verbatim}
-... do some producing work ...
-#pragma omp flush
-#pragma atomic write
-  flag = 1;
-#pragma omp flush(flag)
-\end{verbatim}
-and the consumer does:
-\begin{verbatim}
-#pragma omp flush(flag)
-while (flag==0) {
-  #pragma omp flush(flag)
-}
-#pragma omp flush
-\end{verbatim}
-This code strictly speaking has a \indexterm{race condition} on the \n{flag} variable.
-It is better to use an \indexpragma{atomic} pragma here: the producer has
-\begin{verbatim}
-#pragma atomic write
-  flag = 1;
-\end{verbatim}
-and the consumer:
-\begin{verbatim}
-while (1) {
-  #pragma omp flush(flag)
-  #pragma omp atomic read
-    flag_read = flag
-  if (flag_read==1) break;
-}
-\end{verbatim}
-
-\Level 2 {Data races}
-\index{data race|see{race condition}}
-\index{race condition!in OpenMP|(}
-
-OpenMP, being based on shared memory, has a potential for \emph{race
-  conditions}. These happen when two threads access the same data
-item. The problem with race conditions is that programmer convenience
-runs counter to efficient execution. For this reason, OpenMP simply
-does not allow some things that would be desirable.
-
-The basic rule about multiple-thread access of a single data item is:
-\begin{quote}
-  Any memory location that is \emph{written} by one thread, can not be
-  \emph{read} by another thread in the same parallel region, if no
-  synchronization is done.
-\end{quote}
-To start with that last clause: any workshare construct ends with an
-\indextermsub{implicit}{barrier}, so data written before that barrier
-can safely be read after it.
-
-As an illustration of a possible problem:
-\begin{verbatim}
-c = d = 0;
-#pragma omp sections
-{
-#pragma omp section
-  { a = 1; c = b; }
-#pragma omp section
-  { b = 1; d = a; }
-}
-\end{verbatim}
-Under any reasonable interpretation of parallel execution,
-the possible values for \n{c,d} are $1,1$ $0,1$ or~$1,0$.
-This is known as \indexterm{sequential consistency}:
-the parallel outcome is consistent with a sequential execution that
-interleaves the parallel computations, respecting their local statement orderings.
-(See also~\HPSCref{sec:seq-consist}.)
-
-However, without synchronization, threads are allowed to maintain a value for a
-variable locally that is not the same as the stored value. In this
-example, that means that the thread executing the first section need
-not write its value of~\n{a} to memory, and likewise \n{b}~in the
-second thread, so $0,0$~is in fact a possible outcome.
-
-In order to resolve multiple accesses:
-\begin{enumerate}
-\item Thread one reads the variable.
-\item Thread one flushes the variable.
-\item Thread two flushes the variable.
-\item Thread two reads the variable.
-\end{enumerate}
-
-% \url{https://software.intel.com/es-es/forums/intel-moderncode-for-parallel-architectures/topic/610017}
-
-\index{race condition!in OpenMP|)}
-  
 \Level 1 {Accelerators}
 
 In OpenMP 4.0 there is support for offloading work to an
@@ -500,93 +375,70 @@ with clauses such as
 \item \n{update}: make data consistent between host and device
 \end{itemize}
 
-\Level 1 {SIMD}
-
-OpenMP 4.0 has a way of indicating that a loop should not
-be arbitrarily divided over threads, but should be executed
-over simd lanes:
-\begin{verbatim}
-#pragma omp simd [clauses]
-\end{verbatim}
-
-\Level 1 {Overhead costs}
-
-Code parallelization ideally divides the running time of your program
-by the number of parallel processing entities. In practice, the following
-factors counteract this.
-
-\Level 2 {Amdahl effects}
-
-Any code will have parts that are not parallelizable. Amdahl's law
-(see~\HPSCref{sec:amdahl}) quantizes the effect this has on parallel speedup.
-In an OpenMP code, the sections that are executed by a single thread
-will play the role of the sequential part.
-
-\Level 2 {Thread overhead}
-
-At the start of an OpenMP program, a pool of threads is created. This
-incurs a one-time overhead that will probably be amortized over the
-total runtime.
-
-Work sharing constructs act as if they create a new team of threads every time.
-In practice, the program probably keeps a pool of threads around that are dormant
-in between parallel sections. This means that there is no thread creation overhead
-associated with the start of a parallel section.
-
-\Level 2 {Load balance}
-
-On the other hand, at the end of a work sharing construct there is a barrier,
-so an unbalanced load distribution will decrease the parallel efficiency.
-If loop iterations are not uniform in their running time, it may pay off
-to use dynamic rather than static scheduling.
-
-On the other other hand, dynamic scheduling has overhead of its own,
-since it involves the operating system.
-
-\Level 2 {Synchronization}
-
-Various synchronization constructs, such as critical sections, as well as
-dynamic loop scheduling, are realized through \indexterm{operating system}
-functions. These are often quite costly, taking many thousands of cycles.
-Thus, the \indextermsub{cost of a }{critical sections} goes far beyond
-the Amdahl cost of the loss of paralellism. Critical sections should be used only
-if the parallel work far outweighs it.
-
-\Level 0 {Performance}
+\Level 0 {Performance and tuning}
 
 %See the EPCC benchmark suite~\cite{epcc-ompbench}.
 
-The performance of an OpenMP code can be influenced by the following\footnote
-{This section is inspired by a presentation by Alexei Strelchenko.}::
-\begin{itemize}
-\item Amdahl effects
-\item Communication
-\item Data affinity
-\item Load imbalance
-\item Synchronization
-\end{itemize}
+The performance of an OpenMP code can be influenced by the following.
 
-Sequential code must clearly be kept to a minimum.
+\begin{description}
+\item[Amdahl effects] Your code needs to have enough parts that are
+  parallel (see~\HPSCref{sec:amdahl}). Sequential parts may be sped up
+  by having them executed redundantly on each thread, since that keeps
+  data locally.
+\item[Dynamism] Creating a thread team takes time. In practice, a team
+  is not created and deleted for each parallel region, but creating
+  teams of different sizes, or recursize thread creation, may
+  introduce overhead.
+\item[Load imbalance] Even if your program is parallel, you need to
+  worry about load balance. In the case of a parallel loop you can set
+  the \indexclause{schedule} clause to \n{dynamic}, which evens out
+  the work, but may cause increased communication.
+\item[Communication] Cache coherence causes communication. Threads
+  should, as much as possible, refer to their own data.
+  \begin{itemize}
+  \item Threads are likely to read from each other's data. That is
+    largely unavoidable.
+  \item Threads writing to each other's data should be avoided: it may
+    require synchronization, and it causes coherence traffic.
+  \item If threads can migrate, data that was local at one time is no
+    longer local after migration.
+  \item Reading data from one socket that was allocated on another
+    socket is inefficient; see section~\ref{sec:first-touch}.
+  \end{itemize}
+\item[Affinity] Both data and execution threads can be bound to a
+  specific locale to some extent. Using local data is more efficient
+  than remote data, so you want to use local data, and minimize the extent to which data
+  or execution can move.
+  \begin{itemize}
+  \item See the above points about phenomena that cause communication.
+  \item Section~\ref{omp:threadbind} describes how you can specify the
+    binding of threads to places. There can, but does not need, to be
+    an effect on affinity. For instance, if an OpenMP thread can
+    migrate between hardware threads, cached data will stay local.
+    Leaving an OpenMP thread completely free to migrate can be
+    advantageous for load balancing, but you should only do that if
+    data affinity is of lesser importance.
+  \item Static loop schedules have a higher chance of using data that
+    has affinity with the place of execution, but they are worse for
+    load balancing. On the other hand, the \indexclause{nowait} clause
+    can aleviate some of the problems with static loop schedules.
+  \end{itemize}
+\item[Binding] You can choose to put OpenMP threads close together or
+  to spread them apart. Having them close together makes sense if they
+  use lots of shared data. Spreading them apart may increase
+  bandwidth. (See the examples in section~\ref{sec:omp:bindeffect}.)
+\item[Synchronization] Barriers are a form of synchronization. They
+  are expensive by themselves, and they expose load
+  imbalance. Implicit barriers happen at the end of worksharing
+  constructs; they can be removed with \n{nowait}.
 
-Cache coherence induces communication. Some of that is unavoidable,
-but see the next point.
-
-Data is cached, so to minimize communication
-access to it should be as much as possible
-on the same core. This is known as affinity.
-
-Load imbalance can be counteracted by using
-different loop schedules. The loop should be
-on as high a level as possible.
-
-Barriers are a form of synchronization.
-They are expensive by themselves, and they
-expose load imbalance. Implicit barriers happen
-at the end of worksharing constructs; they
-can be removed with \n{nowait}.
-
-
-
+  Critical sections imply a loss of parallelism, but they are also
+  slow as they are realized through \indexterm{operating system}
+  functions. These are often quite costly, taking many thousands of
+  cycles.  Critical sections should be used only if the parallel work
+  far outweighs it.
+\end{description}
 
 \endinput
 

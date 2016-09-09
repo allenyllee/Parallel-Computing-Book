@@ -94,8 +94,9 @@ if (mytid==ntids-1)
 \end{verbatim}
 
 \begin{exercise}
-  Read the section \HPSCref{sec:load} about load balancing, and argue that this strategy
-  is not optimal. Can you come up with a better distribution?
+  Argue that this strategy is not optimal. Can you come up with a
+  better distribution?
+  Load balancing is further discussed in~\HPSCref{sec:load}.
 \end{exercise}
 
 One of the more common applications of the reduction operation
@@ -189,26 +190,6 @@ MPI_Get_count(&recv_status,MPI_INT,&recv_count);
 \end{verbatim}
 
 % MPI_Probe
-
-\Level 1 {Overlap of computation and communication}
-
-Non-blocking routines have long held the promise of letting a
-program \emph{overlap its computation and
-communication}\index{communication!overlap with computation}.  The
-idea was that after posting the non-blocking calls the program could
-proceed to do non-communication work, while another part of the system
-would take care of the communication. Unfortunately, a~lot of this 
-communication involved activity in user space, so the solution would have
-been to let it be handled by a separate thread. Until recently, processors
-were not efficient at doing such multi-threading, so true overlap 
-stayed a promise for the future.
-
-\Level 1 {More about non-blocking}
-
-Above we used \n{MPI_Irecv}, but we could have used the \n{MPI_Recv}
-routine.  There is nothing special about a non-blocking or synchronous
-message once it arrives; the \n{MPI_Recv} call can match any of the
-send routines you have seen so far (but not \n{MPI_Sendrecv}).
 
 \Level 1 {Synchronous and asynchronous communication}
 

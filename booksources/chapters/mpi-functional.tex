@@ -33,7 +33,7 @@ figure~\ref{fig:oldmpi}.
 
 These days the situation is more complicated.
 You can still talk about a node in a cluster, but now a node can contain
-more than one processor chip (sometimes called a \indexterm{socket}),
+more than one processor chip (sometimes called a \indextermdef{socket}),
 and each processor chip probably has multiple
 \emph{cores}\index{core}.
 %
@@ -61,10 +61,14 @@ of the book.
 
 This is somewhat confusing: the old processors needed MPI programming, because
 they were physically separated. The cores on a modern processor, on the other hand,
-share the same memory, and even some caches. In its basic mode MPI ignores all
-of this: each core receives an MPI process and they communicate as if
-they are all connected through the same network. In fact, you can't immediately see
-whether two cores are on the same node or different nodes.
+share the same memory, and even some caches. In its basic mode MPI
+seems to ignore all
+of this: each core receives an MPI process and the programmer writes the same send/receive call no matter
+where the other process is located. In fact, you can't immediately see
+whether two cores are on the same node or different nodes. (Of course,
+on the implementation level MPI uses a different communication
+mechanism depending on whether  cores are on the same socket, or on
+different nodes.)
 
 %% \Level 0 {Starting and running MPI processes}
 \input chapters/mpi-running

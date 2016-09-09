@@ -128,6 +128,33 @@ the result is \indexmpishow{MPI_PROC_NULL}.
 
 \Level 0 {Leftover topics}
 
+\Level 1 {MPI constants}
+\index{MPI!constants|(}
+
+MPI has a number of built-in \emph{constants}. These do not all behave
+the same.
+\begin{itemize}
+\item Some are \emph{compile-time}\index{MPI!constants!compile-time}
+  constants. Examples are \indexmpishow{MPI_VERSION} and
+  \indexmpishow{MPI_MAX_PROCESSOR_NAME}. Thus, they can be used in
+  array size declarations, even before \indexmpishow{MPI_Init}.
+\item Some \emph{link-time}\indexterm{MPI!constants!link-time}
+  constants get their value by MPI initialization, such as
+  \indexmpishow{MPI_COMM_WORLD}. Such symbols, which include all
+  predefined handles, can be used in initialization expressions.
+\item Some link-time symbols can not be used in initialization
+  expressions, such as \indexmpishow{MPI_BOTTOM} and \indexmpishow{MPI_STATUS_IGNORE}.
+\end{itemize}
+
+For symbols, the binary realization is not defined. For instance,
+\indexmpishow{MPI_COMM_WORLD} is of type \indexmpishow{MPI_Comm}, but
+the implementation of that type is not specified.
+
+(This section was inspired by
+\url{http://blogs.cisco.com/performance/mpi-outside-of-c-and-fortran}.)
+
+\index{MPI!constants|)}
+
 \Level 1 {32-bit size issues}
 
 The \n{size} parameter in MPI routines is defined as an \n{int},
