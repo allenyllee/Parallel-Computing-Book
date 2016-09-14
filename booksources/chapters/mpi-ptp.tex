@@ -147,6 +147,29 @@ message, you can use \indexmpishow{MPI_Get_count} to determine its size,
 allocate a large enough receive buffer, and do a regular receive to
 have the data copied.
 
+\mpiRoutineRef{MPI_Probe}
+
+There is a problem with the \indexmpishow{MPI_Probe} call: in a
+multithreaded environment the following scenario can happen.
+\begin{enumerate}
+\item A thread determines by probing that a certain message has come
+  in.
+\item It issues a blocking receive call for that message\dots
+\item But in between the probe and the receive call another thread
+  has already received the message.
+\item \dots~Leaving the first thread in a blocked state with not
+  message to receive.
+\end{enumerate}
+This is solved by \indexmpishow{MPI_Mprobe}, which after a successful
+probe removes the message from the \indexterm{matching queue}: the
+list of messages that can be matched by a receive call. The thread
+that matched the probe now issues an \indexmpishow{MPI_Mrecv} call on
+that message through an object of type \indexmpidef{MPI_Message}.
+
+\mpiRoutineRef{MPI_Mprobe}
+
+\mpiRoutineRef{MPI_Mrecv}
+
 \Level 1 {Wildcards in the receive call}
 \label{sec:mpi-status}
 
@@ -188,8 +211,6 @@ can be found as
 \begin{verbatim}
 MPI_Get_count(&recv_status,MPI_INT,&recv_count);
 \end{verbatim}
-
-% MPI_Probe
 
 \Level 1 {Synchronous and asynchronous communication}
 
