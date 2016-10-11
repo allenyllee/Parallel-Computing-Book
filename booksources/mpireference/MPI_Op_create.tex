@@ -1,0 +1,15 @@
+Semantics:
+MPI_OP_CREATE( function, commute, op)
+[ IN function] user defined function (function)
+[ IN commute] true if commutative; false otherwise.
+[ OUT op] operation (handle)
+
+C:
+int MPI_Op_create(MPI_User_function *function, int commute,
+    MPI_Op *op)
+
+Fortran:
+MPI_OP_CREATE( FUNCTION, COMMUTE, OP, IERROR)
+EXTERNAL FUNCTION
+LOGICAL COMMUTE
+INTEGER OP, IERROR

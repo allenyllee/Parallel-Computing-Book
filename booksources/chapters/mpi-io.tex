@@ -1,0 +1,110 @@
+% -*- latex -*-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Parallel Programming in MPI and OpenMP'
+%%%% by Victor Eijkhout, copyright 2012-6
+%%%%
+%%%% mpi-io.tex : MPI/O
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\Level 0 {MPI file I/O}
+\index{MPI/O|(}
+
+File input and output in parallel is a little more complicated than
+sequentially.
+\begin{itemize}
+\item There is nothing against every process opening an existing file
+  for reading, and using an individual file pointer to get its unique
+  data.
+\item \ldots~but having every process open the same file for output is
+  probably not a good idea.
+\item Based on the process rank it is easy enough to have
+  every process create a unique file, but that can put a lot of strain
+  on the file system, and it means you may have to post-process 
+  to get all the data in one file.
+\end{itemize}
+
+Wouldn't it be nice if there was a way to open one file in parallel,
+and have every process read from and write to its own location? That's
+where \emph{MPI/O} comes in.
+
+MPI has its own file handle:
+\indexmpishow{MPI_File}
+
+File open:
+\mpiRoutineRef{MPI_File_open}
+This routine is collective, even if only certain processes will access
+the file with a read or write call.
+Similarly, \indexmpishow{MPI_File_close} is collective.
+
+\begin{pythonnote}
+  Note the slightly unusual syntax for opening a file: even though the file is
+  opened on a communicator, it is a class method for the \n{MPI.File}
+  class, rather than for the communicator object. The latter is passed
+  in as an argument.
+\end{pythonnote}
+
+File access modes:
+\begin{itemize}
+\item  \indexmpishow{MPI_MODE_RDONLY}: read only,
+\item  \indexmpishow{MPI_MODE_RDWR}: reading and writing,
+\item  \indexmpishow{MPI_MODE_WRONLY}: write only,
+\item  \indexmpishow{MPI_MODE_CREATE}: create the file if it does not exist,
+\item  \indexmpishow{MPI_MODE_EXCL}: error if creating file that already exists,
+\item  \indexmpishow{MPI_MODE_DELETE_ON_CLOSE}: delete file on close,
+\item  \indexmpishow{MPI_MODE_UNIQUE_OPEN}: file will not be concurrently opened
+  elsewhere,
+\item  \indexmpishow{MPI_MODE_SEQUENTIAL}: file will only be accessed sequentially,
+\item  \indexmpishow{MPI_MODE_APPEND}: set initial position of all file pointers to end
+  of file.
+\end{itemize}
+These modes can be added or bitwise-or'ed.
+
+Writing to and reading from a parallel file is rather similar to
+sending a receiving:
+\begin{itemize}
+\item The process uses an elementary data type or a derived datatype
+  to describe what elements in an array go to file, or are read from
+  file.
+\item In the simplest case, your read or write that data to the file using an
+  offset, or first having done a seek operation.
+\item But you can also set a `file view' to describe explicitly what
+  elements in the file will be involved.
+\end{itemize}
+
+File accesses:
+\begin{itemize}
+\item \indexmpishow{MPI_File_seek}
+\item \indexmpishow{MPI_File_read}
+\item \indexmpishow{MPI_File_read_all}
+\item \indexmpishow{MPI_File_read_ordered}
+\item \indexmpishow{MPI_File_read_shared}
+\item \indexmpishow{MPI_File_read_at}: combine read and seek.
+\item \indexmpishow{MPI_File_write}
+\item \indexmpishow{MPI_File_write_all}
+\item \indexmpishow{MPI_File_write_ordered}
+\item \indexmpishow{MPI_File_write_shared}
+\item \indexmpishow{MPI_File_write_at}: combine write and seek
+\end{itemize}
+
+These modes are enough for writing simple contiguous blocks. However,
+you can also access non-contiguous areas in the file. For this you use
+%
+\mpiRoutineRef{MPI_File_set_view}
+%
+This call is collective, even if not all processes access the file.
+
+More:
+\indexmpishow{MPI_File_delete}
+\indexmpishow{MPI_File_set_size}
+\indexmpishow{MPI_File_get_size}
+\indexmpishow{MPI_File_preallocate}
+\indexmpishow{MPI_File_get_view}
+
+\mpiRoutineRef{MPI_File_write_at}
+
+\index{MPI/O|)}
