@@ -1,0 +1,15 @@
+// commsplit.py
+mydata = procid
+
+# communicator modulo 2
+color = procid%2
+mod2comm = comm.Split(color)
+new_procid = mod2comm.Get_rank()
+
+# communicator modulo 4 recursively
+color = new_procid%2
+mod4comm = mod2comm.Split(color)
+new_procid = mod4comm.Get_rank()
+
+if mydata/4!=new_procid:
+    print "Error",procid,new_procid,mydata/4

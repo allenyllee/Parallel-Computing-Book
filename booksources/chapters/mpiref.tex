@@ -138,7 +138,7 @@ the same.
   constants. Examples are \indexmpishow{MPI_VERSION} and
   \indexmpishow{MPI_MAX_PROCESSOR_NAME}. Thus, they can be used in
   array size declarations, even before \indexmpishow{MPI_Init}.
-\item Some \emph{link-time}\indexterm{MPI!constants!link-time}
+\item Some \emph{link-time}\index{MPI!constants!link-time}
   constants get their value by MPI initialization, such as
   \indexmpishow{MPI_COMM_WORLD}. Such symbols, which include all
   predefined handles, can be used in initialization expressions.
@@ -251,13 +251,6 @@ That means you can not transfer a compiled MPI file between
 platforms, or even between compilers on one platform.
 However, a working MPI source on one MPI implementation
 will also work on another.
-
-\Level 0 {Error handling}
-\label{sec:ref:mpi:error}
-
-MPI operators (\indexmpishow{MPI_Op}) do not return an error code. In case of
-an error they call \n{MPI_Abort}; if \indexmpishow{MPI_ERRORS_RETURN}
-is the error handler, errors may be silently ignore.
 
 \Level 0 {Context information}
 \label{sec:context}

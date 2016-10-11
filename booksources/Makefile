@@ -13,10 +13,13 @@ info ::
 	@echo "Do: make pdf"
 	@echo "to format the book"
 
+onepass :
+	TEXINPUTS=${TEXINPUTS}:graphics:mpireference:snippets:codesnippets:graphics:hwloc \
+	    pdflatex EijkhoutParComp
 pdf :
-	TEXINPUTS=${TEXINPUTS}:graphics:mpireference pdflatex EijkhoutParComp
-	TEXINPUTS=${TEXINPUTS}:graphics:mpireference pdflatex EijkhoutParComp
-	TEXINPUTS=${TEXINPUTS}:graphics:mpireference pdflatex EijkhoutParComp
+	make onepass
+	make onepass
+	make onepass
 	cp EijkhoutParComp.pdf ../
 clean ::
 	@rm -f EijkhoutParComp.pdf acronyms.tex chapternames.tex

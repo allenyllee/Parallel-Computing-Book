@@ -1,0 +1,346 @@
+% -*- latex -*-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Parallel Programming in MPI and OpenMP'
+%%%% by Victor Eijkhout, copyright 2012-6
+%%%%
+%%%% mpi-nonblock.tex : blocking sends
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\Level 0 {Non-blocking point-to-point operations}
+
+\Level 1 {Irregular data exchange}
+
+The structure of communication is often a reflection of the structure
+of the operation.
+With some regular applications we also get a regular communication pattern.
+Consider again the above operation:
+\[ y_i=x_{i-1}+x_i+x_{i+1}\colon i=1,\ldots,N-1 \]
+Doing this in parallel induces communication, as pictured in figure~\ref{fig:3pt}.
+%
+\begin{figure}[ht]
+  \includegraphics[scale=.09]{threepoint}
+  \caption{Communication in an one-dimensional operation}
+  \label{fig:3pt}
+\end{figure}
+%
+We note:
+\begin{itemize}
+\item The data is one-dimensional, and we have a linear ordering of the processors.
+\item The operation involves neighbouring data points, and we communicate
+  with neighbouring processors.
+\end{itemize}
+
+Above you saw how you can use information exchange between pairs of processors
+\begin{itemize}
+\item using \indexmpishow{MPI_Send} and \indexmpishow{MPI_Recv}, if you are careful; or
+\item using \indexmpishow{MPI_Sendrecv}, as long as there is indeed some sort of pairing of processors.
+\end{itemize}
+However, there are circumstances where it is not possible, not efficient, or simply not
+convenient, to have such a deterministic setup of the send and receive calls.
+%
+\begin{figure}
+  \includegraphics[scale=.1]{graphsend}
+  \caption{Processors with unbalanced send/receive patterns}
+  \label{fig:graphsend}
+\end{figure}
+%
+Figure~\ref{fig:graphsend} illustrates such a case, where processors are
+organized in a general graph pattern. Here, the numbers of sends and receive
+of a processor do not need to match.
+
+In such cases, one wants a possibility to state `these are the expected incoming
+messages', without having to wait for them in sequence. Likewise, one wants to declare
+the outgoing messages without having to do them in any particular sequence.
+Imposing any sequence on the sends and receives is likely to run into the serialization
+behaviour observed above, or at least be inefficient since processors will be
+waiting for messages.
+
+\Level 1 {Non-blocking communication}
+\label{sec:nonblocking}
+\index{communication!non-blocking|(textbf}
+
+In the previous section you saw that blocking communication makes
+programming tricky if you want to avoid deadlock and performance
+problems. The main advantage of these routines is that you have full
+control about where the data is: if the send call returns
+the data has been successfully received, and the send buffer can be used for
+other purposes or de-allocated.  
+
+\begin{figure}[ht]
+  \includegraphics[scale=.1]{send-nonblocking}
+  \caption{Non-blocking send}
+  \label{fig:send-nonblocking}
+\end{figure}
+
+By contrast, the non-blocking calls \indexmpishow{MPI_Isend} and
+\indexmpishow{MPI_Irecv} do not wait for their counterpart: in effect
+they tell the runtime system `here is some data and please send it as
+follows' or `here is some buffer space, and expect such-and-such data
+to come'.  This is illustrated in figure~\ref{fig:send-nonblocking}.
+
+\mpiRoutineRef{MPI_Isend}
+
+\mpiRoutineRef{MPI_Irecv}
+
+While the use of non-blocking routines prevents deadlock, it
+introduces two new problems:
+\begin{enumerate}
+\item When the send call returns, the actual send may not have been executed,
+  so the send buffer may not be safe to
+  overwrite. When the recv call returns, you do not know for sure that
+  the expected data is in it. Thus, you need a mechanism to make sure
+  that data was actually sent or received.
+\item With a blocking send call, you could repeatedly fill the send
+  buffer and send it off.
+\begin{verbatim}
+double *buffer;
+for ( ... p ... ) {
+   buffer = // fill in the data
+   MPI_Send( buffer, ... /* to: */ p );
+\end{verbatim}
+  To send multiple messages with non-blocking calls
+  you have to allocate multiple buffers.
+\begin{verbatim}
+double **buffers;
+for ( ... p ... ) {
+   buffers[p] = // fill in the data
+   MPI_Send( buffers[p], ... /* to: */ p );
+\end{verbatim}
+\end{enumerate}
+
+As you see above, a non-blocking send or receive routine yields
+an \indexmpidef{MPI_Request} object. This request can then be used to
+query whether the operation has concluded. You may also notice that
+the \indexmpishow{MPI_Irecv} routine does not 
+yield an \indexmpishow{MPI_Status} object.
+This makes sense: the status object
+describes the actually received data, and at the completion of the
+\n{MPI_Irecv} call there is no received data yet.
+
+MPI has two types of routines for handling requests; we will start
+with the \indexmpishow{MPI_Wait...} routines. These
+calls are blocking: when you issue
+such a call, your execution will wait until the specified requests
+have been completed. A~typical way of using them is:
+\begin{verbatim}
+// start non-blocking communication
+MPI_Isend( ... ); MPI_Irecv( ... );
+// wait for the Isend/Irecv calls to finish in any order
+MPI_Waitall( ... );
+\end{verbatim}
+
+The \n{MPI_Wait...} routines have the \indexmpishow{MPI_Status}
+objects as output.
+
+\mpiRoutineRef{MPI_Waitall}
+
+\begin{exercise}
+  \label{ex:3ptnonblock}
+  Now use nonblocking send/receive routines to implement
+  the three-point averaging operation
+  \[ y_i=\bigl( x_{i-1}+x_i+x_{i+1} \bigr)/3\colon i=1,\ldots,N-1 \]
+  on a distributed array. (Hint: use \n{MPI_PROC_NULL} at the ends.)
+\end{exercise}
+
+There is a second motivation for the \n{Isend/Irecv} calls:
+if your hardware supports it, the communication can progress
+while your program can continue to do useful work:
+\begin{verbatim}
+// start non-blocking communication
+MPI_Isend( ... ); MPI_Irecv( ... );
+// do work that does not depend on incoming data
+....
+// wait for the Isend/Irecv calls to finish
+MPI_Wait( ... );
+// now do the work that absolutely needs the incoming data
+....
+\end{verbatim}
+This is known as \emph{overlapping computation and communication}, or
+\indextermbus{latency}{hiding}.
+
+Unfortunately, a~lot of this
+communication involves activity in user space, so the solution would
+have been to let it be handled by a separate thread. Until recently,
+processors were not efficient at doing such multi-threading, so true
+overlap stayed a promise for the future. Some network cards have
+support for this overlap, but it requires a non-trivial combination of
+hardware, firmware, and MPI implementation.
+
+\begin{exercise}
+  \label{ex:3ptnonblock-hide}
+  Take your code of exercise~\ref{ex:3ptnonblock} and modify it to use
+  latency hiding. Operations that can be performed without needing
+  data from neighbours should be performed in between the
+  \n{Isend/Irecv} calls and the \n{Wait} call.
+\end{exercise}
+
+\begin{remark}
+  There is nothing special about a non-blocking or
+  synchronous message. The \n{MPI_Recv} call can match any of the
+  send routines you have seen so far (but not \n{MPI_Sendrecv}), and
+  conversely a message sent with \n{MPI_Send} can be received by \n{MPI_Irecv}.
+\end{remark}
+
+\Level 2 {Wait and test calls}
+\label{sec:waittest}
+
+There are several wait calls.
+
+\Level 3 {Wait for one request}
+
+\indexmpishow{MPI_Wait} waits for a a single request. If you are
+  indeed waiting for a single nonblocking communication to complete,
+  this is the right routine. If you are waiting for multiple requests
+  you could call this routine in a loop. 
+
+\begin{verbatim}
+for (p=0; p<nrequests ; p++) // Not efficient!
+  MPI_Wait(request[p],&(status[p]));
+\end{verbatim}
+
+However, this would be inefficient if the first request is fulfilled
+much later than the others: your waiting process would have lots of
+idle time. In that case, use one of the following routines.
+
+\Level 3 {Wait for all requests}
+  
+\indexmpishow{MPI_Waitall} allows you to wait for a number of
+requests, and it does not matter in what sequence they are
+satisfied. Using this routine is easier to code than the loop above,
+and it could be more efficient.
+
+\mpiRoutineRef{MPI_Waitall}
+
+\Level 3 {Wait for any/some requests}
+
+The `waitall' routine is good if you need all nonblocking
+communications to be finished before you can proceed with the rest of
+the program. However, sometimes it is possible to take action as each
+request is satisfied. In that case you could use
+\indexmpishow{MPI_Waitany} and write:
+
+\begin{verbatim}
+for (p=0; p<nrequests; p++) {
+  MPI_Waitany(nrequests,request_array,&index,&status);
+  // operate on buffer[index]
+}
+\end{verbatim}
+
+Note that this routine takes a single status argument, passed by
+reference, and not an array of statuses!
+
+\mpiRoutineRef{MPI_Waitany}
+
+Finally, \indexmpishow{MPI_Waitsome} is very much like \n{Waitany},
+  except that it returns multiple numbers, if multiple requests are
+  satisfied. Now the status argument is an array of \n{MPI_Status}
+  objects.
+
+Figure~\ref{fig:jump-nonblock} shows the trace of a non-blocking execution
+using \n{MPI_Waitall}.
+\begin{figure}[ht]
+\includegraphics[scale=.4]{graphics/linear-nonblock}
+\caption{A trace of a nonblocking send between neighbouring processors}
+\label{fig:jump-nonblock}
+\end{figure}
+
+\Level 2 {Test: non-blocking request wait}
+
+The \n{MPI_Wait...} routines are blocking. Thus, they are a good solution if 
+the receiving process can not do anything until the data 
+(or at least \emph{some} data) is actually received.
+The \indexmpishow{MPI_Test....} calls are themselves non-blocking: they
+test for whether one or more requests have been
+fullfilled, but otherwise immediately return.
+This can be used in the
+\indexterm{master-worker model}: the master process creates tasks, and
+sends them to whichever worker process has finished its work,
+but while it waits for the workers it can itself do useful work.
+Pseudo-code:
+\begin{verbatim}
+while ( not done ) {
+  // create new inputs for a while
+  ....
+  // see if anyone has finished
+  MPI_Test( .... &index, &flag );
+  if ( flag ) {
+    // receive processed data and send new
+}
+\end{verbatim}
+
+\mpiRoutineRef{MPI_Testany}
+\mpiRoutineRef{MPI_Testall}
+
+\begin{exercise}
+  Read section~\HPSCref{sec:pspmvp} and give pseudo-code for the
+    distributed sparse matrix-vector product using the above idiom for
+    using \n{MPI_Test...} calls. Discuss the advantages and
+    disadvantages of this approach. The answer is not going to be
+    black and white: discuss when you expect which approach to be
+    preferable.
+\end{exercise}
+
+\Level 1 {Reference}
+
+Here is a simple code that does a non-blocking exchange between two processors:
+\verbatimsnippet{irecvnonblock}
+
+It is possible to omit the status array by specifying \indexmpishow{MPI_STATUSES_IGNORE}.
+Other routines are \n{MPI_Wait} for a single request, and
+\n{MPI_Waitsome}, \n{MPI_Waitany}.
+
+The above fragment is unrealistically simple. In a more general scenario we
+have to manage send and receive buffers: we need as many buffers as there are
+simultaneous non-blocking sends and receives.
+\verbatimsnippet{irecvloop}
+
+Instead of waiting for all messages, we can wait for any message to come
+with \indexmpishow{MPI_Waitany}, and process the receive data as it comes in.
+\verbatimsnippet{waitforany}
+Note the \indexmpishow{MPI_STATUS_IGNORE} parameter: we know everything
+about the incoming message, so we do not need to query a status object.
+Contrast this with the example in section~\ref{ref:mpi-source}.
+
+\begin{fortrannote}
+  The \n{index} parameter is the index in the array of requests,
+  so it uses \emph{1-based indexing}\index{Fortran!1-based indexing}.
+\end{fortrannote}
+\verbatimsnippet{waitforany-f}
+
+\index{communication!non-blocking|)}
+
+\Level 1 {Examples}
+
+\mpiexample{MPI_Waitall}
+
+Post non-blocking \indexmpishow{MPI_Irecv} and
+\indexmpishow{MPI_Isend} to/from all others, then use \n{MPI_Waitall}
+on the array of requests.
+%
+\verbatimsnippet{irecvall}
+
+In python creating the array for the returned requests is somewhat
+tricky.
+%
+\verbatimsnippet{irecvallp}
+
+\mpiexample{MPI_Waitany}
+
+Each process except for the root does a blocking send; the root
+posts \indexmpishow{MPI_Irecv} from all other processors, then loops
+with \n{MPI_Waitany} until all requests have come in. Use
+\indexmpishow{MPI_SOURCE} to test the index parameter of the wait
+call.
+%
+\verbatimsnippet{waitforany}
+
+In python creating the array for the returned requests is somewhat
+tricky.
+%
+\verbatimsnippet{waitforanyp}
+

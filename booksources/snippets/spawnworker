@@ -1,0 +1,11 @@
+// spawn_worker.c
+MPI_Comm_size(MPI_COMM_WORLD,&nworkers);
+MPI_Comm_rank(MPI_COMM_WORLD,&workerno);
+MPI_Comm_get_parent(&parent);
+ASSERTm(parent!=MPI_COMM_NULL,"No parent!");
+
+MPI_Comm_remote_size(parent, &remotesize);
+if (workerno==0) {
+  printf("Deducing %d workers and %d parents\n",nworkers,remotesize);
+}
+//  ASSERTm(nworkers==size-1,"nworkers mismatch. probably misunderstanding");

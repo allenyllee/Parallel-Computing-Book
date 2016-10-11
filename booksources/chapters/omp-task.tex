@@ -1,0 +1,509 @@
+% -*- latex -*-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Parallel Programming in MPI and OpenMP'
+%%%% by Victor Eijkhout, copyright 2012-6
+%%%%
+%%%% omp-task.tex : openmp tasking
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\label{sec:omp:task}
+\index{OpenMP!tasks|(}
+
+Tasks are a mechanism that OpenMP uses under the cover:
+if you specify something as being parallel, OpenMP will create
+a `block of work': a~section of code plus the data environment
+in which it occurred. This block is set aside for execution at some later point.
+
+Let's look at a simple example using the \indexpragma{task} directive.
+\begin{quotation}
+  \begin{tabular}{|ll|}
+    \hline
+    Code&Execution\\
+    \hline
+    \n{\ x = f();}& the variable \n{x} gets a value\\
+    \n{#pragma omp task}&\multirow{2}{*}{a task is created with the current value of \texttt{x}}\\
+    \n{\ \{ y = g(x); \}}&\\
+    \n{\ z = h();}& the variable \n{z} gets a value\\
+    \hline
+  \end{tabular}
+\end{quotation}
+The thread that executes this code segment creates a task,
+which will later be executed, probably by a different thread.
+The exact timing of the execution of the task is up to a \indextermbus{task}{scheduler},
+which operates invisible to the user.
+
+The task mechanism allows you to do things that are hard or impossible
+with the loop and section constructs. For instance, a \indexterm{while
+  loop} traversing a \indexterm{linked list} can be implemented with tasks:
+\begin{quotation}
+  \begin{tabular}{|ll|}
+    \hline
+    Code&Execution\\
+    \hline
+    \n{p = head_of_list();}& one thread traverses the list\\
+    \n{while (!end_of_list(p)) \{}\\
+    \n{#pragma omp task}& a task is created,\\
+    \n{\ process( p );}& one for each element\\
+    \n{\ p = next_element(p);}& the generating thread goes on without waiting\\
+    \n{\}}&the tasks are executed while more are being generated.
+  \end{tabular}
+\end{quotation}
+
+The way tasks and threads interact is different from the worksharing
+constructs you've seen so far. Typically, one thread will generate the
+tasks, adding them to a queue, from which all threads can take and
+execute them. This leads to the following idiom:
+\begin{verbatim}
+#pragma omp parallel
+#pragma omp single
+{
+  ...
+#pragma omp task
+  { ... }
+  ...
+}
+\end{verbatim}
+\begin{enumerate}
+\item A parallel region creates a team of threads;
+\item a single thread then creates the tasks, adding them to a queue
+  that belongs to the team,
+\item and all the threads in that team (possibly including the one
+  that generated the tasks) 
+\end{enumerate}
+
+With tasks it becomes possible to parallelize processes that did not
+fit the earlier OpenMP constructs. For instance, if a certain
+operation needs to be applied to all elements of a linked list, you
+can have one thread go down the list, generating a task for each
+element of the list.
+
+Another concept that was hard to parallelize earlier is the `while
+loop'. This does not fit the requirement for OpenMP parallel loops
+that the loop bound needs to be known before the loop executes.
+
+\begin{exercise}
+  \label{ex:taskfactor}
+  Use tasks to find the smallest factor of a large
+  number (using $2999\cdot 3001$ as test case): generate a task for each
+  trial factor. Start with this code:
+\begin{verbatim}
+  int factor=0;
+#pragma omp parallel
+#pragma omp single
+  for (int f=2; f<4000; f++) {
+    { // see if `f' is a factor
+      if (N%f==0) { // found factor!
+        factor = f;
+      }
+    }
+    if (factor>0)
+      break;
+  }
+  if (factor>0)
+    printf("Found a factor: %d\n",factor);
+\end{verbatim}
+  \begin{itemize}
+  \item Turn the factor finding block into a task.
+  \item Run your program a number of times:
+\begin{verbatim}
+for i in `seq 1 1000` ; do ./taskfactor ; done | grep -v 2999
+\end{verbatim}
+    Does it find the wrong factor? Why? Try to fix this.
+\item Once a factor has been found, you should stop generating
+    tasks.
+    Let tasks that should not have been generated, meaning that they
+    test a candidate larger than the factor found, print out a message.
+  \end{itemize}
+\end{exercise}
+
+
+\Level 0 {Task data}
+\index{OpenMP!tasks!data|(}
+
+Treatment of data in a task is somewhat subtle. The basic problem is
+that a task gets created at one time, and executed at another. Thus,
+if shared data is accessed, does the task see the value at creation
+time or at execution time? In fact, both possibilities make sense
+depending on the application, so we need to discuss the rules when
+which possibility applies.
+
+The first rule is that shared data is shared in the task, but private
+data becomes \indexclause{firstprivate}. To see the distinction, consider two
+code fragments. In the first example:
+\begin{verbatim}
+int count = 100;
+#pragma omp parallel
+#pragma omp single
+{
+  while (count>0) {
+#pragma omp task
+    {
+      int countcopy = count;
+      if (count==50) {
+        sleep(1);
+        printf("%d,%d\n",count,countcopy);
+      } // end if
+    }   // end task
+    count--;
+  }     // end while
+}       // end single
+\end{verbatim}
+the variable \n{count} is declared outside the
+parallel region and is therefore shared. When the print statement is
+executed, all tasks will have been generated, and so \n{count} will be
+zero. Thus, the output will likely be \n{0,50}.
+
+In the second example:
+\begin{verbatim}
+#pragma omp parallel
+#pragma omp single
+{
+  int count = 100;
+  while (count>0) {
+#pragma omp task
+    {
+      int countcopy = count;
+      if (count==50) {
+        sleep(1);
+        printf("%d,%d\n",count,countcopy);
+      } // end if
+    }   // end task
+    count--;
+  }     // end while
+}       // end single
+\end{verbatim}
+the \n{count} variable is private to the thread creating the tasks,
+and so it will be \n{firstprivate} in the task, preserving the value
+that was current when the task was created.
+
+\index{OpenMP!tasks!data|)}
+
+\Level 0 {Task synchronization}
+\index{OpenMP!tasks!synchronization|(}
+
+Even though the above segment looks like a linear set of statements,
+it is impossible to say when
+the code after the \n{task} directive will be executed.
+This means that the following code is incorrect:
+\begin{verbatim}
+  x = f();
+#pragma omp task
+  { y = g(x); }
+  z = h(y);  
+\end{verbatim}
+Explanation: when the statement computing \n{z} is executed, the task
+computing~\n{y} has only been scheduled;
+it has not necessarily been executed yet.
+
+In order to have a guarantee that a task is finished,
+you need the \indexpragma{taskwait} directive.
+The following creates two tasks, which can be executed
+in parallel, and then waits for the results:
+\begin{quotation}
+  \begin{tabular}{|ll|}
+    \hline
+    Code&Execution\\
+    \hline
+    \n{\ x = f();}& the variable \n{x} gets a value\\
+    \n{#pragma omp task}&\multirow{4}{*}{two tasks are created with the current value of \texttt{x}}\\
+    \n{\ \{ y1 = g1(x); \}}&\\
+    \n{#pragma omp task}&\\
+    \n{\ \{ y2 = g2(x); \}}&\\
+    \n{#pragma omp taskwait}& the thread waits until the tasks are finished\\
+    \n{\ z = h(y1)+h(y2);}& the variable \n{z} is computed using the task results\\
+    \hline
+  \end{tabular}
+\end{quotation}
+
+The \indexpragma{task} pragma is followed by a structured block.
+Each time the structured block is encountered, a new task is generated.
+On the other hand \indexpragma{taskwait} is a standalone directive; 
+the code that follows is just code, it is not a structured block belonging
+to the directive.
+
+Another aspect of the distinction between generating tasks and executing them:
+usually the tasks are generated by one thread, but executed by many threads.
+Thus, the typical idiom is:
+\begin{verbatim}
+#pragma omp parallel
+#pragma omp single
+{
+  // code that generates tasks
+}  
+\end{verbatim}
+
+This makes it possible to execute loops in parallel
+that do not have the right kind of iteration structure
+for a \n{omp parallel for}. As an example, you
+could traverse and process a linked list:
+\begin{verbatim}
+#pragma omp parallel
+#pragma omp single
+{
+  while (!tail(p)) {
+    p = p->next();
+#pragma omp task
+    process(p)
+  }
+#pragma omp taskwait
+}
+\end{verbatim}
+One task traverses the linked list creating an independent
+task for each element in the list. These tasks are then
+executed in parallel; their assignment to threads
+is done by the task scheduler.
+
+You can indicate task dependencies in several ways:
+\begin{enumerate}
+\item Using the `task wait' directive you can explicitly indicate
+  the \emph{join}\index{fork/join model} of the
+  \emph{forked} tasks. The instruction after the wait directive
+  will therefore be dependent on the spawned tasks.
+\item The \indexpragma{taskgroup} directive, followed
+  by a structured block, ensures completion of all tasks
+  created in the block, even if recursively created.
+\item Each OpenMP task can have a \indexclause{depend}
+  clause, indicating what \indexterm{data dependency} of the task.
+  By indicating what data is produced or absorbed by the tasks,
+  the scheduler can construct the dependency graph for you.
+\end{enumerate}
+
+Another mechanism for dealing with tasks is the
+\indexpragma{taskgroup}: a task group is a code block that can
+contain \indexpragma{task} directives; all these tasks need to be
+finished before any statement after the block is executed.
+
+A task group is somewhat similar to having a \indexpragma{taskwait}
+directive after the block. The big difference is that that
+\n{taskwait} directive does not wait for tasks that are recursively
+generated, while a \n{taskgroup} does.
+
+\index{OpenMP!tasks!synchronization|)}
+
+\Level 0 {Task dependencies}
+\index{OpenMP!tasks!dependencies|(}
+
+It is possible to put a partial ordering on
+tasks through use of the \indexclause{depend} clause. For example, in
+\begin{verbatim}
+#pragma omp task
+  x = f()
+#pragma omp task
+  y = g(x)
+\end{verbatim}
+it is conceivable that the second task is executed before the first,
+possibly leading to an incorrect result. This is remedied by specifying:
+\begin{verbatim}
+#pragma omp task depend(out:x)
+  x = f()
+#pragma omp task depend(in:x)
+  y = g(x)
+\end{verbatim}
+
+\begin{exercise}
+Consider the following code:
+\begin{verbatim}
+for i in [1:N]:
+    x[0,i] = some_function_of(i)
+    x[i,0] = some_function_of(i)
+
+for i in [1:N]:
+    for j in [1:N]:
+        x[i,j] = x[i-1,j]+x[i,j-1]
+\end{verbatim}
+\begin{itemize}
+\item Observe that the second loop nest is not amenable to OpenMP loop
+  parallelism.
+\item Can you think of a way to realize the computation with OpenMP
+  loop parallelism? Hint: you need to rewrite the code so that the
+  same operations are done in a different order.
+\item Use tasks with dependencies to make this code parallel without
+  any rewriting: the only change is to add OpenMP directives.
+\end{itemize}
+\end{exercise}
+
+Tasks dependencies are used to indicated how two uses of one data item
+relate to each other. Since either use can be a read or a write,
+there are four types of dependencies.
+
+\begin{description}
+\item[RaW (Read after Write)] The second task reads an item that the
+  first task writes. The second task has to be executed after the
+  first:
+\begin{verbatim}
+... omp task depend(OUT:x)
+  foo(x)
+... omp task depend( IN:x)
+  foo(x)
+\end{verbatim}
+\item[WaR (Write after Read)] The first task reads and item, and the
+  second task overwrites it. The second task has to be executed second
+  to prevent overwriting the initial value:
+\begin{verbatim}
+... omp task depend( IN:x)
+  foo(x)
+... omp task depend(OUT:x)
+  foo(x)
+\end{verbatim}
+\item[WaW (Write after Write)] Both tasks set the same variable. Since
+  the variable can be used by an intermediate task, the two writes
+  have to be executed in this order.
+\begin{verbatim}
+... omp task depend(OUT:x)
+  foo(x)
+... omp task depend(OUT:x)
+  foo(x)
+\end{verbatim}
+\item[RaR (Read after Read)] Both tasks read a variable. Since neither
+  tasks has an `out' declaration, they can run in either order.
+\begin{verbatim}
+... omp task depend(IN:x)
+  foo(x)
+... omp task depend(IN:x)
+  foo(x)
+\end{verbatim}
+\end{description}
+\index{OpenMP!tasks!dependencies|)}
+
+\Level 0 {More}
+
+\Level 1 {Scheduling points}
+
+Normally, a task stays tied to the thread that first executes it.
+However, at a \indextermbus{task}{scheduling point} the thread may
+switch to the execution of another task created by the same team.
+\begin{itemize}
+\item There is a scheduling point after explicit task creation. This
+  means that, in the above examples, the thread creating the tasks can
+  also participate in executing them.
+\item There is a scheduling point at \indexpragma{taskwait} and \indexpragma{taskyield}.
+\end{itemize}
+
+On the other hand a task created with them \indexclause{untied} clause
+on the task pragma is never tied to one thread. This means that after
+suspension at a scheduling point any thread can resume execution of
+the task.
+If you do this, beware
+that the value of a thread-id does not stay fixed. Also locks become a problem.
+
+Example: if a thread is waiting for a lock, with a scheduling point it
+can suspend the task and work on another task.
+\begin{verbatim}
+while (!omp_test_lock(lock))
+#pragma omp taskyield
+  ;
+\end{verbatim}
+
+\Level 1 {Task cancelling}
+
+It is possible (in \indextermbus{OpenMP}{version 4}) to cancel
+tasks. This is useful when tasks are used to perform a search: the
+task that finds the result first can cancel any outstanding search
+tasks.
+
+The directive \indexpragmadef{cancel} takes an argument of the
+surrounding construct (\n{parallel, for, sections, taskgroup}) in
+which the tasks are cancelled.
+
+\begin{exercise}
+  Modify the prime finding example.
+\end{exercise}
+
+\Level 0 {Examples}
+
+\Level 1 {Fibonacci}
+
+As an example of the use of tasks, consider computing an array of Fibonacci values:
+%
+\verbatimsnippet{fiboarray}
+%
+If you simply turn each calculation into a task, results will be
+unpredictable (confirm this!) since tasks can be executed in any sequence.
+To solve this, we put dependencies on the tasks:
+%
+\verbatimsnippet{fibotaskdepend}
+
+\Level 1 {Binomial coefficients}
+
+\begin{exercise}
+  An array of binomial coefficients can be computed as follows:
+  %
+  \verbatimsnippet{binomialarray}
+  %
+  Putting a single task group around the double loop, and use
+  \n{depend} clauses to make the execution satisfy the proper dependencies.
+\end{exercise}
+
+\Level 1 {Tree traversal}
+
+OpenMP tasks are a great way of handling trees.
+
+\Level 2 {Post-order traversal}
+
+In \emph{post-order tree traversal}\index{tree!traversal!post-order}
+you visit the subtrees before visiting the root. This is the traversal
+that you use to find summary information about a tree, for instance
+the sum of all nodes, and the sums of nodes of all subtrees:
+
+\begin{displayalgorithm}
+  \For{all children $c$}
+      {compute the sum $s_c$}\;
+      $ s \leftarrow \sum_c s_c$
+\end{displayalgorithm}
+
+Another example is matrix factorization:
+\[ S = A_{33} - A_{31}A_{11}\inv A_{13} - A_{32}A_{22}\inv A_{23} \]
+where the two inverses $A_{11}\inv,A_{22}\inv$ can be computed
+indepedently and recursively.
+
+\Level 2 {Pre-order traversal}
+
+If a property needs to propagate from the root to all subtrees and
+nodes, you can use \emph{pre-order tree
+  traversal}\index{tree!traversal!pre-order}:
+
+\begin{displayalgorithm}
+  Update node value $s$\;
+  \For{all children $c$}
+      {update $c$ with the new value $s$}\;
+\end{displayalgorithm}
+
+\begin{comment}
+  https://en.wikipedia.org/wiki/Huffman_coding
+\end{comment}
+
+\begin{comment}
+Pre-order traversal while duplicating nodes and edges can make a
+complete duplicate of a binary tree. It can also be used to make a
+prefix expression (Polish notation) from expression trees: traverse
+the expression tree pre-orderly.
+
+In-order traversal is very commonly used on binary search trees
+because it returns values from the underlying set in order, according
+to the comparator that set up the binary search tree (hence the name).
+
+Post-order traversal while deleting or freeing nodes and values can
+delete or free an entire binary tree. It can also generate a postfix
+representation of a binary tree.
+
+If you know you need to explore the roots before inspecting any
+leaves, you pick pre-order because you will encounter all the roots
+before all of the leaves.
+
+If you know you need to explore all the leaves before any nodes, you
+select post-order because you don't waste any time inspecting roots in
+search for leaves.
+
+If you know that the tree has an inherent sequence in the nodes, and
+you want to flatten the tree back into its original sequence, than an
+in-order traversal should be used. The tree would be flattened in the
+same way it was created. A pre-order or post-order traversal might not
+unwind the tree back into the sequence which was used to create it.
+\end{comment}
+
+\index{OpenMP!tasks|)}

@@ -81,7 +81,6 @@ it detects. The default behaviour, where the full run is aborted, is
 equivalent to your code having the following
 call\indexmpi{MPI_Comm_set_errhandler}\footnote{The routine
   \n{MPI\_Errhandler\_set} is deprecated.}:
-\indexmpi{MPI_ERRORS_ARE_FATAL}\indexmpi{MPI_ERRORS_RETURN}
 \begin{verbatim}
 MPI_Comm_set_errhandler(MPI_COMM_WORLD,MPI_ERRORS_ARE_FATAL);
 \end{verbatim}
@@ -90,13 +89,15 @@ Another simple possibility is to specify
 MPI_Comm_set_errhandler(MPI_COMM_WORLD,MPI_ERRORS_RETURN);
 \end{verbatim}
 which gives you the opportunity to write code that handles the error
-return value.
+return value. The values \indexmpidef{MPI_ERRORS_ARE_FATAL} and
+\indexmpidef{MPI_ERRORS_RETURN} are of type \indexmpidef{MPI_Errhandler}.
 
 In most cases where an MPI error occurs a complete abort is the
 sensible thing, since there are few ways to recover. The second
 possibility can for instance be used to print out debugging
 information:
 \begin{verbatim}
+int ierr;
 ierr = MPI_Something();
 if (ierr!=0) {
     // print out information about what your programming is doing
@@ -108,7 +109,8 @@ For instance,
 Fatal error in MPI_Waitall: 
 See the MPI_ERROR field in MPI_Status for the error code
 \end{verbatim}
-You could code this as\indexmpi{MPI_Error_string}\indexmpi{MPI_ERROR}
+You could then retrieve the \indexmpishow{MPI_ERROR} field of the
+status, and print out an error string with \indexmpidef{MPI_Error_string}:
 \begin{verbatim}
 MPI_Comm_set_errhandler(MPI_COMM_WORLD,MPI_ERRORS_RETURN);
 ierr = MPI_Waitall(2*ntids-2,requests,status);
@@ -126,6 +128,15 @@ One cases where errors can be handled is that of \emph{MPI file
   I/O}\indexterm{MPI!I/O}: if an output file has the wrong
 permissions, code can possibly progress without writing data, or
 writing to a temporary file.
+
+MPI operators (\indexmpishow{MPI_Op}) do not return an error code. In case of
+an error they call \n{MPI_Abort}; if \indexmpishow{MPI_ERRORS_RETURN}
+is the error handler, errors may be silently ignore.
+
+You can create your own error handler with
+\indexmpidef{MPI_Comm_create_errhandler}, which is then installed with
+\indexmpishow{MPI_Comm_set_errhandler}. You can retrieve the error
+handler with \indexmpishow{MPI_Comm_get_errhandler}.
 
 \Level 0 {Fortran issues}
 \label{sec:mpi-fortran}

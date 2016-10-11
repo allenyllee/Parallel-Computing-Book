@@ -1,0 +1,6 @@
+// commsplittype.c
+MPI_Comm_split(MPI_COMM_WORLD,MPI_COMM_TYPE_SHARED,mytid,&sharedcomm);
+MPI_Comm_rank(sharedcomm,&new_nprocs);
+MPI_Comm_rank(sharedcomm,&new_procno);
+
+ASSERT(new_procno<CORES_PER_NODE);    

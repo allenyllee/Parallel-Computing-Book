@@ -1,0 +1,403 @@
+% -*- latex -*-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Parallel Programming in MPI and OpenMP'
+%%%% by Victor Eijkhout, copyright 2012-6
+%%%%
+%%%% omp-sync.tex : synchronization
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\index{synchronization!in OpenMP|(}
+
+In the constructs for declaring parallel regions above, you had little control over 
+in what order threads executed the work they were assigned.
+This section will discuss \emph{synchronization} constructs: ways of telling
+threads to bring a certain order to the sequence in which they do things.
+
+\begin{itemize}
+\item \texttt{critical}: a section of code can only be executed by one
+  thread at a time; see~\ref{sec:critical}.
+\item \texttt{atomic} Update of a single memory location. Only certain
+  specified syntax pattterns are supported. This was added in order to
+  be able to use hardware support for atomic updates.
+\item \texttt{barrier}: section~\ref{sec:ompbarrier}.
+\item \texttt{ordered}: section~\ref{sec:omp-ordered}.
+\item locks: section \ref{ompref:locks}.
+\item \texttt{flush}: section \ref{sec:omp:flush}.
+\item \texttt{nowait}: section~\ref{sec:omp-nowait}.
+\end{itemize}
+
+\Level 0 {Barrier}
+\label{sec:ompbarrier}
+
+A barrier defines a point in the code where all active threads will stop
+until all threads have arrived at that point. With this, you can guarantee that
+certain calculations are finished. For instance, in this code snippet, computation 
+of~\n{y} can not proceed until another thread has computed its value of~\n{x}.
+\begin{verbatim}
+#pragma omp parallel 
+{
+  int mytid = omp_get_thread_num();
+  x[mytid] = some_calculation();
+  y[mytid] = x[mytid]+x[mytid+1];
+}
+\end{verbatim}
+This can be guaranteed with a \indexpragma{barrier} pragma:
+\begin{verbatim}
+#pragma omp parallel 
+{
+  int mytid = omp_get_thread_num();
+  x[mytid] = some_calculation();
+#pragma omp barrier
+  y[mytid] = x[mytid]+x[mytid+1];
+}
+\end{verbatim}
+
+Apart from the barrier directive, which inserts an explicit barrier,
+OpenMP has \emph{implicit barriers}\index{omp!barrier!implicit} after
+a load sharing construct. Thus the following code is well defined:
+\begin{verbatim}
+#pragma omp parallel 
+{
+#pragma omp for
+  for (int mytid=0; mytid<number_of_threads; mytid++)
+    x[mytid] = some_calculation();
+#pragma omp for
+  for (int mytid=0; mytid<number_of_threads-1; mytid++)
+    y[mytid] = x[mytid]+x[mytid+1];
+}
+\end{verbatim}
+
+You can also put each parallel loop in a parallel region of its own,
+but there is some overhead associated with creating and deleting the
+team of threads in between the regions.
+
+\Level 1 {Implicit barriers}
+
+At the end of a parallel region the team of threads is dissolved and
+only the master thread continues. Therefore, there is an
+\emph{implicit barrier at the end of a parallel region}%
+\index{parallel region!barrier at the end of}.
+
+There is some \emph{barrier behaviour}\index{omp!for!barrier
+  behaviour} associated with \n{omp for} loops and other
+\emph{worksharing constructs}\index{worksharing constructs!implied
+  barriers at} (see section~\ref{sec:workshare}).  For instance, there
+is an \indexterm{implicit barrier} at the end of the loop. This
+barrier behaviour can be cancelled with the \indexclause{nowait}
+clause.
+
+You will often see the idiom
+\begin{verbatim}
+#pragma omp parallel
+{
+#pragma omp for nowait
+  for (i=0; i<N; i++)
+    a[i] = // some expression
+#pragma omp for
+  for (i=0; i<N; i++)
+    b[i] = ...... a[i] ......
+\end{verbatim}
+Here the \n{nowait} clause implies that threads can start on the second loop
+while other threads are still working on the first. Since the two loops use the same
+schedule here, an iteration that uses \n{a[i]} can indeed rely on it that that 
+value has been computed.
+
+\Level 0 {Mutual exclusion}
+
+Sometimes it is necessary to let only one thread execute a piece of code.
+Such a piece of code is called a \indexterm{critical section}, and
+OpenMP has several mechanisms for realizing this.
+
+The most common use of critical sections is to update a variable. Since updating
+involves reading the old value, and writing back the new, this has the possibility
+for a \indexterm{race condition}: another thread reads the current value
+before the first can update it; the second thread the updates to the wrong value.
+
+Critical sections are an easy way to turn an existing code into a correct parallel code.
+However, there are disadvantages to this, and sometimes a more drastic rewrite
+is called for.
+
+\Level 1 {\texttt{critical} and \texttt{atomic}}
+\label{sec:critical}
+
+There are two pragmas for critical sections: \indexpragma{critical} and \indexpragma{atomic}.
+The second one is more limited but has performance advantages.
+
+The typical application of a critical section is to update a variable:
+\begin{verbatim}
+#pragma omp parallel
+{
+  int mytid = omp_get_thread_num();
+  double tmp = some_function(mytid);
+#pragma omp critical
+  sum += tmp;
+}
+\end{verbatim}
+
+\begin{exercise}
+  Consider  a loop where each iteration updates a variable.
+\begin{verbatim}
+#pragma omp parallel for shared(result)
+  for ( i ) {
+      result += some_function_of(i);
+  }
+\end{verbatim}
+  Discuss qualitatively
+  the difference between:
+  \begin{itemize}
+  \item  turning the update statement into a critical section, versus
+  \item letting the threads accumulate into a private variable \n{tmp} as above,
+    and summing these after the loop.
+  \end{itemize}  
+  Do an Ahmdal-style quantitative analysis of the first case, assuming
+  that you do $n$ iterations on $p$ threads, and each iteration has a
+  critical section that takes a fraction~$f$.  Assume the number of
+  iterations~$n$ is a multiple of the number of threads~$p$. Also
+  assume the default static distribution of loop iterations over the
+  threads.
+\end{exercise}
+
+A \n{critical} section works by acquiring a lock, which carries a substantial overhead.
+Furthermore, if your code has multiple critical sections, they are all mutually exclusive:
+if a thread is in one critical section, the other ones are all blocked.
+
+On the other hand, the syntax for \n{atomic} sections is limited to the update
+of a single memory location, but such sections
+are not exclusive and they can be more efficient, since they assume that there is a hardware
+mechanism for making them critical.
+
+The problem with \n{critical} sections being mutually exclusive can be mitigated by naming them:
+\begin{verbatim}
+#pragma omp critical (optional_name_in_parens)
+\end{verbatim}
+
+\Level 0 {Locks}
+\indexterm{lock|(textbf}
+
+OpenMP also has the traditional mechanism of a \indexterm{lock}. A~lock is somewhat similar to 
+a critical section: it guarantees that some instructions can only be performed by one
+process at a time. However, a critical section is indeed about code; a~lock is about data.
+With a lock you make sure that some data elements can only be touched by one process at a time.
+
+One simple example of the use of locks is generation of a \indexterm{histogram}.
+A~histogram consists of a number of bins, that get updated depending on some data.
+Here is the basic structure of such a code:
+\begin{verbatim}
+int count[100];
+float x = some_function();
+int ix = (int)x;
+if (ix>=100)
+  error();
+else
+  count[ix]++;
+\end{verbatim}
+It would be possible to guard the last line:
+\begin{verbatim}
+#pragma omp critical
+  count[ix]++;
+\end{verbatim}
+but that is unnecessarily restrictive. If there are enough bins in the
+histogram, and if the \n{some_function} takes enough time, there are unlikely to be
+conflicting writes. The solution then is to create an array of locks, with
+one lock for each \n{count} location.
+
+Create/destroy:
+\begin{verbatim}
+void omp_init_lock(omp_lock_t *lock);
+void omp_destroy_lock(omp_lock_t *lock);
+\end{verbatim}
+Set and release:
+\begin{verbatim}
+void omp_set_lock(omp_lock_t *lock);
+void omp_unset_lock(omp_lock_t *lock);
+\end{verbatim}
+Since the set call is blocking, there is also 
+\begin{verbatim}
+omp_test_lock();
+\end{verbatim}
+
+Unsetting a lock needs to be done by the thread that set it.
+
+Lock operations implicitly have a \indexpragma{flush}.
+
+\begin{exercise}
+  \label{ex:loc-deadlock}
+  %% https://computing.llnl.gov/tutorials/openMP/samples/C/omp_bug5.c
+  %% I think this is fundamentally broken
+  In the following code, one process sets array~A and then uses it to
+  update~B; the other process sets array~B and then uses it to
+  update~A.
+  Argue that this code can deadlock. How could you fix this?
+\begin{verbatim}
+#pragma omp parallel shared(a, b, nthreads, locka, lockb)
+  #pragma omp sections nowait
+    {
+    #pragma omp section
+      {
+      omp_set_lock(&locka);
+      for (i=0; i<N; i++)
+        a[i] = ..
+
+      omp_set_lock(&lockb);
+      for (i=0; i<N; i++)
+        b[i] = .. a[i] ..
+      omp_unset_lock(&lockb);
+      omp_unset_lock(&locka);
+      }
+
+    #pragma omp section
+      {
+      omp_set_lock(&lockb);
+      for (i=0; i<N; i++)
+        b[i] = ...
+
+      omp_set_lock(&locka);
+      for (i=0; i<N; i++)
+        a[i] = .. b[i] ..
+      omp_unset_lock(&locka);
+      omp_unset_lock(&lockb);
+      }
+    }  /* end of sections */
+  }  /* end of parallel region */
+\end{verbatim}
+\end{exercise}
+
+\Level 1 {Nested locks}
+
+A lock as explained above can not be locked if it is already locked.
+A~\indextermsub{nested}{lock} can be locked multiple times by the same
+thread before being unlocked.
+
+\begin{itemize}
+\item \indextermttdef{omp_init_nest_lock}
+\item \indextermttdef{omp_destroy_nest_lock}
+\item \indextermttdef{omp_set_nest_lock}
+\item \indextermttdef{omp_unset_nest_lock}
+\item \indextermttdef{omp_test_nest_lock}
+\end{itemize}
+
+\indexterm{lock|)}
+
+\Level 0 {Example: Fibonacci computation}
+\index{Fibonacci sequence|(}
+
+The \emph{Fibonacci sequence} is recursively defined as
+\[ F(0)=1,\qquad F(1)=1,\qquad F(n)=F(n-1)+F(n-2)
+\hbox{ for $n\geq2$}.
+\]
+We start by sketching the basic single-threaded solution.
+The naive code looks like:
+\begin{verbatim}
+int main() {
+  value = new int[nmax+1];
+  value[0] = 1;
+  value[1] = 1;
+  fib(10);
+}
+
+int fib(int n) {
+  int i, j, result;
+  if (n>=2) {
+    i=fib(n-1); j=fib(n-2);
+    value[n] = i+j;
+  }
+  return value[n];
+}
+\end{verbatim}
+Howver, this is inefficienty, since most intermediate values will be computed
+more than once. We solve this by keeping track of which results are known:
+\begin{verbatim}
+  ...
+  done = new int[nmax+1];
+  for (i=0; i<=nmax; i++)
+    done[i] = 0;
+  done[0] = 1;
+  done[1] = 1;
+  ...
+int fib(int n) {
+  int i, j;
+  if (!done[n]) {
+    i = fib(n-1); j = fib(n-2);
+    value[n] = i+j; done[n] = 1;
+  }
+  return value[n];
+}
+\end{verbatim}
+The OpenMP parallel solution calls for two different ideas. First of all,
+we parallelize the recursion by using tasks (section~\ref{sec:omp:task}:
+\begin{verbatim}
+int fib(int n) {
+  int i, j;
+  if (n>=2) {
+#pragma omp task shared(i) firstprivate(n)
+    i=fib(n-1);
+#pragma omp task shared(j) firstprivate(n)
+    j=fib(n-2);
+#pragma omp taskwait
+    value[n] = i+j;
+  }
+  return value[n];
+}
+\end{verbatim}
+This computes the right solution, but, as in the naive single-threaded solution,
+it recomputes many of the intermediate values.
+
+A naive addition of the \n{done} array leads to data races, and probably an
+incorrect solution:
+\begin{verbatim}
+int fib(int n) {
+  int i, j, result;
+  if (!done[n]) {
+#pragma omp task shared(i) firstprivate(n)
+    i=fib(n-1);
+#pragma omp task shared(i) firstprivate(n)
+    j=fib(n-2);
+#pragma omp taskwait
+    value[n] = i+j;
+    done[n] = 1;
+  }
+  return value[n];
+}
+\end{verbatim}
+For instance, there is no guarantee that the \n{done} array is updated
+later than the \n{value} array, so a thread can think that \n{done[n-1]}
+is true, but \n{value[n-1]} does not have the right value yet.
+
+One solution to this problem is to use a lock, and make sure that,
+for a given index~\n{n}, the values \n{done[n]} and \n{value[n]}
+are never touched by more than one thread at a time:
+\begin{verbatim}
+int fib(int n)
+{
+  int i, j;
+  omp_set_lock( &(dolock[n]) );
+  if (!done[n]) {
+#pragma omp task shared(i) firstprivate(n)
+    i = fib(n-1);
+#pragma omp task shared(j) firstprivate(n)
+    j = fib(n-2);
+#pragma omp taskwait
+    value[n] = i+j;
+    done[n] = 1;
+  }
+  omp_unset_lock( &(dolock[n]) );
+  return value[n];
+}
+\end{verbatim}
+This solution is correct, optimally efficient in the sense that it
+does not recompute anything, and it uses tasks to obtain a parallel execution.
+
+However, the efficiency of this solution is only up to a constant.
+A~lock is still being set, even if a value is already computed and therefore
+will only be read. This can be solved with a complicated use of critical sections,
+but we will forego this.
+
+\index{Fibonacci sequence|)}
+
+\index{synchronization!in OpenMP|)}
+

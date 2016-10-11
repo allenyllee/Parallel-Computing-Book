@@ -1,0 +1,45 @@
+% -*- latex -*-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Parallel Programming in MPI and OpenMP'
+%%%% by Victor Eijkhout, copyright 2012-6
+%%%%
+%%%% mpi-intercomm.tex : about splitting communicators
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\Level 0 {Inter-communicators}
+
+If two disjoint communicators exist, it may be necessary to
+communicate between them. This can of course be done by creating a new
+communicator that overlaps them, but this would be complicated: since
+the `inter' communication happens in the overlap communicator, you
+have to translate its ordering into those of the two worker
+communicators. It would be easier to express messages directly in
+terms of those communicators, and this can be done with
+`inter-communicators'.
+
+\begin{verbatim}
+MPI_Intercomm_create (local_comm, local_leader, bridge_comm, remote_leader, tag, newintercomm, ierr)
+\end{verbatim}
+After this, the intercommunicator can be used in collectives such as
+\begin{verbatim}
+MPI_Bcast (buff, count, dtype, root, comm, ierr)
+\end{verbatim}
+\begin{itemize}
+\item In group~A, the root process passes \n{MPI_ROOT} as
+  `root' value; all others use \n{MPI_NULL_PROC}.
+\item In group~B, all processes use a `root' value that is the
+  rank of the root process in the root group.
+\end{itemize}
+Gather and scatter behave similarly; the allgather is different: all
+send buffers of group~A are concatenated in rank order, and places on
+all processes of group~B.
+
+Inter-communicators can be used if two groups of process work
+asynchronously with respect to each other; another application is
+fault tolerance (section~\ref{mpi:tolerant}).
+

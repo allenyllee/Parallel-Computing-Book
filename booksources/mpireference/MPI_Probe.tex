@@ -1,0 +1,10 @@
+int MPI_Probe( int source, int tag, MPI_Comm comm,
+    MPI_Status *status )
+
+Input parameters:
+source - source rank, or MPI_ANY_SOURCE (integer)
+tag    - tag value or MPI_ANY_TAG (integer)
+comm   - communicator (handle)
+       
+Output parameter:
+status - message status

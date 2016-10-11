@@ -1,0 +1,199 @@
+% -*- latex -*-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Parallel Programming in MPI and OpenMP'
+%%%% by Victor Eijkhout, copyright 2012-6
+%%%%
+%%%% mpi-running.tex : about running MPI programs
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\Level 0 {Starting and running MPI processes}
+\label{sec:mpi-init}
+
+The \ac{SPMD} model may be initially confusing. Even though there is
+only a single source, compiled into a single executable,
+the parallel run comprises a number of independently started MPI
+processes (see section~\ref{sec:mpiexec} for the mechanism).
+
+The following exercises are designed to give you an intuition for this
+one-source-many-processes setup. In the first exercise you will see
+that the mechanism for starting MPI programs starts up independent
+copies. There is nothing in the source that says `and now you become parallel'.
+
+The following exercise shows you that 
+\begin{exercise}
+  \label{ex:hello1}
+  Write a `hello world' program, without any MPI in it,
+  and run it in parallel with \indextermtt{mpiexec} or your local equivalent. 
+
+\begin{tacc}
+    (On TACC machines such as stampede, use \indextermtt{ibrun}, no
+    processor count.)
+\end{tacc}
+
+  Explain the output.
+\end{exercise}
+
+To get a useful MPI program you need at least the calls \indexmpishow{MPI_Init}
+and \indexmpishow{MPI_Finalize} surrounding your code. See section~\ref{sec:mpi-init} for their syntax.
+\begin{pythonnote}
+  There are no initialize and finalize calls: the \n{import} statement
+  performs the initialization.
+\end{pythonnote}
+
+This may look a bit like declaring `this is the parallel part of a
+program', but that's not true: again, the whole code is executed
+multiple times in parallel.
+
+\begin{exercise}
+  \label{ex:hello2}
+  Add the commands \indexmpishow{MPI_Init} and \indexmpishow{MPI_Finalize}
+  to your code. Put three different print statements in your code: one before the init,
+  one between init and finalize, and one after the finalize. Again explain the output.
+\end{exercise}
+
+In the following exercise you will print out the hostname
+of each MPI process; see section~\ref{ref:context} for the syntax.
+\begin{exercise}
+  \label{ex:procname}
+  Now use the command \indexmpidef{MPI_Get_processor_name}
+  in between the
+  init and finalize statement, and print out on what processor your process runs.
+  Confirm that you are able to run a program that uses two different nodes.
+
+  (The character buffer needs to be allocated by your, with size at
+  least \indexmpidef{MPI_MAX_PROCESSOR_NAME}.)
+\begin{tacc}
+TACC nodes have a hostname \n{cRRR-CNN}, where RRR is the rack number, C is the chassis
+number in the rack, and NN is the node number within the chassis. Communication
+is faster inside a rack than between racks!
+\end{tacc}
+\end{exercise}
+
+\Level 1 {Headers}
+
+If you use MPI commands in a program file, be sure to include
+the proper header file, \indexterm{mpi.h} or \indexterm{mpif.h}.
+\begin{verbatim}
+#include "mpi.h" // for C
+#include "mpif.h" ! for Fortran
+\end{verbatim}
+For \emph{Fortran90}\index{Fortran!Fortran90}, many MPI installations
+also have an MPI module, so you can write
+\begin{verbatim}
+use mpi
+\end{verbatim}
+The internals of these files can be different between MPI
+installations, so you can not compile one file against one \n{mpi.h}
+file and another file, even with the same compiler on the same machine,
+against a different MPI.
+
+\Level 1 {Initialization / finalization}
+\label{sec:mpi-init}
+
+Every MPI program has to start with \indextermbus{MPI}{initialization}:
+%
+\mpiRoutineRef{MPI_Init}
+%
+where \indextermtt{argc} and \indextermtt{argv} are the arguments
+of a C language main program:
+\begin{verbatim}
+int main(int argc,char **argv) {
+    ....
+    return 0;
+}
+\end{verbatim}
+(It is allowed to pass \n{NULL} for these arguments.)
+
+The commandline arguments \n{argc} and \n{argv} are only guaranteed to
+be passed to process zero, so the best way to pass commandline information
+is by a broadcast (section~\ref{sec:bcast}).
+
+Note that the \n{MPI_Init} call is one of the few that differs between C and Fortran:
+the C~routine takes the commandline arguments, which Fortran lacks.
+
+If MPI is used in a library, MPI can have already been initialized in a main program.
+For this reason, one can test where \n{MPI_Init} has been called with
+%
+\mpiRoutineRef{MPI_Initialized}
+%
+
+The regular way to conclude an MPI program is:
+%
+\mpiRoutineRef{MPI_Finalize}
+%
+but an abnormal end to a run can be forced by\indexmpi{MPI_Abort}
+\begin{verbatim}
+MPI_Abort(comm,value);
+\end{verbatim}
+This aborts execution on all processes associated with the communicator,
+but many implementations simply abort all processes. The \n{value} parameter
+is returned to the environment.
+
+The corresponding Fortran calls are
+\begin{verbatim}
+call MPI_Init(ierr)
+// your code
+call MPI_Finalize(ierr)
+\end{verbatim}
+
+You can test whether \n{MPI_Finalize} has been called with
+%
+\mpiRoutineRef{MPI_Finalized}
+
+\Level 1 {Information about the run}
+
+Once MPI has been initialized, the \indexmpishow{MPI_INFO_ENV} object contains:
+\begin{itemize}
+\item \n{command}
+  Name of program executed.
+\item  \n{argv}
+  Space separated arguments to command.
+\item  \n{maxprocs}
+  Maximum number of MPI processes to start.
+\item   \n{soft}
+  Allowed values for number of processors.
+\item   \n{host}
+  Hostname.
+\item   \n{arch}
+  Architecture name.
+\item   \n{wdir}
+  Working directory of the MPI process.
+\item   \n{file}
+  Value is the name of a file in which additional information is specified.
+\item   \n{thread_level}
+  Requested level of thread support, if requested before the program started execution.
+\end{itemize}
+Note that these are the requested values; the running program can for instance
+have lower thread support.
+
+\Level 1 {Commandline arguments}
+
+The \indexmpishow{MPI_Init} routines takes a reference to \indextermtt{argc}
+and \indextermtt{argv} for the following reason: the \n{MPI_Init} calls
+filters out the arguments to \indexterm{mpirun} or \indexterm{mpiexec},
+thereby lowering the value of \n{argc} and elimitating some of the \n{argv}
+arguments.
+
+On the other hand, the commandline arguments that are meant for \n{mpiexec}
+wind up in the \indexmpishow{MPI_INFO_ENV} object as a set of key/value pairs.
+
+%% Any \indexterm{commandline argument} to the program can only be
+%% guaranteed to be passed correctly to process zero. Here is a fragment
+%% of code that shows use of commandline arguments.  The program
+%% \n{examples/mpi/c/init.c} takes a single integer commandline argument.
+%% If the user forgets to specify an argument of specifies~\n{-h}, a
+%% usage message is printed and the program aborts, otherwise the
+%% parameter is broadcast to all processes.  
+%% %
+%% \verbatimsnippet{usage}
+%% %
+%% For Fortran:
+%% %
+%% \verbatimsnippet{usage-f}
+
+

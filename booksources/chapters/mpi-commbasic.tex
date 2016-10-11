@@ -1,0 +1,52 @@
+% -*- latex -*-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Parallel Programming in MPI and OpenMP'
+%%%% by Victor Eijkhout, copyright 2012-6
+%%%%
+%%%% mpi-commbasic.tex : communicator basics
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\Level 0 {Communicator basics}
+
+A communicator is an object describing a group of processes. In many 
+applications all processes work together closely coupled, and the
+only communicator you need is \n{MPI_COMM_WORLD}. However, there are 
+circumstances where you want one subset of processes to operate 
+independently of another subset. For example:
+\begin{itemize}
+\item If processors are organized in a $2\times2$ grid, you may want
+  to do broadcasts inside a row or column. 
+\item For an application that includes a producer and a consumer part,
+  it makes sense to split the processors accordingly.
+\end{itemize}
+In this section we will see mechanisms for defining new communicators
+and sending messages between communicators.
+
+An important reason for using communicators is the development of
+software libraries. If the routines in a library use their own communicator
+(even if it is a duplicate of the `outside' communicator), there
+will never be a confusion between message tags inside and outside the 
+library.
+
+There are three predefined communicators:
+\begin{itemize}
+\item \indexmpishow{MPI_COMM_WORLD} comprises all processes that were started 
+  together by \indexterm{mpirun} (or some related program).
+\item \indexmpishow{MPI_COMM_SELF} is the communicator that contains only
+   the current process.
+\item \indexmpishow{MPI_COMM_NULL} is the invalid communicator. Routines
+  that construct communicators can give this as result if an error occurs.
+\end{itemize}
+%Implementationally, communicators are integers, so you can use a 
+%simple test for equality.
+
+In some applications you will find yourself regularly creating new
+communicators, using the mechanisms described below. In that case, you
+should de-allocate communicators with \indexmpishow{MPI_Comm_free} when
+you're done with them.
+

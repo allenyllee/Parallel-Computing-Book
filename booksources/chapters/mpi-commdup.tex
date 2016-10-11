@@ -1,0 +1,41 @@
+% -*- latex -*-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Parallel Programming in MPI and OpenMP'
+%%%% by Victor Eijkhout, copyright 2012-6
+%%%%
+%%%% mpi-commbasic.tex : communicator basics
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\Level 0 {Duplicating communicators}
+\label{sec:comm-dup}
+
+With \indexmpishow{MPI_Comm_dup} you can make an exact duplicate of a communicator.
+This may seem pointless, but it is actually very useful for the design of
+software libraries. Image that you have a code
+\begin{verbatim}
+MPI_Isend(...); MPI_Irecv(...);
+// library call
+MPI_Waitall(...);
+\end{verbatim}
+and suppose that the library has receive calls. Now it is possible that the 
+receive in the library inadvertently
+catches the message that was sent in the outer environment.
+
+First of all, here is code where the library stores the communicator
+of the calling program:
+%
+\verbatimsnippet{wrongcatchlib}
+
+To prevent this confusion, the library should duplicate the outer communicator,
+and send all messages with respect to its duplicate. Now messages from the user
+code can never reach the library software, since they are on different communicators.
+
+\mpiRoutineRef{MPI_Comm_dup}
+
+\verbatimsnippet{rightcatchlib}
+\verbatimsnippet{catchlibp}

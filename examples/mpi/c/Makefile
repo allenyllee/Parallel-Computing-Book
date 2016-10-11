@@ -24,7 +24,8 @@ APPS = hello init thread \
     commdup_wrong commdup_right commsplit commsplittype \
     cart persist \
     spawn_manager spawn_worker \
-    pingpong mvp2d centraldiff 
+    pingpong mvp2d centraldiff \
+    iotest blockwrite scatterwrite
 
 listapps :
 	@echo ${APPS}
@@ -146,3 +147,5 @@ noregression :
 	fi
 
 include ../../Make.inc
+clean ::
+	@rm -f *.dat

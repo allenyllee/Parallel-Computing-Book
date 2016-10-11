@@ -1,0 +1,7 @@
+// alloc3.c
+int array[nthreads];
+{
+  int t = 2;
+  array += t;
+  array[0] = t;
+}

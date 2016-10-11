@@ -56,13 +56,13 @@ for (int ilocal=0; ilocal<nlocal; ilocal++) {
   by filling in an array and summing the elements. (Yes, you can do it
   without an array, but for purposes of the exercise do it with.)
 
-  Read in the global \n{N} parameter, and make sure that it is a multiple
-  of the number $P$ of processors. Your code should produce an error message and
-  exit immediately if it doesn't.
+  Set a variable \n{N} for the total length of the array, and compute
+  the local number of elements. Make sure you handle the case where
+  $N$ does not divide perfectly by the number of processes.
 
   \begin{itemize}
   \item Now allocate the local parts: each processor should allocate
-    only $N/P$ elements.\\
+    only local elements, not the whole vector.\\
     (Allocate your array as real numbers. Why are integers not a good idea?)
   \item On each processor, initialize the local array
     so that the $i$-th location of the distributed array
@@ -71,7 +71,8 @@ for (int ilocal=0; ilocal<nlocal; ilocal++) {
   \item Now use a collective operation to compute the sum of the array values.
     The right value is $(2N^3+3N^2+N)/6$. Is that what you get?
   \end{itemize}
-  To debug your program, first start with $N=P$.\\
+  (Note that computer arithmetic is not exact: the computed sum will
+  only be accurate up to some relative accuracy.)
 \end{exercise}
 
 \begin{exercise}

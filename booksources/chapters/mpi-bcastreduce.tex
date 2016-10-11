@@ -1,0 +1,231 @@
+% -*- latex -*-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Parallel Programming in MPI and OpenMP'
+%%%% by Victor Eijkhout, copyright 2012-6
+%%%%
+%%%% mpi-bcastreduce.tex : about broadcast & reduce collectives
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\Level 0 {Rooted collectives: broadcast, reduce}
+\label{sec:bcast}
+
+One simple collective is the broadcast, where one process has some
+data that needs to be shared with all others. One scenario is that
+processor zero can parse the commandline arguments of the executable
+and send the values to all other processors.
+Another scenario is that you want one processor to read data from file
+and send it to the other processors: this is likely to be more efficient
+than having every process open the file.
+
+The broadcast call has the following structure:
+\begin{verbatim}
+MPI_Bcast( data..., root , comm);
+\end{verbatim}
+The root is the process that is sending its data.
+Typically, it will be the root of a broadcast tree.
+The \n{comm} argument is a communicator:
+for now you can use \n{MPI_COMM_WORLD}.
+Unlike with send/receive there is no message tag,
+because collectives are blocking, so you can have only one collective active at a
+time. 
+
+The data in a broadcast (or any other MPI operation for that matter)
+is specified as
+\begin{itemize}
+\item A buffer. In~C this is the address in memory of the data. This means
+  that you broadcast a single scalar as \n{MPI_Bcast( &value, ... )},
+  but an array as \n{MPI_Bcast( array, ... )}.
+\item The number of items and their datatype. The allowable datatypes
+  are such things as \n{MPI_INT} and \n{MPI_FLOAT} for~C, and
+  \n{MPI_INTEGER} and \n{MPI_REAL} for Fortran, or more complicated types.
+  See section~\ref{ch:mpi-data} for details.
+\end{itemize}
+\begin{pythonnote}
+  In python it is both possible to send objects, and to send more
+  C-like buffers. The two possibilities correspond (see
+  section~\ref{sec:python-bind}) to different routine names; the
+  buffers have to be created as \n{numpy} objects.
+\end{pythonnote}
+%
+Example: in general we can not assume that all processes get the
+commandline arguments, so we broadcast them from process~0.
+
+\verbatimsnippet{usage}
+
+\mpiRoutineRef{MPI_Bcast}
+
+\begin{exercise}
+  \label{ex:argv-bcast}
+  If you give a commandline argument to a program, that argument is available
+  as a character string as part of the \n{argv,argc} pair that you typically use
+  as the arguments to your main program. You can use the function \n{atoi} to
+  convert such a string to integer.
+
+  Write a program where process~0 looks for an integer on the commandline, and
+  broadcasts it to the other processes. Initialize the buffer on all processes, and
+  let all processes print out the broadcast number,
+  just to check that you solved the problem correctly.
+\end{exercise}
+
+In python we illustrate the native and numpy variants. In the native
+variant the result is given as a function return; in the numpy variant
+the send buffer is reused.
+%
+\verbatimsnippet{bcastp}
+
+\Level 0 {Reduction}
+
+In the broadcast operation a single data item was communicated to all
+processes. Reduction operations go the other way: each process has a
+data item, and these are all brought together into a single item.
+
+Here are the essential elements of a reduction operation:
+\begin{verbatim}
+MPI_Reduce( senddata, recvdata..., operator,
+    root, comm ); 
+\end{verbatim}
+\begin{itemize}
+\item There is the original data, and the data resulting from the
+  reduction. It is a design decision of MPI that it will not by
+  default overwrite the original data. The send data and receive data
+  are of the same size and type: if every processor has one real
+  number, the reduced result is again one real number.
+\item There is a reduction operator. Popular choices are
+  \indexmpishow{MPI_SUM}, \indexmpishow{MPI_PROD} and
+  \indexmpishow{MPI_MAX}, but complicated operators such as finding
+  the location of the maximum value exist. You can also define your
+  own operators; section~\ref{ref:mpi:op-create}.
+\item There is a root process that receives the result of the
+  reduction. Since the non-root processes do not receive the reduced
+  data, they can actually leave the receive buffer undefined.
+\end{itemize}
+
+\verbatimsnippet{reduce}
+
+\mpiRoutineRef{MPI_Reduce}
+
+\begin{exercise}
+  \label{ex:randommax}
+  Write a program where each process computes a random number, and process~0
+  finds and prints the maximum generated value. Let each process print its value,
+  just to check the correctness of your program.
+\begin{book}
+  (See~\ref{ch:random} for a discussion of random number generation.)
+\end{book}
+\end{exercise}
+
+Collective operations can also take an array argument, instead of just a scalar.
+In that case, the operation is applied pointwise to each location in the array.
+
+\begin{exercise}
+  \label{ex:randomcoord}
+  Create on each process an array of length~2 integers, and put the
+  values $1,2$ in it on each process. Do a sum reduction on that
+  array. Can you predict what the result should be?  Code it. Was your
+  prediction right?
+\end{exercise}
+
+\Level 1 {Reduce in place}
+
+On the root, 
+you need two buffers, which could be a significant memory demand
+in the case of a large array to be reduced.
+Therefore, you can specify \indexmpishow{MPI_IN_PLACE} as the send
+buffer on the root. The reduction call then
+uses the value in the receive buffer as the root's contribution to the operation.
+\verbatimsnippet{reduceinplace}
+
+In Fortran the code is less elegant because you can not do
+these address calculations:
+\verbatimsnippet{reduceinplace-f}
+
+\Level 1 {Reduction operations}
+\label{sec:mpi:op-create}
+
+{\catcode`\_=12
+  \begin{tabular}{|lll|}
+    \hline
+  MPI type&meaning&applies to\\ \hline
+  \indexmpidef{MPI_MAX}&maximum&integer, floating point\\
+  \indexmpidef{MPI_MIN}&minimum&\\
+  \indexmpidef{MPI_SUM}&sum&integer, floating point, complex,
+  multilanguage types\\
+  \indexmpidef{MPI_PROD}&product&\\
+  \indexmpidef{MPI_LAND}&logical and&C integer, logical\\
+  \indexmpidef{MPI_LOR}&logical or&\\
+  \indexmpidef{MPI_LXOR}&logical xor&\\
+  \indexmpidef{MPI_BAND}&bitwise and&integer, byte, multilanguage types\\
+  \indexmpidef{MPI_BOR}&bitwise or&\\
+  \indexmpidef{MPI_BXOR}&bitwise xor&\\
+  \indexmpidef{MPI_MAXLOC}&max value and
+  location&\indexmpishow{MPI_DOUBLE_INT} and such\\
+  \indexmpidef{MPI_MINLOC}&min value and location&\\
+  \hline
+\end{tabular}
+}
+
+The \indexmpishow{MPI_MAXLOC} operation yields both the maximum and
+the rank on which it occurs. However, to use it the input should be an
+array of \n{real/int} structs, where the \n{int} is the rank of the number.
+
+For use in reductions and scans it is possible to define your own operator.
+
+\begin{verbatim}
+MPI_Op_create( MPI_User_function *func, int commute, MPI_Op *op);
+\end{verbatim}
+
+\Level 1 {Reduce to all}
+
+We started the explanation of reductions by giving the routine that
+had a root process. This makes sense if, at the end of a program run,
+one process needs to output some summary information. However, in many
+cases all processes need the result of the reduction. For example, if
+you want to scale a vector by its norm:
+\begin{itemize}
+\item the vector norm is the result of a reduction,
+\item but each process needs this value to scale its own part of the
+  vector,
+\item which you could do with a broadcast operation.
+\end{itemize}
+This combination of reduction followed by broadcast happens often
+enough that there is a combined routine: \n{MPI_Allreduce} computes a
+reduction, but leaves the result on each process.
+
+\mpiRoutineRef{MPI_Allreduce}
+
+Example: we give each process a random number, and sum these numbers together.
+The result should be approximately $1/2$ times the number of processes.
+
+\verbatimsnippet{allreducec}
+
+For Python we illustrate both the native and the numpy variant. In the
+numpy variant we create an array for the receive buffer, even though
+only one element is used.
+
+\verbatimsnippet{allreducep}
+
+\begin{exercise}
+  \label{ex:randommaxscale}
+  Extend  exercise \ref{ex:randommax}.
+  Let each process compute a random number,
+  and compute the sum of these numbers using the \n{MPI_Allreduce}
+  routine.
+
+  (The operator is \n{MPI_SUM} for C/Fortran, or \n{MPI.SUM} for
+  Python.)
+  
+  Each process then scales its value
+  by this sum. Compute the sum of the scaled numbers and check that it is~1.
+\end{exercise}
+
+By default MPI will not overwrite the original data with the reduction
+result, but you can tell it to do so
+using the \indexmpishow{MPI_IN_PLACE} specifier:
+
+\verbatimsnippet{allreduceinplace}
+

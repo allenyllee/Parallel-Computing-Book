@@ -1,0 +1,216 @@
+% -*- latex -*-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Parallel Programming in MPI and OpenMP'
+%%%% by Victor Eijkhout, copyright 2012-6
+%%%%
+%%%% omp-parallel.tex : about parallel regions, nesting and stuff.
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\label{sec:parallelregion}
+\index{parallel region|(}
+
+The simplest way to create parallelism in OpenMP is to use
+the \indexpragma{parallel} pragma. A~block preceded by the \n{omp parallel} pragma
+is called a \emph{parallel region}; it
+is executed by a newly created team of threads. 
+This is an instance of the \indexac{SPMD} model: all threads execute the same
+segment of code.
+\begin{verbatim}
+#pragma omp parallel
+{
+  // this is executed by a team of threads
+}
+\end{verbatim}
+It would be pointless to have the block be executed identically by
+all threads. One way to get a meaningful parallel code is to use the function
+\indextermtt{omp_get_thread_num}, to find out which thread you are,
+and execute work that is individual to that thread.
+There is also a function
+\indextermtt{omp_get_num_threads} to find out the total number of threads.
+Both these functions give a number relative to the current team;
+recall from figure~\ref{fig:forkjoin} that new teams can be created recursively.
+
+For instance, if you program computes
+\begin{verbatim}
+result = f(x)+g(x)+h(x)
+\end{verbatim}
+you could parallelize this as
+\begin{verbatim}
+double result,fresult,gresult,hresult;
+#pragma omp parallel
+{ int num = omp_get_thread_num();
+  if (num==0)      fresult = f(x);
+  else if (num==1) gresult = g(x);
+  else if (num==2) hresult = h(x);
+}
+result = fresult + gresult + hresult;
+\end{verbatim}
+
+
+The first thing we want to do is create a team of threads. This
+is done with a \indexterm{parallel region}.
+Here is a very simple example:
+\verbatimsnippet{hello-omp}
+or in Fortran
+\verbatimsnippet{hello-who-omp-f}
+This code corresponds to the model we just discussed:
+\begin{itemize}
+\item Immediately preceding the parallel block, one thread will be
+  executing the code. In the main program this is the \emph{initial
+    thread}\index{threads!initial}.
+\item At the start of the block, a new \indextermsub{team of}{threads} is
+  created, and the thread that was active before the block
+  becomes the \emph{master thread}\index{threads!master} of that team.
+\item After the block only the master thread is active.
+\item Inside the block there is team of threads: each thread in the
+  team executes the body of the block, and it will have access to all
+  variables of the surrounding environment.
+  How many
+  threads there are can be determined in a number of ways; we will get to that later.
+\end{itemize}
+
+\begin{exercise}
+  Make a full program based on this fragment. Insert different print statements
+  before, inside, and after the parallel region.
+  Run this example. How many times is each print statement executed?
+\end{exercise}
+
+You see that the \n{parallel} directive
+\begin{itemize}
+\item Is preceded by a special marker: a \n{#pragma omp} for~C/C++,
+  and the \n{!$OMP} \indexterm{sentinel} for Fortran;
+\item Is followed by a single statement or a block in~C/C++,
+  or followed by a block in Fortran which is delimited by an \n{!$omp end} directive.
+\end{itemize}
+
+Directives look like \indextermsub{cpp}{directives}, but they
+are actually handled by the compiler, not the preprocessor.
+
+\begin{exercise}
+  Take the `hello world' program above, and modify it so that you get
+  multiple messages to you screen, saying
+\begin{verbatim}
+  Hello from thread 0 out of 4!
+  Hello from thread 1 out of 4!
+\end{verbatim}
+  and so on. (The messages may very well appear out of sequence.)
+
+
+  What happens if you set your number of threads larger than the available
+  cores on your computer?
+\end{exercise}
+
+\begin{exercise}
+  What happens if you call \n{omp_get_thread_num} and \n{omp_get_num_threads}
+  outside a parallel region?
+\end{exercise}
+
+\begin{verbatim}
+  omp_get_thread_limit
+\end{verbatim}
+
+\indextermttdef{OMP_WAIT_POLICY} values: \n{ACTIVE,PASSIVE}
+
+\Level 0 {Nested parallelism}
+\index{nested parallelism|(}
+
+What happens if you call a function from inside a parallel region, and
+that function itself contains a parallel region?
+\begin{verbatim}
+int main() {
+  ...
+#pragma omp parallel
+  {
+  ...
+  func(...)
+  ...
+  }
+} // end of main
+void func(...) {
+#pragma omp parallel
+  {
+  ...
+  }
+}
+\end{verbatim}
+
+By default, the nested parallel region will have only one thread. To
+allow nested thread creation, set
+\begin{verbatim}
+OMP_NESTED=true
+ or
+omp_set_nested(1)
+\end{verbatim}
+
+\begin{exercise}
+  Test nested parallelism by writing an OpenMP program as follows:
+  \begin{enumerate}
+  \item Write a subprogram that contains a parallel region.
+  \item\label{ex:nest:sub} Write a main program with a parallel region; call the subprogram both inside and outside the parallel region.
+    \item Insert print statements 
+      \begin{enumerate}
+      \item in the main program outside the parallel region,
+      \item in the parallel region in the main program,
+      \item\label{ex:nest:sub:sub} in the subprogram outside the parallel region,
+      \item in the parallel region inside the subprogram.
+      \end{enumerate}
+  \end{enumerate}
+  Run your program and count how many print statements of each type you get.
+\end{exercise}
+
+Writing subprograms that are called in a parallel region illustrates
+the following point: directives are evaluation with respect to the
+\emph{dynamic scope}\index{parallel region!dynamic scope} of the
+parallel region, not just the lexical scope. In the following example:
+\begin{verbatim}
+#pragma omp parallel
+{
+  f();
+}
+void f() {
+#pragma omp for
+  for ( .... ) {
+    ...
+  }
+}
+\end{verbatim}
+the body of the function~\n{f} falls in the dynamic scope of the
+parallel region, so the for loop will be parallelized.
+
+If the function may be called both from inside and outside parallel
+regions, you can test which is the case with \indextermtt{omp_in_parallel}.
+
+The amount of nested parallelism can be set:
+\begin{verbatim}
+OMP_NUM_THREADS=4,2
+\end{verbatim}
+means that initially a parallel region will have four threads, and
+each thread can create two more threads.
+
+\begin{verbatim}
+OMP_MAX_ACTIVE_LEVELS=123
+
+omp_set_max_active_levels( n )
+n = omp_get_max_active_levels()
+
+OMP_THREAD_LIMIT=123
+
+n = omp_get_thread_limit()
+
+omp_set_max_active_levels
+omp_get_max_active_levels
+omp_get_level
+omp_get_active_level
+omp_get_ancestor_thread_num
+
+omp_get_team_size(level)
+\end{verbatim}
+
+\index{nested parallelism|)}
+\index{parallel region|)}
+

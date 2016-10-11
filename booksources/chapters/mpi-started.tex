@@ -167,9 +167,9 @@ ibrun python-mpi yourprogram.py
 \Level 0 {Language bindings}
 
 \Level 1 {C/C++}
-\index{MPI!C/C++ bindings|see{C/C++, bindings}}
-\index{C!bindings|(}
-\index{C++!bindings|(}
+\index{C!MPI bindigs|see{MPI, C/C++ bindings}}
+\index{C++!MPI bindigs|see{MPI, C/C++ bindings}}
+\index{MPI!C/C++ bindings|(}
 
 The MPI library is written in~C. Thus, its bindings are the most natural
 for that language.
@@ -179,12 +179,12 @@ The \indexterm{boost} library has its own version of MPI.  A~recent
 effort at idiomatic C++ support is \indexterm{MPL}
 \url{http://numbercrunch.de/blog/2015/08/mpl-a-message-passing-library/}.
 
-\index{C!bindings|)}
-\index{C++!bindings|)}
+\index{MPI!C/C++ bindings|)}
 
 \Level 1 {Fortran}
-
-\index{Fortran!bindings|(}
+\index{Fortran!MPI bindings|see{MPI, Fortran bindings}}
+\index{Fortran2008!MPI bindings|see{MPI, Fortran2008 bindings}}
+\index{MPI!Fortran bindings|(}
 
 The \emph{Fortran bindings} for MPI look very much like the C~ones, except that
 each routine has a final \indexterm{error return} parameter.
@@ -194,11 +194,23 @@ each routine has a final \indexterm{error return} parameter.
   like this.
 \end{fortrannote}
 
-\index{Fortran!bindings|)}
+\index{MPI!Fortran2008 bindings|(}
+%
+In the \indextermbus{MPI}{3} standand,
+an MPI implementation providing a Fortran interface must provide a
+module named \n{mpi_f08} that can be used in a Fortran program.
+This defines MPI functions that return an integer result, rather than
+having a final parameter. It also defines proper interfaces, making
+type checking possible. For details see \url{http://mpi-forum.org/docs/mpi-3.1/mpi31-report/node409.htm}.
+%
+\index{MPI!Fortran2008 bindings|)}
+
+\index{MPI!Fortran bindings|)}
 
 \Level 1 {Python}
 \label{sec:python-bind}
-\index{Python!bindings|(}
+\index{Python!MPI bindigs|see{MPI, Python bindings}}
+\index{MPI!Python bindings|(}
 
 The \indextermtt{mpi4py} package of \emph{python bindings}
 is not defined by the MPI
@@ -227,7 +239,7 @@ through Swig or conversion routines.
 Data in \texttt{numpy} can be specified as a simple object,
 or \texttt{[data, (count,displ), datatype]}.
 
-\index{Python!bindings|)}
+\index{MPI!Python bindings|)}
 
 \Level 1 {How to read routine prototypes}
 \label{sec:protos}

@@ -1,0 +1,43 @@
+% -*- latex -*-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Parallel Programming in MPI and OpenMP'
+%%%% by Victor Eijkhout, copyright 2012-6
+%%%%
+%%%% mpi-topo.tex : about communicator topologies
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\Level 0 {Process topologies}
+\label{sec:topology}
+
+In the communicators you have seen so far, processes are linearly ordered.
+In some circumstances the problem you are coding has some structure,
+and expressing the program
+in terms of that structure would be convenient. For this purpose, MPI 
+can define a virtual \indexterm{topology}. There are two types:
+\begin{itemize}
+\item regular, Cartesian, grids; and
+\item general graphs.
+\end{itemize}
+
+\Level 1 {Cartesian grid topology}
+\label{sec:cartesian}
+
+A \indextermsub{Cartesian}{grid} is a structure, typically in 2~or~3 dimensions,
+of points that have two neighbours in each of the dimensions.
+Thus, if a Cartesian grid has sizes $K\times M\times N$, its
+points have coordinates $(k,m,n)$ with $0\leq k<K$ et cetera.
+Most points have six neighbours $(k\pm1,m,n)$, $(k,m\pm1,n)$, $(k,m,n\pm1)$;
+the exception are the edge points. A~grid where edge processors
+are connected through \indexterm{wraparound connections} is called
+a \indextermsub{periodic}{grid}.
+
+The most common use of Cartesian coordinates
+is to find the rank of process by referring to it in grid terms.
+For instance, one could ask `what are my neighbours offset by $(1,0,0)$, 
+$(-1,0,0)$, $(0,1,0)$ et cetera'.
+

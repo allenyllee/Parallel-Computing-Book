@@ -1,0 +1,126 @@
+% -*- latex -*-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Parallel Programming in MPI and OpenMP'
+%%%% by Victor Eijkhout, copyright 2012-6
+%%%%
+%%%% mpi-moredata.tex : more about data
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\Level 0 {More about data}
+
+\Level 1 {Datatype signatures}
+\label{sec:signature}
+\index{datatype!signature|(}
+
+With the primitive types it pretty much went
+without saying that if the sender sends an array of doubles, the
+receiver had to declare the datatype also as doubles. With derived
+types that is no longer the case: the sender and receiver can declare
+a different datatype for the send and receive buffer, as long as these
+have the same \indextermbus{datatype}{signature}.
+
+The signature of a datatype is the internal representation of that
+datatype. For instance, if the sender declares a datatype consisting
+of two doubles, and it sends four elements of that type, the receiver
+can receive it as two elements of a type consisting of four doubles.
+
+You can also look at the signature as the form `under the hood' in which MPI
+sends the data.
+
+\index{datatype!signature|)}
+
+\Level 1 {Big data types}
+\index{datatype!big|(}
+
+The \n{size} parameter in MPI send and receive calls is of type integer,
+meaning that it's maximally~$2^{31}-1$. These day computers are big enough
+that this is a limitation. Derived types offer some way out: to send
+a\emph{big data type} of $10^{40}$ elements you would
+\begin{itemize}
+\item create a contiguous type with $10^{20}$ elements, and
+\item send $10^{20}$ elements of that type.
+\end{itemize}
+This often works, but it's not perfect. For instance, the routine
+\indexmpi{MPI_Get_elements} returns the total number of basic elements sent
+(as opposed to \indexmpishow{MPI_Get_count} which would return the number
+of elements of the derived type). Since its output argument is
+of integer type, it can't store the right value.
+
+The \indextermbus{MPI}{3} standard has addressed this
+as follows.
+\begin{itemize}
+\item To preserve backwards compatibility, the \n{size} parameter keeps
+  being of type integer.
+\item The trick with sending elements of a derived type still works, but
+\item There are new routines that can return the correct information about the
+  total amount of data; for instance, \indexmpishow{MPI_Get_elements_x}
+  returns its result as a \n{MPI_Count}.
+\end{itemize}
+
+\index{datatype!big|)}
+
+\Level 1 {Packing}
+\label{sec:pack}
+
+One of the reasons for derived datatypes is dealing with non-contiguous data.
+In older communication libraries this could only be done by \indexterm{packing} data
+from its original containers into a buffer, and likewise unpacking it at the
+receiver into its destination data structures.
+
+MPI offers this packing facility, partly for compatibility with such libraries,
+but also for reasons of flexibility. Unlike with derived datatypes,
+which transfers data atomically, packing routines add data sequentially
+to the buffer and unpacking takes them sequentially. 
+
+This means that 
+one could pack an integer describing how many floating point numbers
+are in the rest of the packed message. 
+Correspondingly, the unpack routine could then investigate the first integer
+and based on it unpack the right number of floating point numbers.
+
+MPI offers the following:
+\begin{itemize}
+\item The \indexmpishow{MPI_Pack} command adds data to a send buffer;
+\item the \indexmpishow{MPI_Unpack} command retrieves data from a receive buffer;
+\item the buffer is sent with a datatype of \indexmpishow{MPI_PACKED}.
+\end{itemize}
+
+With \indexmpishow{MPI_PACK} data elements can be added 
+to a buffer one at a time. The \n{position} parameter is updated
+each time by the packing routine.
+\begin{verbatim}
+int MPI_Pack(
+  void *inbuf, int incount, MPI_Datatype datatype,
+  void *outbuf, int outcount, int *position,
+  MPI_Comm comm);
+\end{verbatim}
+
+Conversely, \indexmpishow{MPI_UNPACK} retrieves one element
+from the buffer at a time. You need to specify the MPI datatype.
+\begin{verbatim}
+int MPI_Unpack(
+  void *inbuf, int insize, int *position,
+  void *outbuf, int outcount, MPI_Datatype datatype,
+  MPI_Comm comm);
+\end{verbatim}
+
+A packed buffer is sent or received with a datatype of
+\indexmpishow{MPI_PACKED}. The sending routine uses the \n{position}
+parameter to specify how much data is sent, but the receiving routine
+does not know this value a~priori, so has to specify an upper bound.
+
+\verbatimsnippet{packunpack}
+
+You can precompute the size of the required buffer as follows:
+\begin{verbatim}
+int MPI_Pack_size(
+  int incount, MPI_Datatype datatype,
+  MPI_Comm comm, int *size);
+\end{verbatim}
+Add one time \indexmpishow{MPI_BSEND_OVERHEAD}.
+

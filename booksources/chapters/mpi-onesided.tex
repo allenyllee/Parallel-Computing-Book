@@ -1,0 +1,676 @@
+% -*- latex -*-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Parallel Programming in MPI and OpenMP'
+%%%% by Victor Eijkhout, copyright 2012-6
+%%%%
+%%%% mpi-onesided.tex : about onesided communication
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\index{communication!one-sided|(}
+\index{target!active synchronization|see{active target synchronization}}
+\index{target!passive synchronization|see{passive target synchronization}}
+
+Above, you saw  point-to-point operations of the two-sided type:
+they require the co-operation of a sender and
+receiver. This co-operation could be loose: you can post a receive
+with \n{MPI_ANY_SOURCE} as sender, but there had to be both a send and
+receive call. In this section, you will see one-sided communication 
+routines where a process
+can do a `put' or `get' operation, writing data to or reading it from
+another processor, without that other processor's involvement.
+
+In one-sided MPI operations, also known as \acf{RDMA} or 
+\acf{RMA} operations, there
+are still two processes involved: the \indexterm{origin}, which is the
+process that originates the transfer, whether this is a `put' or a `get',
+and the \indexterm{target} whose
+memory is being accessed. Unlike with two-sided operations, the target
+does not perform an action that is the counterpart of the action on the origin.
+
+That does not mean that the origin can access arbitrary data on the target
+at arbitrary times. First of all, one-sided communication in MPI
+is limited to accessing only a specifically declared memory area on the target:
+the target declares an area of
+user-space memory that is accessible to other processes. This is known
+as a \indexterm{window}. Windows limit how origin processes can access
+the target's memory: you can only `get' data from a window or `put' it
+into a window; all the other memory is not reachable from other processes.
+
+The alternative to having windows is to use \indexterm{distributed shared memory}
+or \indexterm{virtual shared memory}: memory is distributed but acts as if
+it shared. The so-called \acf{PGAS} languages such as \ac{UPC} use this model.
+The MPI \ac{RMA} model makes it possible to 
+lock a window which makes programming slightly more cumbersome, but the
+implementation more efficient.
+
+Within one-sided communication, MPI has two modes: active RMA and
+passive RMA. In \indextermsub{active}{RMA}, or \indexterm{active target synchronization},
+the target sets boundaries on the time period (the `epoch')
+during which its window can be accessed.
+The main advantage
+of this mode is that the origin program can perform many small transfers, which are
+aggregated behind the scenes. Active RMA acts much like asynchronous transfer with a
+concluding \n{Waitall}.
+
+In \indextermsub{passive}{RMA}, or \indexterm{passive target synchronization},
+the target process puts no limitation on when its window can be accessed.
+(\ac{PGAS} languages such as \ac{UPC} are based on this model: data is 
+simply read or written at will.)
+While 
+intuitively it is attractive to be able to write to and read from a target at
+arbitrary time,
+there are problems. For instance, it requires a remote agent on the target,
+which may interfere with execution of the main thread, or conversely it may not be
+activated at the optimal time. Passive RMA is also very hard to debug and can lead
+to strange deadlocks.
+
+%% McLaren says use an info object
+
+\Level 0 {Windows}
+\label{sec:windows}
+\index{window|(}
+
+In one-sided communication, each processor can make an area of memory
+available, called a \indexterm{window}. This has the following
+characteristics:
+\begin{itemize}
+\item The window is defined on a communicator, so the create call
+  is collective.
+\item The window size can be set individually on each process.
+  A~zero size is allowed, but since window creation is collective,
+  it is not possible to skip the create call.
+\end{itemize}
+\begin{figure}[ht]
+  \includegraphics[scale=.1]{one-sided-window}
+  \caption{Collective definition of a window for one-sided data access}
+  \label{fig:window}
+\end{figure}
+defined with respect to a communicator: each process specifies a
+memory area. Routine for creating and releasing windows
+are collective, so each process \emph{has} to
+call them; see figure~\ref{fig:window}. 
+\begin{verbatim}
+MPI_Info info;
+MPI_Win window;
+MPI_Win_create( /* memory area */, info, comm, &window );
+MPI_Win_free( &window );
+\end{verbatim}
+(For the \n{info} parameter you can often use \indexmpishow{MPI_INFO_NULL}.)
+While the creation of a window is collective, each
+processor can specify its own window size, including zero, and even the type of the
+elements in it.
+
+\mpiRoutineRef{MPI_Win_create}
+%
+The data array must not be \n{PARAMETER} or \n{static const}.
+
+The size parameter is measured in bytes. In~C this is easily done
+with the \indextermtt{sizeof} operator;
+for doing this calculation in Fortran, see section~\ref{sec:f-sizeof}.
+
+\Level 0 {Active target synchronization: epochs}
+\label{sec:fence}
+
+There are two mechanisms for \indexterm{active target synchronization}, that is,
+one-sided communications where both sides are involved to the extent that they declare
+the communication epoch. In this section we look at the first mechanism,
+which is to use a \indexterm{fence} operation:\indexmpi{MPI_Win_fence}
+\begin{verbatim}
+MPI_Win_fence (int assert, MPI_Win win)
+\end{verbatim}
+This operation is collective on the communicator of the window.
+It is comparable to \n{MPI_Wait} calls for non-blocking communication.
+
+The use of fences is somewhat complicated. The interval between two fences
+is known as an \indexterm{epoch}.
+You can give various hints to the system about this epoch versus the ones
+before and after through the \n{assert} parameter.
+\begin{verbatim}
+MPI_Win_fence((MPI_MODE_NOPUT | MPI_MODE_NOPRECEDE), win);
+MPI_Get( /* operands */, win);
+MPI_Win_fence(MPI_MODE_NOSUCCEED, win);
+\end{verbatim}
+In between the two fences the window is exposed, and while it is you
+should not access it locally. If you absolutely need to access it
+locally, you can use an \ac{RMA} operation for that. Also, there can be only one
+remote process that does a \n{put}; multiple \n{accumulate} accesses are allowed.
+
+Fences are, together with other window calls, collective operations. That means they 
+imply some amount of synchronization between processes. Consider:
+\begin{verbatim}
+MPI_Win_fence( ... win ... ); // start an epoch
+if (mytid==0) // do lots of work
+else // do almost nothing
+MPI_Win_fence( ... win ... ); // end the epoch
+\end{verbatim}
+and assume that all processes execute the first fence more or less at the same time.
+The zero process does work before it can do the second fence call, but all other
+processes can call it immediately. However, they can not finish that second fence call
+until all one-sided communication is finished, which means they wait for the zero process.
+\begin{figure}[ht]
+  \includegraphics[scale=.4]{graphics/lonestar-twonode-put}%putblock
+  \caption{A trace of a one-sided communication epoch where process zero only originates
+  a one-sided transfer}
+  \label{fig:putblock}
+\end{figure}
+\verbatimsnippet{putblock}
+
+As a further restriction, you can not mix \n{Get} with \n{Put} or \n{Accumulate}
+calls in a single epoch. Hence, we can characterize an epoch as an
+\indextermsub{access}{epoch} on the origin, and
+as an \indextermsub{exposure}{epoch} on the target.
+
+Assertions are an integer parameter: you can add or logical-or values.
+The value zero is always correct. For further information, see
+section~\ref{sec:mpi-assert}.
+
+%% Local assertions are:
+%% \begin{itemize}
+%%   \item\indexmpishow{MPI_MODE_NOSTORE} The preceding epoch did not store
+%%     anything in this window.
+%%   \item\indexmpishow{MPI_MODE_NOPUT} The following epoch will not store
+%%     anything in this window.
+%% \end{itemize}
+%% Global assertions:
+%% \begin{itemize}
+%%   \item\indexmpishow{MPI_MODE_NOPRECEDE} This process made no \ac{RMA}
+%%     calls in the preceding epoch.  
+%%   \item\indexmpishow{MPI_MODE_NOSUCCEED} This process will make no
+%%     \ac{RMA} calls in the next epoch.
+%% \end{itemize}
+
+\index{window|)}
+
+\Level 0 {Put, get, accumulate}
+\label{sec:putget}
+
+Window areas are 
+accessible to other processes in the communicator by specifying the
+process rank and an offset from the base of the window.
+
+The \n{MPI_Put} routine is used to put data in the window
+of a target process
+%
+\mpiRoutineRef{MPI_Put}
+%
+The data is written in the buffer of the target window,
+using the window parameters that were specified on the target.
+Specifically, data is written starting at
+\[ \mathtt{window\_base} + \mathtt{target\_disp}\times \mathtt{disp\_unit}. \]
+
+\begin{fortrannote}
+  The \n{disp_unit} variable is declared as 
+\begin{verbatim}
+integer(kind=MPI_ADDRESS_KIND) :: displacement
+\end{verbatim}
+  Specifying a literal constant, such as~\n{0}, can lead to bizarre
+  runtime errors.
+\end{fortrannote}
+
+Here is a single put operation. Note that the window create and window fence calls
+are collective, so they have to be performed on all processors
+of the communicator that was used in the create call.
+\verbatimsnippet{putblock}
+
+\begin{exercise}
+  \label{ex:randomput}
+  Write code where process~0 randomly writes in the window on 1~or~2.
+  
+  \verbatimsnippet{randomputskl}
+\end{exercise}
+
+The \indexmpishow{MPI_Get} call is very similar.
+\begin{verbatim}
+int MPI_Get(void *origin_addr, int origin_count, MPI_Datatype
+            origin_datatype, int target_rank, MPI_Aint target_disp,
+            int target_count, MPI_Datatype target_datatype, MPI_Win
+            win)
+\end{verbatim}
+
+\verbatimsnippet{getblock}
+
+A~third one-sided routine
+is \indexmpishow{MPI_Accumulate} which does a reduction operation on the results
+that are being put:
+
+\begin{verbatim}
+MPI_Accumulate (
+  void *origin_addr, int origin_count, MPI_Datatype origin_datatype, 
+  int target_rank,
+  MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype,
+  MPI_Op op,MPI_Win window)
+\end{verbatim}
+
+\begin{exercise}
+  Implement an `all-gather' operation using one-sided communication:
+  each processor stores a single number, and you want each processor
+  to build up an array that contains the values from all
+  processors. Note that you do not need a special case for a processor
+  collecting its own value: doing `communication' between a processor
+  and itself is perfectly legal.
+\end{exercise}
+
+Accumulate is a reduction with remote result. As with \n{MPI_Reduce}, the 
+order in which the operands are accumulated is undefined. 
+The same predefined operators are available, but no
+user-defined ones. There is one extra operator: \indexmpishow{MPI_REPLACE},
+this has the effect that only the last result to arrive is retained.
+
+\Level 1 {Put vs Get}
+
+\begin{verbatim}
+while(!converged(A)){ 
+  update(A); 
+  MPI_Win_fence(MPI_MODE_NOPRECEDE, win); 
+  for(i=0; i < toneighbors; i++) 
+    MPI_Put(&frombuf[i], 1, fromtype[i], toneighbor[i], 
+                         todisp[i], 1, totype[i], win); 
+  MPI_Win_fence((MPI_MODE_NOSTORE | MPI_MODE_NOSUCCEED), win); 
+  } 
+\end{verbatim}
+\begin{verbatim}
+  while(!converged(A)){ 
+  update_boundary(A); 
+  MPI_Win_fence((MPI_MODE_NOPUT | MPI_MODE_NOPRECEDE), win); 
+  for(i=0; i < fromneighbors; i++) 
+    MPI_Get(&tobuf[i], 1, totype[i], fromneighbor[i], 
+                    fromdisp[i], 1, fromtype[i], win); 
+  update_core(A); 
+  MPI_Win_fence(MPI_MODE_NOSUCCEED, win); 
+  } 
+\end{verbatim}
+
+\Level 1 {Request-based operations}
+
+Analogous to \n{MPI_Isend} there are request based one-sided operations:
+%
+\mpiRoutineRef{MPI_Rput}
+%
+and similarly \indexmpishow{MPI_Rget} and \indexmpishow{MPI_Raccumulate}.
+
+These only apply to passive target synchronization.
+Any \indexmpishow{MPI_Win_flush...} call also terminates these transfers.
+
+\Level 1 {Assertions}
+\label{sec:mpi-assert}
+
+The \n{MPI_Win_fence} call, as well \n{MPI_Win_start} and such, take an argument
+through which assertions can be passed about the activity before, after, and during the epoch.
+The value zero is always allowed, by you can make your program more efficient by specifying
+one or more of the following, combined by bitwise OR in C/C++ or
+\n{IOR} in Fortran.
+
+\begin{description}
+\item[\texttt{MPI\_WIN\_START}] Supports the option:
+  \begin{description}
+    \item[\texttt{MPI\_MODE\_NOCHECK}] the matching calls to \n{MPI_WIN_POST} have already
+    completed on all target processes when the call to \n{MPI_WIN_START} is
+    made. The nocheck option can be specified in a start call if and
+    only if it is specified in each matching post call. This is similar
+    to the optimization of ``ready-send'' that may save a handshake when
+    the handshake is implicit in the code. (However, ready-send is
+    matched by a regular receive, whereas both start and post must
+    specify the nocheck option.)
+  \end{description}
+\item[\texttt{MPI\_WIN\_POST}] supports the following options:
+  \begin{description}
+  \item[\texttt{MPI\_MODE\_NOCHECK}] the matching calls to \n{MPI_WIN_START} have not
+    yet occurred on any origin processes when the call to \n{MPI_WIN_POST}
+    is made. The nocheck option can be specified by a post call if and
+    only if it is specified by each matching start call.
+  \item[\texttt{MPI\_MODE\_NOSTORE}] the local window was not updated by local
+    stores (or local get or receive calls) since last
+    synchronization. This may avoid the need for cache synchronization
+    at the post call.
+  \item[\texttt{MPI\_MODE\_NOPUT}] the local window will not be updated by put or
+    accumulate calls after the post call, until the ensuing (wait)
+    synchronization. This may avoid the need for cache synchronization
+    at the wait call.
+  \end{description}
+\item[\texttt{MPI\_WIN\_FENCE}] supports the following options:
+  \begin{description}
+  \item[\texttt{MPI\_MODE\_NOSTORE}] the local window was not updated by local
+    stores (or local get or receive calls) since last synchronization.
+  \item[\texttt{MPI\_MODE\_NOPUT}] the local window will not be updated by put or
+    accumulate calls after the fence call, until the ensuing (fence)
+    synchronization.
+  \item[\texttt{MPI\_MODE\_NOPRECEDE}] the fence does not complete any sequence of
+    locally issued RMA calls. If this assertion is given by any
+    process in the window group, then it must be given by all
+    processes in the group.
+  \item[\texttt{MPI\_MODE\_NOSUCCEED}] the fence does not start any
+    sequence of locally issued RMA calls. If the assertion is given by
+    any process in the window group, then it must be given by all
+    processes in the group.
+  \end{description}
+\item[\texttt{MPI\_WIN\_LOCK}] supports the following option:
+  \begin{description}
+    \item[\texttt{MPI\_MODE\_NOCHECK}] no other process holds, or will attempt to
+    acquire a conflicting lock, while the caller holds the window
+    lock. This is useful when mutual exclusion is achieved by other
+    means, but the coherence operations that may be attached to the
+    lock and unlock calls are still required.
+  \end{description}
+\end{description}
+
+\begin{wrapfigure}{r}{3in}
+  \includegraphics[scale=.08]{core-update}
+\end{wrapfigure}
+%
+As an example, let's look at \indextermbus{halo}{update}.
+The array~\n{A} is updated using the local values and the halo
+that comes from bordering processors, either through Put or Get operations.
+
+In a first version we separate computation and communication.
+Each iteration has two fences. Between the two fences in the loop body
+we do the \n{MPI_Put} operation; between the second and and first one
+of the next iteration there is only computation, so we add the
+\n{NOPRECEDE} and \n{NOSUCCEED} assertions. The \n{NOSTORE} assertion
+states that the local window was not updated: the Put operation only
+works on remote windows.
+\begin{verbatim}
+for ( .... ) {
+  update(A); 
+  MPI_Win_fence(MPI_MODE_NOPRECEDE, win); 
+  for(i=0; i < toneighbors; i++) 
+    MPI_Put( ... );
+  MPI_Win_fence((MPI_MODE_NOSTORE | MPI_MODE_NOSUCCEED), win); 
+  }
+\end{verbatim}
+
+Next, we split the update in the core part, which can be done purely
+from local values, and the boundary, which needs local and halo
+values. Update of the core can overlap the communication of the halo.
+\begin{verbatim}
+for ( .... ) {
+  update_boundary(A); 
+  MPI_Win_fence((MPI_MODE_NOPUT | MPI_MODE_NOPRECEDE), win); 
+  for(i=0; i < fromneighbors; i++) 
+    MPI_Get( ... );
+  update_core(A); 
+  MPI_Win_fence(MPI_MODE_NOSUCCEED, win); 
+  }
+\end{verbatim}
+The \n{NOPRECEDE} and \n{NOSUCCEED} assertions still hold, but the
+\n{Get} operation implies that instead of \n{NOSTORE} in the
+second fence, we use \n{NOPUT} in the first.
+
+\begin{comment}
+  \begin{itemize}
+  \item \indexmpishow{MPI_MODE_NOCHECK}: this is used with
+    \indexmpishow{MPI_Win_start} and \indexmpishow{MPI_Win_post}; it
+    indicates that when the origin `start' call is made, the target
+    `post' call has already been issued. This is comparable to using
+    \indexmpishow{MPI_Rsend}.
+  \item \indexmpishow{MPI_MODE_NOSTORE}: this is used to specify that
+    the local window was not updated in the preceding epoch.
+  \item \indexmpishow{MPI_MODE_NOPUT}: this is used to specify that a local
+    window will not be used as target in this epoch.
+  \item \indexmpishow{MPI_MODE_NOPRECEDE}: this states that the
+    \indexmpishow{MPI_Win_fence} call does not conclude a sequence of
+    RMA operations. If this assertion is made on any process in a window group,
+    it must be specified by all.
+  \item \indexmpishow{MPI_MODE_NOSUCCEED}: this states that the
+    \indexmpishow{MPI_Win_fence} call is not the start of a sequence of
+    local RMA calls. If any process in a window group specifies this,
+    all process must do so.
+  \end{itemize}
+\end{comment}
+
+\Level 1 {More active target synchronization}
+\label{sec:ref:post-wait}
+
+The `fence' mechanism (section~\ref{ref:fence}) uses a global synchronization on the
+communicator of the window, which may 
+lead to performance inefficiencies if processors are not in step which each other. 
+There is a mechanism that is more fine-grained, by using synchronization only 
+on a processor \indexterm{group}. This takes four different calls, two for starting
+and two for ending the epoch, separately for target and origin.
+\begin{figure}[ht]
+  \includegraphics[scale=.1]{postwait}
+  \caption{Window locking calls in fine-grained active target synchronization}
+  \label{fig:postwait}
+\end{figure}
+
+You start and complete an \indextermsub{exposure}{epoch} with%
+\indexmpi{MPI_Win_post}\indexmpi{MPI_Win_wait}:
+\begin{verbatim}
+int MPI_Win_post(MPI_Group group, int assert, MPI_Win win)
+int MPI_Win_wait(MPI_Win win)
+\end{verbatim}
+In other words, this turns your window into the \indexterm{target} for a remote access.
+
+You start and complete an \indextermsub{access}{epoch} with%
+\indexmpi{MPI_Win_start}\indexmpi{MPI_Win_complete}:
+\begin{verbatim}
+int MPI_Win_start(MPI_Group group, int assert, MPI_Win win)
+int MPI_Win_complete(MPI_Win win)
+\end{verbatim}
+In other words, these calls border the access to a remote window, with the current processor
+being the \indexterm{origin} of the remote access.
+
+In the following snippet a single processor puts data on one
+other. Note that they both have their own definition of the group, and
+that the receiving process only does the post and wait calls.
+\verbatimsnippet{postwaittwo}
+
+\Level 1 {Passive target synchronization}
+\label{sec:ref:passive-sync}
+
+\indexmpi{MPI_Win_lock}\indexmpi{MPI_Win_unlock}
+\begin{verbatim}
+MPI_Win_lock (int locktype, int rank, int assert, MPI_Win win)
+MPI_Win_unlock (int rank, MPI_Win win)
+\end{verbatim}
+
+The \indexmpi{MPI_Fetch_and_op} call atomically retrieves an item from the window
+indicated, and replaces the item on the target by doing an accumulate on it
+with the data on the origin.
+%
+\mpiRoutineRef{MPI_Fetch_and_op}
+
+\Level 0 {More active target synchronization}
+\label{sec:post-wait}
+
+There is a more fine-grained ways of doing 
+\indexterm{active target synchronization}. While fences
+corresponded to a global synchronization of one-sided calls,
+the \n{MPI_Win_start},
+\n{MPI_Win_complete}, \n{MPI_ Win_post}, \n{Win_wait} routines
+are suitable, and possibly more efficient,
+if only a small number of processor pairs is
+involved.  Which routines
+you use depends on whether the processor is an \indexterm{origin} or
+\indexterm{target}.
+
+If the current process is going to have the data in its window accessed,
+you define an \indextermsub{exposure}{epoch} by:
+\begin{verbatim}
+MPI_Win_post( /* group of origin processes */ )
+MPI_Win_wait()
+\end{verbatim}
+This turns the current processor into a target for access operations issued
+by a different process.
+
+If the current process is going to be issuing one-sided operations,
+you define an \indextermsub{access}{epoch} by:
+\begin{verbatim}
+MPI_Win_start( /* group of target processes */ )
+// access operations
+MPI_Win_complete()
+\end{verbatim}
+This turns the current process into the origin of a number of
+one-sided access operations.
+
+Both pairs of operations declare a
+\indextermbus{group of}{processors}; see section~\ref{sec:comm-group}
+for how to get such a group from a communicator.
+On an origin processor you would specify a group that includes the targets
+you will interact with, on a target processor you specify a group
+that includes the possible origins.
+
+\Level 0 {Passive target synchronization}
+\label{sec:passive-sync}
+
+In \indexterm{passive target synchronization} only the origin is
+actively involved: the target makes no calls whatsoever.
+This means that the origin process remotely locks the window
+on the target.
+
+During an access epoch, a process can initiate and finish a one-sided
+transfer.
+\begin{verbatim}
+If (rank == 0) {
+  MPI_Win_lock (MPI_LOCK_EXCLUSIVE, 1, 0, win);
+  MPI_Put (outbuf, n, MPI_INT, 1, 0, n, MPI_INT, win);
+  MPI_Win_unlock (1, win);
+}
+\end{verbatim}
+The two lock types are:
+\begin{itemize}
+\item \indexmpishow{MPI_LOCK_SHARED} which should be used for \n{Get}
+  calls: since multiple processors are allowed to read from a window
+  in the same epoch, the lock can be shared.
+\item \indexmpishow{MPI_LOCK_EXCLUSIVE} which should be used for
+  \n{Put} and \n{Accumulate} calls: since only one processor is
+  allowed to write to a window during one epoch, the lock should be
+  exclusive.
+\end{itemize}
+These routines make MPI behave like a shared memory system; the
+instructions between locking and unlocking the window effectively
+become \indexterm{atomic operations}.
+
+The above mechanism is of limited use.
+Suppose processor zero has a data structure \n{work_table}
+with items that need to be processed. A~counter \n{first_work}
+keeps track of the lowest numbered item that still needs processing.
+You can imagine the following
+\indexterm{master-worker} scenario:
+\begin{itemize}
+\item Each process connects to the master,
+\item inspects the \n{first_work} variable,
+\item retrieves the corresponding work item, and
+\item increments the \n{first_work} variable.
+\end{itemize}
+It is important here to avoid a \indexterm{race condition}
+(see section \HPSCref{sec:shared-lock}) that would result
+from a second process reading the \n{first_work} variable 
+before the first process could have updated it. Therefore, the reading
+and updating needs to be an \indexterm{atomic operation}.
+
+Unfortunately, you can not have a put and get call in the same access
+epoch. For this reason, MPI version~3 has added certain atomic
+operations, such as \indexmpishow{MPI_Fetch_and_op}.
+
+\Level 0 {Details}
+
+\Level 1 {Window memory}
+\label{sec:mpi-alloc}
+
+MPI Windows are strange objects. You can create them from user memory,
+that is, from arrays that are normally declared in your program, or
+you can use memory allocated by  MPI. In that case,
+the MPI specification allows that the memory of a window can be 
+separate from the regular program memory. The routine \indexmpishow{MPI_Alloc_mem}
+can return a pointer to such priviliged memory.
+
+%% Sometimes an architecture has memory that is shared between processes,
+%% or that otherwise is fast for one-sided communication. To put a window
+%% in such memory, it can be placed in memory that is especially
+%% allocated:
+
+\mpiRoutineRef{MPI_Alloc_mem}
+
+\begin{verbatim}
+MPI_Free_mem()
+\end{verbatim}
+These calls reduce to \n{malloc} and \n{free} if there is no special
+memory area; SGI is an example where such memory does exist.
+
+\Level 1 {Window information}
+
+The \indexmpishow{MPI_Info} parameter can be used to pass implementation-dependent 
+information:
+\begin{verbatim}
+MPI_Info info ;
+int error ;
+error = MPI_Info_create ( &info ) ;
+error = MPI_Info_set ( info , "no_locks" , "true" ) ;
+/* Use the info object*/
+error = MPI_Info_free ( &info ) ;
+\end{verbatim}
+
+\begin{verbatim}
+MPI_Win_get_attr(win, MPI_WIN_BASE, &base, &flag), 
+MPI_Win_get_attr(win, MPI_WIN_SIZE, &size, &flag), 
+MPI_Win_get_attr(win, MPI_WIN_DISP_UNIT, &disp_unit, &flag), 
+MPI_Win_get_attr(win, MPI_WIN_CREATE_FLAVOR, &create_kind, &flag), and 
+MPI_Win_get_attr(win, MPI_WIN_MODEL, &memory_model, &flag) will return in base a pointer to the start of the window win, and will return in size, disp_unit, create_kind, and memory_model pointers to the size, displacement unit of the window, the kind of routine used to create the window, and the memory model, respectively.
+\end{verbatim}
+
+\begin{verbatim}
+int MPI_Win_get_group(MPI_Win win, MPI_Group *group) 
+MPI_Win_get_group(win, group, ierror) 
+TYPE(MPI_Win), INTENT(IN) :: win 
+TYPE(MPI_Group), INTENT(OUT) :: group 
+INTEGER, OPTIONAL, INTENT(OUT) :: ierror
+\end{verbatim}
+
+\begin{verbatim}
+int MPI_Win_set_info(MPI_Win win, MPI_Info info)
+MPI_Win_set_info(win, info, ierror)
+TYPE(MPI_Win), INTENT(IN) :: win
+TYPE(MPI_Info), INTENT(IN) :: info
+INTEGER, OPTIONAL, INTENT(OUT) :: ierror
+
+int MPI_Win_get_info(MPI_Win win, MPI_Info *info_used)
+MPI_Win_get_info(win, info_used, ierror)
+TYPE(MPI_Win), INTENT(IN) :: win
+TYPE(MPI_Info), INTENT(OUT) :: info_used
+INTEGER, OPTIONAL, INTENT(OUT) :: ierror
+\end{verbatim}
+
+\Level 0 {Implementation}
+\index{communication!one-sided, implementation of|(}
+
+You may wonder how one-sided communication is realized\footnote{For
+  more on this subject, see~\cite{thakur:ijhpca-sync}.}. Can a processor
+somehow get at another processor's data? Unfortunately, no.
+
+Active target synchronization is implemented in terms of two-sided communication.
+Imagine that the first fence operation does nothing, unless it concludes prior
+one-sided operations. The Put and Get calls do nothing involving communication,
+except for marking with what processors they exchange data.
+The concluding fence is where everything happens: first a global operation
+determines which targets need to issue send or receive calls, then the
+actual sends and receive are executed.
+
+\begin{exercise}
+  Assume that only Get operations are performed during an epoch. 
+  Sketch how these are translated to send/receive pairs. 
+  The problem here is how the senders find out that they need to send.
+  Show that you can solve this with an \indexmpishow{MPI_Scatter_reduce} call.
+\end{exercise}
+
+The previous paragraph noted that a collective operation was necessary
+to determine the two-sided traffic. Since collective operations induce
+some amount of synchronization, you may want to limit this.
+
+\begin{exercise}
+  Argue that the mechanism with window post/wait/start/complete operations
+  still needs a collective, but that this is less burdensome.
+\end{exercise}
+
+Passive target synchronization needs another mechanism entirely.  Here
+the target process needs to have a background task (process, thread,
+daemon,\ldots) running that listens for requests to lock the
+window. This can potentially be expensive.
+
+\index{communication!one-sided, implementation of|)}
+\index{communication!one-sided|)}
+

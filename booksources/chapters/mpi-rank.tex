@@ -1,0 +1,56 @@
+% -*- latex -*-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Parallel Programming in MPI and OpenMP'
+%%%% by Victor Eijkhout, copyright 2012-6
+%%%%
+%%%% mpi-rank.tex : comm size and rank and such
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\Level 0 {Processor identification}
+\label{sec:rank-size}
+
+Since all processes in an MPI job are instantiations of the same executable,
+you'd think that they all execute the exact same instructions,
+which would not be terribly useful.
+To distinguish between processors, MPI provides two calls
+\begin{enumerate}
+\item \indexmpishow{MPI_Comm_size} reports how many processes there are in all; and
+\item \indexmpishow{MPI_Comm_rank} states what the number of the process is.
+\end{enumerate}
+In other words, each process can find out `I~am process~5
+out of a total of~20'.
+
+\mpiRoutineRef{MPI_Comm_size}
+%
+and
+%
+\mpiRoutineRef{MPI_Comm_rank}
+
+\begin{exercise}
+  \label{ex:hello3}
+  Write a program where each process prints out message
+  reporting its number, and how many processes there are.
+
+  Write a second version of this program, where each process opens a
+  unique file and writes to it. \emph{On some clusters this may not be
+    advisable if you have large numbers of processors, since it can
+    overload the file system.}
+\end{exercise}
+
+\begin{exercise}
+  \label{ex:hello4}
+  Write a program where only the process with number zero
+  reports on how many processes there are in total.
+\end{exercise}
+
+\endinput
+This is probably about the simplest MPI program:
+\verbatimsnippet{hello}
+%
+\verbatimsnippet{hellop}
+

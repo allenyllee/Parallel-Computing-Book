@@ -1,0 +1,83 @@
+% -*- latex -*-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Parallel Programming in MPI and OpenMP'
+%%%% by Victor Eijkhout, copyright 2012-6
+%%%%
+%%%% mpi-proc.tex : about point-to-point communication
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\Level 0 {Process management}
+\label{sec:mpi-dynamic}
+
+The first version of MPI did not contain any process management
+routines, even though the earlier \indexterm{PVM} project did have
+that functionality. Process management was later added with MPI-2.
+
+Unlike what you might think, newly added processes do not become part
+of \n{MPI_COMM_WORLD}; rather, they get their own communicator, and an
+\indexterm{intercommunicator} is established between this new group
+and the existing one. The first routine is
+\indexmpishow{MPI_Comm_spawn}, which tries to fire up multiple copies
+of a single named executable. You could imagine using this mechanism
+to start the whole of your MPI code, but that is likely to be inefficient.
+
+\mpiRoutineRef{MPI_Comm_spawn}
+
+(If you're feeling sure of yourself, specify \indexmpishow{MPI_ERRCODES_IGNORE}.)
+
+Here is an example of a work manager.
+%
+\verbatimsnippet{spawnmanager}
+%
+\verbatimsnippet{spawnmanagerp}
+%
+You could start up a single copy of this program with 
+\begin{verbatim}
+mpirun -np 1 spawn_manager
+\end{verbatim}
+but with a hostfile that has more than one host. In that case the \indexmpishow{MPI_UNIVERSE_SIZE}
+will tell you to the total number of hosts available. If this option
+is not supported, you can determine yourself how many processes you
+want to spawn. If you exceed the hardware resources, your
+multi-tasking operating system (which is some variant of Unix for
+almost everyone) will use \indexterm{time-slicing}, but you will not
+gain any performance.
+
+The spawned program looks very much like a regular MPI program, with
+its own initialization and finalize calls.
+
+\verbatimsnippet{spawnworker}
+%
+\verbatimsnippet{spawnworkerp}
+
+Spawned processes wind up with a value of \n{MPI_COMM_WORLD} of their
+own, but managers and workers can find each other regardless.
+The spawn routine returns the intercommunicator to the parent; the children
+can find it through \indexmpishow{MPI_Comm_get_parent}. The number of
+spawning processes can be found through
+\indexmpishow{MPI_Comm_remote_size} on the parent communicator.
+
+\mpiRoutineRef{MPI_Comm_remote_size}
+
+\Level 1 {MPMD}
+
+Instead of spawning a single executable, you can spawn multiple with
+\indexmpishow{MPI_Comm_spawn_multiple}.
+
+\Level 1 {Socket-style communications}
+
+\indexmpishow{MPI_Comm_connect}
+\indexmpishow{MPI_Comm_accept}
+
+\indexmpishow{MPI_Open_port}
+\indexmpishow{MPI_Close_port}
+\indexmpishow{MPI_Publish_name}
+\indexmpishow{MPI_Unpublish_name}
+\indexmpishow{MPI_Comm_join}
+\indexmpishow{MPI_Comm_disconnect}
+
