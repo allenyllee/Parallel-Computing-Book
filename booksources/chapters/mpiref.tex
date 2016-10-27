@@ -262,31 +262,17 @@ This name need not be unique between different processor ranks.
 %
 \mpiRoutineRef{MPI_Get_processor_name}
 %
-Note that you have to pass in the character storage:
-the character array must be at least \indexmpishow{MPI_MAX_PROCESSOR_NAME} characters long.
+You have to pass in the character storage:
+the character array must be at least \indexmpidef{MPI_MAX_PROCESSOR_NAME} characters long.
 The actual length of the name is returned in the \n{resultlen} parameter.
 
-In C and C++,
-\begin{verbatim}
-  #define MPI_VERSION 2
-  #define MPI_SUBVERSION 2
-\end{verbatim}
-in Fortran,
-\begin{verbatim}
-  INTEGER MPI_VERSION, MPI_SUBVERSION
-  PARAMETER (MPI_VERSION = 2)
-  PARAMETER (MPI_SUBVERSION = 2)
-\end{verbatim}
-For runtime determination,
-\begin{verbatim}
-  MPI_GET_VERSION( version, subversion )
-  OUT version version number (integer)
-  OUT subversion subversion number (integer)
+\Level 1 {Version information}
 
-  int MPI_Get_version(int *version, int *subversion)
-  MPI_GET_VERSION(VERSION, SUBVERSION, IERROR)
-  INTEGER VERSION, SUBVERSION, IERROR
-\end{verbatim}
+\mpiRoutineRef{MPI_VERSION}
+
+For runtime determination,
+%
+\mpiRoutineRef{MPI_Get_version}
 
 \Level 1 {Attributes}
 

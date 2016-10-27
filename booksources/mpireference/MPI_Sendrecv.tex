@@ -1,7 +1,9 @@
 Semantics:
 
-MPI_SENDRECV(sendbuf, sendcount, sendtype, dest, sendtag, recvbuf,
-recvcount, recvtype, source, recvtag, comm, status)
+MPI_SENDRECV(
+    sendbuf, sendcount, sendtype, dest, sendtag, 
+    recvbuf, recvcount, recvtype, source, recvtag,
+    comm, status)
 IN sendbuf: initial address of send buffer (choice)
 IN sendcount: number of elements in send buffer (non-negative integer)
 IN sendtype: type of elements in send buffer (handle)

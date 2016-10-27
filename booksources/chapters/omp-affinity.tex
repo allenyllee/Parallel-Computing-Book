@@ -275,6 +275,16 @@ memory on thread~0.
 
 You could move pages with \indextermtt{move_pages}.
 
+By regarding affinity,
+in effect you are adopting an \ac{SPMD} style of programming.
+You could make this explicit by having each thread allocate its part
+of the arrays separately, and storing a private pointer as
+\indexpragma{threadprivate}~\cite{Liu:2003:OMP-SPMD}. However, this
+makes it impossible for threads to access each other's parts of the
+distributed array, so this is only suitable for
+total \indextermsub{data}{parallel} or
+\indextermsub{embarrassingly}{parallel} applications.
+
 \Level 0 {Affinity control outside OpenMP}
 
 There are various utilities to control process and thread placement.

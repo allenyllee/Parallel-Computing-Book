@@ -35,6 +35,13 @@ L.~V. Kale and S.~Krishnan.
 \newblock In {\em Parallel Programming using C++, G. V. Wilson and P. Lu,
   editors}, pages 175--213. MIT Press, 1996.
 
+\bibitem{Liu:2003:OMP-SPMD}
+Zhenying Liu, Barbara Chapman, Tien-Hsiung Weng, and Oscar Hernandez.
+\newblock Improving the performance of openmp by array privatization.
+\newblock In {\em Proceedings of the OpenMP Applications and Tools 2003
+  International Conference on OpenMP Shared Memory Parallel Programming},
+  WOMPAT'03, pages 244--259, Berlin, Heidelberg, 2003. Springer-Verlag.
+
 \bibitem{thakur:ijhpca-sync}
 R.~Thakur, W.~Gropp, and B.~Toonen.
 \newblock Optimizing the synchronization operations in {MPI} one-sided

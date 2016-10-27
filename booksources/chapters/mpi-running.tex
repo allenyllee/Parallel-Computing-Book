@@ -60,13 +60,14 @@ In the following exercise you will print out the hostname
 of each MPI process; see section~\ref{ref:context} for the syntax.
 \begin{exercise}
   \label{ex:procname}
-  Now use the command \indexmpidef{MPI_Get_processor_name}
+  Now use the command \indexmpishow{MPI_Get_processor_name}
   in between the
   init and finalize statement, and print out on what processor your process runs.
   Confirm that you are able to run a program that uses two different nodes.
 
-  (The character buffer needs to be allocated by your, with size at
-  least \indexmpidef{MPI_MAX_PROCESSOR_NAME}.)
+  (The character buffer needs to be allocated by you, it is not
+  created by MPI, with size at
+  least \indexmpishow{MPI_MAX_PROCESSOR_NAME}.)
 \begin{tacc}
 TACC nodes have a hostname \n{cRRR-CNN}, where RRR is the rack number, C is the chassis
 number in the rack, and NN is the node number within the chassis. Communication

@@ -16,6 +16,7 @@ info ::
 
 APPS = hello init thread \
     recvblock sendblock ssendblock sendrecv irecv_source irecvnonblock \
+    probe \
     putfence getfence randomput anysource cancel exscan \
     postwaitwin passive \
     reduce reduceinplace allreduce allreduceinplace gather gatherv allgatherv \

@@ -58,6 +58,18 @@ pointwise reduction on a a whole array at once. The \n{inoutvec} array
 contains partially reduced results, and is typically overwritten by
 the function.
 
+You can query the commutativity of an operator:
+%
+\mpiRoutineRef{MPI_Op_commutative}
+
+A created \n{MPI_Op} can be freed again:
+%
+\begin{verbatim}
+int MPI_Op_free(MPI_Op *op)
+\end{verbatim}
+%
+This sets the operator to \indexmpishow{MPI_OP_NULL}.
+
 \Level 0 {Non-blocking collectives}
 \label{sec:mpi3collect}
 

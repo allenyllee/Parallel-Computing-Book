@@ -16,3 +16,6 @@ if (mytid==ntids-1) {
 	printf("Mismatch index %d vs source %d\n",index,status.MPI_SOURCE);
     printf("Message from %d: %d\n",index,recv_buffer[index]);
   }
+} else {
+  ierr = MPI_Send(&mytid,1,MPI_INT, ntids-1,0,comm); CHK(ierr);
+}

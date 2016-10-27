@@ -351,13 +351,7 @@ the unused source or target argument.
 If the send and receive buffer have the same size, the routine
 \indexmpishow{MPI_Sendrecv_replace} will do an in-place replacement.
 
-\begin{verbatim}
-int MPI_Sendrecv_replace(
-  void *buf, int count, MPI_Datatype datatype, 
-  int dest, int sendtag,
-  int source, int recvtag,
-  MPI_Comm comm, MPI_Status *status)
-\end{verbatim}
+\mpiRoutineRef{MPI_Sendrecv_replace}
 
 The following exercise lets you implement a sorting algorithm with the
 send-receive call\footnote {There is an \n{MPI\_Compare\_and\_swap}
