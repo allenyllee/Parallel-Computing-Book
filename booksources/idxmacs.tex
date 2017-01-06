@@ -115,6 +115,9 @@
 \def\mpiRoutineRef#{\bgroup \RoutineRefStyle \catcode`\_=13
   \afterassignment\mpiRefDisplay\def\indexedmpi
 }
+\def\petscRoutineRef#{\bgroup \RoutineRefStyle \catcode`\_=13
+  \afterassignment\mpiRefDisplay\def\indexedmpi
+}
 \def\underscore{_}
 
 \def\mpitoindexsub{%\tracingmacros=2

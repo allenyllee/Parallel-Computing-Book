@@ -97,6 +97,22 @@ you can also access non-contiguous areas in the file. For this you use
 \mpiRoutineRef{MPI_File_set_view}
 %
 This call is collective, even if not all processes access the file.
+\begin{itemize}
+\item The \n{etype} describes the data type of the file, it needs to
+  be the same on all processes.
+\item The \n{filetype} describes how this process sees the file, so it
+  can differ between processes.
+\item The \n{disp} displacement parameters is measured in bytes. It
+  can differ between processes. On sequential files such as tapes or
+  network streams it does not make sense to set a displacement; for
+  those the \indexmpidef{MPI_DISPLACEMENT_CURRENT} value can be
+  used.
+
+  In Fortran you have to assure that the displacement parameter is of
+  `kind' \indexmpi{MPI_OFFSET_KIND}. In particular, you can not
+  specify a literal zero~`0' as the displacement; use
+  \indexmpidef{0_MPI_OFFSET_KIND} instead.
+\end{itemize}
 
 More:
 \indexmpishow{MPI_File_delete}

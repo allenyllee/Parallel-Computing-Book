@@ -117,6 +117,29 @@ purpose: the receive call can have a `wildcard' behaviour, for instance specifyi
 that the message can come from any source rather than a specific one. The status
 object then allows you to find out where the message actually came from.
 
+\begin{exercise}
+  \label{ex:gaussjordan}
+  The \indexterm{Gauss-Jordan method} for \indextermsub{solving a}{linear system} or
+  computing a \indextermbus{matrix}{inverse} applies the following
+  transformations to a matrix:
+  \begin{tabbing}
+    for \=$k=1,\ldots,n$\\
+    \>fin\=d pivot:\\
+    \>\> $p=1/a_{kk}$\\
+    \>scale rows by the pivot:\\
+    \>\> for \=$r=1,\ldots,n$\\
+    \>\>\> $a_{rk} = a_{rk}\cdot p$\\
+    \>sweep columns:\\
+    \>\>\> for \=$c=1,\ldots,n$\\
+    \>\>\>\> $a_{rc} = a_{rc} - a_{rk}\cdot a_{kc}$\\
+  \end{tabbing}
+  (Depending on whether the method is used for a linear system or an
+  inverse, we use some form of \indextermsub{augmented}{matrix}.)
+
+  Explore how to parallelize this algorithm if every processor stores
+  one column of the matrix. Use blocking send and receive calls.
+\end{exercise}
+
 \Level 1 {Problems with blocking communication}
 \label{sec:blocking}
 \index{communication!blocking|(textbf}

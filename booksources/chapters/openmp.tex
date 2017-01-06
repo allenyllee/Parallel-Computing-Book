@@ -162,6 +162,19 @@ function can be turned into vector instructions with
 If a loop is both multi-threadable and vectorizable, you can combine
 directives as \n{pragma omp parallel for simd}.
 
+Compilers can be made to report whether a loop was vectorized:
+\begin{verbatim}
+   LOOP BEGIN at simdf.c(61,15)
+      remark #15301: OpenMP SIMD LOOP WAS VECTORIZED
+   LOOP END
+\end{verbatim}
+with such options as \n{-Qvec-report=3} for the Intel compiler.
+
+Performance improvements of these directives need not be immediately
+obvious.  In cases where the operation is bandwidth-limited, using
+\n{simd} parallelism may give the same or worse performance as thread
+parallelism.
+
 \Level 0 {Stuff}
 
 \Level 1 {Timing}

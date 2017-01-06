@@ -140,12 +140,49 @@ handler with \indexmpishow{MPI_Comm_get_errhandler}.
 
 \Level 0 {Fortran issues}
 \label{sec:mpi-fortran}
-\index{MPI!Fortran issues|(}
+\index{MPI!Fortran issues|see{Fortran, MPI issues}}
+\index{Fortran!MPI issues|(}
 
 MPI is typically written in C, what if you program \emph{Fortran}?
 
-Assumed shape arrays can be a problem: they need to be copied. 
-That's a problem with Isend.
+\Level 1 {Kind-defined types}
+\label{sec:f90-kind}
+
+If your Fortran code uses \n{KIND} to define scalar types with
+specified precision, these do not in general correspond to any
+predefined MPI datatypes. Hence the following routines exist to make
+\emph{MPI equivalences of Fortran scalar types}%
+\index{Fortran!MPI equivalences of scalar types}:
+
+\mpiRoutineRef{MPI_Type_create_f90_integer}
+\mpiRoutineRef{MPI_Type_create_f90_real}
+\mpiRoutineRef{MPI_Type_create_f90_complex}
+
+Examples:
+\begin{verbatim}
+INTEGER ( KIND = SELECTED_INTEGER_KIND(15) ) , &
+ DIMENSION(100) :: array INTEGER :: root , integertype , error 
+
+CALL MPI_Type_create_f90_integer( 15 , integertype , error )
+CALL MPI_Bcast ( array , 100 ,
+ & integertype , root ,
+ & MPI_COMM_WORLD , error )
+
+REAL ( KIND = SELECTED_REAL_KIND(15 ,300) ) , &
+ DIMENSION(100) :: array
+CALL MPI_Type_create_f90_real( 15 , 300 , realtype , error )
+
+COMPLEX ( KIND = SELECTED_REAL_KIND(15 ,300) ) , &
+ DIMENSION(100) :: array 
+CALL MPI_Type_create_f90_complex( 15 , 300 , complextype , error )
+\end{verbatim}
+
+\Level 1 {Assumed-shape arrays}\index{Fortran!assumed-shape arrays in MPI}
+
+Use of other than contiguous data, for instance \n{A(1:N:2)}, was a
+problem in MPI calls, especially non-blocking ones. In that case it
+was best to copy the data to a contiguous array. This has been fixed
+in MPI3.
 
 \begin{itemize}
 \item Fortran routines have the same prototype as C~routines except for the addition
@@ -156,7 +193,7 @@ That's a problem with Isend.
   functionality of the C/C++ operator \indextermtt{sizeof}.
 \end{itemize}
 
-\index{MPI!Fortran issues|)}
+\index{Fortran!MPI issues|)}
 
 \Level 0 {Fault tolerance}
 \label{mpi:tolerant}

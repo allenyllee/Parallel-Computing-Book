@@ -25,15 +25,25 @@ int main(int argc,char **argv) {
     return -1;
   }
 
+  if (mytid==0)
+    printf("There are %d ranks total\n",ntids);
+
   int new_procno,new_nprocs;
   MPI_Comm sharedcomm;
 
-  MPI_Comm_split(MPI_COMM_WORLD,MPI_COMM_TYPE_SHARED,mytid,&sharedcomm);
-  MPI_Comm_rank(sharedcomm,&new_nprocs);
+  MPI_Info info;
+  MPI_Comm_split_type(MPI_COMM_WORLD,MPI_COMM_TYPE_SHARED,mytid,info,&sharedcomm);
+  MPI_Comm_size(sharedcomm,&new_nprocs);
   MPI_Comm_rank(sharedcomm,&new_procno);
 
   ASSERT(new_procno<CORES_PER_NODE);    
 
+  if (new_procno==0) {
+    char procname[MPI_MAX_PROCESSOR_NAME]; int namlen;
+    MPI_Get_processor_name(procname,&namlen);
+    printf("I am processor %d in a shared group of %d, running on %s\n",
+	   new_procno,new_nprocs,procname);
+  }
   if (mytid==0)
     printf("Finished\n");
 

@@ -78,6 +78,32 @@ the send buffer is reused.
 %
 \verbatimsnippet{bcastp}
 
+\begin{exercise}
+  \label{ex:gaussjordan}
+  The \indexterm{Gauss-Jordan algorithm} for solving a linear system
+  with a matrix~$A$ (or computing its inverse) runs as follows:
+  \begin{tabbing}
+    for \=pivot $k=1,\ldots,n$\\
+    \>let the vector of scalings $\ell_i=A_{ik}/A_{kk}$\\
+    \>for \=column $c=k+1,\ldots,n$\\
+    \>\>for \=row $r\not=k$\\
+    \>\>\> $A_{rc}\leftarrow A_{rc} - \ell_r A_{rc}$\\
+  \end{tabbing}
+  where we ignore the update of the righthand side, or the formation
+  of the inverse.
+
+  Let a matrix be distributed with each process storing one
+  column. Implement the Gauss-Jordan algorithm as a series of
+  broadcasts of the scaling vectors. Replicate the right-hand side on
+  all processors.
+
+  Add partial pivoting to your implementation.
+
+  Change your implementation to let each processor store multiple columns,
+  but still do one broadcast per column. Is there a way to have only one
+  broadcast per processor?
+\end{exercise}
+
 \Level 0 {Reduction}
 
 In the broadcast operation a single data item was communicated to all

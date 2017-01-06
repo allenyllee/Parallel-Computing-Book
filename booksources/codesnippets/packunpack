@@ -1,0 +1,20 @@
+// packtimer.c
+if (mytid==sender) {
+  MPI_Pack(&nsends,1,MPI_INT,buffer,buflen,&position,comm);
+  for (int i=0; i<nsends; i++) {
+    double value = rand()/(double)RAND_MAX;
+    MPI_Pack(&value,1,MPI_DOUBLE,buffer,buflen,&position,comm);
+  }
+  MPI_Pack(&nsends,1,MPI_INT,buffer,buflen,&position,comm);
+  MPI_Send(buffer,position,MPI_PACKED,other,0,comm);
+} else if (mytid==receiver) {
+  int irecv_value;
+  double xrecv_value;
+  MPI_Recv(buffer,buflen,MPI_PACKED,other,0,comm,MPI_STATUS_IGNORE);
+  MPI_Unpack(buffer,buflen,&position,&nsends,1,MPI_INT,comm);
+  for (int i=0; i<nsends; i++) {
+    MPI_Unpack(buffer,buflen,&position,&xrecv_value,1,MPI_DOUBLE,comm);
+  }
+  MPI_Unpack(buffer,buflen,&position,&irecv_value,1,MPI_INT,comm);
+  ASSERT(irecv_value==nsends);
+}

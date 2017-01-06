@@ -195,6 +195,12 @@ by replacing the index expression by \n{mat+1}.
   For testing, define the array as $x[i]=i$.
 \end{exercise}
 
+\begin{exercise}
+  Write code to compare the time it takes to send a strided subset
+  from an array: copy the elements by hand to a smaller buffer, or use
+  a vector data type. What do you find?
+\end{exercise}
+
 \Level 2 {Subarrays as vector data}
 
 Figure~\ref{fig:blasmatrix} indicates one source of irregular
@@ -330,7 +336,9 @@ create the structure type. With structures it is no longer possible to
 send as a derived type and receive as a array of a simple type.
 (It would be possible to send as one structure type and receive as another, 
 as long as they have the same \indextermbus{datatype}{signature}.)
+%
 \verbatimsnippet{structure}
+%
 Note the \n{displacement} calculations in this example,
 which involve some not so elegant pointer arithmetic.
 It would have been incorrect to write
@@ -341,6 +349,14 @@ displacement[1] = displacement[0] + sizeof(char);
 since you do not know the way the \indexterm{compiler} lays out the
 structure in memory\footnote{Homework question: what does the language
   standard say about this?}.
+
+If you want to send more than one structure, you have to worry more
+about padding in the structure. You can solve this by adding an extra
+type \indexmpishow{MPI_UB} for the `upper bound' on the structure:
+\begin{verbatim}
+displacements[3] = sizeof(myobject); types[3] = MPI_UB;
+MPI_Type_create_struct(struclen+1,.....);
+\end{verbatim}
 
 The structure type is very similar in functionality to \indexmpishow{MPI_Type_hindexed},
 which uses byte-based indexing. The structure-based type is probably cleaner

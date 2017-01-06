@@ -127,10 +127,10 @@ The regular way to conclude an MPI program is:
 %
 \mpiRoutineRef{MPI_Finalize}
 %
-but an abnormal end to a run can be forced by\indexmpi{MPI_Abort}
-\begin{verbatim}
-MPI_Abort(comm,value);
-\end{verbatim}
+but an abnormal end to a run can be forced by\indexmpi{MPI_Abort}:
+%
+\mpiRoutineRef{MPI_Abort}
+%
 This aborts execution on all processes associated with the communicator,
 but many implementations simply abort all processes. The \n{value} parameter
 is returned to the environment.

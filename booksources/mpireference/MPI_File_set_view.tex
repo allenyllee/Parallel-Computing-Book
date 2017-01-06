@@ -18,3 +18,10 @@ MPI_FILE_SET_VIEW(FH, DISP, ETYPE, FILETYPE, DATAREP, INFO, IERROR)
 INTEGER FH, ETYPE, FILETYPE, INFO, IERROR
 CHARACTER*(*) DATAREP
 INTEGER(KIND=MPI_OFFSET_KIND) DISP 
+
+Python:
+mpifile = MPI.File.Open( .... )
+mpifile.Set_view
+  (self,
+   Offset disp=0, Datatype etype=None, Datatype filetype=None,
+   datarep=None, Info info=INFO_NULL)

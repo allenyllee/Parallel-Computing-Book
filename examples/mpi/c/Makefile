@@ -46,16 +46,19 @@ else
 endif
 
 DEBUG=OPT
-OPT_flag = -O2 -g
+OPTLEVEL=2
+OPT_flag = -O${OPTLEVEL} -g
 DEBUG_flag = -O0 -g
 
 info ::
 	@echo "    debug flag: DEBUG=DEBUG/OPT (default: ${DEBUG})]"
+	@echo "    [CORESPERNODE=nnn (default: ${CORESPERNODE})]"
+CORESPERNODE = 16
 %.o : %.c
-	${CC} ${${DEBUG}_flag} -D${DEBUG} -DCORES_PER_NODE=16 \
+	${CC} ${${DEBUG}_flag} -D${DEBUG} -DCORES_PER_NODE=${CORESPERNODE} \
 	  -c $*.c
 %.o : %.cxx
-	${CXX} ${${DEBUG}_flag} -D${DEBUG} -DCORES_PER_NODE=16 \
+	${CXX} ${${DEBUG}_flag} -D${DEBUG} -DCORES_PER_NODE=${CORESPERNODE} \
 	  -c $*.cxx
 
 app_dependencies  = tools.o
