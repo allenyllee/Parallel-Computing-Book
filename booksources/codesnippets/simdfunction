@@ -1,0 +1,9 @@
+// tools.c
+#pragma omp declare simd
+double cs(double x1,double x2,double y1,double y2) {
+  double
+    inprod = x1*x2+y1*y2,
+    xnorm = sqrt(x1*x1 + x2*x2),
+    ynorm = sqrt(y1*y1 + y2*y2);
+  return inprod / (xnorm*ynorm);
+}

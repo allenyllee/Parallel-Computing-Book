@@ -23,32 +23,32 @@ int main(int argc,char **argv) {
   // record what processes you will communicate with
   int *recv_requests;
   int *counts,nrecv_requests=0,nsend_requests;
-  recv_requests = (int*) malloc(ntids*sizeof(int));
-  counts = (int*) malloc(ntids*sizeof(int));
-  for (int i=0; i<ntids; i++) {
+  recv_requests = (int*) malloc(nprocs*sizeof(int));
+  counts = (int*) malloc(nprocs*sizeof(int));
+  for (int i=0; i<nprocs; i++) {
     recv_requests[i] = 0;
     counts[i] = 1;
   }
 
   // generate random requests
-  for (int i=0; i<ntids; i++)
-    if ( (float) rand()/(float)RAND_MAX < 2./ntids ) {
+  for (int i=0; i<nprocs; i++)
+    if ( (float) rand()/(float)RAND_MAX < 2./nprocs ) {
       recv_requests[i] = 1; nrecv_requests++;
     }
-  printf("[%d]: ",mytid);
-  for (int i=0; i<ntids; i++)
+  printf("[%d]: ",procno);
+  for (int i=0; i<nprocs; i++)
     printf("%d ",recv_requests[i]);
   printf("\n");
   // find how many procs want to communicate with you
   MPI_Reduce_scatter
     (recv_requests,&nsend_requests,counts,MPI_INT,
     MPI_SUM,comm);
-  printf("[%d]: %d requests\n",mytid,nsend_requests);
+  printf("[%d]: %d requests\n",procno,nsend_requests);
   MPI_Request *mpi_requests,irequest=0;
   mpi_requests = (MPI_Request*) malloc((nrecv_requests+nsend_requests)*sizeof(MPI_Request));
   int msg=1;
   // send a msg to the selected processes
-  for (int i=0; i<ntids; i++)
+  for (int i=0; i<nprocs; i++)
     if (recv_requests[i]>0)
       MPI_Isend(&msg,1,MPI_INT, /*to:*/ i,0,comm,
         mpi_requests+irequest++);

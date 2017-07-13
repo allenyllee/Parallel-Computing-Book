@@ -2,12 +2,12 @@
 source = (double*) malloc(stride*count*sizeof(double));
 target = (double*) malloc(count*sizeof(double));
 MPI_Datatype newvectortype;
-if (mytid==sender) {
+if (procno==sender) {
   MPI_Type_vector(count,1,stride,MPI_DOUBLE,&newvectortype);
   MPI_Type_commit(&newvectortype);
   MPI_Send(source,1,newvectortype,the_other,0,comm);
   MPI_Type_free(&newvectortype);
-} else if (mytid==receiver) {
+} else if (procno==receiver) {
   MPI_Status recv_status;
   int recv_count;
   MPI_Recv(target,count,MPI_DOUBLE,the_other,0,comm,

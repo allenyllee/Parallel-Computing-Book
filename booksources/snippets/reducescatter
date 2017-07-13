@@ -6,7 +6,7 @@ MPI_Reduce_scatter
   (recv_requests,&nsend_requests,counts,MPI_INT,
   MPI_SUM,comm);
 // send a msg to the selected processes
-for (int i=0; i<ntids; i++)
+for (int i=0; i<nprocs; i++)
   if (recv_requests[i]>0)
     MPI_Isend(&msg,1,MPI_INT, /*to:*/ i,0,comm,
       mpi_requests+irequest++);

@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-6
+%%%% by Victor Eijkhout, copyright 2012-7
 %%%%
 %%%% mpi-bcastreduce.tex : about broadcast & reduce collectives
 %%%%
@@ -79,25 +79,28 @@ the send buffer is reused.
 \verbatimsnippet{bcastp}
 
 \begin{exercise}
-  \label{ex:gaussjordan}
+  \label{ex:gaussjordancoll}
   The \indexterm{Gauss-Jordan algorithm} for solving a linear system
   with a matrix~$A$ (or computing its inverse) runs as follows:
   \begin{tabbing}
     for \=pivot $k=1,\ldots,n$\\
-    \>let the vector of scalings $\ell_i=A_{ik}/A_{kk}$\\
-    \>for \=column $c=k+1,\ldots,n$\\
-    \>\>for \=row $r\not=k$\\
-    \>\>\> $A_{rc}\leftarrow A_{rc} - \ell_r A_{rc}$\\
+    \>let the vector of scalings $\ell^{(k)}_i=A_{ik}/A_{kk}$\\
+    \>for \=row $r\not=k$\\
+    \>\>for \=column $c=1,\ldots,n$\\
+    \>\>\> $A_{rc}\leftarrow A_{rc} - \ell^{(k)}_r A_{rc}$\\
   \end{tabbing}
   where we ignore the update of the righthand side, or the formation
   of the inverse.
 
   Let a matrix be distributed with each process storing one
   column. Implement the Gauss-Jordan algorithm as a series of
-  broadcasts of the scaling vectors. Replicate the right-hand side on
+  broadcasts: in iteration $k$ process $k$ computes and broadcasts the
+  scaling vector~$\{\ell^{(k)}_i\}_i$. Replicate the right-hand side on
   all processors.
+\end{exercise}
 
-  Add partial pivoting to your implementation.
+\begin{exercise}
+  Add partial pivoting to your implementation of Gauss-Jordan elimination.
 
   Change your implementation to let each processor store multiple columns,
   but still do one broadcast per column. Is there a way to have only one

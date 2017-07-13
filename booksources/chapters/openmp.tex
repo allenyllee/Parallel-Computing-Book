@@ -136,48 +136,7 @@ Other environment variables:
 \index{OpenMP!library routines|)}
 \index{Internal Control Variable (ICV)|)}
 
-\Level 0 {Version 4 functionality}
-
-\Level 1 {SIMD}
-
-You can declare a loop to be executable with
-\indextermbus{vector}{instructions} with
-%
-\indexpragmadef{simd}
-
-The \indexpragma{simd} pragma has the following clauses:
-\begin{itemize}
-\item \indexclause{safelen($n$)}: limits the number of iterations in a
-  SIMD chunk. Presumably useful if you combine \n{parallel for simd}.
-\item \indexclause{linear}: lists variables that have a linear
-  relation to the iteration parameter.
-\item \indexclause{aligned}: specifies alignment of variables.
-\end{itemize}
-
-If your SIMD loop includes a function call, you can declare that the
-function can be turned into vector instructions with
-%
-\indexpragma{declare simd}
-
-If a loop is both multi-threadable and vectorizable, you can combine
-directives as \n{pragma omp parallel for simd}.
-
-Compilers can be made to report whether a loop was vectorized:
-\begin{verbatim}
-   LOOP BEGIN at simdf.c(61,15)
-      remark #15301: OpenMP SIMD LOOP WAS VECTORIZED
-   LOOP END
-\end{verbatim}
-with such options as \n{-Qvec-report=3} for the Intel compiler.
-
-Performance improvements of these directives need not be immediately
-obvious.  In cases where the operation is bandwidth-limited, using
-\n{simd} parallelism may give the same or worse performance as thread
-parallelism.
-
-\Level 0 {Stuff}
-
-\Level 1 {Timing}
+\Level 0 {Timing}
 \label{sec:omp-timing}
 
 OpenMP has a wall clock timer routine \indexcommand{omp_get_wtime}
@@ -210,7 +169,7 @@ for (int use_threads=1; use_threads<=nthreads; use_threads++) {
   \end{itemize}
 \end{exercise}
 
-\Level 1 {Dependency analysis}
+\Level 0 {Dependency analysis}
 \index{data dependencies|(}
 \index{flow dependency|see{data dependencies}}
 \index{anti dependency|see{data dependencies}}
@@ -268,7 +227,7 @@ for (i) {
 }
 \end{verbatim}
 
-\Level 2 {Flow dependencies}
+\Level 1 {Flow dependencies}
 
 Flow dependencies, or read-afer-write,
 are not a problem if the read and write occur in the same
@@ -289,7 +248,7 @@ for (i=0; i<N; i++) {
 \end{verbatim}
 This usually requires rewriting the code.
 
-\Level 2 {Anti dependencies}
+\Level 1 {Anti dependencies}
 
 The simplest case of write-after-read is a reduction:
 \begin{verbatim}
@@ -320,7 +279,7 @@ This is an example of a transformation that a compiler is unlikely
 to perform, since it can greatly affect the memory demands of the program.
 Thus, this is left to the programmer.
 
-\Level 2 {Output dependencies}
+\Level 1 {Output dependencies}
 
 The case of write-after-write does not occur by itself:
 if a variable is written twice in sequence without an intervening
@@ -339,7 +298,7 @@ If the final value of \n{t} is wanted, the \indexpragma{lastprivate} can be used
 
 \index{data dependencies|)}
 
-\Level 1 {Thread safety}
+\Level 0 {Thread safety}
 \index{thread-safe|(}
 
 With OpenMP it is relatively easy to take existing code and make
@@ -372,21 +331,6 @@ This is for instance the right solution if  the \n{next_one}
 routine implements a \indexterm{random number generator}.
 
 \index{thread-safe|)}
-
-\Level 1 {Accelerators}
-
-In OpenMP 4.0 there is support for offloading work to an
-\emph{accelerator}\index{OpenMP!accelerator support in}
-or
-\emph{co-processor}\index{OpenMP!co-processor support in}:
-\begin{verbatim}
-#pragma omp target [clauses]
-\end{verbatim}
-with clauses such as
-\begin{itemize}
-\item \n{data}: place data
-\item \n{update}: make data consistent between host and device
-\end{itemize}
 
 \Level 0 {Performance and tuning}
 
@@ -452,6 +396,21 @@ The performance of an OpenMP code can be influenced by the following.
   cycles.  Critical sections should be used only if the parallel work
   far outweighs it.
 \end{description}
+
+\Level 0 {Accelerators}
+
+In OpenMP 4.0 there is support for offloading work to an
+\emph{accelerator}\index{OpenMP!accelerator support in}
+or
+\emph{co-processor}\index{OpenMP!co-processor support in}:
+\begin{verbatim}
+#pragma omp target [clauses]
+\end{verbatim}
+with clauses such as
+\begin{itemize}
+\item \n{data}: place data
+\item \n{update}: make data consistent between host and device
+\end{itemize}
 
 \endinput
 

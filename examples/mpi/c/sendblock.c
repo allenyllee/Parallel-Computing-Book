@@ -31,8 +31,8 @@ int main(int argc,char **argv) {
 
   /* we only use processors 0 and 1 */
   int other;
-  if (mytid>1) goto skip;
-  other = 1-mytid;
+  if (procno>1) goto skip;
+  other = 1-procno;
   /* loop over increasingly large messages */
   for (int size=1; size<2000000000; size*=10) {
     sendbuf = (int*) malloc(size*sizeof(int));
@@ -46,7 +46,7 @@ int main(int argc,char **argv) {
        did not block. If the send call blocks,
        we do not reach this point, and the program will hang.
     */
-    if (mytid==0)
+    if (procno==0)
       printf("Send did not block for size %d\n",size);
     free(sendbuf); free(recvbuf);
   }

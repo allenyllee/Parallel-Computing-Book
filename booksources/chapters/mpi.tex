@@ -138,6 +138,11 @@ You can create your own error handler with
 \indexmpishow{MPI_Comm_set_errhandler}. You can retrieve the error
 handler with \indexmpishow{MPI_Comm_get_errhandler}.
 
+\Level 0 {Machine-specific information}
+\label{sec:mpi-info}
+
+\mpiRoutineRef{MPI_Info}
+
 \Level 0 {Fortran issues}
 \label{sec:mpi-fortran}
 \index{MPI!Fortran issues|see{Fortran, MPI issues}}
@@ -145,37 +150,8 @@ handler with \indexmpishow{MPI_Comm_get_errhandler}.
 
 MPI is typically written in C, what if you program \emph{Fortran}?
 
-\Level 1 {Kind-defined types}
-\label{sec:f90-kind}
-
-If your Fortran code uses \n{KIND} to define scalar types with
-specified precision, these do not in general correspond to any
-predefined MPI datatypes. Hence the following routines exist to make
-\emph{MPI equivalences of Fortran scalar types}%
-\index{Fortran!MPI equivalences of scalar types}:
-
-\mpiRoutineRef{MPI_Type_create_f90_integer}
-\mpiRoutineRef{MPI_Type_create_f90_real}
-\mpiRoutineRef{MPI_Type_create_f90_complex}
-
-Examples:
-\begin{verbatim}
-INTEGER ( KIND = SELECTED_INTEGER_KIND(15) ) , &
- DIMENSION(100) :: array INTEGER :: root , integertype , error 
-
-CALL MPI_Type_create_f90_integer( 15 , integertype , error )
-CALL MPI_Bcast ( array , 100 ,
- & integertype , root ,
- & MPI_COMM_WORLD , error )
-
-REAL ( KIND = SELECTED_REAL_KIND(15 ,300) ) , &
- DIMENSION(100) :: array
-CALL MPI_Type_create_f90_real( 15 , 300 , realtype , error )
-
-COMPLEX ( KIND = SELECTED_REAL_KIND(15 ,300) ) , &
- DIMENSION(100) :: array 
-CALL MPI_Type_create_f90_complex( 15 , 300 , complextype , error )
-\end{verbatim}
+See section~\ref{sec:f90-types} for MPI types corresponding to
+\emph{Fortran90 types}\index{Fortran90 types!in MPI}.
 
 \Level 1 {Assumed-shape arrays}\index{Fortran!assumed-shape arrays in MPI}
 

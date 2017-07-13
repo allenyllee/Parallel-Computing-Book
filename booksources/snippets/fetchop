@@ -1,10 +1,10 @@
 // passive.cxx
-if (mytid==repository) {
+if (procno==repository) {
   // Repository processor creates a table of inputs
   // and associates that with the window
 }
-if (mytid!=repository) {
-  float contribution=(float)mytid,table_element;
+if (procno!=repository) {
+  float contribution=(float)procno,table_element;
   int loc=0;
   MPI_Win_lock(MPI_LOCK_EXCLUSIVE,repository,0,the_window);
   // read the table element by getting the result from adding zero

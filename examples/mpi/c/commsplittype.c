@@ -20,19 +20,19 @@ int main(int argc,char **argv) {
 
 #include "globalinit.c"
 
-  if (ntids<3) {
+  if (nprocs<3) {
     printf("This program needs at least three processes\n");
     return -1;
   }
 
-  if (mytid==0)
-    printf("There are %d ranks total\n",ntids);
+  if (procno==0)
+    printf("There are %d ranks total\n",nprocs);
 
   int new_procno,new_nprocs;
   MPI_Comm sharedcomm;
 
   MPI_Info info;
-  MPI_Comm_split_type(MPI_COMM_WORLD,MPI_COMM_TYPE_SHARED,mytid,info,&sharedcomm);
+  MPI_Comm_split_type(MPI_COMM_WORLD,MPI_COMM_TYPE_SHARED,procno,info,&sharedcomm);
   MPI_Comm_size(sharedcomm,&new_nprocs);
   MPI_Comm_rank(sharedcomm,&new_procno);
 
@@ -44,7 +44,7 @@ int main(int argc,char **argv) {
     printf("I am processor %d in a shared group of %d, running on %s\n",
 	   new_procno,new_nprocs,procname);
   }
-  if (mytid==0)
+  if (procno==0)
     printf("Finished\n");
 
   MPI_Finalize();

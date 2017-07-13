@@ -35,6 +35,10 @@ where \emph{MPI/O} comes in.
 MPI has its own file handle:
 \indexmpishow{MPI_File}
 
+\begin{fortrannote}
+  Use an \n{integer} to store the file handle.
+\end{fortrannote}
+
 File open:
 \mpiRoutineRef{MPI_File_open}
 This routine is collective, even if only certain processes will access
@@ -107,12 +111,14 @@ This call is collective, even if not all processes access the file.
   network streams it does not make sense to set a displacement; for
   those the \indexmpidef{MPI_DISPLACEMENT_CURRENT} value can be
   used.
+\end{itemize}
 
+\begin{fortrannote}
   In Fortran you have to assure that the displacement parameter is of
   `kind' \indexmpi{MPI_OFFSET_KIND}. In particular, you can not
   specify a literal zero~`0' as the displacement; use
   \indexmpidef{0_MPI_OFFSET_KIND} instead.
-\end{itemize}
+\end{fortrannote}
 
 More:
 \indexmpishow{MPI_File_delete}

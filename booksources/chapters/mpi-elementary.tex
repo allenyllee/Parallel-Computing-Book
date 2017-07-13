@@ -73,6 +73,38 @@ Addresses have type \indexmpishow{MPI_Aint} or \n{INTEGER
 (KIND=MPI_ADDRESS_KIND)} in Fortran. The start of the address range is
 given in \indexmpishow{MPI_BOTTOM}.
 
+\Level 2 {Fortran90 kind-defined types}
+\label{sec:f90-types}
+
+If your Fortran code uses \n{KIND} to define scalar types with
+specified precision, these do not in general correspond to any
+predefined MPI datatypes. Hence the following routines exist to make
+\emph{MPI equivalences of Fortran scalar types}%
+\index{Fortran!MPI equivalences of scalar types}:
+
+\mpiRoutineRef{MPI_Type_create_f90_integer}
+\mpiRoutineRef{MPI_Type_create_f90_real}
+\mpiRoutineRef{MPI_Type_create_f90_complex}
+
+Examples:
+\begin{verbatim}
+INTEGER ( KIND = SELECTED_INTEGER_KIND(15) ) , &
+ DIMENSION(100) :: array INTEGER :: root , integertype , error 
+
+CALL MPI_Type_create_f90_integer( 15 , integertype , error )
+CALL MPI_Bcast ( array , 100 ,
+ & integertype , root ,
+ & MPI_COMM_WORLD , error )
+
+REAL ( KIND = SELECTED_REAL_KIND(15 ,300) ) , &
+ DIMENSION(100) :: array
+CALL MPI_Type_create_f90_real( 15 , 300 , realtype , error )
+
+COMPLEX ( KIND = SELECTED_REAL_KIND(15 ,300) ) , &
+ DIMENSION(100) :: array 
+CALL MPI_Type_create_f90_complex( 15 , 300 , complextype , error )
+\end{verbatim}
+
 \Level 1 {Python}
 \index{datatype!elementary!in Python}
 
@@ -87,3 +119,4 @@ given in \indexmpishow{MPI_BOTTOM}.
   \hline
 \end{tabular}
 \index{datatype!elementary|)}
+

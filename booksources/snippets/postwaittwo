@@ -1,5 +1,5 @@
 // postwaitwin.c
-if (mytid==origin) {
+if (procno==origin) {
   MPI_Group_incl(all_group,1,&target,&two_group);
   // access
   MPI_Win_start(two_group,0,the_window);
@@ -9,7 +9,7 @@ if (mytid==origin) {
   MPI_Win_complete(the_window);
 }
 
-if (mytid==target) {
+if (procno==target) {
   MPI_Group_incl(all_group,1,&origin,&two_group);
   // exposure
   MPI_Win_post(two_group,0,the_window);

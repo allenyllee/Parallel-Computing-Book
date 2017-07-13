@@ -1,5 +1,5 @@
 // sendblock.c
-other = 1-mytid;
+other = 1-procno;
 /* loop over increasingly large messages */
 for (int size=1; size<2000000000; size*=10) {
   sendbuf = (int*) malloc(size*sizeof(int));
@@ -13,7 +13,7 @@ for (int size=1; size<2000000000; size*=10) {
      did not block. If the send call blocks,
      we do not reach this point, and the program will hang.
   */
-  if (mytid==0)
+  if (procno==0)
     printf("Send did not block for size %d\n",size);
   free(sendbuf); free(recvbuf);
 }

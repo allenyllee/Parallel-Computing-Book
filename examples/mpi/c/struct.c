@@ -20,23 +20,23 @@ int main(int argc,char **argv) {
 
 #include "globalinit.c"
 
-  if (ntids<2) {
+  if (nprocs<2) {
     printf("This program needs at least two processes\n");
     return -1;
   }
-  int sender = 0, receiver = 1, the_other = 1-mytid;
+  int sender = 0, receiver = 1, the_other = 1-procno;
   struct object {
     char c;
     double x[2];
     int i;
   };
 
-  if (mytid==sender)
+  if (procno==sender)
     printf("Structure has size %d, naive size %d\n",
 	   sizeof(struct object),
 	   sizeof(char)+2*sizeof(double)+sizeof(int));
   struct object myobject;
-  if (mytid==sender) {
+  if (procno==sender) {
     myobject.c = 'x'; myobject.x[0] = 2.7;
     myobject.x[1] = 1.5; myobject.i = 37;
   }
@@ -57,22 +57,22 @@ int main(int argc,char **argv) {
   {
     MPI_Aint typesize;
     MPI_Type_extent(newstructuretype,&typesize);
-    if (mytid==0) printf("Type extent: %d bytes\n",typesize);
+    if (procno==0) printf("Type extent: %d bytes\n",typesize);
   }
-  if (mytid==sender) {
+  if (procno==sender) {
     MPI_Send(&myobject,1,newstructuretype,the_other,0,comm);
-  } else if (mytid==receiver) {
+  } else if (procno==receiver) {
     MPI_Recv(&myobject,1,newstructuretype,the_other,0,comm,MPI_STATUS_IGNORE);
   }
   MPI_Type_free(&newstructuretype);
   
-  if (mytid==receiver) {
+  if (procno==receiver) {
     printf("%c %e %e %d\n",myobject.c,myobject.x[0],myobject.x[1],myobject.i);
     ASSERT(myobject.x[1]==1.5);
     ASSERT(myobject.i==37);
   }
 
-  if (mytid==0)
+  if (procno==0)
     printf("Finished\n");
 
   MPI_Finalize();

@@ -1,5 +1,5 @@
 // persist.c
-if (mytid==src) {
+if (procno==src) {
   MPI_Send_init(send,s,MPI_DOUBLE,tgt,0,comm,requests+0);
   MPI_Recv_init(recv,s,MPI_DOUBLE,tgt,0,comm,requests+1);
   printf("Size %d\n",s);
@@ -10,7 +10,7 @@ if (mytid==src) {
   }
   t[cnt] = MPI_Wtime()-t[cnt];
   MPI_Request_free(requests+0); MPI_Request_free(requests+1);
-} else if (mytid==tgt) {
+} else if (procno==tgt) {
   for (int n=0; n<NEXPERIMENTS; n++) {
 	MPI_Recv(recv,s,MPI_DOUBLE,src,0,comm,MPI_STATUS_IGNORE);
 	MPI_Send(recv,s,MPI_DOUBLE,src,0,comm);

@@ -21,10 +21,10 @@ int main(int argc,char **argv) {
 #include "globalinit.c"
 
   float mynumber,result,*sendbuf,*recvbuf;
-  mynumber = (float) mytid;
-  int target_proc = ntids-1;
+  mynumber = (float) procno;
+  int target_proc = nprocs-1;
   // add all the random variables together
-  if (mytid==target_proc) {
+  if (procno==target_proc) {
     sendbuf = (float*)MPI_IN_PLACE; recvbuf = &result;
     result = mynumber;
   } else {
@@ -32,10 +32,10 @@ int main(int argc,char **argv) {
   }
   MPI_Reduce(sendbuf,recvbuf,1,MPI_FLOAT,MPI_SUM,
              target_proc,comm);
-  // the result should be ntids*(ntids-1)/2:
-  if (mytid==target_proc)
+  // the result should be nprocs*(nprocs-1)/2:
+  if (procno==target_proc)
     printf("Result %6.3f compared to n(n-1)/2=%5.2f\n",
-           result,ntids*(ntids-1)/2.);
+           result,nprocs*(nprocs-1)/2.);
 
   MPI_Finalize();
   return 0;

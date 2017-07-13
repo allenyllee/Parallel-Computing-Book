@@ -6,6 +6,12 @@ Ernie Chan, Marcel Heimlich, Avi Purkayastha, and Robert van~de Geijn.
 \newblock {\em Concurrency and Computation: Practice and Experience},
   19:1749--1783, 2007.
 
+\bibitem{Eijkhout:IHPSClulu}
+{Eijkhout, Victor with Robert van de Geijn and Edmond Chow}.
+\newblock {\em Introduction to High Performance Scientific Computing}.
+\newblock lulu.com, 2011.
+\newblock \url{http://www.tacc.utexas.edu/~eijkhout/istc/istc.html}.
+
 \bibitem{goglin:hwloc}
 Brice Goglin.
 \newblock {Managing the Topology of Heterogeneous Cluster Nodes with Hardware

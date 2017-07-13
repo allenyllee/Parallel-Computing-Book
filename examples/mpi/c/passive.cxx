@@ -27,10 +27,10 @@ int main(int argc,char **argv) {
   MPI_Win the_window;
   int
     repository = 0, // process that keeps the repository
-    ninputs = ntids-1;
+    ninputs = nprocs-1;
   float *inputs;
 
-  if (mytid==repository) {
+  if (procno==repository) {
     // Repository processor creates a table of inputs
     // and associates that with the window
     inputs = new float[ninputs];
@@ -48,8 +48,8 @@ int main(int argc,char **argv) {
   int *myjobs = new int[ninputs];
   for (int i=0; i<ninputs; i++) 
     myjobs[i] = 0;
-  if (mytid!=repository) {
-    float contribution=(float)mytid,table_element;
+  if (procno!=repository) {
+    float contribution=(float)procno,table_element;
     int loc=0;
     MPI_Win_lock(MPI_LOCK_EXCLUSIVE,repository,0,the_window);
     // read the table element by getting the result from adding zero
@@ -63,7 +63,7 @@ int main(int argc,char **argv) {
 
   MPI_Barrier(comm);
 
-  if (mytid==repository) {
+  if (procno==repository) {
     printf("Final result: %e\n",inputs[0]);
   }
 

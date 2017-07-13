@@ -174,8 +174,11 @@ ibrun python-mpi yourprogram.py
 The MPI library is written in~C. Thus, its bindings are the most natural
 for that language.
 
-C++ bindings existed at one point, but they were declared deprecated.
-The \indexterm{boost} library has its own version of MPI.  A~recent
+C++ bindings existed at one point, but they were declared deprecated,
+and have been officially removed in the \emph{MPI~3}%
+\index{MPI!3!C++ bindings removed}
+The \indexterm{boost} library has its own version of MPI, but it seems
+not to be under further development.  A~recent
 effort at idiomatic C++ support is \indexterm{MPL}
 \url{http://numbercrunch.de/blog/2015/08/mpl-a-message-passing-library/}.
 
@@ -196,7 +199,8 @@ each routine has a final \indexterm{error return} parameter.
 
 \index{MPI!Fortran2008 bindings|(}
 %
-In the \indextermbus{MPI}{3} standand,
+In the \emph{MPI~3}%
+\index{MPI!3!Fortran2008 interface} standard,
 an MPI implementation providing a Fortran interface must provide a
 module named \n{mpi_f08} that can be used in a Fortran program.
 This defines MPI functions that return an integer result, rather than

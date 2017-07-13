@@ -1,4 +1,4 @@
-// hello3.c
+// hello-inout.c
 int mythread,nthreads;
 nthreads = omp_get_num_threads();
 mythread = omp_get_thread_num();

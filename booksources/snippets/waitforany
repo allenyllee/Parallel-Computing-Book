@@ -1,21 +1,21 @@
 // irecv_source.c
-if (mytid==ntids-1) {
+if (procno==nprocs-1) {
   int *recv_buffer;
   MPI_Request *request; MPI_Status status;
-  recv_buffer = (int*) malloc((ntids-1)*sizeof(int));
-  request = (MPI_Request*) malloc((ntids-1)*sizeof(MPI_Request));
+  recv_buffer = (int*) malloc((nprocs-1)*sizeof(int));
+  request = (MPI_Request*) malloc((nprocs-1)*sizeof(MPI_Request));
 
-  for (int p=0; p<ntids-1; p++) {
+  for (int p=0; p<nprocs-1; p++) {
     ierr = MPI_Irecv(recv_buffer+p,1,MPI_INT, p,0,comm,
 		      request+p); CHK(ierr);
   }
-  for (int p=0; p<ntids-1; p++) {
+  for (int p=0; p<nprocs-1; p++) {
     int index,sender;
-    MPI_Waitany(ntids-1,request,&index,&status); //MPI_STATUS_IGNORE);
+    MPI_Waitany(nprocs-1,request,&index,&status); //MPI_STATUS_IGNORE);
     if (index!=status.MPI_SOURCE)
 	printf("Mismatch index %d vs source %d\n",index,status.MPI_SOURCE);
     printf("Message from %d: %d\n",index,recv_buffer[index]);
   }
 } else {
-  ierr = MPI_Send(&mytid,1,MPI_INT, ntids-1,0,comm); CHK(ierr);
+  ierr = MPI_Send(&procno,1,MPI_INT, nprocs-1,0,comm); CHK(ierr);
 }

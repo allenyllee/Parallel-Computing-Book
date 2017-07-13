@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-6
+%%%% by Victor Eijkhout, copyright 2012-7
 %%%%
 %%%% mpi-commbasic.tex : communicator basics
 %%%%
@@ -26,10 +26,30 @@ and suppose that the library has receive calls. Now it is possible that the
 receive in the library inadvertently
 catches the message that was sent in the outer environment.
 
+In section~\ref{sec:mpi-semantics} it was explained that MPI messages are 
+non-overtaking. This may lead to confusing situations, witness the following.
 First of all, here is code where the library stores the communicator
 of the calling program:
 %
 \verbatimsnippet{wrongcatchlib}
+
+This models a main program that does a simple message exchange, and it
+makes two calls to library routines. Unbeknown to the user, the
+library also issues send and receive calls, and they turn out to
+interfere.
+
+Here
+\begin{itemize}
+\item The main program does a send,
+\item the library call \n{function_start} does a send and a receive;
+  because the receive can match either send, it is paired with the
+  first one;
+\item the main program does a receive, which will be paired with the send of the 
+  library call;
+\item both the main program and the library do a wait call, and in
+  both cases all requests are succesfully fulfilled, just not the way
+  you intended.
+\end{itemize}
 
 To prevent this confusion, the library should duplicate the outer communicator,
 and send all messages with respect to its duplicate. Now messages from the user
@@ -39,3 +59,7 @@ code can never reach the library software, since they are on different communica
 
 \verbatimsnippet{rightcatchlib}
 \verbatimsnippet{catchlibp}
+
+Newly created communicators should be
+released again with \indexmpishow{MPI_Comm_free}.
+

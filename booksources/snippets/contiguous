@@ -1,11 +1,11 @@
 // contiguous.c
 MPI_Datatype newvectortype;
-if (mytid==sender) {
+if (procno==sender) {
   MPI_Type_contiguous(count,MPI_DOUBLE,&newvectortype);
   MPI_Type_commit(&newvectortype);
   MPI_Send(source,1,newvectortype,receiver,0,comm);
   MPI_Type_free(&newvectortype);
-} else if (mytid==receiver) {
+} else if (procno==receiver) {
   MPI_Status recv_status;
   int recv_count;
   MPI_Recv(target,count,MPI_DOUBLE,sender,0,comm,

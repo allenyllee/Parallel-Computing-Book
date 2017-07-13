@@ -20,11 +20,11 @@ MPI_Type_commit(&newstructuretype);
 {
   MPI_Aint typesize;
   MPI_Type_extent(newstructuretype,&typesize);
-  if (mytid==0) printf("Type extent: %d bytes\n",typesize);
+  if (procno==0) printf("Type extent: %d bytes\n",typesize);
 }
-if (mytid==sender) {
+if (procno==sender) {
   MPI_Send(&myobject,1,newstructuretype,the_other,0,comm);
-} else if (mytid==receiver) {
+} else if (procno==receiver) {
   MPI_Recv(&myobject,1,newstructuretype,the_other,0,comm,MPI_STATUS_IGNORE);
 }
 MPI_Type_free(&newstructuretype);

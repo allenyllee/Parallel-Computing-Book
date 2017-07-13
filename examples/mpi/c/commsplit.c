@@ -20,30 +20,30 @@ int main(int argc,char **argv) {
 
 #include "globalinit.c"
 
-  if (ntids<3) {
+  if (nprocs<3) {
     printf("This program needs at least three processes\n");
     return -1;
   }
 
   int color;
-  int new_mytid;
+  int new_procno;
   MPI_Comm mod2comm,mod4comm;
 
-  int mydata = mytid;
+  int mydata = procno;
   // create sub communicator modulo 2
-  color = mytid%2;
-  MPI_Comm_split(MPI_COMM_WORLD,color,mytid,&mod2comm);
-  MPI_Comm_rank(mod2comm,&new_mytid);
+  color = procno%2;
+  MPI_Comm_split(MPI_COMM_WORLD,color,procno,&mod2comm);
+  MPI_Comm_rank(mod2comm,&new_procno);
 
   // create sub communicator modulo 4 recursively
-  color = new_mytid%2;
-  MPI_Comm_split(mod2comm,color,new_mytid,&mod4comm);
-  MPI_Comm_rank(mod4comm,&new_mytid);
+  color = new_procno%2;
+  MPI_Comm_split(mod2comm,color,new_procno,&mod4comm);
+  MPI_Comm_rank(mod4comm,&new_procno);
 
-  if (mydata/4!=new_mytid)
-    printf("Error %d %d %d\n",mytid,new_mytid,mydata/4);
+  if (mydata/4!=new_procno)
+    printf("Error %d %d %d\n",procno,new_procno,mydata/4);
 
-  if (mytid==0)
+  if (procno==0)
     printf("Finished\n");
 
   MPI_Finalize();

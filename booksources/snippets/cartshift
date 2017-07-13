@@ -1,4 +1,4 @@
-char mychar = 65+mytid;
+char mychar = 65+procno;
 MPI_Cart_shift(comm2d,0,+1,&rank_2d,&rank_right);
 MPI_Cart_shift(comm2d,0,-1,&rank_2d,&rank_left);
 MPI_Cart_shift(comm2d,1,+1,&rank_2d,&rank_up);

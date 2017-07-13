@@ -100,3 +100,23 @@ The \indexmpishow{MPI_Allgather} routine does the same gather onto
 every process.
 %
 \mpiRoutineRef{MPI_Allgather}
+
+This routine is used in the
+%
+\indextermsub{dense}{matrix-vector product} to give each processor the
+full input; see~\HPSCref{sec:densescaling}.
+
+Some cases look like an all-gather but can be implemented more
+efficiently. Suppose you have two distributed vectors, and you want to
+create a new vector that contains those elements of the one that do
+not appear in the other. You could implement this by gathering the
+second vector on each processor, but this may be prohibitive in memory
+usage.
+
+\begin{exercise}
+  Can you think of another algorithm for taking the set difference of
+  two distributed vectors. Hint: look up `bucket-brigade algorithm'
+  in~\cite{Eijkhout:IHPSClulu}. What is the time and space complexity
+  of this algorithm? Can you think of other advantages beside a
+  reduction in workspace?
+\end{exercise}

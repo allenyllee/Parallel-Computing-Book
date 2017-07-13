@@ -18,13 +18,13 @@
 class library {
 private:
   MPI_Comm comm;
-  int mytid,ntids,other;
+  int procno,nprocs,other;
   MPI_Request *request;
 public:
   library(MPI_Comm incomm) {
     comm = incomm;
-    MPI_Comm_rank(comm,&mytid);
-    other = 1-mytid;
+    MPI_Comm_rank(comm,&procno);
+    other = 1-procno;
     request = new MPI_Request[2];
   };
   int communication_start();
@@ -36,11 +36,11 @@ int main(int argc,char **argv) {
 
 #include "globalinit.c"
 
-  int other = 1-mytid, sdata=5,rdata;
+  int other = 1-procno, sdata=5,rdata;
   MPI_Request request[2];
   MPI_Status status[2];
 
-  if (mytid>1) { MPI_Finalize(); return 0; }
+  if (procno>1) { MPI_Finalize(); return 0; }
 
   library my_library(comm);
   MPI_Isend(&sdata,1,MPI_INT,other,1,comm,&(request[0]));

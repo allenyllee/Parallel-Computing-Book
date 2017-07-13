@@ -119,24 +119,6 @@ overlap in content between the messages.
 Limiting MPI traffic to the master thread also means that no buffer
 space is needed for the on-node communication.
 
-\Level 0 {Recognizing shared memory in MPI}
-\label{mpi-comm-split-type}
-
-MPI's one-sided routines take a very symmetric view of processes:
-each process can access the window of every other process (within a communicator).
-Of course, in practice there will be a difference in performance
-depending on whether the origin and target are actually
-on the same shared memory, or whether they can only communicate through the network.
-For this reason MPI makes it easy to group processes by shared memory domains
-using \indexmpishow{MPI_Comm_split_type}.
-
-\mpiRoutineRef{MPI_Comm_split_type}
-
-In the following example, \n{CORES_PER_NODE} is a platform-dependent
-constant:
-%
-\verbatimsnippet{commsplittype}
-
 \Level 0 {Hybrid MPI-plus-threads execution}
 \label{sec:init-thread}
 

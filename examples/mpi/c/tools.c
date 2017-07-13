@@ -26,10 +26,10 @@
 */
 int error(MPI_Comm comm,int id,const char *fmt,...)
 {
-  int mytid; va_list argp;
-  MPI_Comm_rank(comm,&mytid);
+  int procno; va_list argp;
+  MPI_Comm_rank(comm,&procno);
   va_start(argp,fmt);
-  if (id<0 || id==mytid) {
+  if (id<0 || id==procno) {
     vprintf(fmt, argp); printf("\n");
   }
   va_end(argp);
@@ -45,10 +45,10 @@ int error(MPI_Comm comm,int id,const char *fmt,...)
 int commandline_argument(MPI_Comm comm,
     int argc,char **argv,const char *keyword,int default_val)
 {
-  int ipos,return_val,mytid;
-  MPI_Comm_rank(comm,&mytid);
+  int ipos,return_val,procno;
+  MPI_Comm_rank(comm,&procno);
   return_val = default_val;
-  if (mytid==0) {
+  if (procno==0) {
     for (ipos=1; ipos<argc-1; ipos++) {
       if (!strcmp(argv[ipos],keyword)) {
 	return_val = atoi(argv[ipos+1]);

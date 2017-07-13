@@ -1,9 +1,9 @@
 // trueextent.c
-int sender = 0, receiver = 1, the_other = 1-mytid,
+int sender = 0, receiver = 1, the_other = 1-procno,
   count = 4;
 int sizes[2] = {4,6},subsizes[2] = {2,3},starts[2] = {1,2};
 MPI_Datatype subarraytype;
-if (mytid==sender) {
+if (procno==sender) {
   MPI_Type_create_subarray
     (2,sizes,subsizes,starts,MPI_ORDER_C,MPI_DOUBLE,&subarraytype);
   MPI_Type_commit(&subarraytype);

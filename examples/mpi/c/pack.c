@@ -20,7 +20,7 @@ int main(int argc,char **argv) {
 
 #include "globalinit.c"
 
-  if (ntids<2) {
+  if (nprocs<2) {
     printf("This program needs at least two processes\n");
     return -1;
   }
@@ -28,7 +28,7 @@ int main(int argc,char **argv) {
     printf("Usage: %s nnn\n",argv[0]);
     return -2;
   }
-  int sender=0,receiver=ntids-1,other=ntids-1-mytid;
+  int sender=0,receiver=nprocs-1,other=nprocs-1-procno;
   int nsends=atoi(argv[1]),maxsends=100;
   if (nsends>maxsends) {
     printf("Max value for commandline argument: %d\n",maxsends);
@@ -37,7 +37,7 @@ int main(int argc,char **argv) {
   int buflen = 1000,
     position;
   char *buffer = malloc(buflen);
-  if (mytid==sender) {
+  if (procno==sender) {
     int len=2*sizeof(int)+nsends*sizeof(double);
     if (len>buflen) {
       printf("Not enough buffer space, need %d\n",len);
@@ -50,7 +50,7 @@ int main(int argc,char **argv) {
     }
     MPI_Pack(&nsends,1,MPI_INT,buffer,buflen,&position,comm);
     MPI_Send(buffer,position,MPI_PACKED,other,0,comm);
-  } else if (mytid==receiver) {
+  } else if (procno==receiver) {
     int irecv_value;
     double xrecv_value;
     MPI_Recv(buffer,buflen,MPI_PACKED,other,0,comm,MPI_STATUS_IGNORE);

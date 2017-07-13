@@ -20,11 +20,11 @@ int main(int argc,char **argv) {
 
 #include "globalinit.c"
 
-  if (ntids<2) {
+  if (nprocs<2) {
     printf("This program needs at least two processes\n");
     return -1;
   }
-  int sender = 0, receiver = 1, the_other = 1-mytid,
+  int sender = 0, receiver = 1, the_other = 1-procno,
     count = 4;
   double *source,*target;
   int sizes[2] = {4,4},subsizes[2] = {2,2},starts[2] = {1,1};
@@ -35,12 +35,12 @@ int main(int argc,char **argv) {
     source[i] = i+.5;
 
   MPI_Datatype subarraytype;
-  if (mytid==sender) {
+  if (procno==sender) {
     MPI_Type_create_subarray
       (2,sizes,subsizes,starts,MPI_ORDER_C,MPI_DOUBLE,&subarraytype);
     MPI_Type_commit(&subarraytype);
     MPI_Send(source,1,subarraytype,the_other,0,comm);
-  } else if (mytid==receiver) {
+  } else if (procno==receiver) {
     MPI_Status recv_status;
     int recv_count;
     MPI_Recv(target,count,MPI_DOUBLE,the_other,0,comm,
@@ -49,7 +49,7 @@ int main(int argc,char **argv) {
     ASSERT(recv_count==count);
   }
   
-  if (mytid==sender) {
+  if (procno==sender) {
     MPI_Aint true_lb,true_extent;
     MPI_Type_get_true_extent
       (subarraytype,&true_lb,&true_extent);
@@ -63,7 +63,7 @@ int main(int argc,char **argv) {
     MPI_Type_free(&subarraytype);
   }
 
-  if (mytid==receiver) {
+  if (procno==receiver) {
     printf("received:");
     for (int i=0; i<count; i++)
       printf(" %6.3f",target[i]);
@@ -81,7 +81,7 @@ int main(int argc,char **argv) {
     }
   }
 
-  if (mytid==0)
+  if (procno==0)
     printf("Finished\n");
 
   /* MPI_Finalize(); */

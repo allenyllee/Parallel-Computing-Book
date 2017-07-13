@@ -33,7 +33,7 @@ int main(int argc,char ** argv) {
   double *local_domain = new double[localsize],
     *halo_domain = new double[localsize+2];
   for (int i=0; i<localsize; i++)
-    local_domain[i] = (double)mytid;
+    local_domain[i] = (double)procno;
 
   MPI_Win my_window;
   err = MPI_Win_create(local_domain,
@@ -43,7 +43,7 @@ int main(int argc,char ** argv) {
     double dev;
     average(local_domain,halo_domain,localsize,my_window,comm);
     dev = test_convergence(local_domain,localsize,globalsize,my_first,comm);
-    if (mytid==0) printf("Deviation %8.5e\n",dev);
+    if (procno==0) printf("Deviation %8.5e\n",dev);
   }
 
   err = MPI_Win_free(&my_window); CHK(err);
@@ -64,30 +64,30 @@ double test_convergence(double *local,int localsize,int global_size,
 }
 
 int average(double local[],double halo[],int localsize,MPI_Win window,MPI_Comm comm) {
-  int ntids,mytid,err; double left_val,right_val;
-  MPI_Comm_size(comm,&ntids);
-  MPI_Comm_rank(comm,&mytid);
-  printf("%d %d\n",mytid,ntids);
+  int nprocs,procno,err; double left_val,right_val;
+  MPI_Comm_size(comm,&nprocs);
+  MPI_Comm_rank(comm,&procno);
+  printf("%d %d\n",procno,nprocs);
   for (int i=0; i<localsize; i++)
     halo[i+1] = local[i];
   err = MPI_Win_fence(MPI_MODE_NOPRECEDE,window); CHK(err);
   // get from the left
-  if (mytid>0) {
+  if (procno>0) {
     err = MPI_Get(&left_val,1,MPI_DOUBLE,
-            mytid-1, // get from
+            procno-1, // get from
             localsize-1,1,MPI_DOUBLE, // offset and amount
             window); CHK(err);
   } else left_val = 1.;
   // get from the right
-  if (mytid<ntids-1) {
+  if (procno<nprocs-1) {
     err = MPI_Get(&right_val,1,MPI_DOUBLE,
-            mytid+1, // get from
+            procno+1, // get from
             0,1,MPI_DOUBLE, // offset and amount
             window); CHK(err);
   } else right_val= 0.;
   err = MPI_Win_fence(MPI_MODE_NOSUCCEED,window); CHK(err);
   halo[0] = left_val; halo[localsize+1] = right_val;
-  // printf("%d: ",mytid);
+  // printf("%d: ",procno);
   // for (int i=0; i<localsize+2; i++) printf("%e ",halo[i]);
   // printf("\n");
   for (int i=0; i<localsize; i++)

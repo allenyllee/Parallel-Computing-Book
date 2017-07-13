@@ -2,8 +2,8 @@
 // we assume that each process has a value "localsize"
 // the root process collectes these values
 
-if (mytid==root)
-  localsizes = (int*) malloc( (ntids+1)*sizeof(int) );
+if (procno==root)
+  localsizes = (int*) malloc( (nprocs+1)*sizeof(int) );
 
 // everyone contributes their info
 MPI_Gather(&localsize,1,MPI_INT,

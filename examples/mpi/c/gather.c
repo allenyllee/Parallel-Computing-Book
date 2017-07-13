@@ -20,25 +20,25 @@ int main(int argc,char **argv) {
 
 #include "globalinit.c"
   int localsize =  10+10*( (float) rand()/(float)RAND_MAX - .5),
-    root = ntids-1;
+    root = nprocs-1;
 
   int *localsizes=NULL;
   // create local data
   int *localdata = (int*) malloc( localsize*sizeof(int) );
   for (int i=0; i<localsize; i++)
-    localdata[i] = mytid+1;
+    localdata[i] = procno+1;
   // we assume that each process has a value "localsize"
   // the root process collectes these values
 
-  if (mytid==root)
-    localsizes = (int*) malloc( (ntids+1)*sizeof(int) );
+  if (procno==root)
+    localsizes = (int*) malloc( (nprocs+1)*sizeof(int) );
 
   // everyone contributes their info
   MPI_Gather(&localsize,1,MPI_INT,
              localsizes,1,MPI_INT,root,comm);
-  if (mytid==root) {
+  if (procno==root) {
     printf("Local sizes: ");
-    for (int i=0; i<ntids; i++)
+    for (int i=0; i<nprocs; i++)
       printf("%d, ",localsizes[i]);
     printf("\n");
   }

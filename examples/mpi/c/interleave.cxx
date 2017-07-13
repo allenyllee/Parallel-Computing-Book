@@ -22,40 +22,40 @@ int main(int argc,char **argv) {
 
 #include "globalinit.c"
 
-  if (ntids<2) {
+  if (nprocs<2) {
     printf("This program needs at least two processes\n");
     return -1;
   }
   int 
     sender = 0, count = 5;
-  int displs[ntids],counts[ntids];
+  int displs[nprocs],counts[nprocs];
   int *source,*target;
 
   target = new int[count];
 
-  if (mytid==sender) {
-    source = new int[count*ntids*ntids];
-    for (int i=0; i<ntids*count; i++)
+  if (procno==sender) {
+    source = new int[count*nprocs*nprocs];
+    for (int i=0; i<nprocs*count; i++)
       source[i] = i;
     // this is for error detection; these elements should go unused
-    for (int i=ntids*count; i<ntids*count*ntids; i++)
+    for (int i=nprocs*count; i<nprocs*count*nprocs; i++)
       source[i] = -37;
-    for (int i=0; i<ntids; i++) {
+    for (int i=0; i<nprocs; i++) {
       counts[i] = 1; displs[i] = i;
     }
   }
 
   MPI_Datatype vectortype;
-  MPI_Type_vector(count,1,ntids,MPI_INT,&vectortype);
+  MPI_Type_vector(count,1,nprocs,MPI_INT,&vectortype);
   MPI_Type_commit(&vectortype);
   MPI_Scatterv( source,counts,displs,vectortype, target,count,MPI_INT,sender,comm);
 
   for (int i=0; i<count; i++) {
-    if ( target[i]!=ntids*i+mytid )
-      printf("Mismatch: proc %d, elt %d is %d s/b %d\n",mytid,i,target[i],ntids*i+mytid);
+    if ( target[i]!=nprocs*i+procno )
+      printf("Mismatch: proc %d, elt %d is %d s/b %d\n",procno,i,target[i],nprocs*i+procno);
   }
 
-  if (mytid==0) {
+  if (procno==0) {
     MPI_Type_free(&vectortype);
     printf("Finished\n");
   }

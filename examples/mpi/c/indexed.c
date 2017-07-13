@@ -20,11 +20,11 @@ int main(int argc,char **argv) {
 
 #include "globalinit.c"
 
-  if (ntids<2) {
+  if (nprocs<2) {
     printf("This program needs at least two processes\n");
     return -1;
   }
-  int sender = 0, receiver = 1, the_other = 1-mytid,
+  int sender = 0, receiver = 1, the_other = 1-procno,
     count = 5,totalcount = 15;
   int *source,*target;
   int *displacements,*blocklengths;
@@ -42,12 +42,12 @@ int main(int argc,char **argv) {
     source[i] = i;
 
   MPI_Datatype newvectortype;
-  if (mytid==sender) {
+  if (procno==sender) {
     MPI_Type_indexed(count,blocklengths,displacements,MPI_INT,&newvectortype);
     MPI_Type_commit(&newvectortype);
     MPI_Send(source,1,newvectortype,the_other,0,comm);
     MPI_Type_free(&newvectortype);
-  } else if (mytid==receiver) {
+  } else if (procno==receiver) {
     MPI_Status recv_status;
     int recv_count;
     MPI_Recv(target,count,MPI_INT,the_other,0,comm,
@@ -56,7 +56,7 @@ int main(int argc,char **argv) {
     ASSERT(recv_count==count);
   }
   
-  if (mytid==receiver) {
+  if (procno==receiver) {
     int i=3,val=7;
     if (target[i]!=val)
       printf("location %d %d s/b %d\n",i,target[i],val);
@@ -64,7 +64,7 @@ int main(int argc,char **argv) {
     if (target[i]!=val)
       printf("location %d %d s/b %d\n",i,target[i],val);
   }
-  if (mytid==0)
+  if (procno==0)
     printf("Finished\n");
 
   MPI_Finalize();

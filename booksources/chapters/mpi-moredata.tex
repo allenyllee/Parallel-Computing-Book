@@ -124,3 +124,16 @@ int MPI_Pack_size(
 \end{verbatim}
 Add one time \indexmpishow{MPI_BSEND_OVERHEAD}.
 
+\begin{exercise}
+  \label{ex:packAOS}
+  Suppose you have a `structure of arrays'
+\begin{verbatim}
+struct aos {
+  int length;
+  double *reals;
+  double *imags;
+};
+\end{verbatim}
+  with dynamically created arrays. Write code to send and receive this
+  structure.
+\end{exercise}

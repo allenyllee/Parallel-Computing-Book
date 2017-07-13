@@ -19,14 +19,14 @@
 int main(int argc,char **argv) {
 
   MPI_Comm comm;
-  int mytid=-1,ntids,threading,err;
+  int procno=-1,nprocs,threading,err;
   
   MPI_Init_thread(&argc,&argv,MPI_THREAD_MULTIPLE,&threading);
   comm = MPI_COMM_WORLD;
-  MPI_Comm_rank(comm,&mytid);
-  MPI_Comm_size(comm,&ntids);
+  MPI_Comm_rank(comm,&procno);
+  MPI_Comm_size(comm,&nprocs);
 
-  if (mytid==0) {
+  if (procno==0) {
     switch (threading) {
     case MPI_THREAD_MULTIPLE : printf("Glorious multithreaded MPI\n"); break;
     case MPI_THREAD_SERIALIZED : printf("No simultaneous MPI from threads\n"); break;

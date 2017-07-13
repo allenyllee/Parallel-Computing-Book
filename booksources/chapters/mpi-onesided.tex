@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-6
+%%%% by Victor Eijkhout, copyright 2012-7
 %%%%
 %%%% mpi-onesided.tex : about onesided communication
 %%%%
@@ -193,6 +193,11 @@ Window areas are
 accessible to other processes in the communicator by specifying the
 process rank and an offset from the base of the window.
 
+As in the two-sided case, \indexmpishow{MPI_PROC_NULL} can be used as
+a target rank.
+
+\Level 1 {Put}
+
 The \n{MPI_Put} routine is used to put data in the window
 of a target process
 %
@@ -224,6 +229,8 @@ of the communicator that was used in the create call.
   \verbatimsnippet{randomputskl}
 \end{exercise}
 
+\Level 1 {Get}
+
 The \indexmpishow{MPI_Get} call is very similar.
 \begin{verbatim}
 int MPI_Get(void *origin_addr, int origin_count, MPI_Datatype
@@ -232,7 +239,9 @@ int MPI_Get(void *origin_addr, int origin_count, MPI_Datatype
             win)
 \end{verbatim}
 
-\verbatimsnippet{getblock}
+%\verbatimsnippet{getblock}
+
+\Level 1 {Accumulate}
 
 A~third one-sided routine
 is \indexmpishow{MPI_Accumulate} which does a reduction operation on the results
@@ -245,6 +254,19 @@ MPI_Accumulate (
   MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype,
   MPI_Op op,MPI_Win window)
 \end{verbatim}
+
+\begin{exercise}
+  \label{ex:countdown}
+
+  Implement a shared counter:
+  \begin{itemize}
+  \item One process maintains a counter;
+  \item Iterate: all others at random moments update this counter.
+  \item When the counter is zero, everyone stops iterating.
+  \end{itemize}
+  The problem here is data synchronization: does everyone see the
+  counter the same way?
+\end{exercise}
 
 \begin{exercise}
   Implement an `all-gather' operation using one-sided communication:
@@ -544,8 +566,23 @@ The two lock types are:
 These routines make MPI behave like a shared memory system; the
 instructions between locking and unlocking the window effectively
 become \indexterm{atomic operations}.
+%
+\mpiRoutineRef{MPI_Win_lock}
 
-The above mechanism is of limited use.
+To lock the windows of all processes in the group of the windows, use
+\indexmpishow{MPI_Win_lock_all}:
+%
+\mpiRoutineRef{MPI_Win_lock_all}
+
+To unlock a window, use \indexmpishow{MPI_Win_unlock} and
+\indexmpishow{MPI_Win_unlock_all}.
+
+The RMA epoch is now defined between the lock and unlock calls, and
+operations are only guaranteed to be concluded after the unlock call.
+
+\Level 1 {Atomic shared memory operations}
+
+The above example is of limited use.
 Suppose processor zero has a data structure \n{work_table}
 with items that need to be processed. A~counter \n{first_work}
 keeps track of the lowest numbered item that still needs processing.
@@ -592,18 +629,22 @@ MPI_Free_mem()
 These calls reduce to \n{malloc} and \n{free} if there is no special
 memory area; SGI is an example where such memory does exist.
 
+It is also possible to have windows where the size is dynamically set.
+%
+\mpiRoutineRef{MPI_Win_create_dynamic}
+%
+Memory is attached to the window:
+%
+\mpiRoutineRef{MPI_Win_attach}
+%
+and its inverse:
+%
+\mpiRoutineRef{MPI_Win_detach}
+
 \Level 1 {Window information}
 
 The \indexmpishow{MPI_Info} parameter can be used to pass implementation-dependent 
-information:
-\begin{verbatim}
-MPI_Info info ;
-int error ;
-error = MPI_Info_create ( &info ) ;
-error = MPI_Info_set ( info , "no_locks" , "true" ) ;
-/* Use the info object*/
-error = MPI_Info_free ( &info ) ;
-\end{verbatim}
+information; see section~\ref{sec:mpi-info}.
 
 \begin{verbatim}
 MPI_Win_get_attr(win, MPI_WIN_BASE, &base, &flag), 

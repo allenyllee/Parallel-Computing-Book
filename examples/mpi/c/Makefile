@@ -3,7 +3,7 @@
 ####
 #### This makefile is part of the source of 
 #### "Parallel Computing for Science and Engineering"
-#### by Victor Eijkhout, copyright 2013-6
+#### by Victor Eijkhout, copyright 2013-7
 ####
 #### This is the makefile for the C examples
 ####     in examples/mpi/c
@@ -11,22 +11,27 @@
 ################################################################
 ################################################################
 
+MAKEFLAGS += --no-builtin-rules
+
 info ::
 	@echo "Do: make app (where app=${APPS})"
 
-APPS = hello init thread \
+APPS = init thread \
     recvblock sendblock ssendblock sendrecv irecv_source irecvnonblock \
-    probe \
-    putfence getfence randomput anysource cancel exscan \
+    probe ibarrier \
+    putfence getfence anysource onesidedbuild onsidedmap \
+    cancel exscan \
     postwaitwin passive \
     reduce reduceinplace allreduce allreduceinplace gather gatherv allgatherv \
     reducescatter trueextent \
     contiguous vector interleave indexed struct pack subarray \
     commdup_wrong commdup_right commsplit commsplittype \
-    cart persist \
+    sharedshared \
+    cart graph persist \
     spawn_manager spawn_worker \
-    pingpong mvp2d centraldiff \
-    iotest blockwrite scatterwrite
+    pingpong centraldiff \
+    blockwrite scatterwrite
+# not ready for prime time: mvp2d
 
 listapps :
 	@echo ${APPS}
@@ -38,7 +43,7 @@ listsources :
 	@echo tools.{c,h}
 
 ifdef TACC_TAU_DIR
-  CC = tau_cc.sh
+  CC = tau_cc.sh -std=c99
   CXX = tau_cxx.sh
 else
   CC  = mpicc -std=c99
@@ -63,8 +68,10 @@ CORESPERNODE = 16
 
 app_dependencies  = tools.o
 .SECONDEXPANSION:
-${APPS} : $$@.o ${app_dependencies}
-	${CXX} -o $@ $@.o ${app_dependencies}
+#  ${app_dependencies}
+#${APPS} : $$@.o
+% : %.o
+	${CXX} -o $@ $@.o
 ${patsubst %,%.o,${APPS}} tools.o : tools.h globalinit.c
 
 # rules for submitting to the queue and doing tau analysis
@@ -135,6 +142,17 @@ aprun :
 	      eval mpirun -np 4 $$app $$appargs ; \
 	    fi ; \
 	foo
+info ::
+	@echo "make regress_run PROGRAM=..."
+PROGRAM = onesidedbuild
+NP = 4
+regress_run :
+	@mpirun -np ${NP} ./catchout ${PROGRAM}
+	@for c in `seq 0 $$(( ${NP} - 1 ))` ; do \
+	  echo "==== p: $$c ====" ; \
+	  cat ${PROGRAM}.out$$c ; \
+	done
+
 noregression :
 	-@export haserror=0 ; \
 	for p in ${APPS} ; do \
@@ -152,4 +170,4 @@ noregression :
 
 include ../../Make.inc
 clean ::
-	@rm -f *.dat
+	@rm -f *.dat *.out[0-9]*

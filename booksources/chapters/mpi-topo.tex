@@ -4,15 +4,12 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-6
+%%%% by Victor Eijkhout, copyright 2012-7
 %%%%
 %%%% mpi-topo.tex : about communicator topologies
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\Level 0 {Process topologies}
-\label{sec:topology}
 
 In the communicators you have seen so far, processes are linearly ordered.
 In some circumstances the problem you are coding has some structure,
@@ -24,7 +21,9 @@ can define a virtual \indexterm{topology}. There are two types:
 \item general graphs.
 \end{itemize}
 
-\Level 1 {Cartesian grid topology}
+\mpiRoutineRef{MPI_Topo_test}
+
+\Level 0 {Cartesian grid topology}
 \label{sec:cartesian}
 
 A \indextermsub{Cartesian}{grid} is a structure, typically in 2~or~3 dimensions,
@@ -40,4 +39,51 @@ The most common use of Cartesian coordinates
 is to find the rank of process by referring to it in grid terms.
 For instance, one could ask `what are my neighbours offset by $(1,0,0)$, 
 $(-1,0,0)$, $(0,1,0)$ et cetera'.
+
+While the Cartesian topology interface is fairly easy to use, as
+opposed to the more complicated general graph topology below, it is
+not actually sufficient for all Cartesian graph uses. Notably, in
+a so-called \indextermsub{star}{stencil}, such as the
+\indextermsub{nine-point}{stencil}, there are diagonal connections,
+which can not be described in a single step. Instead, it is necessary
+to take a separate step along each coordinate dimension. In higher
+dimensions this is of course fairly awkward.
+
+Thus, even for Cartesian structures, it may be advisable to use the
+general graph topology interface.
+
+\Level 0 {Distributed graph topology}
+\label{sec:mpi-dist-graph}
+
+MPI communicators have a topology type associated. This is tested with
+%
+\indexmpishow{MPI_Topo_test}
+%
+and possible values are:
+\begin{itemize}
+\item \indexmpishow{MPI_UNDEFINED} for communicators where nothing
+  topology has explicitly been specified.
+\item \indexmpishow{MPI_CART} for Cartesian toppologies;
+  section~\ref{sec:cartesian}.
+\item \indexmpishow{MPI_GRAPH} for the MPI-1 graph topology;
+  section~\ref{sec:mpi-1-graph}.
+\item \indexmpishow{MPI_DIST_GRAPH} for the distributed graph
+  topology; section~\ref{sec:mpi-dist-graph}.
+\end{itemize}
+
+\mpiRoutineRef{MPI_Dist_graph_create}
+
+Statistics query:
+%
+\indexmpishow{MPI_Dist_graph_neighbors_count}
+
+\Level 0 {Graph topology (deprecated)}
+\label{sec:mpi-1-graph}
+
+The original \indextermbus{MPI}{1} had a graph topology interface
+which required each process to specify the full process graph. Since
+this is not scalable, it should be considered deprecated. Use the
+distributed graph topology (section~\ref{sec:mpi-dist-graph}) instead.
+
+\mpiRoutineRef{MPI_Graph_create}
 

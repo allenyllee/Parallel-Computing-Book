@@ -4,19 +4,19 @@
 
 // the root process decides how much data will be coming:
 // allocate arrays to contain size and offset information
-if (mytid==root) {
-  localsizes = (int*) malloc( (ntids+1)*sizeof(int) );
-  offsets = (int*) malloc( ntids*sizeof(int) );
+if (procno==root) {
+  localsizes = (int*) malloc( (nprocs+1)*sizeof(int) );
+  offsets = (int*) malloc( nprocs*sizeof(int) );
 }
 // everyone contributes their info
 MPI_Gather(&localsize,1,MPI_INT,
 	     localsizes,1,MPI_INT,root,comm);
 // the root constructs the offsets array
-if (mytid==root) {
+if (procno==root) {
   offsets[0] = 0;
-  for (int i=0; i<ntids; i++)
+  for (int i=0; i<nprocs; i++)
     offsets[i+1] = offsets[i]+localsizes[i];
-  alldata = (int*) malloc( offsets[ntids]*sizeof(int) );
+  alldata = (int*) malloc( offsets[nprocs]*sizeof(int) );
 }
 // everyone contributes their data
 MPI_Gatherv(localdata,localsize,MPI_INT,

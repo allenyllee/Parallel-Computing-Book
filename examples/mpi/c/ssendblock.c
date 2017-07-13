@@ -22,8 +22,8 @@ int main(int argc,char **argv) {
 
 #include "globalinit.c"
 
-  if (mytid>1) goto skip;
-  other = 1-mytid;
+  if (procno>1) goto skip;
+  other = 1-procno;
   sendbuf = (int*) malloc(sizeof(int));
   recvbuf = (int*) malloc(sizeof(int));
   size = 1;

@@ -25,15 +25,15 @@ int main(int argc,char **argv) {
 
   /* We use processors 0,1,2 to set up a ring*/
   int right,left, my_data, other_data, reference_data;
-  if (ntids<3) {
+  if (nprocs<3) {
     printf("This program needs at least 3 processes\n");
     goto skip;
   }
-  if (mytid>2)
+  if (procno>2)
     goto skip;
 
-  right = (mytid+1)%3; left = (mytid+2)%3;
-  my_data = 10*mytid;
+  right = (procno+1)%3; left = (procno+2)%3;
+  my_data = 10*procno;
   reference_data = 10*left;
 
   MPI_Sendrecv( &my_data,1,MPI_INTEGER, right,0,
@@ -41,7 +41,7 @@ int main(int argc,char **argv) {
 		comm,MPI_STATUS_IGNORE);
   if (other_data!=reference_data)
     printf("Error on process %d: received %d from %d, expected %d\n",
-	   mytid,other_data,left,reference_data);
+	   procno,other_data,left,reference_data);
   
  skip:
   MPI_Finalize();

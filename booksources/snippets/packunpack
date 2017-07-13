@@ -1,4 +1,4 @@
-// pack.c
+// packtimer.c
 if (mytid==sender) {
   MPI_Pack(&nsends,1,MPI_INT,buffer,buflen,&position,comm);
   for (int i=0; i<nsends; i++) {

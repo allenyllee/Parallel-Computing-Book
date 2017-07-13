@@ -25,9 +25,9 @@ int main(int argc,char **argv) {
   // add the random variables together
   MPI_Allreduce(&myrandom,&sumrandom,
   		1,MPI_FLOAT,MPI_SUM,comm);
-  // the result should be approx ntids/2:
-  if (mytid==ntids-1)
-    printf("Result %6.9f compared to .5\n",sumrandom/ntids);
+  // the result should be approx nprocs/2:
+  if (procno==nprocs-1)
+    printf("Result %6.9f compared to .5\n",sumrandom/nprocs);
 
   MPI_Finalize();
   return 0;

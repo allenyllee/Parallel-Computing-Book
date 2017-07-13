@@ -1,0 +1,9 @@
+// block3.c
+int ireq = 0;
+for (int p=0; p<nprocs; p++)
+  if (p!=procid)
+    MPI_Isend(sbuffers[p],buflen,MPI_INT,p,0,comm,&(requests[ireq++]));
+for (int p=0; p<nprocs; p++)
+  if (p!=procid)
+    MPI_Recv(rbuffer,buflen,MPI_INT,p,0,comm,MPI_STATUS_IGNORE);
+MPI_Waitall(nprocs-1,requests,MPI_STATUSES_IGNORE);

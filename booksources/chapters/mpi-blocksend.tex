@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-6
+%%%% by Victor Eijkhout, copyright 2012-7
 %%%%
 %%%% mpi-blocksend.tex : blocking sends
 %%%%
@@ -126,7 +126,7 @@ object then allows you to find out where the message actually came from.
     for \=$k=1,\ldots,n$\\
     \>fin\=d pivot:\\
     \>\> $p=1/a_{kk}$\\
-    \>scale rows by the pivot:\\
+    \>scale current row by the pivot:\\
     \>\> for \=$r=1,\ldots,n$\\
     \>\>\> $a_{rk} = a_{rk}\cdot p$\\
     \>sweep columns:\\
@@ -268,7 +268,13 @@ figure~\ref{fig:serialization}.
   \label{ex:serialsend}
   (Classroom exercise) Each student holds a piece of paper
   in the right hand --~keep your left hand behind your back~--
-  and execute the following program:
+  and we want to execute:
+  \begin{enumerate}
+  \item Give the paper to your right neighbour;
+  \item Accept the paper from your left neighbour.
+  \end{enumerate}
+  Including boundary conditions for first and last process, that becomes
+  the following program:
   \begin{enumerate}
   \item If you are not the rightmost student, turn to the right
     and give the paper to your right neighbour.
@@ -335,9 +341,13 @@ sendrecv(from=predecessor,to=successor);
 where the sendrecv call is executed by all processors.
 
 All processors but the last one send to their neighbour; the target
-value of \indexmpidef{MPI_PROC_NULL} (\n{MPI.PROC_NULL} in Python) for
+value of \indexmpishow{MPI_PROC_NULL} for
 the last processor means a `send to the null processor': no actual
-send is done.  The null processor value is also of use with the
+send is done.
+%
+\mpiRoutineRef{MPI_PROC_NULL}
+%
+The null processor value is also of use with the
 \indexmpishow{MPI_Sendrecv} call; section~\ref{sec:send-recv}
 
 \begin{exercise}

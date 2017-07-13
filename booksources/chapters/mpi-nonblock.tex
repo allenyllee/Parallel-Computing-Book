@@ -297,7 +297,8 @@ Other routines are \n{MPI_Wait} for a single request, and
 The above fragment is unrealistically simple. In a more general scenario we
 have to manage send and receive buffers: we need as many buffers as there are
 simultaneous non-blocking sends and receives.
-\verbatimsnippet{irecvloop}
+%
+\verbatimsnippet{irecvall}
 
 Instead of waiting for all messages, we can wait for any message to come
 with \indexmpishow{MPI_Waitany}, and process the receive data as it comes in.
