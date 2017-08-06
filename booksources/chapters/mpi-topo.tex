@@ -52,6 +52,45 @@ dimensions this is of course fairly awkward.
 Thus, even for Cartesian structures, it may be advisable to use the
 general graph topology interface.
 
+\Level 1 {Cartesian routines}
+
+The cartesian topology is specified by giving
+\indexmpishow{MPI_Cart_create} the sizes of the processor grid along
+each axis, and whether the grid is periodic along that axis.
+\begin{verbatim}
+int MPI_Cart_create(
+  MPI_Comm comm_old, int ndims, int *dims, int *periods, 
+  int reorder, MPI_Comm *comm_cart)
+\end{verbatim}
+Each point in this new communicator has a coordinate and a rank.  They
+can be queried with \indexmpishow{MPI_Cart_coord} and
+\indexmpishow{MPI_Cart_rank} respectively.
+\begin{verbatim}
+int MPI_Cart_coords(
+  MPI_Comm comm, int rank, int maxdims,
+  int *coords);
+int MPI_Cart_rank(
+  MPI_Comm comm, init *coords, 
+  int *rank);
+\end{verbatim}
+Note that these routines can give the coordinates for any rank,
+not just for the current process.
+%
+\verbatimsnippet{cart}
+
+The \n{reorder} parameter to \n{MPI_Cart_create}
+indicates whether processes can have a rank
+in the new communicator that is different from in the old one.
+
+Strangely enough you can only shift in one direction, you can not
+specify a shift vector.
+\begin{verbatim}
+int MPI_Cart_shift(MPI_Comm comm, int direction, int displ, int *source, 
+                  int *dest)
+\end{verbatim}
+If you specify a processor outside the grid
+the result is \indexmpishow{MPI_PROC_NULL}.
+
 \Level 0 {Distributed graph topology}
 \label{sec:mpi-dist-graph}
 
@@ -71,7 +110,24 @@ and possible values are:
   topology; section~\ref{sec:mpi-dist-graph}.
 \end{itemize}
 
+\Level 1 {Creation}
+
+There are two creation routines for process graphs.
+\begin{itemize}
+\item \indexmpishow{MPI_Dist_graph_create_adjacent} assumes that a
+  process knows both who it is sending it, and who will send to
+  it. This means that every edge in the communication graph is
+  represented twice, so the memory footprint is double of what is
+  strictly necessary. However, no communication is needed to build the
+  graph.
+\item \indexmpishow{MPI_Dist_graph_create} specifies on each process
+  only its `sources'. Consequently, some amount of processing
+  --~including communication~-- is needed to build the full graph.
+\end{itemize}
+
 \mpiRoutineRef{MPI_Dist_graph_create}
+
+\Level 1 {Query}
 
 Statistics query:
 %

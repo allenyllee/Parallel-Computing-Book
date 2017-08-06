@@ -129,4 +129,14 @@ More:
 
 \mpiRoutineRef{MPI_File_write_at}
 
+\Level 1 {Constants}
+
+\indexmpishow{MPI_SEEK_SET} used to be called \indextermtt{SEEK_SET}
+which gave conflicts with the C++ library. This had to be circumvented
+with
+\begin{verbatim}
+make CPPFLAGS="-DMPICH_IGNORE_CXX_SEEK -DMPICH_SKIP_MPICXX"
+\end{verbatim}
+and such.
+
 \index{MPI/O|)}

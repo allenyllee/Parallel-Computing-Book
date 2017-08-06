@@ -17,12 +17,17 @@
 Splitting a communicator into multiple disjoint communicators
 can be done with \indexmpishow{MPI_Comm_split}.
 This uses a `colour':
-\begin{verbatim}
-MPI_Comm_split( old_comm, colour, new_comm, .... );
-\end{verbatim}
-  and all processes in the old communicator with the same colour
-  wind up in a new communicator together. The old communicator still exists,
-  so processes now have two different contexts in which to communicate.
+%
+\mpiRoutineRef{MPI_Comm_split}
+%
+and all processes in the old communicator with the same colour
+wind up in a new communicator together. The old communicator still exists,
+so processes now have two different contexts in which to communicate.
+
+The ranking of processes in the new communicator is determined by a `key' value.
+Most of the time, there is no reason to use a relative ranking that is different from
+the global ranking, so the \n{MPI_Comm_rank} value of the global communicator
+is a good choice.
 
 Here is one example of communicator splitting. Suppose your processors
 are in a two-dimensional grid:

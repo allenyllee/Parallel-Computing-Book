@@ -225,8 +225,7 @@ of the communicator that was used in the create call.
 \begin{exercise}
   \label{ex:randomput}
   Write code where process~0 randomly writes in the window on 1~or~2.
-  
-  \verbatimsnippet{randomputskl}
+  %\verbatimsnippet{randomputskl}
 \end{exercise}
 
 \Level 1 {Get}
@@ -254,19 +253,6 @@ MPI_Accumulate (
   MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype,
   MPI_Op op,MPI_Win window)
 \end{verbatim}
-
-\begin{exercise}
-  \label{ex:countdown}
-
-  Implement a shared counter:
-  \begin{itemize}
-  \item One process maintains a counter;
-  \item Iterate: all others at random moments update this counter.
-  \item When the counter is zero, everyone stops iterating.
-  \end{itemize}
-  The problem here is data synchronization: does everyone see the
-  counter the same way?
-\end{exercise}
 
 \begin{exercise}
   Implement an `all-gather' operation using one-sided communication:
@@ -310,6 +296,19 @@ while(!converged(A)){
 \Level 1 {Accumulate}
 
 \mpiRoutineRef{MPI_Accumulate}
+
+\begin{exercise}
+  \label{ex:countdown}
+
+  Implement a shared counter:
+  \begin{itemize}
+  \item One process maintains a counter;
+  \item Iterate: all others at random moments update this counter.
+  \item When the counter is zero, everyone stops iterating.
+  \end{itemize}
+  The problem here is data synchronization: does everyone see the
+  counter the same way?
+\end{exercise}
 
 \Level 1 {Request-based operations}
 
@@ -485,14 +484,7 @@ other. Note that they both have their own definition of the group, and
 that the receiving process only does the post and wait calls.
 \verbatimsnippet{postwaittwo}
 
-\Level 1 {Passive target synchronization}
-\label{sec:ref:passive-sync}
-
-\indexmpi{MPI_Win_lock}\indexmpi{MPI_Win_unlock}
-\begin{verbatim}
-MPI_Win_lock (int locktype, int rank, int assert, MPI_Win win)
-MPI_Win_unlock (int rank, MPI_Win win)
-\end{verbatim}
+\Level 1 {Atomic operations}
 
 The \indexmpi{MPI_Fetch_and_op} call atomically retrieves an item from the window
 indicated, and replaces the item on the target by doing an accumulate on it
@@ -607,6 +599,19 @@ and updating needs to be an \indexterm{atomic operation}.
 Unfortunately, you can not have a put and get call in the same access
 epoch. For this reason, MPI version~3 has added certain atomic
 operations, such as \indexmpishow{MPI_Fetch_and_op}.
+
+\begin{exercise}
+  \label{ex:onesidedbuild}
+  \begin{itemize}
+  \item
+    Let each process have an empty array of sufficient length and a
+    stack pointer that maintains the first free location.
+  \item
+    Now let each process randomly put data in a free location of another
+    process' array.
+  \item Use window locking. (Why is active target synchronization not possible?)
+  \end{itemize}
+\end{exercise}
 
 \Level 0 {Details}
 

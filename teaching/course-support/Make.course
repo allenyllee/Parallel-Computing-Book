@@ -1,0 +1,23 @@
+# -*- makefile -*-
+################################################################
+####
+#### This makefile is part of `Parallel Programming in MPI and OpenMP'
+#### by Victor Eijkhout, copyright 2013-7
+#### eijkhout@tacc.utexas.edu
+####
+#### Make include file for course programs
+####
+################################################################
+
+.PHONY: exercise_sources
+info ::
+	@echo "make exercise_sources: list all exercises"
+exercise_sources :
+	echo ${EXERCISES}
+
+info ::
+	@echo "make clean"
+.PHONY: clean
+clean ::
+	@/bin/rm -rf ${EXERCISES} ${OTHERPROGRAMS} \
+	    *~ *.o *.pyc *.dSYM ddt.o* *.o[0-9]* *.dat *.log *.out[0-9]* *.out_total

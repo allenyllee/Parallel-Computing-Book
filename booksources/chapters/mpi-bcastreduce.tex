@@ -82,6 +82,7 @@ the send buffer is reused.
   \label{ex:gaussjordancoll}
   The \indexterm{Gauss-Jordan algorithm} for solving a linear system
   with a matrix~$A$ (or computing its inverse) runs as follows:
+  {\small
   \begin{tabbing}
     for \=pivot $k=1,\ldots,n$\\
     \>let the vector of scalings $\ell^{(k)}_i=A_{ik}/A_{kk}$\\
@@ -89,6 +90,7 @@ the send buffer is reused.
     \>\>for \=column $c=1,\ldots,n$\\
     \>\>\> $A_{rc}\leftarrow A_{rc} - \ell^{(k)}_r A_{rc}$\\
   \end{tabbing}
+  }
   where we ignore the update of the righthand side, or the formation
   of the inverse.
 
@@ -240,7 +242,6 @@ only one element is used.
 
 \begin{exercise}
   \label{ex:randommaxscale}
-  Extend  exercise \ref{ex:randommax}.
   Let each process compute a random number,
   and compute the sum of these numbers using the \n{MPI_Allreduce}
   routine.
