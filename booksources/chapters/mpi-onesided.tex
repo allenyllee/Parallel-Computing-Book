@@ -75,8 +75,9 @@ to strange deadlocks.
 \label{sec:windows}
 \index{window|(}
 
-In one-sided communication, each processor can make an area of memory
-available, called a \indexterm{window}. This has the following
+In one-sided communication, each processor can make an area of memory,
+called a \indexterm{window}, available to one-sided transfers.
+This has the following
 characteristics:
 \begin{itemize}
 \item The window is defined on a communicator, so the create call
@@ -112,6 +113,23 @@ The data array must not be \n{PARAMETER} or \n{static const}.
 The size parameter is measured in bytes. In~C this is easily done
 with the \indextermtt{sizeof} operator;
 for doing this calculation in Fortran, see section~\ref{sec:f-sizeof}.
+
+Instead of exposing user-allocated memory in the window,
+you can use memory allocated by  MPI. In that case,
+the MPI specification allows that the memory of a window can be 
+separate from the regular program memory. The routine \indexmpishow{MPI_Alloc_mem}
+can return a pointer to such priviliged memory.
+%
+\mpiRoutineRef{MPI_Alloc_mem}
+
+This memory is freed with
+\begin{verbatim}
+MPI_Free_mem()
+\end{verbatim}
+These calls reduce to \n{malloc} and \n{free} if there is no special
+memory area; SGI is an example where such memory does exist.
+
+There will be more discussion of window memory in section~\ref{sec:mpi-alloc}.
 
 \Level 0 {Active target synchronization: epochs}
 \label{sec:fence}
@@ -618,25 +636,29 @@ operations, such as \indexmpishow{MPI_Fetch_and_op}.
 \Level 1 {Window memory}
 \label{sec:mpi-alloc}
 
-MPI Windows are strange objects. You can create them from user memory,
-that is, from arrays that are normally declared in your program, or
-you can use memory allocated by  MPI. In that case,
-the MPI specification allows that the memory of a window can be 
-separate from the regular program memory. The routine \indexmpishow{MPI_Alloc_mem}
-can return a pointer to such priviliged memory.
+An MPI Window is built around a buffer. There are four possible
+treatments of that buffer:
+\begin{itemize}
+\item You can pass a user buffer to
+  \indexmpishow{MPI_Win_create}. This buffer can be an ordinary array,
+  or it can be created with \indexmpishow{MPI_Alloc_mem}.
+\item With \indexmpishow{MPI_Win_create_dynamic} you can attach the
+  buffer later, when its size has been dynamically determined.
+\item You can leave the buffer allocation to mpi with
+  \indexmpishow{MPI_Win_allocate}; and
+\item If a communicator is on a shared memory (see
+  section~\ref{mpi-comm-split-type}) you can create a winow in that
+  shared memory with \indexmpishow{MPI_Win_allocate_shared}.
+\end{itemize}
 
-%% Sometimes an architecture has memory that is shared between processes,
-%% or that otherwise is fast for one-sided communication. To put a window
-%% in such memory, it can be placed in memory that is especially
-%% allocated:
-
-\mpiRoutineRef{MPI_Alloc_mem}
-
-\begin{verbatim}
-MPI_Free_mem()
-\end{verbatim}
-These calls reduce to \n{malloc} and \n{free} if there is no special
-memory area; SGI is an example where such memory does exist.
+We looked at the first case, passing a buffer to the window create
+call, in section~\ref{sec:windows}. This buffer could be allocated
+with \n{new} or \indexmpishow{MPI_Alloc_mem}. An easier way to let MPI
+do the allocation is
+%
+\mpiRoutineRef{MPI_Win_allocate}
+%
+The data allocated is freed by \indexmpishow{MPI_Win_free}.
 
 It is also possible to have windows where the size is dynamically set.
 %
