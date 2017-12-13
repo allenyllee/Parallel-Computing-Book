@@ -46,6 +46,14 @@ else
 endif
 NP = 4
 CATCHER = ../course-support/catchout
+.PHONY: catchrun
+info ::
+	@echo "make catchrun [ PROGRAM=... NP=... ] : run with orderly output"
+catchrun :
+	@${MPIRUN} -np ${NP} ${CATCHER} ${PROGRAM} >/dev/null 2>&1
+	@for i in `seq 0 $$(( NP-1 ))` ; do \
+	  echo "$$i:" ; \
+	  cat ${PROGRAM}.out$$i ; done
 regress_out : 
 	@if [ -z ${MODE} ] ; then \
 	  echo "set MODE for regression test!" ; exit 1 ; fi
@@ -71,13 +79,13 @@ RUNS = run_hello \
     run_commrank run_prime run_randommax run_pingpong run_sendrecv \
     run_isendirecv \
     run_procgrid \
-    run_randomput
+    run_randomput run_onesidedbuild
 .PHONY: ${RUNS}
 run_hello : 
 	@export atgram=$@ ; export program=$${atgram##run_} ; export success=1 ; \
 	 echo "%%%%%%%%%%%%%%%%"; echo "Regression run for $$program" ; echo "%%%%%%%%%%%%%%%%" ; \
 	make $$program && \
-	make regress_out NP=${NP} PROGRAM=hello 2>/dev/null && \
+	make regress_out NP=${NP} PROGRAM=hello && \
 	export np=${NP} && \
 	for rank in `seq 0 $$((np-1))` ; do \
 	  export success=1 ; \
@@ -94,7 +102,7 @@ run_hello :
 	    echo "Number of hellos should be 1, not $$hellos" ; \
 	    success=0; fi ; \
 	done && \
-	make regress_success SUCCESS=$$success ; \
+	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
 	echo
 
 run_commrank : 
@@ -124,7 +132,7 @@ run_commrank :
 	    fi; \
 	  fi; \
 	done && \
-	make regress_success SUCCESS=$$success ; \
+	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
 	echo
 
 run_prime : 
@@ -143,7 +151,7 @@ run_prime :
 	if [ $$nfound -lt 1 ] ; then \
 	  echo "You are not reporting the correct smallest factor" ; success=0; \
 	fi ; \
-	make regress_success SUCCESS=$$success ; \
+	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
 	echo
 
 run_randommax :
@@ -167,12 +175,12 @@ run_randommax :
 	 vzero=` cat $$program.out0 \
 	       | awk '/maximum/ {print $$5}' \
 	       | sed -e s/^1./1/ -e s/^0./0/ ` ; \
-	 if [ $$vzero -ne $$vmax ] ; then \
+	 if [ "$$vzero" != "$$vmax" ] ; then \
 	   echo "Reported max $$vzero is not actual max $$vmax" ; success=0 ; \
 	 else \
 	   echo "Maximum correctly reported as $$vzero" ; \
 	 fi ; \
-	make regress_success SUCCESS=$$success ; \
+	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
 	echo
 
 run_pingpong : 
@@ -188,7 +196,7 @@ run_pingpong :
 	 done ; \
 	export ntime=` cat $$program.out_total | awk '{print $$4}' ` && \
 	echo "Micro seconds for pingpong: $$ntime" && \
-	make regress_success SUCCESS=$$success ; \
+	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
 	echo
 
 run_sendrecv : 
@@ -203,7 +211,8 @@ run_sendrecv :
 	    success=0; \
 	  fi ; \
 	 done ; \
-	 echo " .. success: $$success" ; echo
+	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
+	echo
 
 run_isendirecv :
 	@export atgram=$@ ; export program=$${atgram##run_} ; export success=1 ; \
@@ -217,7 +226,8 @@ run_isendirecv :
 	    success=0; \
 	  fi ; \
 	 done ; \
-	 echo " .. success: $$success" ; echo
+	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
+	echo
 
 run_procgrid : 
 	@export atgram=$@ ; export program=$${atgram##run_} ; export success=1 ; \
@@ -232,7 +242,8 @@ run_procgrid :
 	    fi ; \
 	   done ; \
 	 done ; \
-	 echo " .. success: $$success" ; echo
+	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
+	echo
 
 run_randomput :
 	@export atgram=$@ ; export program=$${atgram##run_} ; export success=1 ; \
@@ -249,4 +260,12 @@ run_randomput :
 	 else \
 	    echo "Values 1:$$v1 and 2:$$v2 correctly add up to 0:$$vs" ; \
 	 fi ; \
-	 echo " .. success: $$success" ; echo
+	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
+	echo
+
+run_onesidedbuild :
+	@export atgram=$@ ; export program=$${atgram##run_} ; export success=1 ; \
+	 echo "%%%%%%%%%%%%%%%%"; echo "Regression run for $$program" ; echo "%%%%%%%%%%%%%%%%" ; \
+	 make $$program && \
+	 make regress_out NP=${NP} PROGRAM=$$program && \
+	 make catchrun PROGRAM=onesidedbuild NP=${NP} | ../course-support/catch_onesidedbuild.py

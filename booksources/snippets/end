@@ -1,4 +1,2 @@
-printf("Pi: %e\n",4*s);
 
-return 0;
-}
+//snippet simdfunction

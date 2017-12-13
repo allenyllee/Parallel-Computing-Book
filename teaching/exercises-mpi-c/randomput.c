@@ -34,10 +34,13 @@ int main(int argc,char **argv) {
     MPI_Abort(comm,0);
   }
 
-  //
-  // Take the variable `window_data' and make it into a window
-  // of size 1 integer
-  //
+  /*
+   * Exercise 1:
+   * -- Take the variable `window_data' and make it into a window
+   *    of size 1 integer
+   * Exercise 2:
+   * -- replace MPI_Win_create by MPI_Win_alloc
+   */
   MPI_Win_create(
 /**** your code here ****/
 		 MPI_INFO_NULL,comm,&the_window);
@@ -62,9 +65,10 @@ int main(int argc,char **argv) {
     if (procno==1 || procno==2)
       window_data = 0;
 
-    //
-    // Now we have an epoch where proc 0 puts data either in 1 or 2
-    //
+    /*
+     * Now we have an epoch where proc 0 puts data either in 1 or 2
+     * Exercise: fill in the missing parameters
+     */
     MPI_Win_fence(0,the_window);
     if (procno==0) {
       MPI_Put( /* data on origin: */   &my_number, 1,MPI_INT,

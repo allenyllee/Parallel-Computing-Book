@@ -510,6 +510,17 @@ with the data on the origin.
 %
 \mpiRoutineRef{MPI_Fetch_and_op}
 
+\begin{exercise}
+  \label{ex:countdownop}
+  Redo exercise~\ref{ex:countdown} using \n{MPI_Fetch_and_op}. The
+  problem is again to make sure all processes have the same view of
+  the shared counter.
+
+  Does it work to make the fetch-and-op conditional? Is there a way to
+  do it unconditionally? What should the `break' test be, seeing that
+  multiple processes can update the counter at the same time?
+\end{exercise}
+
 \Level 0 {More active target synchronization}
 \label{sec:post-wait}
 
@@ -591,6 +602,8 @@ To lock the windows of all processes in the group of the windows, use
 To unlock a window, use \indexmpishow{MPI_Win_unlock} and
 \indexmpishow{MPI_Win_unlock_all}.
 
+\mpiRoutineRef{MPI_Win_unlock} % includes unlock_all
+
 The RMA epoch is now defined between the lock and unlock calls, and
 operations are only guaranteed to be concluded after the unlock call.
 
@@ -658,6 +671,7 @@ do the allocation is
 %
 \mpiRoutineRef{MPI_Win_allocate}
 %
+which returns a pointer to the data area created.
 The data allocated is freed by \indexmpishow{MPI_Win_free}.
 
 It is also possible to have windows where the size is dynamically set.

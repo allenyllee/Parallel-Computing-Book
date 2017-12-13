@@ -20,7 +20,7 @@ EXERCISES = hello \
     pingpong sendrecv sumsquares \
     isendirecv isendirecvarray \
     cubegather procgrid \
-    randomput countdown \
+    randomput countdown onesidedbuild \
     blockwrite
 OTHERPROGRAMS = write
 
@@ -37,3 +37,4 @@ ${EXERCISES} : $$@.F90
 ####
 
 include ../course-support/Make.mpi_regress
+run_hello : hello

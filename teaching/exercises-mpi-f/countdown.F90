@@ -33,9 +33,6 @@ Program CountDown
   call MPI_Comm_rank(comm,procno,ierr)
 
 
-  !  // first set a unique random seed
-  !  srand((int)(procno*(double)RAND_MAX/nprocs));
-  
   counter_process = nprocs-1
   
   !!

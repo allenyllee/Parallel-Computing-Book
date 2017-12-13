@@ -9,7 +9,7 @@
 ####
 ################################################################
 
-OMPFLAGS_intel    = -g -openmp 
+OMPFLAGS_intel    = -g -qopenmp 
 OMPFLAGS_gcc      = -ggdb -fopenmp
 OMPFLAGS = ${OMPFLAGS_${TACC_FAMILY_COMPILER}}
 

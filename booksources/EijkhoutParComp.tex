@@ -201,10 +201,10 @@
 \makeindex
 
 \def\publicdraft{{\bf\normalsize \relax Public draft - open for comments}}
-\def\revdate{\escapechar-1\relax 1st edition 2015/6}%\ --\ \string\revision \revision}
+\def\revdate{\escapechar-1\relax 1st edition 2017}%\ --\ \string\revision \revision}
 \begin{lulu}
 \def\publicdraft{}
-\def\revdate{1st edition 2015/6}
+\def\revdate{1st edition 2017}
 \end{lulu}
 
 \newwrite\chapterlist \openout\chapterlist=chapternames.tex
@@ -235,16 +235,16 @@
 
 \tracingmacros=2
 \CHAPTER{Getting started with MPI}{mpi-started}
-\CHAPTER{MPI topic 1: Functional parallelism}{mpi-functional}
-\CHAPTER{MPI topic 2: Collectives}{mpi-collective}
-\CHAPTER{MPI topic 3: Point-to-point}{mpi-ptp}
-\CHAPTER{MPI topic 4: Data types}{mpi-data}
-\CHAPTER{MPI topic 5: Communicators}{mpi-comm}
-\CHAPTER{MPI topic 6: Process management}{mpi-proc}
-\CHAPTER{MPI topic 7: One-sided communication}{mpi-onesided}
-\CHAPTER{MPI topic 8: File I/O}{mpi-io}
-\CHAPTER{MPI topic 9: Topologies}{mpi-topo}
-\CHAPTER{MPI topic 10: Shared memory}{mpi-shared}
+\CHAPTER{MPI topic: Functional parallelism}{mpi-functional}
+\CHAPTER{MPI topic: Collectives}{mpi-collective}
+\CHAPTER{MPI topic: Point-to-point}{mpi-ptp}
+\CHAPTER{MPI topic: Data types}{mpi-data}
+\CHAPTER{MPI topic: Communicators}{mpi-comm}
+\CHAPTER{MPI topic: Process management}{mpi-proc}
+\CHAPTER{MPI topic: One-sided communication}{mpi-onesided}
+\CHAPTER{MPI topic: File I/O}{mpi-io}
+\CHAPTER{MPI topic: Topologies}{mpi-topo}
+\CHAPTER{MPI topic: Shared memory}{mpi-shared}
 %\CHAPTER{MPI by idiom}{mpi-idiom}
 \CHAPTER{MPI leftover topics}{mpi}
 \CHAPTER{MPI Reference}{mpiref}
@@ -255,16 +255,16 @@
 \part{OpenMP}
 
 \CHAPTER{Getting started with OpenMP}{omp-basics}
-\CHAPTER{OpenMP topic 1: Parallel regions}{omp-parallel}
-\CHAPTER{OpenMP topic 2: Loop parallelism}{omp-loop}
-\CHAPTER{OpenMP topic 3: Work sharing}{omp-share}
-\CHAPTER{OpenMP topic 4: Controlling thread data}{omp-data}
-\CHAPTER{OpenMP topic 5: Reductions}{omp-reduction}
-\CHAPTER{OpenMP topic 6: Synchronization}{omp-sync}
-\CHAPTER{OpenMP topic 7: Tasks}{omp-task}
-\CHAPTER{OpenMP topic 8: Affinity}{omp-affinity}
-\CHAPTER{OpenMP tocic 9: Memory model}{omp-memory}
-\CHAPTER{OpenMP tocic 10: SIMD processing}{omp-simd}
+\CHAPTER{OpenMP topic: Parallel regions}{omp-parallel}
+\CHAPTER{OpenMP topic: Loop parallelism}{omp-loop}
+\CHAPTER{OpenMP topic: Work sharing}{omp-share}
+\CHAPTER{OpenMP topic: Controlling thread data}{omp-data}
+\CHAPTER{OpenMP topic: Reductions}{omp-reduction}
+\CHAPTER{OpenMP topic: Synchronization}{omp-sync}
+\CHAPTER{OpenMP topic: Tasks}{omp-task}
+\CHAPTER{OpenMP topic: Affinity}{omp-affinity}
+\CHAPTER{OpenMP tocic: Memory model}{omp-memory}
+\CHAPTER{OpenMP tocic: SIMD processing}{omp-simd}
 
 \CHAPTER{OpenMP remaining topics}{openmp}
 %%\CHAPTER{OpenMP Reference}{ompref}
@@ -355,7 +355,8 @@ Bold reference: defining passage; italic reference: illustration.
 \printindex
 \end{multicols}
 
-\newpage
-%\verbatiminput{CHANGES}
+\hbox{}\vfill
+\includegraphics{isbn_barcode}
+
 \closeout\chapterlist
 \end{document}

@@ -32,8 +32,11 @@ Program RandomPut
   call MPI_Comm_rank(comm,procno,ierr)
 
   !!
-  !! Take the variable `window_data' and make it into a window
-  !! of size 1 integer
+  !! Exercise 1:
+  !! -- Take the variable `window_data' and make it into a window
+  !!    of size 1 integer
+  !! Exercise 2:
+  !! -- Replace MPI_Win_create by MPI_Win_allocate
   !!
   call MPI_Sizeof(window_data,window_elt_size,err)
   window_size = window_elt_size

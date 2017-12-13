@@ -16,6 +16,71 @@ of the use of MPI. While the code snippets given here should be enough,
 full programs can be found in the repository for this book
 \url{https://bitbucket.org/VictorEijkhout/parallel-computing-book}.
 
+\Level 0 {Elementary datatypes}
+\label{sec:datatype-list}
+
+List of predefined \indexmpidef{MPI_Datatype} values:
+
+\begin{tabular}{|l|l|l|}
+  \hline
+  C&Fortran&meaning\\
+  \hline
+  \n{MPI_CHAR}&  \n{MPI_CHARACTER}&\\
+  \n{MPI_SHORT}&  \n{MPI_BYTE}&\\
+  \n{MPI_INT}&  \n{MPI_INTEGER}&\\
+  \n{MPI_LONG}&\\
+  \n{MPI_UNSIGNED_CHAR}&\\
+  \n{MPI_UNSIGNED_SHORT}&\\
+  \n{MPI_UNSIGNED}&\\
+  \n{MPI_UNSIGNED_LONG}&\\
+  \n{MPI_FLOAT}&  \n{MPI_REAL}&\\
+  \n{MPI_DOUBLE}&  \n{MPI_DOUBLE_PRECISION}&\\
+  \n{MPI_LONG_DOUBLE}&\\
+  \n{MPI_BYTE}&\\
+  \n{MPI_PACKED}&  \n{MPI_PACKED}&\\
+  &\n{MPI_COMPLEX}&\\
+  &\n{MPI_DOUBLE_COMPLEX}&\\
+  &\n{MPI_LOGICAL}&\\  
+  \hline
+  &&optional\\
+  \hline
+  \n{MPI_LONG_LONG_INT}&\\
+  &\n{MPI_INTEGER1}&\\
+  &\n{MPI_INTEGER2}&\\
+  &\n{MPI_INTEGER4}&\\
+  &\n{MPI_REAL2}&\\
+  &\n{MPI_REAL4}&\\
+  &\n{MPI_REAL8}&\\
+  \hline
+\end{tabular}
+
+\Level 0 {Mpi operations}
+\label{sec:operator-list}
+
+The following is the list of predefined \indexmpidef{MPI_OP} values.
+
+\begingroup \tt\catcode`\_=12\relax %pyskip
+\begin{tabular}{|l|l|}
+  \hline
+  MPI operator&description\\ \hline
+  MPI_MAX&maximum\\
+  MPI_MIN&minimum\\
+  MPI_SUM&sum\\
+  MPI_PROD&product\\
+  MPI_LAND&logical and\\
+  MPI_BAND&bitwise and\\
+  MPI_LOR&logical or\\
+  MPI_BOR&bitwise or\\
+  MPI_LXOR&logical xor\\
+  MPI_BXOR&bitwise xor\\
+  MPI_MAXLOC&max value and location\\
+  MPI_MINLOC&min value and location\\
+  \hline
+\end{tabular}
+\endgroup %pyskip
+All except the last two operate on MPI datatypes;
+the last two operate on a value/index pair.
+
 \Level 0 {Communicators}
 
 \Level 1 {Process topologies}

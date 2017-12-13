@@ -19,7 +19,7 @@ info ::
 APPS = init thread \
     recvblock sendblock ssendblock sendrecv irecv_source irecvnonblock \
     probe ibarrier \
-    putfence getfence anysource onesidedbuild onsidedmap \
+    putfence putfencealloc getfence anysource onesidedbuild onsidedmap \
     cancel exscan \
     postwaitwin passive \
     reduce reduceinplace allreduce allreduceinplace gather gatherv allgatherv \

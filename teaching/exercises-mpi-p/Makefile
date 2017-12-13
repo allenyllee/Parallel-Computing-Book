@@ -19,7 +19,7 @@ EXERCISES = \
     commrank prime pingpong \
     isendirecv \
     stridesend cubegather \
-    randomput countdown \
+    randomput countdown onesidedbuild \
     procgrid blockwrite viewwrite
 
 include ../course-support/Make.course

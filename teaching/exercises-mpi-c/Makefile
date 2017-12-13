@@ -20,7 +20,7 @@ EXERCISES = hello \
     commrank prime randommax pingpong sendrecv \
     isendirecv isendirecvarray sumsquares \
     stridesend cubegather procgrid \
-    randomput countdown onsesidedbuild \
+    randomput countdown onesidedbuild \
     blockwrite viewwrite scatterwrite \
     jordan
 

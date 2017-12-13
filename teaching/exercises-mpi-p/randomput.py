@@ -31,8 +31,11 @@ my_number = np.empty(1,dtype=np.int)
 my_number[0] = 1
 
 ##
-## Determine the size of the window unit in bytes,
-## which will be used as displacement.
+## Exercise 1:
+## -- Determine the size of the window unit in bytes,
+##    which will be used as displacement.
+## Exercise 2:
+## -- replace Win.Create by Win.Allocate
 ##
 intsize = np.dtype('int').itemsize
 win = MPI.Win.Create(

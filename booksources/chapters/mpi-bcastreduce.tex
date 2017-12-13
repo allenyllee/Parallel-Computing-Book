@@ -178,7 +178,7 @@ these address calculations:
 \Level 1 {Reduction operations}
 \label{sec:mpi:op-create}
 
-{\catcode`\_=12
+{\catcode`\_=12 %pyskip
   \begin{tabular}{|lll|}
     \hline
   MPI type&meaning&applies to\\ \hline
@@ -198,7 +198,7 @@ these address calculations:
   \indexmpidef{MPI_MINLOC}&min value and location&\\
   \hline
 \end{tabular}
-}
+} %pyskip
 
 The \indexmpishow{MPI_MAXLOC} operation yields both the maximum and
 the rank on which it occurs. However, to use it the input should be an

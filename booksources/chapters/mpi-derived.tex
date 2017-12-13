@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-6
+%%%% by Victor Eijkhout, copyright 2012-7
 %%%%
 %%%% mpi-derived.tex : derived datatypes
 %%%%
@@ -55,17 +55,44 @@ heterogeneous data, et cetera.
 \Level 1 {Basic calls}
 \label{sec:data-commit}
 
-New MPI data types are created by
+The typical sequence of calls for creating a new datatype is as follows:
+\begin{verbatim}
+MPI_Datatype newtype;
+MPI_Type_<sometype>( < oldtype specifications >, &newtype );
+MPI_Type_commit( &newtype );
+/* code that uses your new type */
+MPI_Type_free( &newtype );
+\end{verbatim}
+
+\Level 2 {Datatype objects}
+
+MPI derived data types are stored in variables of type
+\indexmpishow{MPI_Datatype}.
+
+\Level 2 {Create calls}
+
+The \indexmpishow{MPI_Datatype} varriable gets its value by a call to
+one of the following routines:
 \begin{itemize}
-\item \indexmpishow{MPI_Type_contiguous}
-\item \indexmpishow{MPI_Type_vector}
-\item \indexmpishow{MPI_Type_create_subarray}
-\item \indexmpishow{MPI_Type_struct}
-\item \indexmpishow{MPI_Type_indexed}
-\item \indexmpishow{MPI_Type_hindexed}
+\item \indexmpishow{MPI_Type_contiguous} for contiguous blocks of
+  data; section~\ref{sec:data:contiguous};
+\item \indexmpishow{MPI_Type_vector} for regularly strided data;
+  section~\ref{sec:data:vector};
+\item \indexmpishow{MPI_Type_create_subarray} for subsets out higher
+  dimensional block; section~\ref{sec:type_subarray};
+\item \indexmpishow{MPI_Type_struct} for heterogeneous irregular data;
+  section~\ref{sec:data:struct};
+\item \indexmpishow{MPI_Type_indexed} and
+  \indexmpishow{MPI_Type_hindexed} for irregularly strided data;
+  section~\ref{sec:data:indexed}.
 \end{itemize}
-It is necessary to call \indexmpishow{MPI_Type_commit} which makes MPI
-do the indexing calculations for the data type.
+These calls take an existing type, whether elementary or also derived,
+and produce a new type.
+
+\Level 2 {Commit and free}
+
+It is necessary to call \indexmpishow{MPI_Type_commit} on a new data
+type, which makes MPI do the indexing calculations for the data type.
 %
 \mpiRoutineRef{MPI_Type_commit}
 
@@ -224,6 +251,7 @@ equal to the column length.
 \end{exercise}
 
 \Level 2 {Subarray type}
+\label{sec:type_subarray}
 
 The vector datatype can be used for blocks in an array of dimension
 more than~2 by using it recursively. However, this gets
