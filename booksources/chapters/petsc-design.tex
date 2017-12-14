@@ -1,0 +1,88 @@
+% -*- latex -*-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Parallel Programming in MPI and OpenMP'
+%%%% by Victor Eijkhout, copyright 2012-7
+%%%%
+%%%% petsc.tex : petsc stuff
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\Level 0 {Startup}
+\label{sec:petscinit}
+
+\begin{verbatim}
+ierr = PetscInitialize(&Argc,&Args,PETSC_NULL,PETSC_NULL);
+MPI_Comm comm = PETSC_COMM_WORLD;
+
+MPI_Comm_rank(comm,&mytid);
+MPI_Comm_size(comm,&ntids);
+\end{verbatim}
+
+\begin{pythonnote}
+  The following works if you don't need commandline options.
+\begin{verbatim}
+from petsc4py import PETSc
+\end{verbatim}
+To pass commandline arguments to PETSc, do:
+\begin{verbatim}
+import sys
+from petsc4py import init
+init(sys.argv)
+from petsc4py import PETSc
+\end{verbatim}
+\end{pythonnote}
+
+\begin{verbatim}
+comm = PETSc.COMM_WORLD
+nprocs = comm.getSize(self) 
+procno = comm.getRank(self)
+\end{verbatim}
+
+\Level 0 {Commandline options}
+
+See section~\ref{sec:petscinit} about passing the commandline options.
+
+\begin{pythonnote}
+  In Python, do not specify the initial hyphen of an option name.
+\begin{verbatim}
+hasn = PETSc.Options().hasName("n")
+\end{verbatim}
+\end{pythonnote}
+
+\Level 0 {Printing}
+
+Printing screen output in parallel is tricky. If two processes execute
+a print statement at more or less the same time there is no guarantee
+as to in what order they may appear on screen. (Even attempts to have
+them print one after the other may not result in the right ordering.)
+Furthermore, lines from multi-line print actions on two processes may
+wind up on the screen interleaved.
+
+PETSc has two routines that fix this problem. First of all, often the
+information printed is the same on all processes, so it is enough if
+only one process, for instance process~0, prints it.
+%
+\petscRoutineRef{PetscPrintf}
+
+If all processes need to print, there is a routine that forces the
+output to appear in process order.
+%
+\petscRoutineRef{PetscSynchronizedPrintf}
+
+To make sure that output is properly flushed from all system buffers
+use a flush routine:
+%
+\petscRoutineRef{PetscSynchronizedFlush}
+%
+where for ordinary screen output you would use \n{stdout} for the file.
+
+\begin{pythonnote}
+  Since the print routines use the python \n{print} call, they
+  automatically include the trailing newline. You don't have to
+  specify it as in the C~calls.
+\end{pythonnote}
+

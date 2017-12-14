@@ -1,0 +1,79 @@
+% -*- latex -*-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Parallel Programming in MPI and OpenMP'
+%%%% by Victor Eijkhout, copyright 2012-7
+%%%%
+%%%% mpi-shared.tex : about shared memory in MPI
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The one-sided MPI calls (chapter~\ref{ch:mpi-onesided}) can be used to
+emulate shared memory. In this chapter we will look at the ways MPI
+can interact with the presence of actual shared memory. Many MPI
+implementations have optimizations that detect shared memory and can
+exploit it, but that is not exposed to the programmer. The
+\indextermbus{MPI}{3} standard added routines that do give the programmer
+that knowledge.
+
+\Level 0 {Recognizing shared memory}
+\label{mpi-comm-split-type}
+
+MPI's one-sided routines take a very symmetric view of processes:
+each process can access the window of every other process (within a communicator).
+Of course, in practice there will be a difference in performance
+depending on whether the origin and target are actually
+on the same shared memory, or whether they can only communicate through the network.
+For this reason MPI makes it easy to group processes by shared memory domains
+using \indexmpishow{MPI_Comm_split_type}.
+
+\mpiRoutineRef{MPI_Comm_split_type}
+
+Here the \n{split_type} parameter has to be from the following (short) list:
+\begin{itemize}
+\item \indexmpishow{MPI_COMM_TYPE_SHARED}: split the communicator into subcommunicators
+  of processes sharing a memory area.
+\end{itemize}
+
+In the following example, \n{CORES_PER_NODE} is a platform-dependent
+constant:
+%
+\verbatimsnippet{commsplittype}
+
+\Level 0 {Shared memory for windows}
+
+Processes that exist on the same physical shared memory should be able
+to move data by copying, rather than through MPI send/receive calls
+--~which of course will do a copy operation under the hood.
+In order to do such user-level copying:
+\begin{enumerate}
+\item We need to create a shared memory area with
+  \indexmpishow{MPI_Win_allocate_shared}, and
+\item We need to get pointers to where a process' area is in this
+  shared space; this is done with \indexmpishow{MPI_Win_shared_query}.
+\end{enumerate}
+
+\Level 1 {Creating a shared window}
+
+First we create a window with memory that is allocated by the MPI
+library. Presumably this places the memory close the
+\indexterm{socket} on which the process runs.
+
+\mpiRoutineRef{MPI_Win_allocate_shared}
+
+As an example, which consider the 1D heat equation. On each process we
+create a local area of three point:
+%
+\verbatimsnippet{allocateshared3pt}
+
+\Level 1 {Querying the shared structure}
+
+Even though the window created above is shared, that doesn't mean it's
+contiguous. Hence it is necessary to retrieve the pointer to the area
+of each process that you want to communicate with.
+
+\mpiRoutineRef{MPI_Win_shared_query}
+

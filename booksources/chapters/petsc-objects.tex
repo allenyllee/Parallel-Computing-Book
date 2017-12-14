@@ -1,0 +1,101 @@
+% -*- latex -*-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Parallel Programming in MPI and OpenMP'
+%%%% by Victor Eijkhout, copyright 2012-7
+%%%%
+%%%% petsc.tex : petsc stuff
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\Level 0 {Vectors}
+
+Create a vector:
+%
+\petscRoutineRef{VecCreate}
+
+\begin{pythonnote}
+  In python, \n{PETSc.Vec()} creates an object with null handle, so a
+  subsequent \n{create()} call is needed.
+\end{pythonnote}
+
+In C and Fortran, the vector type is a keyword; in Python it is a
+member of \n{PETSc.Vec.Type}.
+
+You can set both local and global size, or set one and let the other
+be derived:
+%
+\petscRoutineRef{VecSetSize}
+
+To query the sizes:
+%
+\petscRoutineRef{VecGetSize}
+
+There are many routines operating on vectors.
+%
+\petscRoutineRef{VecNorm}
+
+The \n{VecView} routine can be used to display vectors on screen as
+ascii output
+%
+\petscRoutineRef{VecView}
+%
+but the routine call also use more general \n{Viewer} objects.
+
+For most operations on vectors you don't need the actual data. But
+should you need it, here are the routines:
+%
+\petscRoutineRef{VecGetArray}
+
+\Level 0 {Matrices}
+
+Create a matrix:
+%
+\petscRoutineRef{MatCreate}
+
+Just as with vectors, there is a local and global size; except that
+that now applies to rows and columns.
+%
+\petscRoutineRef{MatSetSizes}
+%
+\petscRoutineRef{MatSizes}
+
+You can set a single matrix element, or a block of them, where you
+supply a set of $i$~and~$j$ indices:
+%
+\petscRoutineRef{MatSetValue}
+
+After setting matrix elements, the matrix needs to be assembled. This
+is where PETSc moves matrix elements to the right processor, if they
+were specified elsewhere.
+%
+\petscRoutineRef{MatAssemblyBegin}
+
+PETSc sparse matrices are very flexible: you can create them empty and
+then start adding elements. However, this is very inefficient in
+execution since the \ac{OS} needs to reallocate the matrix every time
+it grows a little. Therefore, PETSc has calls for the user to indicate
+how many elements the matrix will ultimately contain.
+%
+\petscRoutineRef{MatSetPreallocation}
+
+\begin{verbatim}
+MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE)
+\end{verbatim}
+
+\Level 0 {KSP: iterative solvers}
+
+Create a KSP object:
+%
+\petscRoutineRef{KSPCreate}
+
+Get the reason \indexmpishow{KSPSolve} stopped:
+%
+\petscRoutineRef{KSPGetConvergedReason}
+
+\Level 0 {DMDA: distributed arrays}
+
+\petscRoutineRef{DMDACreate2d}
