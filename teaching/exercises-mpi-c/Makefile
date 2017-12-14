@@ -37,4 +37,3 @@ ${EXERCISES} : $$@.c
 ####
 
 include ../course-support/Make.mpi_regress
-run_hello : hello

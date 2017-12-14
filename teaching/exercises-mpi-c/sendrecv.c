@@ -25,7 +25,7 @@ int main() {
   MPI_Comm_size(comm,&nprocs);
   MPI_Comm_rank(comm,&procno);
 
-  int mydata=1,leftdata=0,rightdata=0;
+  double mydata=procno, leftdata=0, rightdata=0;
   int sendto,recvfrom;
 
   // Exercise:
@@ -37,31 +37,36 @@ int main() {
   //hint:  recvfrom =
 /**** your code here ****/
   MPI_Sendrecv
-    (&mydata,1,MPI_INT, sendto,0,
-     &leftdata,1,MPI_INT, recvfrom,0, comm,MPI_STATUS_IGNORE);
+    (&mydata,1,MPI_DOUBLE, sendto,0,
+     &leftdata,1,MPI_DOUBLE, recvfrom,0, comm,MPI_STATUS_IGNORE);
 
   // then the right neighbour data
   //hint:  recvfrom =
   //hint:  sendto = 
 /**** your code here ****/
   MPI_Sendrecv
-    (&mydata,1,MPI_INT, sendto,0,
-     &rightdata,1,MPI_INT, recvfrom,0, comm,MPI_STATUS_IGNORE);
+    (&mydata,1,MPI_DOUBLE, sendto,0,
+     &rightdata,1,MPI_DOUBLE, recvfrom,0, comm,MPI_STATUS_IGNORE);
 
   // check correctness
   mydata = mydata+leftdata+rightdata;
 
-  int error=nprocs,errors;
-  if (procno==0 || procno==nprocs-1) {
-    if (mydata!=2) {
-      printf("Data on proc %d should be 2, not %d\n",procno,mydata);
-      error = procno;
-    }
+  double res;
+  if (procno==0) {
+    res = 2*procno+1;
+  } else if (procno==nprocs-1) {
+    res = 2*procno-1;
   } else {
-    if (mydata!=3) {
-      printf("Data on proc %d should be 3, not %d\n",procno,mydata);
-      error = procno;
-    }
+    res = 3*procno;
+  }
+
+#define ISAPPROX(x,y) \
+  ( ( x==0. && abs(y)<1.e-14 ) || ( y==0. && abs(x)<1.e-14 ) || \
+    abs(x-y)/abs(x)<1.e-14 )
+  int error=nprocs, errors;
+  if (!ISAPPROX(mydata,res)) {
+    printf("Data on proc %d should be %e, not %e\n",procno,res,mydata);
+    error = procno;
   }
   MPI_Allreduce(&error,&errors,1,MPI_INT,MPI_MIN,comm);
   if (procno==0) {

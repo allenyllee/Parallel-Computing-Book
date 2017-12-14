@@ -557,17 +557,6 @@ will also work on another.
 \Level 0 {Context information}
 \label{sec:context}
 
-\Level 1 {Processor name}
-
-You can query the \indexterm{hostname} of a processor.
-This name need not be unique between different processor ranks.
-%
-\mpiRoutineRef{MPI_Get_processor_name}
-%
-You have to pass in the character storage:
-the character array must be at least \indexmpidef{MPI_MAX_PROCESSOR_NAME} characters long.
-The actual length of the name is returned in the \n{resultlen} parameter.
-
 \Level 1 {Version information}
 
 \mpiRoutineRef{MPI_VERSION}

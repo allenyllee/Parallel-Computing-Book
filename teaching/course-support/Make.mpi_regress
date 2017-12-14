@@ -57,7 +57,7 @@ catchrun :
 regress_out : 
 	@if [ -z ${MODE} ] ; then \
 	  echo "set MODE for regression test!" ; exit 1 ; fi
-	@echo "${MODE} regression run for ${PROGRAM} on np=${NP}"
+	@if [ 0 -eq 1 ] ; then echo "${MODE} regression run for ${PROGRAM} on np=${NP}" ; fi
 	@if [ ${MODE} = "mpi" ] ; then \
 	  ${MPIRUN} -np ${NP} ${CATCHER} ${PROGRAM} >/dev/null 2>&1 ; \
 	  cat ${PROGRAM}.out[0-9]* > ${PROGRAM}.out_total ; \
@@ -81,14 +81,20 @@ RUNS = run_hello \
     run_procgrid \
     run_randomput run_onesidedbuild
 .PHONY: ${RUNS}
-run_hello : 
-	@export atgram=$@ ; export program=$${atgram##run_} ; export success=1 ; \
-	 echo "%%%%%%%%%%%%%%%%"; echo "Regression run for $$program" ; echo "%%%%%%%%%%%%%%%%" ; \
+.PHONY: run_start
+run_start :
+	@export atgram=${PROGRAM} ; export program=$${atgram##run_} ; \
+	 echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" ; \
+	 echo "Regression run for $$program, np=${NP}" ; \
+	 echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" ; \
 	make $$program && \
-	make regress_out NP=${NP} PROGRAM=hello && \
+	make regress_out NP=${NP} PROGRAM=$${program}
+run_hello :
+	@make run_start PROGRAM=$@ NP=${NP}
+	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	export np=${NP} && \
+	export success=1 ; \
 	for rank in `seq 0 $$((np-1))` ; do \
-	  export success=1 ; \
 	  echo "testing output for rank $$rank" ; \
 	  export outfile=hello.out$$rank ; \
 	  if [ ! -f $$outfile ] ; then \
@@ -106,13 +112,11 @@ run_hello :
 	echo
 
 run_commrank : 
-	@export atgram=$@ ; export program=$${atgram##run_} ; export success=1 ; \
-	 echo "%%%%%%%%%%%%%%%%"; echo "Regression run for $$program" ; echo "%%%%%%%%%%%%%%%%" ; \
-	 make $$program && \
-	 make regress_out NP=${NP} PROGRAM=commrank && \
+	@make run_start PROGRAM=$@ NP=${NP}
+	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export np=${NP} ; \
+	 export success=1 ; \
 	for rank in `seq 0 $$((np-1))` ; do \
-	  export success=1 ; \
 	  echo "testing output for rank $$rank" ; \
 	  export outfile=commrank.out$$rank ; \
 	  if [ ! -f $$outfile ] ; then \
@@ -136,10 +140,8 @@ run_commrank :
 	echo
 
 run_prime : 
-	@export atgram=$@ ; export program=$${atgram##run_} ; export success=1 ; \
-	 echo "%%%%%%%%%%%%%%%%"; echo "Regression run for $$program" ; echo "%%%%%%%%%%%%%%%%" ; \
-	 make $$program && \
-	 make regress_out NP=${NP} PROGRAM=prime && \
+	@make run_start PROGRAM=$@ NP=${NP}
+	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 cat prime.out* > prime.out ; export success=1 ; \
 	nfound=`cat prime.out | grep "found factor" | wc -l` ; \
 	if [ $$nfound -eq 0 ] ; then \
@@ -155,11 +157,10 @@ run_prime :
 	echo
 
 run_randommax :
-	@export atgram=$@ ; export program=$${atgram##run_} ; export success=1 ; \
-	 echo "%%%%%%%%%%%%%%%%"; echo "Regression run for $$program" ; echo "%%%%%%%%%%%%%%%%" ; \
-	 make $$program && \
-	 make regress_out NP=${NP} PROGRAM=$$program && \
+	@make run_start PROGRAM=$@ NP=${NP}
+	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export np=${NP} ; \
+	 export success=1 ; \
 	 for p in `seq 1 $$(( np-1 ))` ; do \
 	   if [ `cat $$program.out$$p | wc -l` -ne 1 ] ; then \
 	     echo "I was expecting exactly one line of output from proc $$p" ; \
@@ -184,11 +185,10 @@ run_randommax :
 	echo
 
 run_pingpong : 
-	@export atgram=$@ ; export program=$${atgram##run_} ; export success=1 ; \
-	 echo "%%%%%%%%%%%%%%%%"; echo "Regression run for $$program" ; echo "%%%%%%%%%%%%%%%%" ; \
-	 make $$program && \
-	 make regress_out NP=${NP} PROGRAM=$$program ; \
+	@make run_start PROGRAM=$@ NP=${NP}
+	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export np=${NP} ; \
+	 export success=1 ; \
 	 for p in `seq 1 $$(( np-1 ))` ; do \
 	  if [ `cat $$program.out$$p | wc -l` -gt 0 ] ; then \
 	    echo "I was not expecting output from proc $$p" ; \
@@ -200,11 +200,10 @@ run_pingpong :
 	echo
 
 run_sendrecv : 
-	@export atgram=$@ ; export program=$${atgram##run_} ; export success=1 ; \
-	 echo "%%%%%%%%%%%%%%%%"; echo "Regression run for $$program" ; echo "%%%%%%%%%%%%%%%%" ; \
-	 make $$program && \
-	 make regress_out NP=${NP} PROGRAM=$$program ; \
+	@make run_start PROGRAM=$@ NP=${NP}
+	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export np=${NP} ; \
+	 export success=1 ; \
 	 for p in `seq 1 $$(( np-1 ))` ; do \
 	  if [ `cat $$program.out$$p | wc -l` -gt 0 ] ; then \
 	    echo "I was not expecting output from proc $$p" ; \
@@ -215,11 +214,10 @@ run_sendrecv :
 	echo
 
 run_isendirecv :
-	@export atgram=$@ ; export program=$${atgram##run_} ; export success=1 ; \
-	 echo "%%%%%%%%%%%%%%%%"; echo "Regression run for $$program" ; echo "%%%%%%%%%%%%%%%%" ; \
-	 make $$program && \
-	 make regress_out NP=${NP} PROGRAM=$$program && \
+	@make run_start PROGRAM=$@ NP=${NP}
+	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export np=${NP} ; \
+	 export success=1 ; \
 	 for p in `seq 1 $$(( np-1 ))` ; do \
 	  if [ `cat $$program.out$$p | wc -l` -gt 0 ] ; then \
 	    echo "I was not expecting output from proc $$p" ; \
@@ -230,11 +228,10 @@ run_isendirecv :
 	echo
 
 run_procgrid : 
-	@export atgram=$@ ; export program=$${atgram##run_} ; export success=1 ; \
-	 echo "%%%%%%%%%%%%%%%%"; echo "Regression run for $$program" ; echo "%%%%%%%%%%%%%%%%" ; \
-	 make $$program && \
+	@export atgram=$@ ; export program=$${atgram##run_} ; \
+	 export success=1 ; \
 	 for np in 4 6 8 9 ; do \
-	   make regress_out NP=$$np PROGRAM=$$program ; \
+	   make run_start PROGRAM=$@ NP=$${np} && \
 	   for p in `seq 1 $$(( np-1 ))` ; do \
 	    if [ `cat $$program.out$$p | wc -l` -gt 0 ] ; then \
 	      echo "I was not expecting output from proc $$p" ; \
@@ -246,10 +243,9 @@ run_procgrid :
 	echo
 
 run_randomput :
-	@export atgram=$@ ; export program=$${atgram##run_} ; export success=1 ; \
-	 echo "%%%%%%%%%%%%%%%%"; echo "Regression run for $$program" ; echo "%%%%%%%%%%%%%%%%" ; \
-	 make $$program && \
-	 make regress_out NP=${NP} PROGRAM=$$program && \
+	@make run_start PROGRAM=$@ NP=${NP}
+	@export atgram=$@ ; export program=$${atgram##run_} ; \
+	 export success=1 ; \
 	 export np=${NP} ; \
 	 export v1=`cat $$program.out1 | awk '{print $$4}'` ; \
 	 export v2=`cat $$program.out2 | awk '{print $$4}'` ; \
@@ -264,8 +260,7 @@ run_randomput :
 	echo
 
 run_onesidedbuild :
-	@export atgram=$@ ; export program=$${atgram##run_} ; export success=1 ; \
-	 echo "%%%%%%%%%%%%%%%%"; echo "Regression run for $$program" ; echo "%%%%%%%%%%%%%%%%" ; \
-	 make $$program && \
-	 make regress_out NP=${NP} PROGRAM=$$program && \
+	@make run_start PROGRAM=$@ NP=${NP}
+	@export atgram=$@ ; export program=$${atgram##run_} ; \
+	 export success=1 ; \
 	 make catchrun PROGRAM=onesidedbuild NP=${NP} | ../course-support/catch_onesidedbuild.py

@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-6
+%%%% by Victor Eijkhout, copyright 2012-7
 %%%%
 %%%% mpi-io.tex : MPI/O
 %%%%
@@ -33,14 +33,12 @@ and have every process read from and write to its own location? That's
 where \emph{MPI/O} comes in.
 
 MPI has its own file handle:
-\indexmpishow{MPI_File}
-
-\begin{fortrannote}
-  Use an \n{integer} to store the file handle.
-\end{fortrannote}
+\mpiRoutineRef{MPI_File}
 
 File open:
+%
 \mpiRoutineRef{MPI_File_open}
+%
 This routine is collective, even if only certain processes will access
 the file with a read or write call.
 Similarly, \indexmpishow{MPI_File_close} is collective.

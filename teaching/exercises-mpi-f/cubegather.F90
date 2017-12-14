@@ -77,7 +77,7 @@ Program CubeGather
               sender = ( prock*procs_per_side + procj )*procs_per_side +proci
               call MPI_Recv( &
 !!!! your code here !!!!
-                   sender,0, comm,ierr)
+                   sender,0,comm,MPI_STATUS_IGNORE,ierr)
               call MPI_Type_free(insert_type,ierr)
            end do
         end do

@@ -47,6 +47,22 @@ Program RandomMax
 
   !!
   !! Exercise part 1:
+  !! (re-enable this part of the code by removing #if and #endif lines)
+  !! -- compute the sum of the values, everywhere
+  !! -- scale your number by that sum
+  !! -- check that the sum of scaled values is 1
+  !!
+  call MPI_Allreduce( &
+!!!! your code here !!!!
+!!!! your code here !!!!
+       comm,ierr)
+  if (abs(sum_random-1.)>1.e-14) then
+     print *,"Suspicious sum",sum_random,"on process",procno
+  end if
+  
+#if 0
+  !!
+  !! Exercise part 2:
   !! - compute the maximum random value on process zero
   !!
   call MPI_Reduce( &
@@ -54,22 +70,6 @@ Program RandomMax
        comm,ierr)
   if (procno==0) then
      print *,"The maximum number is",global_random
-  end if
-  
-  !!
-  !! Exercise part 2:
-  !! (re-enable this part of the code by removing #if and #endif lines)
-  !! -- compute the sum of the values, everywhere
-  !! -- scale your number by that sum
-  !! -- check that the sum of scaled values is 1
-  !!
-#if 0
-  call MPI_Allreduce( &
-!!!! your code here !!!!
-!!!! your code here !!!!
-       comm,ierr)
-  if (abs(sum_random-1.)>1.e-14) then
-     print *,"Suspicious sum",sum_random,"on process",procno
   end if
 #endif
   

@@ -4,18 +4,36 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-6
+%%%% by Victor Eijkhout, copyright 2012-7
 %%%%
 %%%% mpi-commbasic.tex : communicator basics
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\Level 0 {Communicator basics}
-
 A communicator is an object describing a group of processes. In many 
 applications all processes work together closely coupled, and the
-only communicator you need is \n{MPI_COMM_WORLD}. However, there are 
+only communicator you need is \indextermttdef{MPI_COMM_WORLD}, the
+group describing all processes that your job starts with.
+
+If you don't want to write \n{MPI_COMM_WORLD} repeatedly, you can
+assign that value to a variable of type \n{MPI_Comm}:
+%
+\mpiRoutineRef{MPI_Comm}
+
+Examples:
+\begin{verbatim}
+#include <mpi.h>
+MPI_Comm comm = MPI_COMM_WORLD; // C
+
+#include <mpif.h>
+Integer :: comm = MPI_COMM_WORLD
+
+use mpi_f08
+Type(MPI_Comm) comm :: MPI_COMM_WORLD ! F08
+\end{verbatim}
+
+However, there are 
 circumstances where you want one subset of processes to operate 
 independently of another subset. For example:
 \begin{itemize}

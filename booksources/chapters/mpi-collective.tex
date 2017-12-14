@@ -93,13 +93,21 @@ Consider the computation of the \indexterm{standard deviation}:
 \qquad\hbox{where}\qquad \mu = \frac{\sum_i^Nx_i}N
 \]
 and assume that every processor stores just one~$x_i$ value.
-The calculation of the average~$\mu$ is a reduction, but then every
-process needs to compute~$x_i-\mu$ for its value~$x_i$. Thus $\mu$~is
-needed everywhere. You can compute this by doing a reduction followed
-by a broadcast, but it is better to use a so-called
-\indexterm{allreduce} operation, which does the reduction and leaves
-the result on all processors.
-    
+\begin{enumerate}
+\item The calculation of the average~$\mu$ is a reduction, since all
+  the distributed values need to be added.
+\item Now every
+  process needs to compute~$x_i-\mu$ for its value~$x_i$, so $\mu$~is
+  needed everywhere. You can compute this by doing a reduction followed
+  by a broadcast, but it is better to use a so-called
+  \indexterm{allreduce} operation, which does the reduction and leaves
+  the result on all processors.
+\item The calculation of $\sum_i(x_i-\mu)$ is another sum of
+  distributed data, so we need another reduction operation. Depending
+  on whether each process needs to know~$\sigma$, we can again use an
+  allreduce.
+\end{enumerate}
+
 For instance, if $x,y$ are distributed vector objects, and you want to compute
 \[ y- (x^ty)x \]
 which is part of the Gramm-Schmidt algorithm; see~\HPSCref{app:gram-schmidt}.

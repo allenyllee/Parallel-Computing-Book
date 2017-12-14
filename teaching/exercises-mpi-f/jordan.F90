@@ -52,15 +52,16 @@ Program GaussJordan
   !! - one column of the matrix
   !! - a scaling vector
   !! - redundantly, the solution and right-hand side
+  !! (We use zero-based indexing for convenience)
   !!
   N = nprocs
-  allocate(matrix(N),scalings(N),rhs(N),solution(N))
+  allocate(matrix(0:N-1),scalings(0:N-1),rhs(0:N-1),solution(0:N-1))
 
   !!
   !! Fill the matrix with random data;
   !! increase the diagonal for numerical stability
   !!
-  do row=1,N
+  do row=0,N-1
      call random_number(my_random)
      matrix(row) = my_random
      if (row==procno) matrix(row) = matrix(row)+.5d0
@@ -76,11 +77,12 @@ Program GaussJordan
   !!
   !! Now iterate over the columns,
   !! using the diagonal element as pivot
+  !! (We use zero-based indexing for convenience)
   !!
-  do piv=1,N
-     if (piv==procno+1) then
+  do piv=0,N-1
+     if (piv==procno) then
         pivot = matrix(piv)
-        do row=1,N
+        do row=0,N-1
            scalings(row) = matrix(row)/pivot
         end do
      end if
@@ -93,12 +95,12 @@ Program GaussJordan
      !! Now update the matrix
      !! Answer for yourself: why is there no loop over the columns?
      !!
-     do row=1,N
+     do row=0,N-1
         if (row==piv) cycle
         matrix(row) = matrix(row) - scalings(row)*matrix(piv)
      end do
      !! update the rhs
-     do row=1,N
+     do row=0,N-1
         if (row==piv) cycle
         rhs(row) = rhs(row) - scalings(row)*rhs(piv)
      end do
@@ -107,8 +109,8 @@ Program GaussJordan
   !!
   !! Check that our local column is swept
   !!
-  do row=1,N
-     if (row==procno+1) cycle
+  do row=0,N-1
+     if (row==procno) cycle
      if (abs(matrix(row))>1.d-14) &
         write(*,'("Wrong value at [",i3,",",i3,"]:",f9.5)') row,procno,matrix(row)
   end do
@@ -116,14 +118,14 @@ Program GaussJordan
   !!
   !! Solve the system
   !!
-  local_solution = rhs(procno+1)/matrix(procno+1)
+  local_solution = rhs(procno)/matrix(procno)
   call MPI_Allgather(local_solution,1,MPI_REAL8,solution,1,MPI_REAL8,comm,ierr)
 
   !!
   !! Check correctness of the solution
   !!
   if (procno==0) then
-     do row=1,N
+     do row=0,N-1
         if (abs(solution(row)-1.)>1.d-13) then
            write(*,'("Wrong solution at [",i3,"]:",f9.5)') row,solution(row)
            success = .false.

@@ -181,6 +181,9 @@ its source, tag, and size. In other cases you want to leave some options
 open, and inspect the message for them after it was received.
 To do this, the receive call has a \emph{status}\index{status!of receive call}
 parameter.
+%
+\mpiRoutineRef{MPI_Status}
+%
 This status is a property of the actually received messsage, so \n{MPI_Irecv}
 does not have a status parameter, but \n{MPI_Wait} does.
 
@@ -239,6 +242,8 @@ The four possible cases are illustrated in figure~\ref{fig:block-sync}.
 
 MPI has a number of routines for synchronous communication,
 such as \indexmpishow{MPI_Ssend}.
+
+\verbatimsnippet{ssendblock}
 
 \index{communication!synchronous|)}
 \index{communication!asynchronous|)}
@@ -303,7 +308,11 @@ MPI_Buffer_attach( b, n );
 \label{sec:persistent}
 \index{communication!persistent|(textbf}
 
-An \n{Isend} or \n{Irecv} call has an \n{MPI_Request} parameter. This
+An \n{Isend} or \n{Irecv} call has an \n{MPI_Request} parameter.
+%
+\mpiRoutineRef{MPI_Request}
+%
+This
 is an object that gets created in the send/recv call, and deleted in
 the wait call. You can imagine that this carries some overhead, and if
 the same communication is repeated many times you may want to avoid
@@ -335,6 +344,10 @@ an actual communication, they only create the request object.
 %
 \mpiRoutineRef{MPI_Recv_init}
 %
+
+\verbatimsnippet{persist}
+%
+\verbatimsnippet{persistp}
 
 Given these request object, a communication (both send and receive) is then started
 with \indexmpishow{MPI_Start} for a single request or \indexmpishow{MPI_Start_all} for 

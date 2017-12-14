@@ -86,12 +86,16 @@ characteristics:
   A~zero size is allowed, but since window creation is collective,
   it is not possible to skip the create call.
 \end{itemize}
+
+\mpiRoutineRef{MPI_Win}
+
 \begin{figure}[ht]
   \includegraphics[scale=.1]{one-sided-window}
   \caption{Collective definition of a window for one-sided data access}
   \label{fig:window}
 \end{figure}
-defined with respect to a communicator: each process specifies a
+
+A window is defined with respect to a communicator: each process specifies a
 memory area. Routine for creating and releasing windows
 are collective, so each process \emph{has} to
 call them; see figure~\ref{fig:window}. 
@@ -257,6 +261,14 @@ int MPI_Get(void *origin_addr, int origin_count, MPI_Datatype
 \end{verbatim}
 
 %\verbatimsnippet{getblock}
+
+Example:
+
+\verbatimsnippet{getfence}
+
+We make a null window on processes that do not participate.
+%
+\verbatimsnippet{getfencep}
 
 \Level 1 {Accumulate}
 
@@ -520,6 +532,14 @@ with the data on the origin.
   do it unconditionally? What should the `break' test be, seeing that
   multiple processes can update the counter at the same time?
 \end{exercise}
+
+A root process has a table of data; the other processes do 
+atomic gets and update of that data using \indexterm{passive target
+  synchronization} through \indexmpishow{MPI_Win_lock}.
+%
+\verbatimsnippet{fetchop}
+%
+\verbatimsnippet{fetchopp}
 
 \Level 0 {More active target synchronization}
 \label{sec:post-wait}
