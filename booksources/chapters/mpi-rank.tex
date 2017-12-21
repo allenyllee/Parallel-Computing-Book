@@ -64,14 +64,28 @@ To distinguish between processes in a communicator, MPI provides two calls
 \item \indexmpishow{MPI_Comm_size} reports how many processes there are in all; and
 \item \indexmpishow{MPI_Comm_rank} states what the number of the process is.
 \end{enumerate}
-In other words, each process can find out `I~am process~5
-out of a total of~20'.
 
+If every process executes the \n{MPI_Comm_size} call, they all get the
+same result, namely the total number of processes in your run.
+%
 \mpiRoutineRef{MPI_Comm_size}
 %
-and
+On the
+other hand, if every process executes \n{MPI_Comm_rank}, they all get
+a different result, namely their own unique number, an integer in the
+range from zero to the the number of processes minus~1.
+See figure~\ref{fig:rank-parallel}.
 %
 \mpiRoutineRef{MPI_Comm_rank}
+%
+\begin{figure}[ht]
+  \includegraphics[scale=.5]{hello-parallel}
+  \caption{Running a hello world program in parallel}
+  \label{fig:rank-parallel}
+\end{figure}
+%
+In other words, each process can find out `I~am process~5
+out of a total of~20'.
 
 \begin{exercise}
   \label{ex:hello3}
