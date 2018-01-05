@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-6
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% mpi.tex : leftover MPI topics
 %%%%
@@ -141,7 +141,43 @@ handler with \indexmpishow{MPI_Comm_get_errhandler}.
 \Level 0 {Machine-specific information}
 \label{sec:mpi-info}
 
+You can create information objects, for instance for use in a library
+that you write based on MPI.
+
+\indexmpi{MPI_Info_create}
+\indexmpi{MPI_Info_set}
+\indexmpi{MPI_Info_get}
+\indexmpi{MPI_Info_free}
+\indexmpi{MPI_Info_nkeys}
+
 \mpiRoutineRef{MPI_Info}
+
+\Level 1 {Environment information}
+\label{sec:mpi-info-env}
+
+The object \indexmpidef{MPI_INFO_ENV} is predefined, containing:
+\begin{itemize}
+\item \n{command}
+  Name of program executed.
+\item  \n{argv}
+  Space separated arguments to command.
+\item  \n{maxprocs}
+  Maximum number of MPI processes to start.
+\item   \n{soft}
+  Allowed values for number of processors.
+\item   \n{host}
+  Hostname.
+\item   \n{arch}
+  Architecture name.
+\item   \n{wdir}
+  Working directory of the MPI process.
+\item   \n{file}
+  Value is the name of a file in which additional information is specified.
+\item   \n{thread_level}
+  Requested level of thread support, if requested before the program started execution.
+\end{itemize}
+Note that these are the requested values; the running program can for instance
+have lower thread support.
 
 \Level 0 {Fortran issues}
 \label{sec:mpi-fortran}

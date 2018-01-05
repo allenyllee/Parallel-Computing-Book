@@ -30,6 +30,10 @@ So if you ran an MPI program, each node would have one MPI process;
 \end{figure}
 %
 figure~\ref{fig:oldmpi}.
+%
+(You could of course run more than one
+process, using the \indexterm{time slicing} of the \ac{OS}, but that
+would give you no extra performance.)
 
 These days the situation is more complicated.
 You can still talk about a node in a cluster, but now a node can contain

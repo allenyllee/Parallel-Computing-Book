@@ -367,19 +367,26 @@ be any such relation between target and source: it is possible to
 receive from a predecessor in some ordering, and send to a successor
 in that ordering; see figure~\ref{fig:sendrecv}.
 \begin{figure}[ht]
-\begin{lulu}
-    \includegraphics[scale=.6]{sendrecv-actual}
-\end{lulu}
-\begin{notlulu}
-    \includegraphics[scale=.09]{sendrecv}
-\end{notlulu}
+%% \begin{lulu}
+%%     \includegraphics[scale=.6]{sendrecv-actual}
+%% \end{lulu}
+%\begin{notlulu}
+  %\includegraphics[scale=.09]{sendrecv}
+  \includegraphics[scale=.5]{sendrecv-right}
+%\end{notlulu}
   \caption{An MPI Sendrecv call}
   \label{fig:sendrecv}
 \end{figure}
-Above you saw some examples that had most processors doing both a send and
-a receive, but some only a send or only a receive. You can still use
-\n{MPI_Sendrecv} in this call if you use \indexmpishow{MPI_PROC_NULL} for
-the unused source or target argument.
+\begin{itemize}
+\item Each process does one send and one receive; if a process needs
+  to skip one or the other, you can specify
+  \indexmpidef{MPI_PROC_NULL} as the other process in the send or
+  receive specification. In that case the corresponding action
+  is not taken.
+\item As with the simple send/recv calls, processes have to match up:
+  if process~$p$ specifies $p'$ as the destination of the send part of
+  the call, $p'$~needs to specify $p$ as the source of the recv part.
+\end{itemize}
 
 If the send and receive buffer have the same size, the routine
 \indexmpishow{MPI_Sendrecv_replace} will do an in-place replacement.

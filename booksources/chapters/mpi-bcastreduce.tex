@@ -45,6 +45,7 @@ only one element is used.
 \end{exercise}
 
 \Level 1 {Reduce in place}
+\label{sec:allreduce-inplace}
 
 By default MPI will not overwrite the original data with the reduction
 result, but you can tell it to do so
@@ -53,15 +54,6 @@ using the \indexmpishow{MPI_IN_PLACE} specifier:
 \verbatimsnippet{allreduceinplace}
 %
 This has the advantage of saving half the memory.
-
-For the rooted call \indexmpishow{MPI_Reduce}, the reduction call
-uses the value in the receive buffer as the root's contribution to the operation.
-%
-\verbatimsnippet{reduceinplace}
-
-In Fortran the code is less elegant because you can not do
-these address calculations:
-\verbatimsnippet{reduceinplace-f}
 
 \Level 1 {Reduction operations}
 \label{sec:mpi:op-create}
@@ -134,7 +126,7 @@ MPI_Reduce( senddata, recvdata..., operator,
   \indexmpishow{MPI_SUM}, \indexmpishow{MPI_PROD} and
   \indexmpishow{MPI_MAX}, but complicated operators such as finding
   the location of the maximum value exist. You can also define your
-  own operators; section~\ref{ref:mpi:op-create}.
+  own operators; section~\ref{sec:mpi:op-create}.
 \item There is a root process that receives the result of the
   reduction. Since the non-root processes do not receive the reduced
   data, they can actually leave the receive buffer undefined.
@@ -164,6 +156,28 @@ In that case, the operation is applied pointwise to each location in the array.
   array. Can you predict what the result should be?  Code it. Was your
   prediction right?
 \end{exercise}
+
+\Level 1 {Reduce in place}
+
+Instead of using a send and a receive buffer in the reduction, it is
+possible to avoid the send buffer by putting the send data in the
+receive buffer. We see this mechanism
+in section~\ref{sec:allreduce-inplace} for the allreduce operation.
+
+For the rooted call \indexmpishow{MPI_Reduce}, it is similarly
+possible to use the value in the receive buffer on the root.
+However, on all other processes, data is placed in the send buffer and
+the receive buffer is null or ignored as before.
+
+This example sets the buffer values through some pointer cleverness in
+order to have the same reduce call on all processes.
+%
+\verbatimsnippet{reduceinplace}
+
+In Fortran the code is less elegant because you can not do
+these address calculations:
+%
+\verbatimsnippet{reduceinplace-f}
 
 \Level 1 {Broadcast}
 

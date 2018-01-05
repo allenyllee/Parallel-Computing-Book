@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-7
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% mpi-running.tex : about running MPI programs
 %%%%
@@ -109,7 +109,19 @@ The regular way to conclude an MPI program is:
   one between init and finalize, and one after the finalize. Again explain the output.
 \end{exercise}
 
-\Level 2 {Reference}
+\Level 2 {Aborting an MPI run}
+
+Apart from \indexmpishow{MPI_Finalize}, which signals a successful
+conclusion of the MPI run, an abnormal end to a run can be forced by
+\n{MPI_Abort}:
+%
+\mpiRoutineRef{MPI_Abort}
+%
+This aborts execution on all processes associated with the communicator,
+but many implementations simply abort all processes. The \n{value} parameter
+is returned to the environment.
+
+\Level 2 {Testing the initialized/finalized status}
 
 The commandline arguments \n{argc} and \n{argv} are only guaranteed to
 be passed to process zero, so the best way to pass commandline information
@@ -125,16 +137,6 @@ For this reason, one can test where \n{MPI_Init} has been called with
 \mpiRoutineRef{MPI_Initialized}
 %
 
-Apart from \indexmpishow{MPI_Finalize}, which signals a successful
-conclusion of the MPI run, an abnormal end to a run can be forced by
-\n{MPI_Abort}:
-%
-\mpiRoutineRef{MPI_Abort}
-%
-This aborts execution on all processes associated with the communicator,
-but many implementations simply abort all processes. The \n{value} parameter
-is returned to the environment.
-
 You can test whether \n{MPI_Finalize} has been called with
 %
 \mpiRoutineRef{MPI_Finalized}
@@ -148,33 +150,14 @@ thereby lowering the value of \n{argc} and elimitating some of the \n{argv}
 arguments.
 
 On the other hand, the commandline arguments that are meant for \n{mpiexec}
-wind up in the \indexmpishow{MPI_INFO_ENV} object as a set of key/value pairs.
+wind up in the \indexmpishow{MPI_INFO_ENV} object as a set of
+key/value pairs; see section~\ref{sec:mpi-info}
 
 \Level 2 {Information about the run}
 
-Once MPI has been initialized, the \indexmpishow{MPI_INFO_ENV} object contains:
-\begin{itemize}
-\item \n{command}
-  Name of program executed.
-\item  \n{argv}
-  Space separated arguments to command.
-\item  \n{maxprocs}
-  Maximum number of MPI processes to start.
-\item   \n{soft}
-  Allowed values for number of processors.
-\item   \n{host}
-  Hostname.
-\item   \n{arch}
-  Architecture name.
-\item   \n{wdir}
-  Working directory of the MPI process.
-\item   \n{file}
-  Value is the name of a file in which additional information is specified.
-\item   \n{thread_level}
-  Requested level of thread support, if requested before the program started execution.
-\end{itemize}
-Note that these are the requested values; the running program can for instance
-have lower thread support.
+Once MPI has been initialized, the \indexmpishow{MPI_INFO_ENV} object
+contains a number of key/value pairs describing run-specific
+information; see section~\ref{sec:mpi-info-env}.
 
 
 %% Any \indexterm{commandline argument} to the program can only be

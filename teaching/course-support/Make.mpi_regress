@@ -2,7 +2,7 @@
 ################################################################
 ####
 #### This makefile is part of `Parallel Programming in MPI and OpenMP'
-#### by Victor Eijkhout, copyright 2013-7
+#### by Victor Eijkhout, copyright 2013-8
 #### eijkhout@tacc.utexas.edu
 ####
 #### Make include file for course programs
@@ -263,4 +263,5 @@ run_onesidedbuild :
 	@make run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export success=1 ; \
-	 make catchrun PROGRAM=onesidedbuild NP=${NP} | ../course-support/catch_onesidedbuild.py
+	 make catchrun PROGRAM=onesidedbuild NP=${NP} \
+	 | ../course-support/catch_onesidedbuild.py

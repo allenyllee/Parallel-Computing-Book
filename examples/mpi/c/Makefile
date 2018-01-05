@@ -3,7 +3,7 @@
 ####
 #### This makefile is part of the source of 
 #### "Parallel Computing for Science and Engineering"
-#### by Victor Eijkhout, copyright 2013-7
+#### by Victor Eijkhout, copyright 2013-8
 ####
 #### This is the makefile for the C examples
 ####     in examples/mpi/c
@@ -16,7 +16,7 @@ MAKEFLAGS += --no-builtin-rules
 info ::
 	@echo "Do: make app (where app=${APPS})"
 
-APPS = init thread \
+APPS = init thread env \
     recvblock sendblock ssendblock sendrecv irecv_source irecvnonblock \
     probe ibarrier \
     putfence putfencealloc getfence anysource onesidedbuild onsidedmap \
