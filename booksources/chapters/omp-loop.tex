@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-6
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% omp-loop.tex : the OpenMP loop construct
 %%%%
@@ -139,7 +139,7 @@ able to determine in advance how many iterations there will be.
 
 Usually you will have many more iterations in a loop than there are threads.
 Thus, there are several ways you can assign your loop iterations to the threads.
-OpenMP lets you specify this with the \indextermtt{schedule} clause.
+OpenMP lets you specify this with the \indexompshow{schedule} clause.
 \begin{verbatim}
 #pragma omp for schedule(....)
 \end{verbatim}
@@ -209,7 +209,7 @@ The various schedules are illustrated in figure~\ref{fig:omp-schedule}.
 If you don't want to decide on a schedule in your code, you can
 specify the \indexclauseoption{schedule}{runtime} schedule. The actual
 schedule will then at runtime be read from the
-\indextermtt{OMP_SCHEDULE} environment variable. You can even just
+\indexompshow{OMP_SCHEDULE} environment variable. You can even just
 leave it to the runtime library by specifying
 \indexclauseoption{schedule}{auto}
 
@@ -288,15 +288,15 @@ for k=1,n:
 \end{exercise}
 
 The schedule can be declared explicitly, set at runtime
-through the \indextermtt{OMP_SCHEDULE} environment variable, or left up to the runtime system
+through the \indexompshow{OMP_SCHEDULE} environment variable, or left up to the runtime system
 by specifying \n{auto}. Especially in the last two cases  you may want to enquire
 what schedule is currently being used with
-\indextermtt{omp_get_schedule}.
+\indexompshow{omp_get_schedule}.
 \begin{verbatim}
 int omp_get_schedule(omp_sched_t * kind, int * modifier );
 \end{verbatim}
 
-Its mirror call is \indextermtt{omp_set_schedule}, which sets the
+Its mirror call is \indexompshow{omp_set_schedule}, which sets the
 value that is used when schedule value \n{runtime} is used. It is in
 effect equivalent to setting the environment variable
 \n{OMP_SCHEDULE}.
@@ -318,19 +318,19 @@ void omp_set_schedule (omp_sched_t kind, int modifier);
 Here are the various schedules you can set with the
 \n{schedule}\index{schedule!clause} clause:
 \begin{description}
-  \item[affinity] Set by using value  \indextermtt{omp_sched_affinity}
+  \item[affinity] Set by using value  \indexompshow{omp_sched_affinity}
   \item[auto] The schedule is left up to the implementation. Set by
-    using value \indextermtt{omp_sched_auto}
+    using value \indexompshow{omp_sched_auto}
   \item[dynamic] value:~2. The modifier parameter is the
     \indexterm{chunk} size; default~1. Set by using value
-    \indextermtt{omp_sched_dynamic}
+    \indexompshow{omp_sched_dynamic}
   \item[guided] Value:~3. The modifier parameter is the
     \indextermtt{chunk} size. Set by using value
-    \indextermtt{omp_sched_guided}
-  \item[runtime] Use the value of the \indextermtt{OMP_SCHEDULE}
+    \indexompshow{omp_sched_guided}
+  \item[runtime] Use the value of the \indexompshow{OMP_SCHEDULE}
     environment variable. Set by using value
-    \indextermtt{omp_sched_runtime}
-  \item[static] value:~1. The modifier parameter is the \indexterm{chunk} size. Set by using value  \indextermtt{omp_sched_static}
+    \indexompshow{omp_sched_runtime}
+  \item[static] value:~1. The modifier parameter is the \indexterm{chunk} size. Set by using value  \indexompshow{omp_sched_static}
 \end{description}
 
 \Level 0 {Reductions}

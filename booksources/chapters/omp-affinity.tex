@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-6
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% omp-affinity.tex : thread affinity
 %%%%
@@ -21,12 +21,12 @@ see the example in section~\ref{sec:first-touch}.
 
 Thread placement can be controlled with two environment variables:
 \begin{itemize}
-\item the environment variable \indextermttdef{OMP_PROC_BIND}
+\item the environment variable \indexompshowdef{OMP_PROC_BIND}
   describes how threads are bound to \indextermbus{OpenMP}{places}; while
-\item the variable \indextermttdef{OMP_PLACES} describes these places
+\item the variable \indexompshowdef{OMP_PLACES} describes these places
   in terms of the available hardware.
 \item When you're experimenting with these variables it is a good idea
-  to set \indextermttdef{OMP_DISPLAY_ENV} to true, so that OpenMP will
+  to set \indexompshowdef{OMP_DISPLAY_ENV} to true, so that OpenMP will
   print out at runtime how it has interpreted your specification.
   The examples in the following sections will display this output.
 \end{itemize}
@@ -34,7 +34,7 @@ Thread placement can be controlled with two environment variables:
 \Level 1 {Thread binding}
 \label{omp:threadbind}
 
-The variable \indextermttdef{OMP_PLACES} defines a series of places to
+The variable \indexompshowdef{OMP_PLACES} defines a series of places to
 which the threads are assigned.
 
 Example: if you have two sockets and you define
@@ -155,7 +155,7 @@ one socket.
 
 \Level 1 {Place definition}
 
-There are three predefined values for the \indextermtt{OMP_PLACES}
+There are three predefined values for the \indexompshow{OMP_PLACES}
 variable: \n{sockets, cores, threads}. You have already seen the first
 two; the \n{threads} value becomes relevant on processors that have
 hardware threads. In that case, \n{OMP_PLACES=cores} does not tie a
@@ -194,7 +194,7 @@ OMP_PLACES="{0:4:8}:4:1"
 
 \Level 1 {Binding possibilities}
 
-Values for \indextermtt{OMP_PROC_BIND} are: \n{false, true, master, close, spread}.
+Values for \indexompshow{OMP_PROC_BIND} are: \n{false, true, master, close, spread}.
 \begin{itemize}
 \item false: set no binding \item true: lock threads to a core \item
   master: collocate threads with the master thread \item close: place

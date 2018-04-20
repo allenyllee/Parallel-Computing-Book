@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-6
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% mpi-commsplit.tex : about splitting communicators
 %%%%
@@ -31,20 +31,20 @@ is a good choice.
 
 Here is one example of communicator splitting. Suppose your processors
 are in a two-dimensional grid:
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Comm_rank( MPI_COMM_WORLD, &mytid );
 proc_i = mytid % proc_column_length;
 proc_j = mytid / proc_column_length;
-\end{verbatim}
+\end{lstlisting}
 You can now create a communicator per column:
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Comm column_comm;
 MPI_Comm_split( MPI_COMM_WORLD, proc_j, mytid, &column_comm );
-\end{verbatim}
+\end{lstlisting}
 and do a broadcast in that column:
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Bcast( data, /* tag: */ 0, column_comm );
-\end{verbatim}
+\end{lstlisting}
 Because of the SPMD nature of the program, you are now doing in parallel
 a broadcast in every processor column. Such operations often appear
 in \indexterm{dense linear algebra}.
@@ -111,10 +111,10 @@ communicator from the resulting group.
 The group mechanism is more involved. You get the group from a
 communicator, or conversely make a communicator from a group with
 \indexmpishow{MPI_Comm_group} and \indexmpishow{MPI_Comm_create}:
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Comm_group( comm, &group);
 MPI_Comm_create( old_comm, group, &new_comm );
-\end{verbatim}
+\end{lstlisting}
 and groups are manipulated with
 \indexmpishow{MPI_Group_incl}, \indexmpishow{MPI_Group_excl},
 \indexmpishow{MPI_Group_difference} and a few more.
@@ -133,23 +133,23 @@ process groups: you can query the group of processes of a
 communicator, manipulate groups, and make a new communicator out of a
 group you have formed.
 
-\begin{verbatim}
+\begin{lstlisting}
 MPI_COMM_GROUP (comm, group, ierr)
 MPI_COMM_CREATE (MPI_Comm comm,MPI_Group group, MPI_Comm newcomm, ierr)
-\end{verbatim}
+\end{lstlisting}
 
-\begin{verbatim}
+\begin{lstlisting}
 MPI_GROUP_UNION(group1, group2, newgroup, ierr)
 MPI_GROUP_INTERSECTION(group1, group2, newgroup, ierr)
 MPI_GROUP_DIFFERENCE(group1, group2, newgroup, ierr)
-\end{verbatim}
+\end{lstlisting}
 
-\begin{verbatim}
+\begin{lstlisting}
 MPI_GROUP_INCL(group, n, ranks, newgroup, ierr)
 MPI_GROUP_EXCL(group, n, ranks, newgroup, ierr)
-\end{verbatim}
-\begin{verbatim}
+\end{lstlisting}
+\begin{lstlisting}
 MPI_GROUP_SIZE(group, size, ierr)
 MPI_GROUP_RANK(group, rank, ierr)
-\end{verbatim}
+\end{lstlisting}
 

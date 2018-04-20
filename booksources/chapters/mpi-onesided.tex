@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-7
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% mpi-onesided.tex : about onesided communication
 %%%%
@@ -75,40 +75,50 @@ to strange deadlocks.
 \label{sec:windows}
 \index{window|(}
 
-In one-sided communication, each processor can make an area of memory,
-called a \indexterm{window}, available to one-sided transfers.
-This has the following
-characteristics:
-\begin{itemize}
-\item The window is defined on a communicator, so the create call
-  is collective.
-\item The window size can be set individually on each process.
-  A~zero size is allowed, but since window creation is collective,
-  it is not possible to skip the create call.
-\end{itemize}
-
-\mpiRoutineRef{MPI_Win}
-
 \begin{figure}[ht]
   \includegraphics[scale=.1]{one-sided-window}
   \caption{Collective definition of a window for one-sided data access}
   \label{fig:window}
 \end{figure}
 
-A window is defined with respect to a communicator: each process specifies a
-memory area. Routine for creating and releasing windows
-are collective, so each process \emph{has} to
-call them; see figure~\ref{fig:window}. 
+In one-sided communication, each processor can make an area of memory,
+called a \indexterm{window}, available to one-sided transfers.
+A~process can put an arbitrary item from its own memory to the
+window of another process, or get something from the other process'
+window in its own memory.
+
+A window can be characteristized as follows:
+\begin{itemize}
+\item The window is defined on a communicator, so the create call
+  is collective; see figure~\ref{fig:window}. 
+\item The window size can be set individually on each process.
+  A~zero size is allowed, but since window creation is collective,
+  it is not possible to skip the create call.
+\item The datatype can also be set individually on each process. This
+  makes it possible to use a derived type on one process, for instance
+  for copying strided data into a contiguous buffer.
+\item The window is the target of data in a put operation, or the
+  source of data in a get operation; see figure~\ref{fig:putget}.
+\item There can be memory associated with a window, so it needs to be
+  freed explicitly.
+\end{itemize}
+
+\mpiRoutineRef{MPI_Win}
+
+The typical calls involved are:
 \begin{verbatim}
 MPI_Info info;
 MPI_Win window;
 MPI_Win_create( /* memory area */, info, comm, &window );
+// do put and get calls
 MPI_Win_free( &window );
 \end{verbatim}
-(For the \n{info} parameter you can often use \indexmpishow{MPI_INFO_NULL}.)
-While the creation of a window is collective, each
-processor can specify its own window size, including zero, and even the type of the
-elements in it.
+
+\begin{figure}[ht]
+  \includegraphics[scale=.1]{one-sided-getput}
+  \caption{Put and get between process memory and windows}
+  \label{fig:putget}
+\end{figure}
 
 \mpiRoutineRef{MPI_Win_create}
 %
@@ -138,9 +148,16 @@ There will be more discussion of window memory in section~\ref{sec:mpi-alloc}.
 \Level 0 {Active target synchronization: epochs}
 \label{sec:fence}
 
-There are two mechanisms for \indexterm{active target synchronization}, that is,
-one-sided communications where both sides are involved to the extent that they declare
-the communication epoch. In this section we look at the first mechanism,
+One-sided communication has an obvious complication over two-sided: if
+you do a put call instead of a send, how does the recipient know that
+the data is there? This process of letting the target know the state
+of affairs is called `synchronization', and there are various
+mechanisms for it. First of all we will consider \indexterm{active
+  target synchronization}. Here the target knows when the transfer
+may happen (the \indextermsub{communication}{epoch}), but does not do
+any data-related calls.
+
+In this section we look at the first mechanism,
 which is to use a \indexterm{fence} operation:\indexmpi{MPI_Win_fence}
 \begin{verbatim}
 MPI_Win_fence (int assert, MPI_Win win)
@@ -149,7 +166,7 @@ This operation is collective on the communicator of the window.
 It is comparable to \n{MPI_Wait} calls for non-blocking communication.
 
 The use of fences is somewhat complicated. The interval between two fences
-is known as an \indexterm{epoch}.
+is known as an \indextermdef{epoch}.
 You can give various hints to the system about this epoch versus the ones
 before and after through the \n{assert} parameter.
 \begin{verbatim}
@@ -180,7 +197,7 @@ until all one-sided communication is finished, which means they wait for the zer
   a one-sided transfer}
   \label{fig:putblock}
 \end{figure}
-\verbatimsnippet{putblock}
+\cverbatimsnippet[examples/mpi/c/putblock.c]{putblock}
 
 As a further restriction, you can not mix \n{Get} with \n{Put} or \n{Accumulate}
 calls in a single epoch. Hence, we can characterize an epoch as an
@@ -242,33 +259,73 @@ integer(kind=MPI_ADDRESS_KIND) :: displacement
 Here is a single put operation. Note that the window create and window fence calls
 are collective, so they have to be performed on all processors
 of the communicator that was used in the create call.
-\verbatimsnippet{putblock}
+\cverbatimsnippet[examples/mpi/c/putblock.c]{putblock}
 
 \begin{exercise}
   \label{ex:randomput}
   Write code where process~0 randomly writes in the window on 1~or~2.
-  %\verbatimsnippet{randomputskl}
+  %\cverbatimsnippet{randomputskl}
 \end{exercise}
 
 \Level 1 {Get}
 
 The \indexmpishow{MPI_Get} call is very similar.
-\begin{verbatim}
-int MPI_Get(void *origin_addr, int origin_count, MPI_Datatype
-            origin_datatype, int target_rank, MPI_Aint target_disp,
-            int target_count, MPI_Datatype target_datatype, MPI_Win
-            win)
-\end{verbatim}
-
-%\verbatimsnippet{getblock}
-
+%
+\mpiRoutineRef{MPI_Get}
+%
 Example:
-
-\verbatimsnippet{getfence}
-
+%
+\cverbatimsnippet[examples/mpi/c/getfence.c]{getfence}
+%
 We make a null window on processes that do not participate.
 %
-\verbatimsnippet{getfencep}
+\pverbatimsnippet{getfencep}
+
+\Level 1 {Put and get example: halo update}
+
+\begin{wrapfigure}{r}{3in}
+  \includegraphics[scale=.08]{core-update}
+\end{wrapfigure}
+%
+As an example, let's look at \indextermbus{halo}{update}.
+The array~\n{A} is updated using the local values and the halo
+that comes from bordering processors, either through Put or Get operations.
+
+In a first version we separate computation and communication.
+Each iteration has two fences. Between the two fences in the loop body
+we do the \n{MPI_Put} operation; between the second and and first one
+of the next iteration there is only computation, so we add the
+\n{NOPRECEDE} and \n{NOSUCCEED} assertions. (For much more about
+assertions, see section~\ref{sec:mpi-assert} below.)
+The \n{NOSTORE} assertion
+states that the local window was not updated: the Put operation only
+works on remote windows.
+\begin{verbatim}
+for ( .... ) {
+  update(A); 
+  MPI_Win_fence(MPI_MODE_NOPRECEDE, win); 
+  for(i=0; i < toneighbors; i++) 
+    MPI_Put( ... );
+  MPI_Win_fence((MPI_MODE_NOSTORE | MPI_MODE_NOSUCCEED), win); 
+  }
+\end{verbatim}
+
+Next, we split the update in the core part, which can be done purely
+from local values, and the boundary, which needs local and halo
+values. Update of the core can overlap the communication of the halo.
+\begin{verbatim}
+for ( .... ) {
+  update_boundary(A); 
+  MPI_Win_fence((MPI_MODE_NOPUT | MPI_MODE_NOPRECEDE), win); 
+  for(i=0; i < fromneighbors; i++) 
+    MPI_Get( ... );
+  update_core(A); 
+  MPI_Win_fence(MPI_MODE_NOSUCCEED, win); 
+  }
+\end{verbatim}
+The \n{NOPRECEDE} and \n{NOSUCCEED} assertions still hold, but the
+\n{Get} operation implies that instead of \n{NOSTORE} in the
+second fence, we use \n{NOPUT} in the first.
 
 \Level 1 {Accumulate}
 
@@ -276,13 +333,13 @@ A~third one-sided routine
 is \indexmpishow{MPI_Accumulate} which does a reduction operation on the results
 that are being put:
 
-\begin{verbatim}
-MPI_Accumulate (
-  void *origin_addr, int origin_count, MPI_Datatype origin_datatype, 
-  int target_rank,
-  MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype,
-  MPI_Op op,MPI_Win window)
-\end{verbatim}
+\mpiRoutineRef{MPI_Accumulate}
+
+Accumulate is a reduction with remote result. As with \n{MPI_Reduce}, the 
+order in which the operands are accumulated is undefined. 
+The same predefined operators are available, but no
+user-defined ones. There is one extra operator: \indexmpishow{MPI_REPLACE},
+this has the effect that only the last result to arrive is retained.
 
 \begin{exercise}
   Implement an `all-gather' operation using one-sided communication:
@@ -292,40 +349,6 @@ MPI_Accumulate (
   collecting its own value: doing `communication' between a processor
   and itself is perfectly legal.
 \end{exercise}
-
-Accumulate is a reduction with remote result. As with \n{MPI_Reduce}, the 
-order in which the operands are accumulated is undefined. 
-The same predefined operators are available, but no
-user-defined ones. There is one extra operator: \indexmpishow{MPI_REPLACE},
-this has the effect that only the last result to arrive is retained.
-
-\Level 1 {Put vs Get}
-
-\begin{verbatim}
-while(!converged(A)){ 
-  update(A); 
-  MPI_Win_fence(MPI_MODE_NOPRECEDE, win); 
-  for(i=0; i < toneighbors; i++) 
-    MPI_Put(&frombuf[i], 1, fromtype[i], toneighbor[i], 
-                         todisp[i], 1, totype[i], win); 
-  MPI_Win_fence((MPI_MODE_NOSTORE | MPI_MODE_NOSUCCEED), win); 
-  } 
-\end{verbatim}
-\begin{verbatim}
-  while(!converged(A)){ 
-  update_boundary(A); 
-  MPI_Win_fence((MPI_MODE_NOPUT | MPI_MODE_NOPRECEDE), win); 
-  for(i=0; i < fromneighbors; i++) 
-    MPI_Get(&tobuf[i], 1, totype[i], fromneighbor[i], 
-                    fromdisp[i], 1, fromtype[i], win); 
-  update_core(A); 
-  MPI_Win_fence(MPI_MODE_NOSUCCEED, win); 
-  } 
-\end{verbatim}
-
-\Level 1 {Accumulate}
-
-\mpiRoutineRef{MPI_Accumulate}
 
 \begin{exercise}
   \label{ex:countdown}
@@ -413,48 +436,6 @@ one or more of the following, combined by bitwise OR in C/C++ or
   \end{description}
 \end{description}
 
-\begin{wrapfigure}{r}{3in}
-  \includegraphics[scale=.08]{core-update}
-\end{wrapfigure}
-%
-As an example, let's look at \indextermbus{halo}{update}.
-The array~\n{A} is updated using the local values and the halo
-that comes from bordering processors, either through Put or Get operations.
-
-In a first version we separate computation and communication.
-Each iteration has two fences. Between the two fences in the loop body
-we do the \n{MPI_Put} operation; between the second and and first one
-of the next iteration there is only computation, so we add the
-\n{NOPRECEDE} and \n{NOSUCCEED} assertions. The \n{NOSTORE} assertion
-states that the local window was not updated: the Put operation only
-works on remote windows.
-\begin{verbatim}
-for ( .... ) {
-  update(A); 
-  MPI_Win_fence(MPI_MODE_NOPRECEDE, win); 
-  for(i=0; i < toneighbors; i++) 
-    MPI_Put( ... );
-  MPI_Win_fence((MPI_MODE_NOSTORE | MPI_MODE_NOSUCCEED), win); 
-  }
-\end{verbatim}
-
-Next, we split the update in the core part, which can be done purely
-from local values, and the boundary, which needs local and halo
-values. Update of the core can overlap the communication of the halo.
-\begin{verbatim}
-for ( .... ) {
-  update_boundary(A); 
-  MPI_Win_fence((MPI_MODE_NOPUT | MPI_MODE_NOPRECEDE), win); 
-  for(i=0; i < fromneighbors; i++) 
-    MPI_Get( ... );
-  update_core(A); 
-  MPI_Win_fence(MPI_MODE_NOSUCCEED, win); 
-  }
-\end{verbatim}
-The \n{NOPRECEDE} and \n{NOSUCCEED} assertions still hold, but the
-\n{Get} operation implies that instead of \n{NOSTORE} in the
-second fence, we use \n{NOPUT} in the first.
-
 \begin{comment}
   \begin{itemize}
   \item \indexmpishow{MPI_MODE_NOCHECK}: this is used with
@@ -512,7 +493,8 @@ being the \indexterm{origin} of the remote access.
 In the following snippet a single processor puts data on one
 other. Note that they both have their own definition of the group, and
 that the receiving process only does the post and wait calls.
-\verbatimsnippet{postwaittwo}
+%
+\cverbatimsnippet[examples/mpi/c/postwaittwo.c]{postwaittwo}
 
 \Level 1 {Atomic operations}
 
@@ -537,9 +519,9 @@ A root process has a table of data; the other processes do
 atomic gets and update of that data using \indexterm{passive target
   synchronization} through \indexmpishow{MPI_Win_lock}.
 %
-\verbatimsnippet{fetchop}
+\cverbatimsnippet[examples/mpi/c/fetchop.c]{fetchop}
 %
-\verbatimsnippet{fetchopp}
+\pverbatimsnippet{fetchopp}
 
 \Level 0 {More active target synchronization}
 \label{sec:post-wait}

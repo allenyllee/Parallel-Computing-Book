@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-6
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% omp-basics.tex : intro stuff
 %%%%
@@ -205,7 +205,7 @@ icc -o foo foo.c -openmp
 \end{verbatim}
 If you have separate compile and link stages, you need that option in both.
 
-When you use the openmp compiler option, a \indexterm{cpp} variable \indextermtt{_OPENMP}
+When you use the openmp compiler option, a \indexterm{cpp} variable \indexompshow{_OPENMP}
 will be defined. Thus, you can have conditional compilation by writing
 \begin{verbatim}
 #ifdef _OPENMP
@@ -222,7 +222,7 @@ will be defined. Thus, you can have conditional compilation by writing
 
 You run an OpenMP program by invoking it the regular way (for instance \n{./a.out}),
 but its behaviour is influenced by some \indextermbus{OpenMP}{environment variables}.
-The most important one is \indextermtt{OMP_NUM_THREADS}:
+The most important one is \indexompshow{OMP_NUM_THREADS}:
 \begin{verbatim}
 export OMP_NUM_THREADS=8
 \end{verbatim}
@@ -482,11 +482,11 @@ The actual size of the team depends on various factors (see section~\ref{ref:omp
 for variables and functions mentioned in this section).
 \begin{itemize}
 \item The \emph{environment variable}\index{OpenMP!environment variables}
-  \indextermtt{OMP_NUM_THREADS} limits the number of
+  \indexompshow{OMP_NUM_THREADS} limits the number of
   threads that can be created.
 \item If you don't set this variable, you can also set this limit
   dynamically with the \emph{library routine}\index{OpenMP!library
-    routines} \indextermtt{omp_set_num_threads}. This routine takes
+    routines} \indexompshow{omp_set_num_threads}. This routine takes
   precedence over the aforementioned environment variable if both are
   specified.
 \item A limit on the number of threads can also be set as a clause
@@ -495,11 +495,11 @@ for variables and functions mentioned in this section).
 If you specify a greater amount of parallelism than the hardware supports,
 the runtime system will probably ignore your specification and choose a lower value.
 To ask how much parallelism is actually used in your parallel region,
-use \indextermtt{omp_get_num_threads}. To query these hardware limits,
-use \indextermtt{omp_get_num_procs}.
+use \indexompshow{omp_get_num_threads}. To query these hardware limits,
+use \indexompshow{omp_get_num_procs}.
 
 Another limit on the number of threads is imposed when you use nested parallel regions.
 This can arise if you have a parallel region in a subprogram which is sometimes called
-sequentially, sometimes in parallel. The variable \indextermtt{OMP_NESTED} controls
+sequentially, sometimes in parallel. The variable \indexompshow{OMP_NESTED} controls
 whether the inner region will create a team of more than one thread.
 

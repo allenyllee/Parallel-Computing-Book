@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-7
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% mpi-morecollective.tex : obscure stuff
 %%%%
@@ -12,15 +12,22 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \Level 0 {MPI Operators}
+\index{operator|(}
+
+MPI \emph{operators} are used in reduction operators. Most common
+operators, such as sum or maximum, have been built into the MPI
+library, but it is possible to define new operators.
 
 \Level 1 {Pre-defined operators}
 
-See the list in section~\ref{sec:operator-list}.
+\emph{Pre-defined operators}\index{operator!predefined}
+are listed in section~\ref{sec:operator-list}.
 
 \Level 1 {User-defined operators}
 
-In addition to predefined operators, the user can define new
-operators to use in a reduction or scan operation.
+In addition to predefined operators, MPI has the possibility of
+\emph{user-defined operators}\index{operator!user-defined}
+to use in a reduction or scan operation.
 
 \mpiRoutineRef{MPI_Op_create}
 
@@ -41,6 +48,11 @@ pointwise reduction on a a whole array at once. The \n{inoutvec} array
 contains partially reduced results, and is typically overwritten by
 the function.
 
+For example, here is an operator for finding the smallest non-zero
+number in an array of nonnegative integers:
+%
+\verbatimsnippet{mpirwz}
+
 You can query the commutativity of an operator:
 %
 \mpiRoutineRef{MPI_Op_commutative}
@@ -52,6 +64,8 @@ int MPI_Op_free(MPI_Op *op)
 \end{verbatim}
 %
 This sets the operator to \indexmpishow{MPI_OP_NULL}.
+
+\index{operator|)}
 
 \Level 0 {Non-blocking collectives}
 \label{sec:mpi3collect}
@@ -100,9 +114,15 @@ int MPI_Ibcast(
 \label{sec:barrier}
 \label{sec:alltoall}
 
-There are two collectives we have not mentioned yet. A~barrier is a
-call that blocks all processes until they have all reached the barrier
-call. This call's simplicity is contrasted with its usefulness, which
+There are two collectives we have not mentioned yet.
+
+A~barrier is a
+routine that blocks all processes until they have all reached the barrier
+call. Thus it achieves time synchronization of the processes.
+%
+\mpiRoutineRef{MPI_Barrier}
+%
+This call's simplicity is contrasted with its usefulness, which
 is very limited. It is almost never necessary to synchronize processes
 through a barrier: for most purposes it does not matter if processors
 are out of sync. Conversely, collectives (except the new non-blocking
@@ -182,7 +202,7 @@ let the other processes know about this.
 The solution is to use \n{MPI_Reduce_scatter} to find out how many processes
 want to communicate with you, and then wait for precisely that many messages
 with a source value of \indexmpishow{MPI_ANY_SOURCE}.
-\verbatimsnippet{reducescatter}
+\cverbatimsnippet[examples/mpi/c/reducescatter.c]{reducescatter}
 
 Use of \n{MPI_Reduce_scatter} to implement the two-dimensional
 matrix-vector product.
@@ -190,7 +210,7 @@ Set up separate row and column communicators with
 \indexmpishow{MPI_Comm_split}, use \n{MPI_Reduce_scatter} to combine
 local products.
 %
-\verbatimsnippet{mvp2d}
+\cverbatimsnippet[examples/mpi/c/mvp2d.c]{mvp2d}
 
 \Level 0 {Performance of collectives}
 
@@ -216,15 +236,34 @@ Under the assumption that
 a processor can only send one message at a time,
 the broadcast in
 figure~\ref{fig:bcast-simple} would take a time proportional to the
-number of processors. One way to ameliorate that is to structure the
+number of processors.
+
+\begin{exercise}
+  \label{ex:latencylinear}
+  What is the total time required for a broadcast involving $p$
+  processes?
+  Give $\alpha$ and $\beta$ terms separately.
+\end{exercise}
+
+One way to ameliorate that is to structure the
 broadcast in a tree-like fashion.
 \begin{figure}[ht]
   \includegraphics[scale=.1]{graphics/bcast-tree}
   \caption{A tree-based broadcast}
   \label{fig:bcast-tree}
 \end{figure}
-This is depicted in figure~\ref{fig:bcast-tree}. How does the
-communication time now depend on the number of processors? The theory
+This is depicted in figure~\ref{fig:bcast-tree}.
+
+\begin{exercise}
+  \label{ex:latencylog}
+  How does the
+  communication time now depend on the number of processors, again
+  $\alpha$ and $\beta$ terms separately.
+
+  What would be a lower bound on the $\alpha,\beta$ terms?
+\end{exercise}
+
+The theory
 of the complexity of collectives is described in more detail in
 \HPSCref{sec:collective}; see also~\cite{Chan2007Collective}.
 
@@ -258,6 +297,48 @@ has changed to simulate shared memory.}:
 We also see that the two nodes are not perfectly in sync, which is normal for MPI
 applications. As a result, core~0 on the first node will sit idle until it receives the partial
 result from core~12, which is on the second node.
+
+\begin{figure}[p]
+  \footnotesize
+  \leftskip=\unitindent
+  \rightskip=\unitindent
+Code:
+{\tiny
+\begin{verbatim}
+switch(rank) { 
+    case 0: 
+        MPI_Bcast(buf1, count, type, 0, comm); 
+        MPI_Send(buf2, count, type, 1, tag, comm); 
+        break; 
+    case 1: 
+        MPI_Recv(buf2, count, type, MPI_ANY_SOURCE, tag, comm, status); 
+        MPI_Bcast(buf1, count, type, 0, comm); 
+        MPI_Recv(buf2, count, type, MPI_ANY_SOURCE, tag, comm, status); 
+        break; 
+    case 2: 
+        MPI_Send(buf2, count, type, 1, tag, comm); 
+        MPI_Bcast(buf1, count, type, 0, comm); 
+        break; 
+}
+\end{verbatim}
+}
+The most logical execution is:\par\medskip
+
+\includegraphics[scale=.35]{backintime1}
+
+However, this ordering is allowed too:\par\medskip
+
+\includegraphics[scale=.35]{backintime2}
+
+Which looks from a distance like:\par\medskip
+
+\includegraphics[scale=.35]{backintime3}
+
+In other words, one of the messages seems to go `back in time'.
+
+  \caption{Possible temporal orderings of send and collective calls}
+  \label{fig:backintime}
+\end{figure}
 
 While collectives synchronize in a loose sense, it is not possible to
 make any statements about events before and after the collectives
@@ -301,3 +382,4 @@ However, it is equally possible to have this execution:
   does its part of the broadcast.
 \end{enumerate}
 
+This is illustrated in figure~\ref{fig:backintime}.

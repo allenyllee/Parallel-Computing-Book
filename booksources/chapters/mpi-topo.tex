@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-7
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% mpi-topo.tex : about communicator topologies
 %%%%
@@ -76,7 +76,7 @@ int MPI_Cart_rank(
 Note that these routines can give the coordinates for any rank,
 not just for the current process.
 %
-\verbatimsnippet{cart}
+\cverbatimsnippet{cart}
 
 The \n{reorder} parameter to \n{MPI_Cart_create}
 indicates whether processes can have a rank
@@ -91,7 +91,7 @@ int MPI_Cart_shift(MPI_Comm comm, int direction, int displ, int *source,
 If you specify a processor outside the grid
 the result is \indexmpishow{MPI_PROC_NULL}.
 
-\verbatimsnippet{cartshift}
+\cverbatimsnippet{cartshift}
 
 \Level 0 {Distributed graph topology}
 \label{sec:mpi-dist-graph}

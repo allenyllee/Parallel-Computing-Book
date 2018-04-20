@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Introduction to High-Performance Scientific Computing'
-%%%% by Victor Eijkhout, copyright 2012-6
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% This book is distributed under a Creative Commons Attribution 3.0
 %%%% Unported (CC BY 3.0) license and made possible by funding from
@@ -15,7 +15,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \newcommand\furtherreading{\Level 0 {Further Reading}\label{sec:furtherreading-\chapshortname}}
-\newcommand\heading[1]{\paragraph{\textbf{#1}}}
+\newcommand\heading[1]{\paragraph*{\textbf{#1}}}
 
 {\catcode`\^^I=13 \globaldefs=1
  \newcommand\listing[2]{\begingroup\small\par\vspace{1ex}
@@ -54,7 +54,57 @@
     \newtheorem{lemma}{Lemma}
 \fi
 
+%%%%
+%%%% Verbatim source handling
+%%%%
+
+% each chapter has a list of sources
+\newtoks\chaptersourcelist
+\newcommand\addchaptersource[1]{
+  \edef\temp{\global\chaptersourcelist={\the\chaptersourcelist #1}}\temp
+}
+\newcommand\listchaptersources{
+  \expandafter\ChapterSourceHeader\the\chaptersourcelist\LSR
+  %\tracingmacros=2 \tracingonline=1
+  %\texttt{\the\chaptersourcelist}\par
+  \expandafter\ListSourcesRecursively\the\chaptersourcelist\LSR
+}
+\def\LSR{\LSR}
+\def\ChapterSourceHeader#1\LSR{
+  \def\test{#1\LSR}
+  \ifx\test\LSR
+  \else
+    \Level 0 {Sources used in this chapter}
+  \fi
+}
+\def\ListSourcesRecursively#1{
+  \def\test{#1}
+  \ifx\test\LSR
+  \else
+    % list the file
+    \textbf{Listing of code #1}:
+    {\footnotesize \verbatiminput{#1}}
+    \par
+    % continue
+    \expandafter\ListSourcesRecursively
+  \fi
+}
+
 \def\verbatimsnippet#1{\verbatiminput{#1}} % snippets/
+\newcommand{\cverbatimsnippet}[2][XX]{
+  % record this file as bracketed name
+  \addchaptersource{{#1}}
+  % typeset as nice C code
+  \lstset{style=reviewcode,language=C}\lstinputlisting{#2}}
+\def\fverbatimsnippet#1{
+  \lstset{style=reviewcode,language=Fortran}\lstinputlisting{#1}
+  \lstset{language=C}
+}
+\def\pverbatimsnippet#1{
+  \lstset{style=reviewcode,language=Python}\lstinputlisting{#1}
+  \lstset{language=C}
+}
+
 \newenvironment{question}{\begin{quotation}\textbf{Question.\ }}{\end{quotation}}
 \newenvironment{fortrannote}
   {\begin{quotation}\noindent\textsl{Fortran note\ }\ignorespaces}

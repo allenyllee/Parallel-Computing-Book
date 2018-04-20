@@ -1,3 +1,16 @@
+% -*- latex -*-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Parallel Programming in MPI and OpenMP'
+%%%% by Victor Eijkhout, copyright 2012-6
+%%%%
+%%%% mandelbrot.tex : a mandelbrot project
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 If you've never heard the name \indexterm{Mandelbrot set}, you
 probably recognize the picture; figure~\ref{fig:mandelbrotset}
 %
@@ -25,7 +38,7 @@ Or computing; and that's what we're going to do.
 In this set of exercises you are going to take an example program
 \n{mandel_main.cxx} and extend it to use a variety of MPI programming
 constructs.  This program has been set up as a
-\indexterm{master-worker} model: there is one master processor (for a
+\indexterm{manager-worker} model: there is one manager processor (for a
 change this is the last processor, rather than zero) which gives out
 work to, and accepts results from, the worker processors. It then
 takes the results and constructs an image file from them.
@@ -65,7 +78,7 @@ execute a loop in which they wait
 for input, process it, return the result.
 \verbatimsnippet{waitforwork}
 
-A very simple solution using blocking sends on the master is given:
+A very simple solution using blocking sends on the manager is given:
 \verbatimsnippet{serialaddtask}
 
 \begin{exercise}
@@ -152,13 +165,13 @@ The problem here is that the workers may not be sufficiently synchronized becaus
 of the differing time for computation.
 
 Consider then passive target synchronization. Now the worker tasks could
-write to the window on the master whenever they have something to
+write to the window on the manager whenever they have something to
 report; by locking the window they prevent other tasks from interfering.
 %
 After a worker writes a result, it can get new data from an array
-of all coordinates on the master. 
+of all coordinates on the manager. 
 
 It is hard to get results into the image as they become available. For
-this, the master would continuously have to scan the results
+this, the manager would continuously have to scan the results
 array. Therefore, constructing the image is easiest done when all
 tasks are concluded.

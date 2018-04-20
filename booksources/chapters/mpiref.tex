@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-7
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% mpiref.tex : MPI reference
 %%%%
@@ -53,33 +53,6 @@ List of predefined \indexmpidef{MPI_Datatype} values:
   &\n{MPI_REAL8}&\\
   \hline
 \end{tabular}
-
-\Level 0 {Mpi operations}
-\label{sec:operator-list}
-
-The following is the list of predefined \indexmpidef{MPI_OP} values.
-
-\begingroup \tt\catcode`\_=12\relax %pyskip
-\begin{tabular}{|l|l|}
-  \hline
-  MPI operator&description\\ \hline
-  MPI_MAX&maximum\\
-  MPI_MIN&minimum\\
-  MPI_SUM&sum\\
-  MPI_PROD&product\\
-  MPI_LAND&logical and\\
-  MPI_BAND&bitwise and\\
-  MPI_LOR&logical or\\
-  MPI_BOR&bitwise or\\
-  MPI_LXOR&logical xor\\
-  MPI_BXOR&bitwise xor\\
-  MPI_MAXLOC&max value and location\\
-  MPI_MINLOC&min value and location\\
-  \hline
-\end{tabular}
-\endgroup %pyskip
-All except the last two operate on MPI datatypes;
-the last two operate on a value/index pair.
 
 \Level 0 {Communicators}
 

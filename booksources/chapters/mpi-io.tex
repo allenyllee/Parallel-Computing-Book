@@ -4,14 +4,13 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-7
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% mpi-io.tex : MPI/O
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\Level 0 {MPI file I/O}
 \index{MPI/O|(}
 
 File input and output in parallel is a little more complicated than
@@ -93,6 +92,18 @@ File accesses:
 \item \indexmpishow{MPI_File_write_at}: combine write and seek
 \end{itemize}
 
+\begin{figure}[ht]
+  \label{fig:write-at}
+  \caption{Writing into contiguous locations}
+  \includegraphics[scale=.4]{write-at-offset}
+\end{figure}
+
+\begin{exercise}
+  \label{ex:blockwrite}
+  Create a buffer of length \n{nwords=3} on each process, and write
+  these buffers as a sequence to one file with \n{MPI_File_write_at}.
+\end{exercise}
+
 These modes are enough for writing simple contiguous blocks. However,
 you can also access non-contiguous areas in the file. For this you use
 %
@@ -111,6 +122,28 @@ This call is collective, even if not all processes access the file.
   used.
 \end{itemize}
 
+\begin{figure}[ht]
+  \label{fig:write-view}
+  \caption{Writing at a view}
+  \includegraphics[scale=.4]{write-at-view}
+\end{figure}
+
+\begin{exercise}
+  \label{ex:viewwrite}
+  Write a file in the same way as in exercise~\ref{ex:blockwrite},
+  but now use \n{MPI_File_write} and use \n{MPI_File_set_view} to set
+  a view that determines where the data is written.
+\end{exercise}
+
+You can get very creative effects by setting the view to a derived
+datatype.
+
+\begin{figure}[ht]
+  \label{fig:write-derived}
+  \caption{Writing at a derived type}
+  \includegraphics[scale=.4]{write-at-derived}
+\end{figure}
+
 \begin{fortrannote}
   In Fortran you have to assure that the displacement parameter is of
   `kind' \indexmpi{MPI_OFFSET_KIND}. In particular, you can not
@@ -127,7 +160,7 @@ More:
 
 \mpiRoutineRef{MPI_File_write_at}
 
-\Level 1 {Constants}
+\Level 0 {Constants}
 
 \indexmpishow{MPI_SEEK_SET} used to be called \indextermtt{SEEK_SET}
 which gave conflicts with the C++ library. This had to be circumvented

@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-7
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% mpi-rank.tex : comm size and rank and such
 %%%%
@@ -13,6 +13,13 @@
 
 \Level 0 {Processor identification}
 \label{sec:rank-size}
+
+Since all processes in an MPI job are instantiations of the same executable,
+you'd think that they all execute the exact same instructions,
+which would not be terribly useful.
+You will now learn how to distinguish
+processes from each other, so that together they can start doing
+useful work.
 
 \Level 1 {Processor name}
 
@@ -44,13 +51,6 @@ The actual length of the name is returned in the \n{resultlen} parameter.
 
 \Level 1 {Process and communicator properties: rank and size}
 
-Since all processes in an MPI job are instantiations of the same executable,
-you'd think that they all execute the exact same instructions,
-which would not be terribly useful.
-You will now learn how to distinguish
-processes from each other, so that together they can start doing
-useful work.
-
 First we need to introduce the concept of
 \indextermdef{communicator}, which is an abstract description of a
 group of processes. For now you only need to know about the existence
@@ -62,7 +62,8 @@ learn much more about communicators in chapter~\ref{ch:mpi-comm}.
 To distinguish between processes in a communicator, MPI provides two calls
 \begin{enumerate}
 \item \indexmpishow{MPI_Comm_size} reports how many processes there are in all; and
-\item \indexmpishow{MPI_Comm_rank} states what the number of the process is.
+\item \indexmpishow{MPI_Comm_rank} states what the number of the
+  process is that calls this routine.
 \end{enumerate}
 
 If every process executes the \n{MPI_Comm_size} call, they all get the
@@ -103,10 +104,3 @@ out of a total of~20'.
   Write a program where only the process with number zero
   reports on how many processes there are in total.
 \end{exercise}
-
-\endinput
-This is probably about the simplest MPI program:
-\verbatimsnippet{hello}
-%
-\verbatimsnippet{hellop}
-

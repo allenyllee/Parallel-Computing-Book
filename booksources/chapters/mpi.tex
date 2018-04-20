@@ -11,46 +11,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\Level 0 {Synchronization}
-\index{synchronization!in MPI|(}
-
-MPI programs conform to the \ac{SPMD} model, and this means that events
-in one process can be unrelated in time to events in another process.
-Any \emph{synchronization} that happens is induced by communication 
-and other MPI mechanisms. By synchronization here we mean any sort of
-temporal ordering of events in different processes.
-
-You have already seen some mechanisms.
-\begin{enumerate}
-\item In blocking communication, the receive call does not return until the send call has completed.
-\item In non-blocking communication, the wait on a receive request will not return 
-  until the send has been completed.
-\item In one-sided communication, the fence mechanism impose a certain ordering on events.
-\end{enumerate}
-
-Another synchronization mechanism is induced by the \emph{barrier}\index{barrier!in MPI}
-mechanism. However, while an \indexmpishow{MPI_Barrier} call guarantees that all processes have
-reached a certain location in their source, this does not necessarily imply anything about 
-message traffic. Consider this example
-\begin{quotation}
-  \begin{tabular}{|l|l|l|}
-    \hline
-    Proc 0 & Proc 1 & Proc 2\\
-    \hline
-    Isend to 1 & Irecv from any source & \\
-    Barrier    & Barrier               & Barrier \\
-    Wait for send request & wait for recv request & Isend to 1 \\
-                          & (another wildcard recv) & wait for send request \\
-    \hline
-  \end{tabular}
-\end{quotation}
-The unexpected behaviour here is that the (first) receive on process~1
-can be matched with the send on process~2: the barrier on process~1 only guarantees that the 
-receive instruction was performed, not the actual transfer. For that you need the \n{MPI_Wait}
-call, which is after the barrier.
-
-\index{synchronization!in MPI|)}
-
 \Level 0 {Error handling}
 \label{sec:mpi:error}
 
@@ -178,6 +138,22 @@ The object \indexmpidef{MPI_INFO_ENV} is predefined, containing:
 \end{itemize}
 Note that these are the requested values; the running program can for instance
 have lower thread support.
+
+\Level 1 {Communicator and window information}
+
+MPI has a built-in possibility of attaching information to
+\emph{communicators}\index{communicator!info object}
+and
+\emph{windows}\index{window!info object}
+using the calls
+\indexmpishow{MPI_Comm_get_info}
+\indexmpishow{MPI_Comm_set_info},
+\indexmpishow{MPI_Win_get_info},
+\indexmpishow{MPI_Win_set_info}.
+
+Copying a communicator with \indexmpishow{MPI_Comm_dup} would cause
+the info to be copied; to attach new information to the copy there is
+\indexmpidef{MPI_Comm_dup_with_info}.
 
 \Level 0 {Fortran issues}
 \label{sec:mpi-fortran}
@@ -314,7 +290,7 @@ MPI allows you to write your own profiling interface. To make this possible,
 every routine \n{MPI_Something} calls a routine \n{PMPI_Something} that 
 does the actual work. You can now write your \n{MPI_...} routine
 which calls \indexmpishow{PMPI_...}, and inserting your own profiling calls.
-\begin{figure}
+\begin{figure}[ht]
   \includegraphics[scale=.7]{graphics/pmpi}
   \caption{A stack trace, showing the \texttt{PMPI} calls.}
   \label{fig:pmpi}
@@ -500,57 +476,9 @@ meaning that it is limited to 32-bit quantities.  There are ways
 around this, such as sending a number of
 \indexmpishow{MPI_Type_contiguous} blocks that add up to more than~$2^{31}$.
 
-\Level 1 {Fortran issues}
-\label{sec:ref:mpi-fortran}
-\index{MPI!Fortran issues|(}
-
-\Level 2 {Data types}
-
-The equivalent of \indexmpishowsub{MPI_Aint}{in Fortran} is
-\begin{verbatim}
-integer(kind=MPI_ADDRESS_KIND) :: winsize
-\end{verbatim}
-
-\Level 2 {Type issues}
-
-Fortran90 is a strongly typed language, so it is not possible to pass
-argument by reference to their address, as C/C++ do with the \n{void*}
-type for send and receive buffers. In Fortran this is solved by having
-separate routines for each datatype, and providing an \n{Interface} block
-in the MPI module. If you manage to request a version that does not exist,
-the compiler will display a message like
-\begin{verbatim}
-There is no matching specific 
-subroutine for this generic subroutine call [MPI_Send]
-\end{verbatim}
-
-\Level 2 {Byte calculations}
-\label{sec:f-sizeof}
-
-Fortran lacks a \n{sizeof} operator to query the sizes of datatypes.
-Since sometimes exact byte counts are necessary,
-for instance in one-sided communication,
-Fortran can use the \indexmpishow{MPI_Sizeof} routine,
-for instance for \indexmpishow{MPI_Win_create}:
-\begin{verbatim}
-call MPI_Sizeof(windowdata,window_element_size,ierr)
-window_size = window_element_size*500
-call MPI_Win_create( windowdata,window_size,window_element_size,... );
-\end{verbatim}
-
-\index{MPI!Fortran issues|)}
-
 \Level 1 {Python issues}
 \label{sec:python-stuff}
 \index{MPI!Python issues|(}
-
-\Level 2 {Byte calculations}
-
-The \indexmpishow{MPI_Win_create} routine needs a displacement in
-bytes. Here is a good way for finding the size of \indexterm{numpy} datatypes:
-\begin{verbatim}
-numpy.dtype('i').itemsize
-\end{verbatim}
 
 \Level 2 {Arrays of objects}
 
@@ -606,6 +534,20 @@ For runtime determination,
 \mpiRoutineRef{MPI_Attr_get}
 
 Attributes are:
+\begin{itemize}
+\item \indexmpishow{MPI_TAG_UB}
+  Upper bound for \emph{tag value}\index{tag!bound on value}.
+\item \indexmpishow{MPI_HOST}
+  Host process rank, if such exists, \indexmpishow{MPI_PROC_NULL}, otherwise.
+\item \indexmpishow{MPI_IO}
+rank of a node that has regular I/O facilities (possibly
+myrank). Nodes in the same communicator may return different values
+for this parameter.
+\item \indexmpishow{MPI_WTIME_IS_GLOBAL}
+Boolean variable that indicates whether clocks are synchronized.
+\end{itemize}
+
+Also:
 \begin{itemize}
 \item \indexmpishow{MPI_UNIVERSE_SIZE}: the total number of processes
   that can be created. This can be more than the size of

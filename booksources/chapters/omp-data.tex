@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-6
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% omp-data.tex : about thread data
 %%%%
@@ -95,7 +95,7 @@ put on a separate \indextermbus{stack}{per thread}. The OpenMP standard
 does not dictate the size of these stacks, but beware of \indextermbus{stack}{overflow}.
 A~typical default
 is a few megabyte; you can control it with the environment variable
-\indextermtt{OMP_STACKSIZE}. Its values can be literal or with suffixes:
+\indexompshow{OMP_STACKSIZE}. Its values can be literal or with suffixes:
 \begin{verbatim}
 123 456k 567K 678m 789M 246g 357G
 \end{verbatim}
@@ -339,6 +339,6 @@ $!OMP threadprivate( /blockname/ )
 \end{verbatim}
 \end{fortrannote}
 
-Threadprivate variables require \indextermtt{OMP_DYNAMIC} to be
+Threadprivate variables require \indexompshow{OMP_DYNAMIC} to be
 switched off.
 

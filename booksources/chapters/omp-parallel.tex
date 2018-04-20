@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-6
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% omp-parallel.tex : about parallel regions, nesting and stuff.
 %%%%
@@ -28,10 +28,10 @@ segment of code.
 \end{verbatim}
 It would be pointless to have the block be executed identically by
 all threads. One way to get a meaningful parallel code is to use the function
-\indextermtt{omp_get_thread_num}, to find out which thread you are,
+\indexompshow{omp_get_thread_num}, to find out which thread you are,
 and execute work that is individual to that thread.
 There is also a function
-\indextermtt{omp_get_num_threads} to find out the total number of threads.
+\indexompshow{omp_get_num_threads} to find out the total number of threads.
 Both these functions give a number relative to the current team;
 recall from figure~\ref{fig:forkjoin} that new teams can be created recursively.
 
@@ -114,7 +114,7 @@ are actually handled by the compiler, not the preprocessor.
   omp_get_thread_limit
 \end{verbatim}
 
-\indextermttdef{OMP_WAIT_POLICY} values: \n{ACTIVE,PASSIVE}
+\indexompshowdef{OMP_WAIT_POLICY} values: \n{ACTIVE,PASSIVE}
 
 \Level 0 {Nested parallelism}
 \index{nested parallelism|(}
@@ -183,7 +183,7 @@ the body of the function~\n{f} falls in the dynamic scope of the
 parallel region, so the for loop will be parallelized.
 
 If the function may be called both from inside and outside parallel
-regions, you can test which is the case with \indextermtt{omp_in_parallel}.
+regions, you can test which is the case with \indexompshow{omp_in_parallel}.
 
 The amount of nested parallelism can be set:
 \begin{verbatim}

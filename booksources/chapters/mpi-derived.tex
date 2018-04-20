@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-7
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% mpi-derived.tex : derived datatypes
 %%%%
@@ -56,13 +56,13 @@ heterogeneous data, et cetera.
 \label{sec:data-commit}
 
 The typical sequence of calls for creating a new datatype is as follows:
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Datatype newtype;
 MPI_Type_<sometype>( < oldtype specifications >, &newtype );
 MPI_Type_commit( &newtype );
 /* code that uses your new type */
 MPI_Type_free( &newtype );
-\end{verbatim}
+\end{lstlisting}
 
 \Level 2 {Datatype objects}
 
@@ -100,9 +100,9 @@ type, which makes MPI do the indexing calculations for the data type.
 
 When you no longer
 need the data type, you call \indexmpishow{MPI_Type_free}.
-\begin{verbatim}
+\begin{lstlisting}
 int MPI_Type_free (MPI_datatype *datatype)
-\end{verbatim}
+\end{lstlisting}
 \begin{itemize}
 \item The definition of the datatype identifier will be changed to
   \indexmpishow{MPI_DATATYPE_NULL}.
@@ -130,7 +130,7 @@ one item of a contiguous type and multiple items of the constituent type.
 \end{figure}
 This is illustrated in figure~\ref{fig:data-contiguous}.
 
-\verbatimsnippet{contiguous}
+\cverbatimsnippet[examples/mpi/c/contiguous.c]{contiguous}
 
 \Level 1 {Vector type}
 \label{sec:data:vector}
@@ -168,33 +168,33 @@ has no knowledge of the stride of the datatype on the sender.
 
 In this example a vector type is created only on the sender, in order to send
 a strided subset of an array; the receiver receives the data as a contiguous block.
-\verbatimsnippet{vector}
+\cverbatimsnippet[examples/mpi/c/vector.c]{vector}
 
 As an example of this datatype, consider the example of transposing
 a matrix, for instance to convert between
 C and Fortran arrays (see section~\HPSCref{sec:CFarrays}). Suppose that 
 a processor has a matrix stored in~C, row-major, layout, and it needs
 to send a column to another processor. If the matrix is declared as
-\begin{verbatim}
+\begin{lstlisting}
   int M,N; double mat[M][N]
-\end{verbatim}
+\end{lstlisting}
 then a column has $M$ blocks of one element, spaced $N$~locations apart.
 In other words:
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Datatype MPI_column;
 MPI_Type_vector( 
     /* count= */ M, /* blocklength= */ 1, /* stride= */ N,
     MPI_DOUBLE, &MPI_column );
-\end{verbatim}
+\end{lstlisting}
 Sending the first column is easy:
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Send( mat, 1,MPI_column, ... );
-\end{verbatim}
+\end{lstlisting}
 The second column is just a little trickier: you now need to pick out 
 elements with the same stride, but starting at \n{A[0][1]}.
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Send( &(mat[0][1]), 1,MPI_column, ... );
-\end{verbatim}
+\end{lstlisting}
 You can make this marginally more efficient (and harder to read)
 by replacing the index expression by \n{mat+1}.
 
@@ -303,16 +303,16 @@ is the sum of the blocklengths.
 
 The following example picks items that are on prime number-indexed
 locations.
-\verbatimsnippet{indexed}
+\cverbatimsnippet[examples/mpi/c/indexed.c]{indexed}
 
 You can also \indexmpishow{MPI_Type_create_hindexed} which describes blocks
 of a single old type, but with indix locations in bytes, rather than
 in multiples of the old type.
-\begin{verbatim}
+\begin{lstlisting}
 int MPI_Type_create_hindexed
  (int count, int blocklens[], MPI_Aint indices[],
   MPI_Datatype old_type,MPI_Datatype *newtype)
-\end{verbatim}
+\end{lstlisting}
 You can use this to pick all occurrences of a single component out of
 an array of structures. However, you need to be very careful with the
 index calculation. Use pointer arithmetic, as in the example in
@@ -335,20 +335,20 @@ can contain multiple data types.
 %
 The specification contains a `count' parameter that specifies how many blocks
 there are in a single structure. For instance,
-\begin{verbatim}
+\begin{lstlisting}
 struct {
  int i;
  float x,y;
 } point;
-\end{verbatim}
+\end{lstlisting}
 has two blocks, one of a single integer, and one of two floats.
 This is illustrated in figure~\ref{fig:data-struct}.
 
-\begin{verbatim}
+\begin{lstlisting}
 int MPI_Type_create_struct(
   int count, int blocklengths[], MPI_Aint displacements[],
   MPI_Datatype types[], MPI_Datatype *newtype);
-\end{verbatim}
+\end{lstlisting}
 
 \begin{description}
 \item[\texttt{count}] The number of blocks in this
@@ -367,15 +367,15 @@ send as a derived type and receive as a array of a simple type.
 (It would be possible to send as one structure type and receive as another, 
 as long as they have the same \indextermbus{datatype}{signature}.)
 %
-\verbatimsnippet{structure}
+\cverbatimsnippet[examples/mpi/c/struct.c]{structure}
 %
 Note the \n{displacement} calculations in this example,
 which involve some not so elegant pointer arithmetic.
 It would have been incorrect to write
-\begin{verbatim}
+\begin{lstlisting}
 displacement[0] = 0;
 displacement[1] = displacement[0] + sizeof(char);
-\end{verbatim}
+\end{lstlisting}
 since you do not know the way the \indexterm{compiler} lays out the
 structure in memory\footnote{Homework question: what does the language
   standard say about this?}.
@@ -383,10 +383,10 @@ structure in memory\footnote{Homework question: what does the language
 If you want to send more than one structure, you have to worry more
 about padding in the structure. You can solve this by adding an extra
 type \indexmpishow{MPI_UB} for the `upper bound' on the structure:
-\begin{verbatim}
+\begin{lstlisting}
 displacements[3] = sizeof(myobject); types[3] = MPI_UB;
 MPI_Type_create_struct(struclen+1,.....);
-\end{verbatim}
+\end{lstlisting}
 
 The structure type is very similar in functionality to \indexmpishow{MPI_Type_hindexed},
 which uses byte-based indexing. The structure-based type is probably cleaner
@@ -400,19 +400,19 @@ We send a contiguous data type of double and receive it as an array of
 separate doubles; we use \indexmpishow{MPI_Get_count} to ensure that
 we got the right amount of data.
 %
-\verbatimsnippet{contiguous}
+\cverbatimsnippet[examples/mpi/c/contiguous.c]{contiguous}
 %
-\verbatimsnippet{contiguous-f}
+\fverbatimsnippet{contiguous-f}
 
 \mpiexample{MPI_Type_indexed}
 
 We send an indexed data type and receive as separate integers.
 %
-\verbatimsnippet{indexed}
+\cverbatimsnippet[examples/mpi/c/indexed.c]{indexed}
 %
-\verbatimsnippet{indexed-f}
+\fverbatimsnippet{indexed-f}
 %
-\verbatimsnippet{indexp}
+\pverbatimsnippet{indexp}
 
 \mpiexample{MPI_Type_struct}
 
@@ -421,7 +421,7 @@ in addition to the displacements and blocklengths we now have an array
 of MPI datatypes. Also note how the displacement computation is done
 in bytes.
 %
-\verbatimsnippet{structure}
+\cverbatimsnippet[examples/mpi/c/structure.c]{structure}
 
 \mpiexample{MPI_Type_vector}
 
@@ -429,11 +429,11 @@ Send a strided data object with \n{Type_vector} and receive it as
 individual doubles. Use \indexmpishow{MPI_Get_count} to inspect the
 \n{MPI_Status} object.
 %
-\verbatimsnippet{vector}
+\cverbatimsnippet[examples/mpi/c/vector.c]{vector}
 %
-\verbatimsnippet{vector-f}
+\fverbatimsnippet{vector-f}
 %
-\verbatimsnippet{vectorp}
+\pverbatimsnippet{vectorp}
 
 \Level 1 {Type size}
 
@@ -444,7 +444,7 @@ number of bytes occupied by the data in a type. That means that in an
 \emph{MPI vector datatype}\index{MPI!datatype!vector} it does not
 count the gaps.
 %
-\verbatimsnippet{vectortypesize}
+\cverbatimsnippet[examples/mpi/c/vectortypesize.c]{vectortypesize}
 %
 \mpiRoutineRef{MPI_Type_size}
 
@@ -453,7 +453,7 @@ On the other hand, the \emph{datatype
 first to the last data item of the type, that is, with counting the
 gaps in the type.
 %
-\verbatimsnippet{vectortypeextent}
+\cverbatimsnippet[examples/mpi/c/vectortypeextent.c]{vectortypeextent}
 %
 \mpiRoutineRef{MPI_Type_get_extent}
 %
@@ -480,4 +480,4 @@ indicating where the data starts, and the extent from that point.
   provided which return the true extent of the datatype.
 \end{comment}
 
-\verbatimsnippet{trueextent}
+\cverbatimsnippet[examples/mpi/c/trueextent.c]{trueextent}

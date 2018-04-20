@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-6
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% mpi-bcastreduce.tex : about broadcast & reduce collectives
 %%%%
@@ -30,7 +30,7 @@ The \n{MPI_Op} operations do not return an error code.
 
 In python native mode the result is a function return value.
 %
-\verbatimsnippet{scanp}
+\pverbatimsnippet{scanp}
 
 \Level 1 {Exclusive scan}
 
@@ -69,9 +69,9 @@ number of the first local variable.
 
 Exclusive scan examples:
 %
-\verbatimsnippet{myfirst}
+\cverbatimsnippet{myfirst}
 %
-\verbatimsnippet{exscanp}
+\pverbatimsnippet{exscanp}
 
 It is possible to do a \indexterm{segmented scan}. Let $x_i$ be a series of numbers
 that we want to sum to $X_i$ as follows. Let $y_i$ be a series of booleans such that

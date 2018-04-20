@@ -1,9 +1,6 @@
 C:
-MPI_Request request // type defined in mpi.h
+MPI_Request request ;
 
-Fortran:
-Integer :: request
-
-Fortran with 2008 support:
-use mpi_f08
+Fortran2008:
 Type(MPI_Request) :: request
+

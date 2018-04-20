@@ -1,9 +1,6 @@
 C:
-MPI_Win window // type defined in mpi.h
+MPI_Win win ;
 
 Fortran:
-Integer :: window
+Type(MPI_Win) win
 
-Fortran with 2008 support:
-use mpi_f08
-Type(MPI_Win) :: window

@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-6
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% mpi-proc.tex : about point-to-point communication
 %%%%
@@ -32,9 +32,9 @@ to start the whole of your MPI code, but that is likely to be inefficient.
 
 Here is an example of a work manager.
 %
-\verbatimsnippet{spawnmanager}
+\cverbatimsnippet{spawnmanager}
 %
-\verbatimsnippet{spawnmanagerp}
+\pverbatimsnippet{spawnmanagerp}
 %
 You could start up a single copy of this program with 
 \begin{verbatim}
@@ -51,9 +51,9 @@ gain any performance.
 The spawned program looks very much like a regular MPI program, with
 its own initialization and finalize calls.
 
-\verbatimsnippet{spawnworker}
+\cverbatimsnippet{spawnworker}
 %
-\verbatimsnippet{spawnworkerp}
+\pverbatimsnippet{spawnworkerp}
 
 Spawned processes wind up with a value of \n{MPI_COMM_WORLD} of their
 own, but managers and workers can find each other regardless.

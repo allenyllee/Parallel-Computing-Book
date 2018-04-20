@@ -1,8 +1,13 @@
+Semantics:
+MPI_SOURCE is the name of an integer field
+in an MPI_STATUS structure
+
+
 C:
-int status.MPI_SOURCE;
+status.MPI_SOURCE // is int
 
 F:
-integer :: MPI_SOURCE
+status_object%MPI_SOURCE ! is integer
 
 Python:
 status.Get_source() # returns int

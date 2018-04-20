@@ -18,7 +18,7 @@ info ::
 
 APPS = init thread env \
     recvblock sendblock ssendblock sendrecv irecv_source irecvnonblock \
-    probe ibarrier \
+    probe ibarrier backintime reductpositive \
     putfence putfencealloc getfence anysource onesidedbuild onsidedmap \
     cancel exscan \
     postwaitwin passive \
@@ -50,20 +50,19 @@ else
   CXX = mpicxx
 endif
 
-DEBUG=OPT
 OPTLEVEL=2
 OPT_flag = -O${OPTLEVEL} -g
-DEBUG_flag = -O0 -g
-
+EXTRAFLAGS = 
 info ::
-	@echo "    debug flag: DEBUG=DEBUG/OPT (default: ${DEBUG})]"
 	@echo "    [CORESPERNODE=nnn (default: ${CORESPERNODE})]"
+	@echo "    [EXTRAFLAGS=whatever]"
+	@echo "     supported: EXTRAFLAGS=-DDEBUG"
 CORESPERNODE = 16
 %.o : %.c
-	${CC} ${${DEBUG}_flag} -D${DEBUG} -DCORES_PER_NODE=${CORESPERNODE} \
+	${CC}  ${OPT_FLAG} ${EXTRAFLAGS} -DCORES_PER_NODE=${CORESPERNODE} \
 	  -c $*.c
 %.o : %.cxx
-	${CXX} ${${DEBUG}_flag} -D${DEBUG} -DCORES_PER_NODE=${CORESPERNODE} \
+	${CXX} ${OPT_FLAG} ${EXTRAFLAGS} -DCORES_PER_NODE=${CORESPERNODE} \
 	  -c $*.cxx
 
 app_dependencies  = tools.o
@@ -167,6 +166,14 @@ noregression :
 	if [ $$haserror == "0" ] ; then \
 	  echo "Regression succesfully concluded" ; \
 	fi
+
+.PHONY: run_backintime
+info ::
+	@echo "make run_backintime"
+run_backintime : backintime
+	for i in `seq 1 150` ; do \
+	  mpirun -np 3 ./backintime ; \
+	done | grep back
 
 include ../../Make.inc
 clean ::

@@ -3,7 +3,7 @@
 ####
 #### This makefile is part of the source of 
 #### "Parallel Computing in MPI and OpenMP"
-#### by Victor Eijkhout, copyright 2013/4/5
+#### by Victor Eijkhout, copyright 2013-8
 ####
 #### Makefile for OpenMP C example programs
 ####
@@ -20,7 +20,7 @@ info ::
 	@echo "make app (where app=${APPS})"
 APPS = hello hellocount \
     alloc1 alloc2 \
-    threadprivate ireduct ireductinit ureduct \
+    threadprivate ireduct ireductinit ureduct reductpositive \
     taskgroup0 taskgroup1 taskgroup2 taskgroup3
 listapps :
 	@echo ${APPS}
@@ -41,10 +41,12 @@ endif
 
 info ::
 	@echo "    [OPTLEVEL=0/1/2/3 (default=${OPTLEVEL})]"
+	@echo "    [EXTRAFLAGS=whatever]"
+EXTRAFLAGS =
 % : %.c
-	${CC} ${CFLAGS} $*.c -o $@
+	${CC}  ${CFLAGS}   ${EXTRAFLAGS} $*.c -o $@
 % : %.cxx
-	${CXX} ${CXXFLAGS} $*.cxx -o $@
+	${CXX} ${CXXFLAGS} ${EXTRAFLAGS} $*.cxx -o $@
 
 EXEC = hello
 NP = 4

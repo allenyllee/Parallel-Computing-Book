@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-6
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% openmp.tex : topics that have not been rolled into their
 %%%%              own chapter yet.
@@ -25,69 +25,69 @@ storing this setting.
 
 The runtime functions are:
 \begin{itemize}
-\item \indextermttdef{omp_set_num_threads}
-\item \indextermttdef{omp_get_num_threads}
-\item \indextermttdef{omp_get_max_threads}
-\item \indextermttdef{omp_get_thread_num}
-\item \indextermttdef{omp_get_num_procs}
-\item \indextermttdef{omp_in_parallel}
-\item \indextermttdef{omp_set_dynamic}
-\item \indextermttdef{omp_get_dynamic}
-\item \indextermttdef{omp_set_nested}
-\item \indextermttdef{omp_get_nested}
-\item \indextermttdef{omp_get_wtime}
-\item \indextermttdef{omp_get_wtick}
-\item \indextermttdef{omp_set_schedule}
-\item \indextermttdef{omp_get_schedule}
-\item \indextermttdef{omp_set_max_active_levels}
-\item \indextermttdef{omp_get_max_active_levels}
-\item \indextermttdef{omp_get_thread_limit}
-\item \indextermttdef{omp_get_level}
-\item \indextermttdef{omp_get_active_level}
-\item \indextermttdef{omp_get_ancestor_thread_num}
-\item \indextermttdef{omp_get_team_size}
-%\item \indextermttdef{omp_}
+\item \indexompshowdef{omp_set_num_threads}
+\item \indexompshowdef{omp_get_num_threads}
+\item \indexompshowdef{omp_get_max_threads}
+\item \indexompshowdef{omp_get_thread_num}
+\item \indexompshowdef{omp_get_num_procs}
+\item \indexompshowdef{omp_in_parallel}
+\item \indexompshowdef{omp_set_dynamic}
+\item \indexompshowdef{omp_get_dynamic}
+\item \indexompshowdef{omp_set_nested}
+\item \indexompshowdef{omp_get_nested}
+\item \indexompshowdef{omp_get_wtime}
+\item \indexompshowdef{omp_get_wtick}
+\item \indexompshowdef{omp_set_schedule}
+\item \indexompshowdef{omp_get_schedule}
+\item \indexompshowdef{omp_set_max_active_levels}
+\item \indexompshowdef{omp_get_max_active_levels}
+\item \indexompshowdef{omp_get_thread_limit}
+\item \indexompshowdef{omp_get_level}
+\item \indexompshowdef{omp_get_active_level}
+\item \indexompshowdef{omp_get_ancestor_thread_num}
+\item \indexompshowdef{omp_get_team_size}
+%\item \indexompshowdef{omp_}
 \end{itemize}
 
 Here are the OpenMP \emph{environment variables}:
 \begin{itemize}
-\item \indextermttdef{OMP_CANCELLATION} Set whether cancellation is activated
-\item \indextermtt{OMP_DISPLAY_ENV} Show OpenMP version and environment variables
-\item \indextermttdef{OMP_DEFAULT_DEVICE} Set the device used in target regions
-\item \indextermttdef{OMP_DYNAMIC} Dynamic adjustment of threads
-\item \indextermttdef{OMP_MAX_ACTIVE_LEVELS} Set the maximum number of nested parallel
+\item \indexompshowdef{OMP_CANCELLATION} Set whether cancellation is activated
+\item \indexompshow{OMP_DISPLAY_ENV} Show OpenMP version and environment variables
+\item \indexompshowdef{OMP_DEFAULT_DEVICE} Set the device used in target regions
+\item \indexompshowdef{OMP_DYNAMIC} Dynamic adjustment of threads
+\item \indexompshowdef{OMP_MAX_ACTIVE_LEVELS} Set the maximum number of nested parallel
   regions
-\item \indextermttdef{OMP_MAX_TASK_PRIORITY} Set the maximum task priority value
-\item \indextermttdef{OMP_NESTED} Nested parallel regions
-\item \indextermttdef{OMP_NUM_THREADS} Specifies the number of threads to use
-\item \indextermttdef{OMP_PROC_BIND} Whether theads may be moved between CPUs
-\item \indextermttdef{OMP_PLACES} Specifies on which CPUs the theads should be placed
-\item \indextermttdef{OMP_STACKSIZE} Set default thread stack size
-\item \indextermttdef{OMP_SCHEDULE} How threads are scheduled
-\item \indextermttdef{OMP_THREAD_LIMIT} Set the maximum number of threads
-\item \indextermttdef{OMP_WAIT_POLICY} How waiting threads are handled
+\item \indexompshowdef{OMP_MAX_TASK_PRIORITY} Set the maximum task priority value
+\item \indexompshowdef{OMP_NESTED} Nested parallel regions
+\item \indexompshowdef{OMP_NUM_THREADS} Specifies the number of threads to use
+\item \indexompshowdef{OMP_PROC_BIND} Whether theads may be moved between CPUs
+\item \indexompshowdef{OMP_PLACES} Specifies on which CPUs the theads should be placed
+\item \indexompshowdef{OMP_STACKSIZE} Set default thread stack size
+\item \indexompshowdef{OMP_SCHEDULE} How threads are scheduled
+\item \indexompshowdef{OMP_THREAD_LIMIT} Set the maximum number of threads
+\item \indexompshowdef{OMP_WAIT_POLICY} How waiting threads are handled
 \end{itemize}
 
 There are 4 \acp{ICV} that behave as if each thread has its own copy of them.
 The default is implementation-defined unless otherwise noted.
 \begin{itemize}
   \item It may be possible to adjust dynamically the number of threads
-    for a parallel region. Variable: \indextermtt{OMP_DYNAMIC};
-    routines: \indextermtt{omp_set_dynamic},
-    \indextermtt{omp_get_dynamic}.
+    for a parallel region. Variable: \indexompshow{OMP_DYNAMIC};
+    routines: \indexompshow{omp_set_dynamic},
+    \indexompshow{omp_get_dynamic}.
   \item If a code contains \indextermsub{nested}{parallel regions},
     the inner regions may create new teams, or they may be executed by
     the single thread that encounters them. Variable:
-    \indextermtt{OMP_NESTED}; routines \indextermtt{omp_set_nested},
-    \indextermtt{omp_get_nested}. Allowed values are \n{TRUE} and
+    \indexompshow{OMP_NESTED}; routines \indexompshow{omp_set_nested},
+    \indexompshow{omp_get_nested}. Allowed values are \n{TRUE} and
     \n{FALSE}; the default is false.
   \item The number of threads used for an encountered parallel region
-    can be controlled. Variable: \indextermtt{OMP_NUM_THREADS};
-    routines \indextermtt{omp_set_num_threads},
-    \indextermtt{omp_get_max_threads}.
+    can be controlled. Variable: \indexompshow{OMP_NUM_THREADS};
+    routines \indexompshow{omp_set_num_threads},
+    \indexompshow{omp_get_max_threads}.
   \item The schedule for a parallel loop can be set. Variable:
-    \indextermtt{OMP_SCHEDULE}; routines
-    \indextermtt{omp_set_schedule}, \indextermtt{omp_get_schedule}.
+    \indexompshow{OMP_SCHEDULE}; routines
+    \indexompshow{omp_set_schedule}, \indexompshow{omp_get_schedule}.
 \end{itemize}
 
 Non-obvious syntax:
@@ -97,22 +97,22 @@ export OMP_SCHEDULE="static,100"
 
 Other settings:
 \begin{itemize}
-\item\indextermtt{omp_get_num_threads}: query the number of threads
+\item\indexompshow{omp_get_num_threads}: query the number of threads
   active at the current place in the code; this can be lower than what
   was set with \n{omp_set_num_threads}. For a meaningful answer, this
   should be done in a parallel region.
-\item\indextermtt{omp_get_thread_num}
-\item\indextermtt{omp_in_parallel}: test if you are in a parallel
+\item\indexompshow{omp_get_thread_num}
+\item\indexompshow{omp_in_parallel}: test if you are in a parallel
   region (see for instance section~\ref{sec:parallelregion}).
-\item\indextermtt{omp_get_num_procs}: query the physical number of cores available.
+\item\indexompshow{omp_get_num_procs}: query the physical number of cores available.
 \end{itemize}
 
 Other environment variables:
 \begin{itemize}
-\item \indextermtt{OMP_STACKSIZE} controls the amount of space that is
+\item \indexompshow{OMP_STACKSIZE} controls the amount of space that is
   allocated as per-thread \indexterm{stack}; the space for private
   variables.
-\item \indextermtt{OMP_WAIT_POLICY} determines the behaviour of
+\item \indexompshow{OMP_WAIT_POLICY} determines the behaviour of
   threads that wait, for instance for \indexterm{critical section}:
   \begin{itemize}
   \item \n{ACTIVE} puts the thread in a \indexterm{spin-lock}, where
@@ -126,7 +126,7 @@ Other environment variables:
   but activating it again is expensive. Thus, the passive strategy
   only makes sense if threads will be waiting for a (relatively) long
   time.
-\item \indextermtt{OMP_PROC_BIND} with values \n{TRUE} and \n{FALSE}
+\item \indexompshow{OMP_PROC_BIND} with values \n{TRUE} and \n{FALSE}
   can bind threads to a processor. On the one hand, doing so can
   minimize data movement; on the other hand, it may increase load
   imbalance.
@@ -168,135 +168,6 @@ for (int use_threads=1; use_threads<=nthreads; use_threads++) {
   the body compute a result and use a reduction to preserve these results.
   \end{itemize}
 \end{exercise}
-
-\Level 0 {Dependency analysis}
-\index{data dependencies|(}
-\index{flow dependency|see{data dependencies}}
-\index{anti dependency|see{data dependencies}}
-\index{output dependency|see{data dependencies}}
-
-If two statements refer to the same data item,
-we say that there is a \emph{data dependency} between
-the statements. Such dependencies limit the extent to which
-the execution of the statements can be  rearranged.
-The study of this topic probably started in the 1960s,
-when processors could execute statements \emph{out of order}\index{out-of-order execution}
-to increase throughput. The re-ordering of statements
-was limited by the fact that the execution
-had to obey the \indexterm{program order} semantics:
-the result had to be as if the statements were executed
-strictly in the order in which they appear in the program.
-
-These issues of statement ordering, and therefore of
-data dependencies, arise in OpenMP in two main ways:
-\begin{enumerate}
-\item When a loop is parallelized, the iterations are no longer
-  executed in their program order, so we have to check for dependencies.
-\item The introduction of tasks also means that parts of a program
-  can be executed in a different order from in which they appear
-  in a sequential execution.
-\end{enumerate}
-
-The easiest case of dependency analysis is that of
-detecting that loop iterations can be executed independently.
-Iterations are of course independent if a data item
-is read in two different iterations, but if the same
-item is read in one iteration and written in another,
-or written in two different iterations,
-we need to do further analysis.
-
-Analysis of \emph{data dependencies} can be performed
-by a compiler, but compilers take, of necessity,
-a conservative approach. This means that iterations
-may be independent, but can not be recognized as such by
-a compiler. Therefore, OpenMP shifts this responsibility
-to the programmer; see for instance section~\ref{sec:omp-ordered}.
-
-The three types of dependencies are:
-\begin{itemize}
-\item flow dependencies, or `read-after-write';
-\item anti dependencies, or `write-after-read'; and
-\item output dependencies, or `write-after-write'.
-\end{itemize}
-
-\begin{verbatim}
-for (i) {
-  y[i] = t;
-  x[i+1] = y[i+1];
-  t = x[i];
-}
-\end{verbatim}
-
-\Level 1 {Flow dependencies}
-
-Flow dependencies, or read-afer-write,
-are not a problem if the read and write occur in the same
-loop iteration:
-\begin{verbatim}
-for (i=0; i<N; i++) {
-  x[i] = .... ;
-  .... = ... x[i] ... ;
-}
-\end{verbatim}
-On the other hand, if the read happens in a later iteration,
-there is no simple way to parallelize the loop:
-\begin{verbatim}
-for (i=0; i<N; i++) {
-  .... = ... x[i] ... ;
-  x[i+1] = .... ;
-}
-\end{verbatim}
-This usually requires rewriting the code.
-
-\Level 1 {Anti dependencies}
-
-The simplest case of write-after-read is a reduction:
-\begin{verbatim}
-for (i=0; i<N; i++) {
-  t = t + .....
-}
-\end{verbatim}
-This can be dealt with by explicit declaring the loop to be a reduction,
-or to use any of the other strategies in section~\ref{sec:reduction}.
-
-If the read and write are on an array the situation is more complicated.
-The iterations in this fragment
-\begin{verbatim}
-for (i=0; i<N; i++) {
-  x[i] = ... x[i+1] ... ;
-}
-\end{verbatim}
-can not be executed in arbitrary order as such. However, conceptually there
-is no dependency. We can solve this by introducing a temporary array:
-\begin{verbatim}
-for (i=0; i<N; i++)
-  xtmp[i] = x[i];
-for (i=0; i<N; i++) {
-  x[i] = ... xtmp[i+1] ... ;
-}
-\end{verbatim}
-This is an example of a transformation that a compiler is unlikely
-to perform, since it can greatly affect the memory demands of the program.
-Thus, this is left to the programmer.
-
-\Level 1 {Output dependencies}
-
-The case of write-after-write does not occur by itself:
-if a variable is written twice in sequence without an intervening
-read, the first write can be removed without changing the meaning of the program.
-Thus, this case reduces to a flow dependency.
-
-Other output dependencies can easily be removed. In the following code, \n{t}~can be
-declared private, thereby removing the dependency.
-\begin{verbatim}
-for (i=0; i<N; i++) {
-  t = f(i)
-  s += t*t;
-}
-\end{verbatim}
-If the final value of \n{t} is wanted, the \indexpragma{lastprivate} can be used.
-
-\index{data dependencies|)}
 
 \Level 0 {Thread safety}
 \index{thread-safe|(}

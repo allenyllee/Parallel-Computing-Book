@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-6
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% mpi-started.tex : introductory chapter about MPI
 %%%%
@@ -202,7 +202,7 @@ each routine has a final \indexterm{error return} parameter.
 In the \emph{MPI~3}%
 \index{MPI!3!Fortran2008 interface} standard it is recommended that
 an MPI implementation providing a Fortran interface provide a
-module named \n{mpi_f08} that can be used in a Fortran program.
+module named \indextermttdef{mpi_f08} that can be used in a Fortran program.
 This defines MPI functions that return an integer result, rather than
 having a final parameter. It also defines proper interfaces, making
 type checking possible.
@@ -214,7 +214,21 @@ There are some visible implications of using the \n{mpi_f08} module,
 mostly related to the fact that some of the `MPI datatypes' such as
 \n{MPI_Comm}, which were declared as \n{Integer}
 previously, are now a Fortran \n{Type}. We will indicate this as needed.
+
+The \indextermtt{mpi_f08} module solves a problem with previous
+\emph{Fortran90 bindings}\index{Fortran!90!bindings}:
 %
+Fortran90 is a strongly typed language, so it is not possible to pass
+argument by reference to their address, as C/C++ do with the \n{void*}
+type for send and receive buffers. This was solved by having
+separate routines for each datatype, and providing an \n{Interface} block
+in the MPI module. If you manage to request a version that does not exist,
+the compiler will display a message like
+\begin{verbatim}
+There is no matching specific 
+subroutine for this generic subroutine call [MPI_Send]
+\end{verbatim}
+
 \index{MPI!Fortran2008 bindings|)}
 
 \index{MPI!Fortran bindings|)}

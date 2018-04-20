@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-6
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% mpi-elementary.tex : elementary datatypes
 %%%%
@@ -22,15 +22,15 @@ for instance \n{MPI_FLOAT} and \n{MPI_DOUBLE} versus
 \n{MPI_REAL} and \n{MPI_DOUBLE_PRECISION}.
 
 MPI calls accept arrays of elements:
-\begin{verbatim}
+\begin{lstlisting}
 double x[20];
 MPI_Send( x,20,MPI_DOUBLE, ..... )
-\end{verbatim}
+\end{lstlisting}
 so for a single element you need to take its address:
-\begin{verbatim}
+\begin{lstlisting}
 double x;
 MPI_Send( &x,1,MPI_DOUBLE, ..... )
-\end{verbatim}
+\end{lstlisting}
 
 \Level 1 {C/C++}
 \index{datatype!elementary!in C}
@@ -87,6 +87,7 @@ predefined MPI datatypes. Hence the following routines exist to make
 \mpiRoutineRef{MPI_Type_create_f90_complex}
 
 Examples:
+\lstset{style=reviewcode,language=Fortran}
 \begin{verbatim}
 INTEGER ( KIND = SELECTED_INTEGER_KIND(15) ) , &
  DIMENSION(100) :: array INTEGER :: root , integertype , error 
@@ -104,6 +105,7 @@ COMPLEX ( KIND = SELECTED_REAL_KIND(15 ,300) ) , &
  DIMENSION(100) :: array 
 CALL MPI_Type_create_f90_complex( 15 , 300 , complextype , error )
 \end{verbatim}
+\lstset{style=reviewcode,language=C}
 
 \Level 1 {Python}
 \index{datatype!elementary!in Python}
@@ -118,5 +120,32 @@ CALL MPI_Type_create_f90_complex( 15 , 300 , complextype , error )
   \n{MPI.DOUBLE}&\n{np.float64}\\
   \hline
 \end{tabular}
+
+\Level 1 {Byte addressing type}
+
+So far we have mostly been taking about datatypes in the context of
+sending them. The \indextermttdef{MPI_Aint} type is not so much for
+sending, as it is for describing the size of objects, such as the size
+of an \indextermtt{MPI_Win} object; section~\ref{sec:windows}.
+
+See also the \indexmpishow{MPI_Sizeof} routine.
+
+\Level 2 {Fortran}
+
+The equivalent of \indexmpishowsub{MPI_Aint}{in Fortran} is
+\lstset{style=reviewcode,language=Fortran}
+\begin{lstlisting}
+integer(kind=MPI_ADDRESS_KIND) :: winsize
+\end{lstlisting}
+\lstset{style=reviewcode,language=C}
+
+\Level 2 {Python}
+
+The \indexmpishow{MPI_Win_create} routine needs a displacement in
+bytes. Here is a good way for finding the size of \indexterm{numpy} datatypes:
+\begin{verbatim}
+numpy.dtype('i').itemsize
+\end{verbatim}
+
 \index{datatype!elementary|)}
 

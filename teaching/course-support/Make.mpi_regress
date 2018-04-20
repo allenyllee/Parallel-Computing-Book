@@ -14,6 +14,7 @@ info ::
 	@echo "make regression_compile : compile all exercises"
 	@echo "make regression_runs    : run selected exercises"
 	@echo "make regression         : compile and run"
+	@echo "make run_OneProgram (choices: ${REGRESSIONRUNS})"
 	@if [ ! -z ${PYTHON} ] ; then \
 	  echo "    [PYTHON=yourlocalpython]" ; \
 	fi
@@ -27,8 +28,8 @@ regression_compile : clean
 	  fi ; \
 	done
 regression_runs :
-	@if [ ! -z "${RUNS}" ] ; then \
-	  for r in ${RUNS} ; do \
+	@if [ ! -z "${REGRESSIONRUNS}" ] ; then \
+	  for r in ${REGRESSIONRUNS} ; do \
 	    make $$r ; \
 	  done ; \
 	fi
@@ -57,7 +58,8 @@ catchrun :
 regress_out : 
 	@if [ -z ${MODE} ] ; then \
 	  echo "set MODE for regression test!" ; exit 1 ; fi
-	@if [ 0 -eq 1 ] ; then echo "${MODE} regression run for ${PROGRAM} on np=${NP}" ; fi
+	@if [ -z "${PROGRAM}" ] ; then \
+	  echo "no PROGRAM value specified in regress_out" ; exit 1 ; fi
 	@if [ ${MODE} = "mpi" ] ; then \
 	  ${MPIRUN} -np ${NP} ${CATCHER} ${PROGRAM} >/dev/null 2>&1 ; \
 	  cat ${PROGRAM}.out[0-9]* > ${PROGRAM}.out_total ; \
@@ -75,42 +77,47 @@ regress_success :
 	fi && \
 	echo " .. success: ${SUCCESS}"
 
-RUNS = run_hello \
-    run_commrank run_prime run_randommax run_pingpong run_sendrecv \
-    run_isendirecv \
-    run_procgrid \
-    run_randomput run_onesidedbuild
-.PHONY: ${RUNS}
+REGRESSIONRUNS =
 .PHONY: run_start
 run_start :
 	@export atgram=${PROGRAM} ; export program=$${atgram##run_} ; \
 	 echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" ; \
 	 echo "Regression run for $$program, np=${NP}" ; \
 	 echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" ; \
-	make $$program && \
-	make regress_out NP=${NP} PROGRAM=$${program}
+	/bin/rm -f $${program} ; \
+	make $$program >./$${program}.log 2>&1 ; \
+	export code=$$? ; \
+	if [ $${code} -ne 0 ]; then \
+	  echo "Failed to compile $${program}" ; \
+	  exit 1 ; \
+	else \
+	  make regress_out NP=${NP} PROGRAM=$${program} ; \
+	fi
+REGRESSIONRUNS += run_hello
 run_hello :
 	@make run_start PROGRAM=$@ NP=${NP}
-	@export atgram=$@ ; export program=$${atgram##run_} ; \
+	@export atgram=$@ && export program=$${atgram##run_} && \
 	export np=${NP} && \
-	export success=1 ; \
+	export success=1 && \
 	for rank in `seq 0 $$((np-1))` ; do \
-	  echo "testing output for rank $$rank" ; \
-	  export outfile=hello.out$$rank ; \
+	  echo "testing output for rank $$rank" && \
+	  export outfile=hello.out$$rank && \
 	  if [ ! -f $$outfile ] ; then \
-	    echo "Process $$rank did not produce output" ; \
-	    success=0 ; fi ; \
+	    echo "Process $$rank did not produce output" && \
+	    success=0 ; fi && \
 	  if [ `cat $$outfile | wc -l` -ne 1 ] ; then \
-	    echo "Process $$rank is supposed to print one line" ; \
-	    success=0 ; fi ; \
-	  hellos=`cat $$outfile | grep -v hello | wc -l` ; \
+	    echo "Process $$rank is supposed to print one line" && \
+	    success=0 ; fi && \
+	  hellos=`cat $$outfile | grep -v hello | wc -l` && \
 	  if [ $$hellos -ne 1 ] ; then \
-	    echo "Number of hellos should be 1, not $$hellos" ; \
+	    echo "Number of hellos should be 1, not $$hellos" && \
 	    success=0; fi ; \
 	done && \
-	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
+	make regress_success SUCCESS=$$success PROGRAM=$${program} && \
 	echo
 
+.PHONY: run_commrank
+REGRESSIONRUNS += run_commrank
 run_commrank : 
 	@make run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
@@ -139,6 +146,8 @@ run_commrank :
 	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
 	echo
 
+.PHONY: run_prime
+REGRESSIONRUNS += run_prime
 run_prime : 
 	@make run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
@@ -156,6 +165,8 @@ run_prime :
 	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
 	echo
 
+.PHONY: run_randommax
+REGRESSIONRUNS += run_randommax
 run_randommax :
 	@make run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
@@ -184,6 +195,8 @@ run_randommax :
 	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
 	echo
 
+.PHONY: run_pingpong
+REGRESSIONRUNS += run_pingpong
 run_pingpong : 
 	@make run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
@@ -199,6 +212,8 @@ run_pingpong :
 	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
 	echo
 
+.PHONY: run_sendrecv
+REGRESSIONRUNS += run_sendrecv
 run_sendrecv : 
 	@make run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
@@ -213,6 +228,8 @@ run_sendrecv :
 	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
 	echo
 
+.PHONY: run_isendirecv
+REGRESSIONRUNS += run_isendirecv
 run_isendirecv :
 	@make run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
@@ -227,6 +244,8 @@ run_isendirecv :
 	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
 	echo
 
+.PHONY: run_procgrid
+REGRESSIONRUNS += run_procgrid
 run_procgrid : 
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export success=1 ; \
@@ -242,6 +261,8 @@ run_procgrid :
 	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
 	echo
 
+.PHONY: run_randomput
+REGRESSIONRUNS += run_randomput
 run_randomput :
 	@make run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
@@ -259,9 +280,13 @@ run_randomput :
 	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
 	echo
 
+.PHONY: run_onesidedbuild
+REGRESSIONRUNS += run_onesidedbuild
 run_onesidedbuild :
 	@make run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export success=1 ; \
 	 make catchrun PROGRAM=onesidedbuild NP=${NP} \
-	 | ../course-support/catch_onesidedbuild.py
+	   | ../course-support/catch_onesidedbuild.py || export success=$$? \
+	 && make regress_success SUCCESS=$$success PROGRAM=$${program}
+

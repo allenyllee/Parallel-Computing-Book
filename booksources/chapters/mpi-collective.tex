@@ -4,7 +4,9 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-7
+%%%% by Victor Eijkhout, copyright 2012-8
+%%%%
+%%%% mpi-collective.tex : driver file for the collectives chapter
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -113,20 +115,21 @@ For instance, if $x,y$ are distributed vector objects, and you want to compute
 which is part of the Gramm-Schmidt algorithm; see~\HPSCref{app:gram-schmidt}.
 Now you need the inner product value on all processors. You could do this
 by writing a reduction followed by a broadcast:
-\begin{verbatim}
+\begin{lstlisting}
 // compute local value
 localvalue = innerproduct( x[ localpart], y[ localpart ] );
 // compute inner product on the root
 Reduce( localvalue, reducedvalue, root );
 // send root value to all other from the root
 Broadcast( reducedvalue, root );
-\end{verbatim}
+\end{lstlisting}
 or combine the last two steps in an allreduce,
+
 Surprisingly, an allreduce operation takes as
 long as a rooted reduction (see~\HPSCref{sec:collective} for details),
 and therefore half the time of a reduction followed by a broadcast.
 
-\Level 1 {Collectives in MPI}
+\Level 1 {Synchronization}
 
 Collectives are operations that involve all processes in a
 communicator. %%(See section~\ref{sec:collectiveslist} for an informal listing.)
@@ -146,6 +149,20 @@ involve data movement. Collective then means that all processors must
 call this routine; not to do so is an error that will 
 manifest itself in `hanging' code. One such example is
 \n{MPI_Win_fence}.
+
+\Level 1 {Collectives in MPI}
+
+We will now explain the MPI collectives in the following order.
+\begin{itemize}
+\item[Allreduce] We use the allreduce as an introduction to the
+  concepts behind collectives; section~\ref{sec:allreduce}. As
+  explained above, this routines servers many practical scenarios.
+\item[Broadcast and reduce] We then introduce the concept of a root
+  in the reduce (section~\ref{sec:reduce-root}) and broadcast
+  (section~\ref{sec:bcast}) collectives.
+\item[Gather and scatter] The gather/scatter collectives deal with
+  more than a single data item.
+\end{itemize}
 
 There are more collectives or variants on the above.
 \begin{itemize}

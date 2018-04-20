@@ -1,9 +1,6 @@
 C:
-MPI_File filename // type defined in mpi.h
+MPI_File file ;
 
 Fortran:
-Integer :: filename
+Type(MPI_File) file
 
-Fortran with 2008 support:
-use mpi_f08
-Type(MPI_File) :: filename

@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-6
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% omp-reduction.tex : reduction loops
 %%%%
@@ -179,7 +179,7 @@ This takes two steps.
   the comparison. You can do this yourself, but, especially with the
   C++ standard library, you can use functions such as \n{std::vector::insert}.
 \item Specifying how this function operates on two variables
-  \indextermtt{omp_out} and \indextermtt{omp_in}, corresponding to the
+  \indexompshow{omp_out} and \indexompshow{omp_in}, corresponding to the
   partially reduced result and the new operand respectively. The new
   partial result should be left in \n{omp_out}.
 \item Optionally, you can specify the value to which the reduction
@@ -199,8 +199,8 @@ where:
     different types, and redefined in inner scopes.
   \item[\texttt{typelist}] is a list of types.
   \item[\texttt{combiner}] is an expression that updates the internal
-    variable \indextermtt{omp_out} as function of itself and \indextermtt{omp_in}.
-  \item[\texttt{initializer}] sets \indextermtt{omp_priv} to the
+    variable \indexompshow{omp_out} as function of itself and \indexompshow{omp_in}.
+  \item[\texttt{initializer}] sets \indexompshow{omp_priv} to the
     identity of the reduction; this
     can be an expression or a brace initializer.
 \end{description}

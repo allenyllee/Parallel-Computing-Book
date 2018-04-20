@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-7
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% mpi-bcastreduce.tex : about broadcast & reduce collectives
 %%%%
@@ -14,6 +14,7 @@
 \Level 0 {Reduction}
 
 \Level 1 {Reduce to all}
+\label{sec:allreduce}
 
 Above we saw a couple of scenarios where a quantity is reduced, with
 all proceses getting the result. The MPI call for this is:
@@ -23,13 +24,13 @@ all proceses getting the result. The MPI call for this is:
 Example: we give each process a random number, and sum these numbers together.
 The result should be approximately $1/2$ times the number of processes.
 
-\verbatimsnippet{allreducec}
+\cverbatimsnippet[examples/mpi/c/allreducec.c]{allreducec}
 
 For Python we illustrate both the native and the numpy variant. In the
 numpy variant we create an array for the receive buffer, even though
 only one element is used.
 
-\verbatimsnippet{allreducep}
+\cverbatimsnippet[examples/mpi/c/allreducep.c]{allreducep}
 
 \begin{exercise}
   \label{ex:randommaxscale}
@@ -44,6 +45,21 @@ only one element is used.
   by this sum. Compute the sum of the scaled numbers and check that it is~1.
 \end{exercise}
 
+\Level 1 {Reduction of distributed data}
+\label{sec:dist-reduc}
+
+One of the more common applications of the reduction operation
+is the \indexterm{inner product} computation. Typically, you have two vectors $x,y$
+that have the same distribution, that is,
+where all processes store equal parts of $x$ and~$y$.
+The computation is then
+\begin{verbatim}
+local_inprod = 0;
+for (i=0; i<localsize; i++)
+  local_inprod += x[i]*y[i];
+MPI_Allreduce( &local_inprod, &global_inprod, 1,MPI_DOUBLE ... ) 
+\end{verbatim}
+
 \Level 1 {Reduce in place}
 \label{sec:allreduce-inplace}
 
@@ -51,12 +67,15 @@ By default MPI will not overwrite the original data with the reduction
 result, but you can tell it to do so
 using the \indexmpishow{MPI_IN_PLACE} specifier:
 %
-\verbatimsnippet{allreduceinplace}
+\cverbatimsnippet[examples/mpi/c/allreduceinplace.c]{allreduceinplace}
 %
 This has the advantage of saving half the memory.
 
 \Level 1 {Reduction operations}
 \label{sec:mpi:op-create}
+\label{sec:operator-list}
+
+The following is the list of predefined \indexmpidef{MPI_OP} values.
 
 {\catcode`\_=12 %pyskip
   \begin{tabular}{|lll|}
@@ -106,6 +125,7 @@ This process is called the \indexterm{root} process, and we will now
 consider routines that have a root.
 
 \Level 1 {Reduce to a root}
+\label{sec:reduce-root}
 
 In the broadcast operation a single data item was communicated to all
 processes. Reduction operations go the other way: each process has a
@@ -132,7 +152,7 @@ MPI_Reduce( senddata, recvdata..., operator,
   data, they can actually leave the receive buffer undefined.
 \end{itemize}
 
-\verbatimsnippet{reduce}
+\cverbatimsnippet[examples/mpi/c/reduce.c]{reduce}
 
 \mpiRoutineRef{MPI_Reduce}
 
@@ -172,14 +192,15 @@ the receive buffer is null or ignored as before.
 This example sets the buffer values through some pointer cleverness in
 order to have the same reduce call on all processes.
 %
-\verbatimsnippet{reduceinplace}
+\cverbatimsnippet[examples/mpi/c/reduceinplace.c]{reduceinplace}
 
 In Fortran the code is less elegant because you can not do
 these address calculations:
 %
-\verbatimsnippet{reduceinplace-f}
+\fverbatimsnippet{reduceinplace-f}
 
 \Level 1 {Broadcast}
+\label{sec:bcast}
 
 The broadcast call has the following structure:
 \begin{verbatim}
@@ -214,7 +235,7 @@ is specified as
 Example: in general we can not assume that all processes get the
 commandline arguments, so we broadcast them from process~0.
 
-\verbatimsnippet{usage}
+\cverbatimsnippet[examples/mpi/c/usage.c]{usage}
 
 \mpiRoutineRef{MPI_Bcast}
 
@@ -235,7 +256,57 @@ In python we illustrate the native and numpy variants. In the native
 variant the result is given as a function return; in the numpy variant
 the send buffer is reused.
 %
-\verbatimsnippet{bcastp}
+\pverbatimsnippet{bcastp}
+
+\begin{figure}[p]
+  \tiny
+  \begin{multicols}{3}
+    Initial:\\ \nobreak
+    \input jordan1
+    Step 1:\\ \nobreak
+    \input jordan2
+    Step 2:\\ \nobreak
+    \input jordan3
+    Step 3:\\ \nobreak
+    \input jordan4
+    Step 4:\\ \nobreak
+    \input jordan5
+    Step 5:\\ \nobreak
+    \input jordan6
+    Step 6:\\ \nobreak
+    \input jordan7
+    Step 7:\\ \nobreak
+    \input jordan8
+    Step 8:\\ \nobreak
+    \input jordan9
+    Step 9:\\ \nobreak
+    \input jordan10
+    Step 10:\\ \nobreak
+    \input jordan11
+    Step 11:\\ \nobreak
+    \input jordan12
+    Step 12:\\ \nobreak
+    \input jordan13
+    Step 13:\\ \nobreak
+    \input jordan14
+    Step 14:\\ \nobreak
+    \input jordan15
+    Step 15:\\ \nobreak
+    \input jordan16
+    Step 16:\\ \nobreak
+    \input jordan17
+    Step 17:\\ \nobreak
+    \input jordan18
+    Step 18:\\ \nobreak
+    \input jordan19
+    Finished:\\ \nobreak
+    \input jordan20
+  \end{multicols}
+  \caption{Gauss-Jordan elimination example}
+  \label{fig:gauss-jordan-ex}
+\end{figure}
+
+For the following exercise, study figure~\ref{fig:gauss-jordan-ex}.
 
 \begin{exercise}
   \label{ex:gaussjordancoll}

@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Computing'
-%%%% by Victor Eijkhout, copyright 2012-7
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% parcompbook.tex : master file for the book
 %%%%
@@ -14,11 +14,13 @@
 \documentclass[11pt,letterpaper,twoside,openany]{boek3}
 %\documentclass{book}
 
-\usepackage{comment,verbatim}
+\usepackage{verbatim}
 \makeatletter
 \def\verbatim@startline{\verbatim@line{\leavevmode\kern\unitindent\relax}}
 \makeatother
 
+\usepackage{comment}
+\specialcomment{tacc}{\def\CommentCutFile{tacc.cut}}{}
 \newif\ifIncludeAnswers
 \IncludeAnswersfalse
 \input inex
@@ -26,14 +28,21 @@
 \includecomment{review}
 \includecomment{book}
 
-\usepackage{amssymb}
+\usepackage{graphicx,outliner,undertilde,wrapfig}
+
+% fancy text stuff
+\usepackage{dirtree,multicol,multirow,times}
+
+% AMS math
 \usepackage[fleqn]{amsmath}
-\usepackage{graphicx,undertilde,arydshln,wrapfig}
-\usepackage{outliner,times,makeidx,multirow,multicol}
-\usepackage{dirtree}
+\usepackage{amssymb}
 
-\specialcomment{tacc}{\def\CommentCutFile{tacc.cut}}{}
+% custom arrays and tables
+\usepackage{array} %,multirow,multicol}
+\newcolumntype{R}{>{\hbox to 1.2em\bgroup\hss}{r}<{\egroup}}
+\newcolumntype{T}{>{\hbox to 8em\bgroup}{c}<{\hss\egroup}}
 
+% algorithms
 \usepackage[algo2e,noline,noend]{algorithm2e}
 \newenvironment{displayalgorithm}
  {\begin{algorithm2e}[H]\leftskip=\unitindent \DontPrintSemicolon
@@ -45,9 +54,43 @@
   \begin{procedure}[H]\leftskip=\unitindent\caption{#1(#2)}}
  {\end{procedure}}
 
+% listings
 \usepackage{listings,xcolor}
+\lstdefinestyle{reviewcode}{
+  belowcaptionskip=1\baselineskip,
+  breaklines=true,
+  frame=L,
+  xleftmargin=\unitindent,
+  showstringspaces=false,
+  basicstyle=\footnotesize\ttfamily,
+  keywordstyle=\bfseries\color{blue},
+  commentstyle=\color{red!60!black},
+  identifierstyle=\slshape\color{black},
+  stringstyle=\color{green!60!black},
+  columns=fullflexible,
+  keepspaces=true,
+}
+\lstset{emph={
+    MPI_Init,MPI_Finalize,MPI_Abort,
+    MPI_Allreduce,MPI_Reduce,MPI_Bcast,MPI_Gather,MPI_Allgather,MPI_Scan,MPI_Exscan,
+    MPI_Send,MPI_Recv,MPI_Isend,MPI_Irecv,MPI_Ssend,MPI_Bsend,
+    MPI_Wait,MPI_Wait_all,
+    MPI_Put,MPI_Get,MPI_Accumulate,
+    MPI_Type_commit,MPI_Type_free,MPI_Type_contiguous,MPI_Type_vector,
+    MPI_Type_indexed,MPI_Type_create_hindexed,MPI_Type_create_subarray,
+  },emphstyle={\color{red}\bfseries},
+  emph={[2]
+    MPI_IN_PLACE,MPI_REPLACE,
+    MPI_Status,MPI_STATUS_IGNORE,MPI_STATUSES_IGNORE,
+    MPI_Request,MPI_TAG,MPI_SOURCE,
+    MPI_SUM,MPI_MAX,
+  },emphstyle={[2]\color{green}\bfseries}
+}
 
 \def\svnrev{428}
+% dashed lines; this may interfere with other table packages
+\usepackage{arydshln}
+
 \edef\revision{\svnrev}
 \def\lulurevision{}
 
@@ -84,8 +127,13 @@
 \newwrite\nx
 \newcommand\CHAPTER[2]{
 \Level 0 {#1}\label{ch:#2}
+% start scooping up example codes used in this chapter
+\global\chaptersourcelist{}
 \def\chapshortname{#2}
 {\SetBaseLevel 1 \input chapters/#2
+% include the sources used in this chapter
+ \listchaptersources
+% write this chapter to a list of chapters
 \write\chapterlist{\chapshortname}
 \openout\nx=exercises/\chapshortname-nx.tex
 \write\nx{\arabic{excounter}}
@@ -197,8 +245,6 @@
 \externaldocument[HPSC-]{../hpc-book-private/scicompbook}
 \newcommand\HPSCref[1]{HPSC-\nobreak\ref{HPSC-#1}}
 \usepackage[all]{hypcap}
-
-\makeindex
 
 \def\publicdraft{{\bf\normalsize \relax Public draft - open for comments}}
 \def\revdate{\escapechar-1\relax 1st edition 2017}%\ --\ \string\revision \revision}
@@ -351,9 +397,26 @@
 
 Bold reference: defining passage; italic reference: illustration.
 
-\begin{multicols}{2}
+\Level 2 {General Index}
+
+\begin{multicols*}{2}
 \printindex
-\end{multicols}
+%\columnbreak\null
+\end{multicols*}
+
+\Level 2 {Index of MPI commands}
+
+\begin{multicols*}{2}
+\printindex[mpi]
+%\columnbreak\null
+\end{multicols*}
+
+\Level 2 {Index of OpenMP commands}
+
+\begin{multicols*}{2}
+\printindex[omp]
+%\columnbreak\null
+\end{multicols*}
 
 \hbox{}\vfill
 \includegraphics{isbn_barcode}

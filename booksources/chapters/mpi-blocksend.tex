@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-7
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% mpi-blocksend.tex : blocking sends
 %%%%
@@ -28,12 +28,33 @@ and it computes their value.
 Now let's investigate how processor~$p$ goes about computing~$y_i$ for
 the $i$-values it owns. Let's assume that processor~$p$ also stores
 the values $x_i$ for these same indices.
-Now, it can compute
-\[ y_{i_p+1} = (x_{i_p}+x_{i_p+1}+x_{i_p+2})/3 \]
-and likewise $y_{i_p+2}$ and so on. However, there is a problem with
+Now, for many values it can compute
+\[ y_{i} = (x_{i-1}+x_{i}+x_{i+1})/3 \]
+%
+\begin{figure}[ht]
+  \includegraphics[scale=.06]{threepoint-scheme}
+  \caption{Three point averaging}
+  \label{fig:3pt}
+\end{figure}
+%
+\begin{figure}[ht]
+  \includegraphics[scale=.06]{threepoint-interior}
+  \caption{Three point averaging in parallel}
+  \label{fig:3pt-interior}
+\end{figure}
+%
+(figure~\ref{fig:3pt-interior}).
+However, there is a problem with
 \[ y_{i_p} = (x_{i_p-1}+x_{i_p}+x_{i_p+1})/3 \]
-since $x_{i_p}$ is not stored on processor~$p$: it is stored on~$p-\nobreak1$.
-
+since $x_{i_p}$ is not stored on processor~$p$: it is stored on~$p-\nobreak1$
+%
+\begin{figure}[ht]
+  \includegraphics[scale=.06]{threepoint-msg}
+  \caption{Three point averaging in parallel, case of edge points}
+  \label{fig:3pt-msg}
+\end{figure}
+%
+(figure~\ref{fig:3pt-msg}).
 There is a similar story with the last index that $p$ tries to compute:
 that involves a value that is only present on~$p+1$.
 
@@ -46,21 +67,22 @@ MPI realizes this through matched send and receive calls:
 \end{itemize}
 
 \Level 1 {Send example: ping-pong}
+\label{sec:mpi-send-recv}
 
 A simple scenario for information exchange between just two processes
 is the \indexterm{ping-pong}: process~A sends data to process~B, which
 sends data back to~A. This means that process~A executes the code
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Send( /* to: */ B ..... );
 MPI_Recv( /* from: */ B ... );
-\end{verbatim}
+\end{lstlisting}
 while process~B executes
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Recv( /* from: */ A ... );
 MPI_Send( /* to: */ A ..... );
-\end{verbatim}
+\end{lstlisting}
 Since we are programming in SPMD mode, this means our program looks like:
-\begin{verbatim}
+\begin{lstlisting}
 if ( /* I am process A */ ) {
   MPI_Send( /* to: */ B ..... );
   MPI_Recv( /* from: */ B ... );
@@ -68,7 +90,7 @@ if ( /* I am process A */ ) {
   MPI_Recv( /* from: */ A ... );
   MPI_Send( /* to: */ A ..... );
 }
-\end{verbatim}
+\end{lstlisting}
 
 The blocking send command:
 %
@@ -84,7 +106,7 @@ The basic blocking receive command:
 %
 The \n{count} argument indicates the maximum length of a message; the
 actual length of the received message can be determined 
-from the status object. See section~\ref{ref:mpi-source}
+from the status object. See section~\ref{ref:mpi-status}
 for more about the status object.
 
 \begin{exercise}
@@ -116,29 +138,6 @@ the send call lacks: the \indexmpishow{MPI_Status} object. This serves the follo
 purpose: the receive call can have a `wildcard' behaviour, for instance specifying
 that the message can come from any source rather than a specific one. The status
 object then allows you to find out where the message actually came from.
-
-\begin{exercise}
-  \label{ex:gaussjordan}
-  The \indexterm{Gauss-Jordan method} for \indextermsub{solving a}{linear system} or
-  computing a \indextermbus{matrix}{inverse} applies the following
-  transformations to a matrix:
-  \begin{tabbing}
-    for \=$k=1,\ldots,n$\\
-    \>fin\=d pivot:\\
-    \>\> $p=1/a_{kk}$\\
-    \>scale current row by the pivot:\\
-    \>\> for \=$r=1,\ldots,n$\\
-    \>\>\> $a_{rk} = a_{rk}\cdot p$\\
-    \>sweep columns:\\
-    \>\>\> for \=$c=1,\ldots,n$\\
-    \>\>\>\> $a_{rc} = a_{rc} - a_{rk}\cdot a_{kc}$\\
-  \end{tabbing}
-  (Depending on whether the method is used for a linear system or an
-  inverse, we use some form of \indextermsub{augmented}{matrix}.)
-
-  Explore how to parallelize this algorithm if every processor stores
-  one column of the matrix. Use blocking send and receive calls.
-\end{exercise}
 
 \Level 1 {Problems with blocking communication}
 \label{sec:blocking}
@@ -173,11 +172,11 @@ small messages, as explained in the next section.)
 
 Suppose two process need to exchange data, and consider the following
 pseudo-code, which purports to exchange data between processes 0 and~1:
-\begin{verbatim}
+\begin{lstlisting}
 other = 1-mytid; /* if I am 0, other is 1; and vice versa */
 receive(source=other);
 send(target=other);
-\end{verbatim}
+\end{lstlisting}
 Imagine that the two processes execute this code. They both issue the
 send call\ldots\ and then can't go on, because they are both waiting
 for the other to issue a receive call. This is known
@@ -192,7 +191,7 @@ is used is sometimes referred to as the \indexterm{eager limit}.)
 
 The following code is guaranteed to block, since a \n{MPI_Recv}
 always blocks:
-\verbatimsnippet{recvblock}
+\cverbatimsnippet[examples/mpi/c/recvblock.c]{recvblock}
 On the other hand, if we put the send call before the receive,
 code may not block for small messages
 that fall under the \indexterm{eager limit}.
@@ -202,16 +201,16 @@ gradually larger messages. From the screen output you can see what
 the largest message was that fell under the eager limit; after that the code
 hangs because of a deadlock.
 %
-\verbatimsnippet{sendblock}
+\cverbatimsnippet[examples/mpi/c/sendblock.c]{sendblock}
 %
-\verbatimsnippet{sendblock-f}
+\fverbatimsnippet{sendblock-f}
 %
-\verbatimsnippet{sendblockp}
+\pverbatimsnippet{sendblockp}
 
 
 If you want a code to behave the same for all message sizes,
 you force the send call to be blocking by using \n{MPI_Ssend}:
-\verbatimsnippet{ssendblock}
+\cverbatimsnippet[examples/mpi/c/ssendblock.c]{ssendblock}
 Formally you can describe deadlock as follows. Draw up a graph where
 every process is a node, and draw a directed arc from process~A to~B if
 A is waiting for~B. There is deadlock if this directed graph has a
@@ -219,7 +218,7 @@ loop.
 
 The solution to the deadlock in the above example
 is to first do the send from 0 to~1, and then from 1 to~0 (or the other way around). So the code would look like:
-\begin{verbatim}
+\begin{lstlisting}
 if ( /* I am processor 0 */ ) {
   send(target=other);
   receive(source=other);
@@ -227,7 +226,7 @@ if ( /* I am processor 0 */ ) {
   receive(source=other);
   send(target=other);
 }
-\end{verbatim}
+\end{lstlisting}
 
 \Level 2 {Serialization}
 
@@ -238,13 +237,13 @@ higher rank. The basic idea would be to first send to your successor,
 then receive from your predecessor. Since the last processor does not
 have a successor it skips the send, and likewise the first processor
 skips the receive. The pseudo-code looks like:
-\begin{verbatim}
+\begin{lstlisting}
 successor = mytid+1; predecessor = mytid-1;
 if ( /* I am not the last processor */ )
   send(target=successor);
 if ( /* I am not the first processor */ )
   receive(source=predecessor)
-\end{verbatim}
+\end{lstlisting}
 This code does not deadlock. All processors but the last one block on
 the send call, but the last processor executes the receive call. Thus,
 the processor before the last one can do its send, and subsequently
@@ -319,14 +318,23 @@ many purposes: the combined send/recv call\indexmpishow{MPI_Sendrecv}
 
 The sendrecv call works great if every process is paired up.
 You would then write
-\begin{verbatim}
+\begin{lstlisting}
 sendrecv( ....from... ...to... );
-\end{verbatim}
-However, in cases such as the right-shift this is true for all but
-the first and last. 
-MPI allows for the following variant which makes the code slightly 
+\end{lstlisting}
+with the right choice of source and destination. For instance, to send
+data to your right neighbour:
+\begin{lstlisting}
+MPI_Comm_rank(comm,&procno);
+sendrecv( .... 
+    /* from: */ procno-1
+     ... ... 
+    /* to:   */ procno+1
+     ... );
+\end{lstlisting}
+This scheme is correct for all processes but the first and last. 
+MPI allows for the following solution which makes the code slightly 
 more homogeneous:
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Comm_rank( .... &mytid );
 if ( /* I am not the first processor */ )
   predecessor = mytid-1;
@@ -337,7 +345,7 @@ if ( /* I am not the last processor */ )
 else
   successor = MPI_PROC_NULL;
 sendrecv(from=predecessor,to=successor);
-\end{verbatim}
+\end{lstlisting}
 where the sendrecv call is executed by all processors.
 
 All processors but the last one send to their neighbour; the target
@@ -410,11 +418,17 @@ send-receive call\footnote {There is an \n{MPI\_Compare\_and\_swap}
   minimum values, and the other the maximum.
   For simplicity, in this exercise we give each processor just a single number.
 
+  \begin{figure}[ht]
+    \includegraphics[scale=.3]{swapsort1}
+    \caption{Odd-even transposition sort on 4 elements.}
+    \label{fig:swapsort1}
+  \end{figure}
+
   The exchange sort algorithm is split in even and odd stages, where
   in the even stage, processors $2i$ and $2i+1$ compare and swap data,
   and in the odd stage, processors $2i+1$ and $2i+2$ compare and swap.
   You need to repeat this $P/2$ times, where $P$~is the number of
-  processors.
+  processors; see figure~\ref{fig:swapsort1}.
 
   Implement this algorithm using \n{MPI_Sendrecv}. (You can use
   \n{MPI_PROC_NULL} for the edge cases, but that is not strictly necessary.)
@@ -422,14 +436,29 @@ send-receive call\footnote {There is an \n{MPI\_Compare\_and\_swap}
   at the beginning and end of the sorting process.
 \end{exercise}
 
+  \begin{figure}[ht]
+    \includegraphics[scale=.3]{swapsort2}
+    \caption{Odd-even transposition sort on 4 processes, holding 2
+      elements each.}
+    \label{fig:swapsort2}
+  \end{figure}
+
+\begin{exercise}
+  Extend this exercise to the case where each process hold an equal
+  number of elements, more than~1. Consider figure~\ref{fig:swapsort2}
+  for inspiration. Is it coincidence that the algorithm takes the same
+  number of steps as in the single scalar case?
+\end{exercise}
+
 \Level 1 {Message status}
 \label{sec:mpi-status}
 \index{message!status|(}
 
-Above, you saw that \indexmpishow{MPI_Receive} has a `status' argument
+In section~\ref{sec:mpi-send-recv}
+you saw that \indexmpishow{MPI_Receive} has a `status' argument
 of type \indexmpishow{MPI_STATUS} that \indexmpishow{MPI_Send} lacks.
 (The various \indexmpishow{MPI_Wait...}  routines also have a status
-argument; see section~\ref{sec:mpi-nonblock}.) The reason for this
+argument; see section~\ref{sec:nonblocking}.) The reason for this
 argument is
 as follows.
 
@@ -453,20 +482,12 @@ the \emph{message status}
 
 \mpiRoutineRef{MPI_Status}
 
-Using the \indexmpishow{MPI_ANY_SOURCE} specifier. We retrieve the
-actual source from the \indexmpishow{MPI_Status} object through the
-\indexmpishow{MPI_SOURCE} field.
-%
-\verbatimsnippet{anysource}
-%
-\verbatimsnippet{anysourcep}
-
-If you are not interested in
-the status information, you can use the values
-\indexmpishow{MPI_STATUS_IGNORE} for \indexmpishow{MPI_Wait} and
-\indexmpishow{MPI_Waitany},
-or \indexmpishow{MPI_STATUSES_IGNORE} for \indexmpishow{MPI_Waitall}
-and \indexmpishow{MPI_Waitsome}.
+If you 
+precisely know what is going to be sent, the status argument tells you 
+nothing new. Therefore, there is a special value \indexmpishow{MPI_STATUS_IGNORE}
+that you can supply instead of a status object, which tells MPI that the 
+status does not have to be reported. For routines such as \indexmpishow{MPI_Waitany}
+where an array of statuses is needed, you can supply \indexmpishow{MPI_STATUSES_IGNORE}.
 
 The \indexmpishow{MPI_Status} object
 is a structure with the following
@@ -478,10 +499,6 @@ freely accessible members:
 %
 \mpiRoutineRef{MPI_ERROR}
 
-In section~\ref{sec:mpi-source} we mentioned the master-worker model
-as one opportunity for inspecting the \indexmpishow{MPI_SOURCE} field
-of the \indexmpishow{MPI_Status} object.
-
 There is also
 opaque information: the amount of data received can be retrieved by a
 function call to \indexmpishow{MPI_Get_count}.
@@ -492,17 +509,22 @@ This may be necessary since the \n{count} argument to \n{MPI_Recv} is
 the buffer size, not an indication of the actually expected number of
 data items.
 
-If you 
-precisely know what is going to be sent, the status argument tells you 
-nothing new. Therefore, there is a special value \indexmpishow{MPI_STATUS_IGNORE}
-that you can supply instead of a status object, which tells MPI that the 
-status does not have to be reported. For routines such as \indexmpishow{MPI_Waitany}
-where an array of statuses is needed, you can supply \indexmpishow{MPI_STATUSES_IGNORE}.
+\Level 2 {Example: receiving from any source}
 
-\label{message!status|)}
-
-object describing the data that was received.
+Using the \indexmpishow{MPI_ANY_SOURCE} specifier. We retrieve the
+actual source from the \indexmpishow{MPI_Status} object through the
+\indexmpishow{MPI_SOURCE} field.
 %
+\cverbatimsnippet[examples/mpi/c/anysource.c]{anysource}
+%
+\pverbatimsnippet{anysourcep}
+
+In sections \ref{prj:mandelbrot} and~\ref{sec:mpi-test} we explained
+the manager-worker model, and how it offers an opportunity for inspecting the
+\indexmpishow{MPI_SOURCE} field of the \indexmpishow{MPI_Status}
+object describing the data that was received.
+
+\index{message!status|)}
 
 \endinput
 
@@ -514,11 +536,11 @@ A regular ping-pong operation with \indexmpishow{MPI_Send} and
 \indexmpishow{MPI_Recv}. We repeat the experiment multiple times to
 get a reliable measurement of the time taken.
 %
-\verbatimsnippet{pingpong}
+\cverbatimsnippet{pingpong}
 %
-\verbatimsnippet{pingpongp}
+\pverbatimsnippet{pingpongp}
 %
-\verbatimsnippet{pingpongpp}
+\pverbatimsnippet{pingpongpp}
 
 \mpiexample{MPI_Recv}
 
@@ -528,5 +550,5 @@ get a reliable measurement of the time taken.
 We set up a ring structure and use \n{MPI_Sendrecv} to communicate
 between pairs.
 %
-\verbatimsnippet{sendrecvring}
+\cverbatimsnippet{sendrecvring}
 

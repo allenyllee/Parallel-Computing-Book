@@ -5,6 +5,8 @@
 #### Victor Eijkhout
 #### eijkhout@tacc.utexas.edu
 ####
+#### copyright Victor Eijkhout 2012-8
+####
 #### Makefile for short course OpenMPtemplates
 ####
 ################################################################

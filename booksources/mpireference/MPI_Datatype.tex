@@ -1,9 +1,6 @@
 C:
-MPI_Datatype typevar // type defined in mpi.h
+MPI_Datatype datatype ;
 
 Fortran:
-Integer :: typevar
+Type(MPI_Datatype) datatype
 
-Fortran with 2008 support:
-use mpi_f08
-Type(MPI_Datatype) :: typevar

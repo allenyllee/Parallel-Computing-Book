@@ -1,15 +1,18 @@
 Semantics:
 count [in] number of blocks --
     also number of entries in indices and blocklens
-blocklens [in] number of elements in each block (array of nonnegative integers)
+blocklens [in] number of elements in each block
+    (array of nonnegative integers)
 indices [in] displacement of each block in multiples of old_type
     (array of integers)
 old_type [in] old datatype (handle)
 newtype [out] new datatype (handle)
 
 C:
-int MPI_Type_indexed(int count, const int array_of_blocklengths[],
-    const int array_of_displacements[], MPI_Datatype oldtype, MPI_Datatype
+int MPI_Type_indexed(int count,
+    const int array_of_blocklengths[],
+    const int array_of_displacements[], 
+    MPI_Datatype oldtype, MPI_Datatype
     *newtype)
 
 Fortran:

@@ -1,4 +1,4 @@
-// wrongreduct.c
+// reductpositive.c
 int reduce_without_zero(int r,int n) {
   // r is the already reduced value, n is the new value
   int m;

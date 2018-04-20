@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-7
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% mpi-ptp.tex : about point-to-point communication
 %%%%
@@ -42,41 +42,58 @@ over the processors, while
 actually manipulating only the local arrays on the processors.
 
 Your typical code then looks like
-\begin{verbatim}
+\begin{lstlisting}
 int myfirst = .....;
 for (int ilocal=0; ilocal<nlocal; ilocal++) {
    int iglobal = myfirst+ilocal;
    array[ilocal] = f(iglobal);
 }
-\end{verbatim}
+\end{lstlisting}
 
 \begin{exercise}
-  \label{ex:sumsquares}
-  We want to compute $\sum_{n=1}^Nn^2$, and we do that as follows
-  by filling in an array and summing the elements. (Yes, you can do it
-  without an array, but for purposes of the exercise do it with.)
-
-  Set a variable \n{N} for the total length of the array, and compute
-  the local number of elements. Make sure you handle the case where
-  $N$ does not divide perfectly by the number of processes.
-
+  \label{ex:fft-vector}
+  Implement a (very simple-minded) Fourier transform: if $f$ is a
+  function on the interval $[0,1]$, then the $n$-th Fourier
+  coefficient is
+  \[ f_n\hat = \int_0^1 f(t)e^{-t/\pi}\,dt \]
+  which we approximate by
+  \[ f_n\hat = \sum_{i=0}^{N-1} f(ih)e^{-in/\pi} \]
   \begin{itemize}
-  \item Now allocate the local parts: each processor should allocate
-    only local elements, not the whole vector.\\
-    (Allocate your array as real numbers. Why are integers not a good idea?)
-  \item On each processor, initialize the local array
-    so that the $i$-th location of the distributed array
-    (for $i=0,\ldots,N-1$)
-    contains~$(i+\nobreak 1)^2$.
-  \item Now use a collective operation to compute the sum of the array values.
-    The right value is $(2N^3+3N^2+N)/6$. Is that what you get?
+  \item Make one distributed array for the $e^{-inh}$ coefficients,
+  \item make one distributed array for the $f(ih)$ values
+  \item calculate a couple of coefficients
   \end{itemize}
-  (Note that computer arithmetic is not exact: the computed sum will
-  only be accurate up to some relative accuracy.)
 \end{exercise}
 
+\begin{comment}
+  \begin{exercise}
+    \label{ex:sumsquares}
+    We want to compute $\sum_{n=1}^Nn^2$, and we do that as follows
+    by filling in an array and summing the elements. (Yes, you can do it
+    without an array, but for purposes of the exercise do it with.)
+
+    Set a variable \n{N} for the total length of the array, and compute
+    the local number of elements. Make sure you handle the case where
+    $N$ does not divide perfectly by the number of processes.
+
+    \begin{itemize}
+    \item Now allocate the local parts: each processor should allocate
+      only local elements, not the whole vector.\\
+      (Allocate your array as real numbers. Why are integers not a good idea?)
+    \item On each processor, initialize the local array
+      so that the $i$-th location of the distributed array
+      (for $i=0,\ldots,N-1$)
+      contains~$(i+\nobreak 1)^2$.
+    \item Now use a collective operation to compute the sum of the array values.
+      The right value is $(2N^3+3N^2+N)/6$. Is that what you get?
+    \end{itemize}
+    (Note that computer arithmetic is not exact: the computed sum will
+    only be accurate up to some relative accuracy.)
+  \end{exercise}
+\end{comment}
+
 \begin{exercise}
-  In exercise~\ref{ex:sumsquares} you worked with a distributed array,
+  In the previous exercise you worked with a distributed array,
   computing a local quantity and combining that into a global
   quantity.
   Why is it not a good idea to gather the whole distributed array on a
@@ -86,34 +103,19 @@ for (int ilocal=0; ilocal<nlocal; ilocal++) {
 If the array size is not perfectly divisible by the number of processors,
 we have to come up with a division that is uneven, but not too much.
 You could for instance, write
-\begin{verbatim}
+\begin{lstlisting}
 int Nglobal, // is something large
     Nlocal = Nglobal/ntids,
     excess = Nglobal%ntids;
 if (mytid==ntids-1) 
   Nlocal += excess;
-\end{verbatim}
+\end{lstlisting}
 
 \begin{exercise}
   Argue that this strategy is not optimal. Can you come up with a
   better distribution?
   Load balancing is further discussed in~\HPSCref{sec:load}.
 \end{exercise}
-
-One of the more common applications of the reduction operation
-is the \indexterm{inner product} computation. Typically, you have two vectors $x,y$
-that have the same distribution, that is,
-where all processes store equal parts of $x$ and~$y$.
-The computation is then
-\begin{verbatim}
-local_inprod = 0;
-for (i=0; i<localsize; i++)
-  local_inprod += x[i]*y[i];
-MPI_Reduce( &local_inprod, &global_inprod, 1,MPI_DOUBLE ... ) 
-\end{verbatim}
-If all processors need the result, you could then do a broadcast,
-but it is more efficient to use \indexmpishow{MPI_Allreduce}; 
-see section~\ref{sec:allreduce}.
 
 \begin{exercise}
   \label{ex:inproduct}
@@ -148,7 +150,7 @@ message, you can use \indexmpishow{MPI_Get_count} to determine its size,
 allocate a large enough receive buffer, and do a regular receive to
 have the data copied.
 
-\verbatimsnippet{probe}
+\cverbatimsnippet[examples/mpi/c/probe.c]{probe}
 
 \mpiRoutineRef{MPI_Probe}
 
@@ -188,35 +190,42 @@ This status is a property of the actually received messsage, so \n{MPI_Irecv}
 does not have a status parameter, but \n{MPI_Wait} does.
 
 Here are some of the uses of the status:
-\heading{Source} In some applications it makes sense that a message can come from 
+
+\heading{Source}
+%
+In some applications it makes sense that a message can come from 
 one of a number of processes. In this case, it is possible to specify
 \indexmpishow{MPI_ANY_SOURCE} as the source. To find out where the message actually
 came from, you would use the \indexmpishow{MPI_SOURCE} field of the status object
 that is delivered by \n{MPI_Recv} or the \n{MPI_Wait...} call after an \n{MPI_Irecv}.
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Recv(recv_buffer+p,1,MPI_INT, MPI_ANY_SOURCE,0,comm,
          &status);
 sender = status.MPI_SOURCE;
-\end{verbatim}
+\end{lstlisting}
 
 There are various scenarios where receiving from `any source' makes sense.
 One is that of the \indexterm{master-worker model}. The master task would first send
 data to the worker tasks, then issues a blocking wait for the data of whichever process
 finishes first.
 
+\heading{Tag}
+%
 If a processor is expecting more than one messsage from a single other processor,
 message tags are used to distinguish between them. In that case,
 a value of \indexmpishow{MPI_ANY_TAG} can be used, and the actual tag
 of a message can be retrieved with
-\begin{verbatim}
+\begin{lstlisting}
 int tag = status.MPI_TAG;
-\end{verbatim}
+\end{lstlisting}
 
+\heading{Count}
+%
 If the amount of data received is not known a~priori, the amount received
 can be found as
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Get_count(&recv_status,MPI_INT,&recv_count);
-\end{verbatim}
+\end{lstlisting}
 
 \Level 1 {Synchronous and asynchronous communication}
 
@@ -243,66 +252,10 @@ The four possible cases are illustrated in figure~\ref{fig:block-sync}.
 MPI has a number of routines for synchronous communication,
 such as \indexmpishow{MPI_Ssend}.
 
-\verbatimsnippet{ssendblock}
+\cverbatimsnippet[examples/mpi/c/ssendblock.c]{ssendblock}
 
 \index{communication!synchronous|)}
 \index{communication!asynchronous|)}
-
-\Level 1 {Buffered communication}
-\label{sec:buffered}
-
-By now you have probably got the notion that managing buffer
-space in MPI is important: data has to be somewhere, either in
-user-allocated arrays or in system buffers. Buffered sends are yet another
-way of managing buffer space.
-\begin{enumerate}
-\item You allocate your own buffer space, and you attach it to your process;
-\item You use the \indexmpishow{MPI_Bsend} call for sending;
-\item You detach the buffer when you're done with the buffered sends.
-\end{enumerate}
-
-There can be only one buffer per process; its size should be enough
-for all outstanding \indexmpishow{MPI_Bsend} calls that are simultaneously
-outstanding, plus \indexmpishow{MPI_BSEND_OVERHEAD}.
-
-\indexmpishow{MPI_Buffer_attach}
-\begin{verbatim}
-int MPI_Buffer_attach(
-  void *buffer,int size);
-\end{verbatim}
-where the size is indicated in bytes.
-The possible error codes are
-\begin{itemize}
-\item \n{MPI_SUCCESS} the routine completed successfully.
-\item \indexmpishow{MPI_ERR_BUFFER} The buffer pointer is invalid;
-  this typically means that you have supplied a null pointer.
-\item \indexmpishow{MPI_ERR_INTERN} An internal error in MPI has been detected.
-\end{itemize}
-
-The buffer is detached with \indexmpishow{MPI_Buffer_detach}:
-\begin{verbatim}
-int MPI_Buffer_detach(
-  void *buffer, int *size);
-\end{verbatim}
-This returns the address and size of the buffer; the call blocks
-until all buffered messages have been delivered.
-
-You can compute the needed size of the buffer with \indexmpishow{MPI_Pack_size};
-see section~\ref{sec:pack}.
-
-\indexmpishow{MPI_Bsend}
-\begin{verbatim}
-int MPI_Bsend(
-  const void *buf, int count, MPI_Datatype datatype, 
-  int dest, int tag, MPI_Comm comm)
-\end{verbatim}
-The asynchronous version is \indexmpishow{MPI_Ibsend}.
-
-You can force delivery by
-\begin{verbatim}
-MPI_Buffer_detach( &b, &n );
-MPI_Buffer_attach( b, n );
-\end{verbatim}
 
 \Level 1 {Persistent communication}
 \label{sec:persistent}
@@ -345,27 +298,24 @@ an actual communication, they only create the request object.
 \mpiRoutineRef{MPI_Recv_init}
 %
 
-\verbatimsnippet{persist}
-%
-\verbatimsnippet{persistp}
-
 Given these request object, a communication (both send and receive) is then started
 with \indexmpishow{MPI_Start} for a single request or \indexmpishow{MPI_Start_all} for 
 multiple requests, given in an array.
-\begin{verbatim}
-int MPI_Start(MPI_Request *request)
-\end{verbatim}
+%
+\mpiRoutineRef{MPI_Start}
 %
 \mpiRoutineRef{MPI_Startall}
 %
 These are equivalent to starting an \n{Isend} or \n{Isend}; correspondingly, 
-it is necessary to issue an \n{MPI_Wait...} call (section~\ref{ref:nonblocking})
+it is necessary to issue an \n{MPI_Wait...} call (section~\ref{sec:nonblocking})
 to determine their completion.
 
 After a request object has been used, possibly multiple times, it can be freed; see~\ref{ref:mpirequest}.
 
 In the following example a ping-pong is implemented with persistent communication.
-\verbatimsnippet{persist}
+\cverbatimsnippet[examples/mpi/c/persist.c]{persist}
+%
+\pverbatimsnippet{persistp}
 
 As with ordinary send commands, there are the variants
 \indexmpishow{MPI_Bsend_init},
@@ -373,6 +323,65 @@ As with ordinary send commands, there are the variants
 \indexmpishow{MPI_Rsend_init}.
 
 \index{communication!persistent|)}
+
+\Level 1 {Buffered communication}
+\label{sec:buffered}
+
+By now you have probably got the notion that managing buffer
+space in MPI is important: data has to be somewhere, either in
+user-allocated arrays or in system buffers. Buffered sends are yet another
+way of managing buffer space.
+\begin{enumerate}
+\item You allocate your own buffer space, and you attach it to your process;
+\item You use the \indexmpishow{MPI_Bsend} call for sending;
+\item You detach the buffer when you're done with the buffered sends.
+\end{enumerate}
+
+\Level 2 {Bufferend send calls}
+
+\mpiRoutineRef{MPI_Bsend}
+
+The asynchronous version is \indexmpishow{MPI_Ibsend}, the persistent
+(see section~\ref{sec:persistent}) call is \indexmpishow{MPI_Bsend_init}.
+
+\Level 2 {Buffer treatment}
+
+There can be only one buffer per process; its size should be enough
+for all outstanding \indexmpishow{MPI_Bsend} calls that are simultaneously
+outstanding, plus \indexmpishow{MPI_BSEND_OVERHEAD}.
+You can compute the needed size of the buffer with \indexmpishow{MPI_Pack_size};
+see section~\ref{sec:pack}.
+
+\mpiRoutineRef{MPI_Buffer_attach}
+
+The possible error codes are
+\begin{itemize}
+\item \n{MPI_SUCCESS} the routine completed successfully.
+\item \indexmpishow{MPI_ERR_BUFFER} The buffer pointer is invalid;
+  this typically means that you have supplied a null pointer.
+\item \indexmpishow{MPI_ERR_INTERN} An internal error in MPI has been detected.
+\end{itemize}
+
+The buffer is detached with \indexmpishow{MPI_Buffer_detach}:
+\begin{lstlisting}
+int MPI_Buffer_detach(
+  void *buffer, int *size);
+\end{lstlisting}
+This returns the address and size of the buffer; the call blocks
+until all buffered messages have been delivered.
+
+You can force delivery by
+\begin{lstlisting}
+MPI_Buffer_detach( &b, &n );
+MPI_Buffer_attach( b, n );
+\end{lstlisting}
+
+\Level 2 {Persistent buffered communication}
+
+There is a persistent variant of buffered sends, as with regular
+sends (section~\ref{sec:persistent}).
+
+\mpiRoutineRef{MPI_Bsend_init}
 
 \Level 1 {About \texttt{MPI\_Request}}
 \label{ref:mpirequest}
@@ -388,25 +397,18 @@ free this object.
 If your application is such that you do not use `wait' call, you can free the
 request object explicitly
 with \indexmpishow{MPI_Request_free}.
-\begin{verbatim}
+\begin{lstlisting}
 int MPI_Request_free(MPI_Request *request)
-\end{verbatim}
+\end{lstlisting}
 
 You can inspect the status of a request without freeing the request object
 with \indexmpishow{MPI_Request_get_status}:
-\begin{verbatim}
+\begin{lstlisting}
 int MPI_Request_get_status(
   MPI_Request request,
   int *flag,
   MPI_Status *status
 );
-\end{verbatim}
+\end{lstlisting}
 
 \index{communication!two-sided|)}
-
-\endinput
-
-%% \Level 0 {Shared-memory-like communication: one-sided
-%% communication}
-\input chapters/mpi-onesided
-

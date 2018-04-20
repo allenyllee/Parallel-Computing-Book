@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-7
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% mpi-shared.tex : about shared memory in MPI
 %%%%
@@ -41,7 +41,7 @@ Here the \n{split_type} parameter has to be from the following (short) list:
 In the following example, \n{CORES_PER_NODE} is a platform-dependent
 constant:
 %
-\verbatimsnippet{commsplittype}
+\cverbatimsnippet{commsplittype}
 
 \Level 0 {Shared memory for windows}
 
@@ -67,7 +67,7 @@ library. Presumably this places the memory close the
 As an example, which consider the 1D heat equation. On each process we
 create a local area of three point:
 %
-\verbatimsnippet{allocateshared3pt}
+\cverbatimsnippet{allocateshared3pt}
 
 \Level 1 {Querying the shared structure}
 

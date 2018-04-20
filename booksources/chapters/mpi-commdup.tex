@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-7
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% mpi-commbasic.tex : communicator basics
 %%%%
@@ -17,11 +17,11 @@
 With \indexmpishow{MPI_Comm_dup} you can make an exact duplicate of a communicator.
 This may seem pointless, but it is actually very useful for the design of
 software libraries. Image that you have a code
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Isend(...); MPI_Irecv(...);
 // library call
 MPI_Waitall(...);
-\end{verbatim}
+\end{lstlisting}
 and suppose that the library has receive calls. Now it is possible that the 
 receive in the library inadvertently
 catches the message that was sent in the outer environment.
@@ -31,7 +31,7 @@ non-overtaking. This may lead to confusing situations, witness the following.
 First of all, here is code where the library stores the communicator
 of the calling program:
 %
-\verbatimsnippet{wrongcatchlib}
+\cverbatimsnippet[examples/mpi/c/wrongcatchlib.c]{wrongcatchlib}
 
 This models a main program that does a simple message exchange, and it
 makes two calls to library routines. Unbeknown to the user, the
@@ -57,8 +57,9 @@ code can never reach the library software, since they are on different communica
 
 \mpiRoutineRef{MPI_Comm_dup}
 
-\verbatimsnippet{rightcatchlib}
-\verbatimsnippet{catchlibp}
+\cverbatimsnippet[examples/mpi/c/rightcatchlib.c]{rightcatchlib}
+
+\pverbatimsnippet{catchlibp}
 
 Newly created communicators should be
 released again with \indexmpishow{MPI_Comm_free}.

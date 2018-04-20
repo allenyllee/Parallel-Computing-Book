@@ -4,12 +4,25 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-7
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% petsc.tex : petsc stuff
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\Level 0 {Language support}
+
+PETSc is implemented in C, so there is a natural interface
+to~C. A~\emph{Fortran90}\index{Fortran90!PETSc interface}
+interface exists. The \emph{Fortran77}\index{Fortran77!PETSc interface}
+interface is only of
+interest for historical reasons.
+
+A \emph{python}\index{Python!PETSc interface}
+interface was written by Lisandro Dalcin, and requires separate
+installation,
+based on already defined \indextermtt{PETSC_DIR} and \indextermtt{PETSC_ARCH} variables.
 
 \Level 0 {Startup}
 \label{sec:petscinit}

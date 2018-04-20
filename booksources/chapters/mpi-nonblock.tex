@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-6
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% mpi-nonblock.tex : blocking sends
 %%%%
@@ -97,20 +97,20 @@ introduces two new problems:
   that data was actually sent or received.
 \item With a blocking send call, you could repeatedly fill the send
   buffer and send it off.
-\begin{verbatim}
+\begin{lstlisting}
 double *buffer;
 for ( ... p ... ) {
    buffer = // fill in the data
    MPI_Send( buffer, ... /* to: */ p );
-\end{verbatim}
+\end{lstlisting}
   To send multiple messages with non-blocking calls
   you have to allocate multiple buffers.
-\begin{verbatim}
+\begin{lstlisting}
 double **buffers;
 for ( ... p ... ) {
    buffers[p] = // fill in the data
    MPI_Send( buffers[p], ... /* to: */ p );
-\end{verbatim}
+\end{lstlisting}
 \end{enumerate}
 
 As you see above, a non-blocking send or receive routine yields
@@ -127,17 +127,23 @@ with the \indexmpishow{MPI_Wait...} routines. These
 calls are blocking: when you issue
 such a call, your execution will wait until the specified requests
 have been completed. A~typical way of using them is:
-\begin{verbatim}
+\begin{lstlisting}
 // start non-blocking communication
 MPI_Isend( ... ); MPI_Irecv( ... );
 // wait for the Isend/Irecv calls to finish in any order
 MPI_Waitall( ... );
-\end{verbatim}
+\end{lstlisting}
+
+\mpiRoutineRef{MPI_Waitall}
 
 The \n{MPI_Wait...} routines have the \indexmpishow{MPI_Status}
 objects as output.
-
-\mpiRoutineRef{MPI_Waitall}
+If you are not interested in
+the status information, you can use the values
+\indexmpishow{MPI_STATUS_IGNORE} for \indexmpishow{MPI_Wait} and
+\indexmpishow{MPI_Waitany},
+or \indexmpishow{MPI_STATUSES_IGNORE} for \indexmpishow{MPI_Waitall}
+and \indexmpishow{MPI_Waitsome}.
 
 \begin{exercise}
   \label{ex:3ptnonblock}
@@ -150,7 +156,7 @@ objects as output.
 There is a second motivation for the \n{Isend/Irecv} calls:
 if your hardware supports it, the communication can progress
 while your program can continue to do useful work:
-\begin{verbatim}
+\begin{lstlisting}
 // start non-blocking communication
 MPI_Isend( ... ); MPI_Irecv( ... );
 // do work that does not depend on incoming data
@@ -159,7 +165,7 @@ MPI_Isend( ... ); MPI_Irecv( ... );
 MPI_Wait( ... );
 // now do the work that absolutely needs the incoming data
 ....
-\end{verbatim}
+\end{lstlisting}
 This is known as \emph{overlapping computation and communication}, or
 \indextermbus{latency}{hiding}.
 
@@ -189,25 +195,26 @@ hardware, firmware, and MPI implementation.
 \Level 2 {Wait and test calls}
 \label{sec:waittest}
 
-There are several wait calls.
+There are several wait calls: you can wait for a single request, all
+outstanding requests, or any of the outstanding requests.
 
-\Level 3 {Wait for one request}
+%\Level 3 {Wait for one request}
 
 \indexmpishow{MPI_Wait} waits for a a single request. If you are
-  indeed waiting for a single nonblocking communication to complete,
-  this is the right routine. If you are waiting for multiple requests
-  you could call this routine in a loop. 
+indeed waiting for a single nonblocking communication to complete,
+this is the right routine. If you are waiting for multiple requests
+you could call this routine in a loop.
 
-\begin{verbatim}
+\begin{lstlisting}
 for (p=0; p<nrequests ; p++) // Not efficient!
   MPI_Wait(request[p],&(status[p]));
-\end{verbatim}
+\end{lstlisting}
 
 However, this would be inefficient if the first request is fulfilled
 much later than the others: your waiting process would have lots of
 idle time. In that case, use one of the following routines.
 
-\Level 3 {Wait for all requests}
+%\Level 3 {Wait for all requests}
   
 \indexmpishow{MPI_Waitall} allows you to wait for a number of
 requests, and it does not matter in what sequence they are
@@ -216,7 +223,7 @@ and it could be more efficient.
 
 \mpiRoutineRef{MPI_Waitall}
 
-\Level 3 {Wait for any/some requests}
+%\Level 3 {Wait for any/some requests}
 
 The `waitall' routine is good if you need all nonblocking
 communications to be finished before you can proceed with the rest of
@@ -224,12 +231,12 @@ the program. However, sometimes it is possible to take action as each
 request is satisfied. In that case you could use
 \indexmpishow{MPI_Waitany} and write:
 
-\begin{verbatim}
+\begin{lstlisting}
 for (p=0; p<nrequests; p++) {
   MPI_Waitany(nrequests,request_array,&index,&status);
   // operate on buffer[index]
 }
-\end{verbatim}
+\end{lstlisting}
 
 Note that this routine takes a single status argument, passed by
 reference, and not an array of statuses!
@@ -237,9 +244,9 @@ reference, and not an array of statuses!
 \mpiRoutineRef{MPI_Waitany}
 
 Finally, \indexmpishow{MPI_Waitsome} is very much like \n{Waitany},
-  except that it returns multiple numbers, if multiple requests are
-  satisfied. Now the status argument is an array of \n{MPI_Status}
-  objects.
+except that it returns multiple numbers, if multiple requests are
+satisfied. Now the status argument is an array of \n{MPI_Status}
+objects.
 
 Figure~\ref{fig:jump-nonblock} shows the trace of a non-blocking execution
 using \n{MPI_Waitall}.
@@ -250,6 +257,7 @@ using \n{MPI_Waitall}.
 \end{figure}
 
 \Level 2 {Test: non-blocking request wait}
+\label{sec:mpi-test}
 
 The \n{MPI_Wait...} routines are blocking. Thus, they are a good solution if 
 the receiving process can not do anything until the data 
@@ -258,11 +266,15 @@ The \indexmpishow{MPI_Test....} calls are themselves non-blocking: they
 test for whether one or more requests have been
 fullfilled, but otherwise immediately return.
 This can be used in the
-\indexterm{master-worker model}: the master process creates tasks, and
-sends them to whichever worker process has finished its work,
-but while it waits for the workers it can itself do useful work.
+\indexterm{manager-worker model}: the manager process creates tasks, and
+sends them to whichever worker process has finished its work.
+(This uses a receive from \indexmpishow{MPI_ANY_SOURCE}, and a
+subsequent test on the \indexmpishow{MPI_SOURCE} field of the receive status.)
+While waiting for the workers, the manager can do useful work too,
+which requires a periodic check on incoming message.
+
 Pseudo-code:
-\begin{verbatim}
+\begin{lstlisting}
 while ( not done ) {
   // create new inputs for a while
   ....
@@ -271,7 +283,7 @@ while ( not done ) {
   if ( flag ) {
     // receive processed data and send new
 }
-\end{verbatim}
+\end{lstlisting}
 
 \mpiRoutineRef{MPI_Testany}
 \mpiRoutineRef{MPI_Testall}
@@ -288,7 +300,7 @@ while ( not done ) {
 \Level 1 {Reference}
 
 Here is a simple code that does a non-blocking exchange between two processors:
-\verbatimsnippet{irecvnonblock}
+\cverbatimsnippet[examples/mpi/c/irecvnonblock.c]{irecvnonblock}
 
 It is possible to omit the status array by specifying \indexmpishow{MPI_STATUSES_IGNORE}.
 Other routines are \n{MPI_Wait} for a single request, and
@@ -298,50 +310,38 @@ The above fragment is unrealistically simple. In a more general scenario we
 have to manage send and receive buffers: we need as many buffers as there are
 simultaneous non-blocking sends and receives.
 %
-\verbatimsnippet{irecvall}
+\cverbatimsnippet[examples/mpi/c/irecvall.c]{irecvall}
 
 Instead of waiting for all messages, we can wait for any message to come
 with \indexmpishow{MPI_Waitany}, and process the receive data as it comes in.
-\verbatimsnippet{waitforany}
-Note the \indexmpishow{MPI_STATUS_IGNORE} parameter: we know everything
-about the incoming message, so we do not need to query a status object.
-Contrast this with the example in section~\ref{ref:mpi-source}.
-
-\begin{fortrannote}
-  The \n{index} parameter is the index in the array of requests,
-  so it uses \emph{1-based indexing}\index{Fortran!1-based indexing}.
-\end{fortrannote}
-\verbatimsnippet{waitforany-f}
-
-\index{communication!non-blocking|)}
-
-\Level 1 {Examples}
-
-\mpiexample{MPI_Waitall}
-
-Post non-blocking \indexmpishow{MPI_Irecv} and
-\indexmpishow{MPI_Isend} to/from all others, then use \n{MPI_Waitall}
-on the array of requests.
 %
-\verbatimsnippet{irecvall}
-
-In python creating the array for the returned requests is somewhat
-tricky.
+\cverbatimsnippet[examples/mpi/c/waitforany.c]{waitforany}
 %
-\verbatimsnippet{irecvallp}
-
-\mpiexample{MPI_Waitany}
-
+\pverbatimsnippet{waitforanyp}
+%
 Each process except for the root does a blocking send; the root
 posts \indexmpishow{MPI_Irecv} from all other processors, then loops
 with \n{MPI_Waitany} until all requests have come in. Use
 \indexmpishow{MPI_SOURCE} to test the index parameter of the wait
 call.
-%
-\verbatimsnippet{waitforany}
 
-In python creating the array for the returned requests is somewhat
-tricky.
-%
-\verbatimsnippet{waitforanyp}
+Note the \indexmpishow{MPI_STATUS_IGNORE} parameter: we know everything
+about the incoming message, so we do not need to query a status object.
+Contrast this with the example in section~\ref{ref:mpi-source}.
+
+\begin{pythonnote}
+  In python creating the array for the returned requests is somewhat
+  tricky.
+  %
+  \pverbatimsnippet{irecvallp}  
+\end{pythonnote}
+
+\begin{fortrannote}
+  The \n{index} parameter is the index in the array of requests,
+  so it uses \emph{1-based indexing}\index{Fortran!1-based indexing}.
+\end{fortrannote}
+\fverbatimsnippet{waitforany-f}
+
+\index{communication!non-blocking|)}
+
 
