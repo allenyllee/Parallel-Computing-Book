@@ -88,7 +88,7 @@ predefined MPI datatypes. Hence the following routines exist to make
 
 Examples:
 \lstset{style=reviewcode,language=Fortran}
-\begin{verbatim}
+\begin{lstlisting}
 INTEGER ( KIND = SELECTED_INTEGER_KIND(15) ) , &
  DIMENSION(100) :: array INTEGER :: root , integertype , error 
 
@@ -104,7 +104,7 @@ CALL MPI_Type_create_f90_real( 15 , 300 , realtype , error )
 COMPLEX ( KIND = SELECTED_REAL_KIND(15 ,300) ) , &
  DIMENSION(100) :: array 
 CALL MPI_Type_create_f90_complex( 15 , 300 , complextype , error )
-\end{verbatim}
+\end{lstlisting}
 \lstset{style=reviewcode,language=C}
 
 \Level 1 {Python}
@@ -143,9 +143,11 @@ integer(kind=MPI_ADDRESS_KIND) :: winsize
 
 The \indexmpishow{MPI_Win_create} routine needs a displacement in
 bytes. Here is a good way for finding the size of \indexterm{numpy} datatypes:
-\begin{verbatim}
+\lstset{style=reviewcode,language=Python}
+\begin{lstlisting}
 numpy.dtype('i').itemsize
-\end{verbatim}
+\end{lstlisting}
+\lstset{language=C}
 
 \index{datatype!elementary|)}
 

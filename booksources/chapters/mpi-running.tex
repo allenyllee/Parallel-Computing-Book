@@ -83,12 +83,12 @@ Every MPI program has to start with \indextermbus{MPI}{initialization}:
 %
 where \indextermtt{argc} and \indextermtt{argv} are the arguments
 of a C language main program:
-\begin{verbatim}
+\begin{lstlisting}
 int main(int argc,char **argv) {
     ....
     return 0;
 }
-\end{verbatim}
+\end{lstlisting}
 (It is allowed to pass \n{NULL} for these arguments.)
 
 Note that the \n{MPI_Init} call is one of the few that differs between C and Fortran:
@@ -158,20 +158,3 @@ key/value pairs; see section~\ref{sec:mpi-info}
 Once MPI has been initialized, the \indexmpishow{MPI_INFO_ENV} object
 contains a number of key/value pairs describing run-specific
 information; see section~\ref{sec:mpi-info-env}.
-
-
-%% Any \indexterm{commandline argument} to the program can only be
-%% guaranteed to be passed correctly to process zero. Here is a fragment
-%% of code that shows use of commandline arguments.  The program
-%% \n{examples/mpi/c/init.c} takes a single integer commandline argument.
-%% If the user forgets to specify an argument of specifies~\n{-h}, a
-%% usage message is printed and the program aborts, otherwise the
-%% parameter is broadcast to all processes.  
-%% %
-%% \verbatimsnippet{usage}
-%% %
-%% For Fortran:
-%% %
-%% \verbatimsnippet{usage-f}
-
-

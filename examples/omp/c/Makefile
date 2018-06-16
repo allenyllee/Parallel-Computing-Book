@@ -19,7 +19,7 @@ info ::
 	@echo
 	@echo "make app (where app=${APPS})"
 APPS = hello hellocount \
-    alloc1 alloc2 \
+    alloc1 alloc2 sharing \
     threadprivate ireduct ireductinit ureduct reductpositive \
     taskgroup0 taskgroup1 taskgroup2 taskgroup3
 listapps :

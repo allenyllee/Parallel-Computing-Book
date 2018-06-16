@@ -218,6 +218,35 @@ Good examples of \emph{thread placement} on the
 \index{Intel!Knight's Landing!thread placement}:
 \url{https://software.intel.com/en-us/articles/process-and-thread-affinity-for-intel-xeon-phi-processors-x200}
 
+As an example, consider a code where two threads write to a shared
+location.
+%
+\verbatimsnippet{shareboth}
+%
+There is now a big difference in runtime depending on how close the
+threads are. We test this on a processor with both cores and
+hyperthreads. First we bind the OpenMP threads to the cores:
+\begin{verbatim}
+OMP_NUM_THREADS=2 OMP_PLACES=cores OMP_PROC_BIND=close ./sharing
+run time = 4752.231836usec
+sum = 80000000.0
+\end{verbatim}
+Next we force the OpenMP threads to bind to hyperthreads inside one core:
+\begin{verbatim}
+OMP_PLACES=threads OMP_PROC_BIND=close ./sharing
+run time = 941.970110usec
+sum = 80000000.0
+\end{verbatim}
+Of course in this example the inner loop is pretty much meaningless
+and parallelism does not speed up anything:
+\begin{verbatim}
+OMP_NUM_THREADS=1 OMP_PLACES=cores OMP_PROC_BIND=close ./sharing
+run time = 806.669950usec
+sum = 80000000.0
+\end{verbatim}
+However, we see that the two-thread result is almost as fast, meaning
+that there is very little parallelization overhead.
+
 \index{thread!affinity|)}
 
 \Level 0 {First-touch}

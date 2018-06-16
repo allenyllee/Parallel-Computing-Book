@@ -41,13 +41,13 @@ it detects. The default behaviour, where the full run is aborted, is
 equivalent to your code having the following
 call\indexmpi{MPI_Comm_set_errhandler}\footnote{The routine
   \n{MPI\_Errhandler\_set} is deprecated.}:
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Comm_set_errhandler(MPI_COMM_WORLD,MPI_ERRORS_ARE_FATAL);
-\end{verbatim}
+\end{lstlisting}
 Another simple possibility is to specify
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Comm_set_errhandler(MPI_COMM_WORLD,MPI_ERRORS_RETURN);
-\end{verbatim}
+\end{lstlisting}
 which gives you the opportunity to write code that handles the error
 return value. The values \indexmpidef{MPI_ERRORS_ARE_FATAL} and
 \indexmpidef{MPI_ERRORS_RETURN} are of type \indexmpidef{MPI_Errhandler}.
@@ -56,14 +56,14 @@ In most cases where an MPI error occurs a complete abort is the
 sensible thing, since there are few ways to recover. The second
 possibility can for instance be used to print out debugging
 information:
-\begin{verbatim}
+\begin{lstlisting}
 int ierr;
 ierr = MPI_Something();
 if (ierr!=0) {
     // print out information about what your programming is doing
     MPI_Abort();
 }
-\end{verbatim}
+\end{lstlisting}
 For instance,
 \begin{verbatim}
 Fatal error in MPI_Waitall: 
@@ -71,7 +71,7 @@ See the MPI_ERROR field in MPI_Status for the error code
 \end{verbatim}
 You could then retrieve the \indexmpishow{MPI_ERROR} field of the
 status, and print out an error string with \indexmpidef{MPI_Error_string}:
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Comm_set_errhandler(MPI_COMM_WORLD,MPI_ERRORS_RETURN);
 ierr = MPI_Waitall(2*ntids-2,requests,status);
 if (ierr!=0) {
@@ -83,7 +83,7 @@ if (ierr!=0) {
    }
    MPI_Abort(MPI_COMM_WORLD,0);
 }
-\end{verbatim}
+\end{lstlisting}
 One cases where errors can be handled is that of \emph{MPI file
   I/O}\indexterm{MPI!I/O}: if an output file has the wrong
 permissions, code can possibly progress without writing data, or
@@ -221,19 +221,19 @@ typically based on some \ac{OS} call. MPI supplies its own routine
 \indexmpishow{MPI_Wtime} which gives \indexterm{wall clock time}.
 Normally you don't worry about the starting point for this timer: 
 you call it before and after an event and subtract the values.
-\begin{verbatim}
+\begin{lstlisting}
 t = MPI_Wtime();
 // something happens here
 t = MPI_Wtime()-t;
-\end{verbatim}
+\end{lstlisting}
 If you execute this on a single processor you get fairly reliable
 timings, except that you would need to subtract the overhead for the
 timer. This is the usual way to measure timer overhead:
-\begin{verbatim}
+\begin{lstlisting}
 t = MPI_Wtime();
 // absolutely nothing here
 t = MPI_Wtime()-t;
-\end{verbatim}
+\end{lstlisting}
 
 \Level 1 {Global timing}
 
@@ -241,13 +241,13 @@ However, if you try to time a parallel application you will most likely
 get different times for each process, so you would have to take the
 average or maximum.  Another solution is to synchronize the processors
 by using a \indexterm{barrier}\indexmpi{MPI_Barrier}:
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Barrier(comm)
 t = MPI_Wtime();
 // something happens here
 MPI_Barrier(comm)
 t = MPI_Wtime()-t;
-\end{verbatim}
+\end{lstlisting}
 
 \begin{exercise}
   This scheme also has some overhead associated with it. How would you measure that?
@@ -260,7 +260,7 @@ Now suppose you want to measure the time for a single send. It is not possible
 to start a clock on the sender and do the second measurement on the receiver,
 because the two clocks need not be synchronized. Usually a \indexterm{ping-pong} is 
 done: 
-\begin{verbatim}
+\begin{lstlisting}
 if ( proc_source ) {
   MPI_Send( /* to target */ );
   MPI_Recv( /* from target */ );
@@ -268,7 +268,7 @@ else if ( proc_target ) {
   MPI_Recv( /* from source */ );
   MPI_Send( /* to source */ );
 }
-\end{verbatim}
+\end{lstlisting}
 
 \begin{exercise}
   Why is it generally not a good idea to use processes 0 and~1 for the
@@ -372,14 +372,14 @@ to be ready for this. How can you guarantee that the receiving process
 is ready? You could for instance do the following (this uses
 non-blocking routines, which are explained below in
 section~\ref{sec:nonblocking}):
-\begin{verbatim}
+\begin{lstlisting}
 if ( receiving ) {
   MPI_Irecv()   // post non-blocking receive
   MPI_Barrier() // synchronize
 else if ( sending ) {
   MPI_Barrier() // synchronize
   MPI_Rsend()   // send data fast
-\end{verbatim}
+\end{lstlisting}
 When the barrier is reached, the receive has been posted, so it is safe 
 to do a ready send. However, global barriers are not a good idea.
 Instead you would just synchronize the two processes involved.
@@ -485,11 +485,13 @@ around this, such as sending a number of
 Objects of type \n{MPI.Status} or \n{MPI.Request} often need to be created
 in an array, for instance when looping through a number of \n{Isend} calls.
 In that case the following idiom may come in handy:
-\begin{verbatim}
+\lstset{language=Python}
+\begin{lstlisting}
 requests = [ None ] * nprocs
 for p in range(nprocs):
   requests[p] = comm.Irecv( ... )
-\end{verbatim}
+\end{lstlisting}
+\lstset{language=C}
 
 \index{MPI!Python issues|)}
 
@@ -577,11 +579,11 @@ Timing in parallel is a tricky issue. For instance, most clusters do
 not have a central clock, so you can not relate start and stop times
 on one process to those on another. You can test for a global clock as
 follows\indexmpi{MPI_WTIME_IS_GLOBAL}:
-\begin{verbatim}
+\begin{lstlisting}
 int *v,flag;
 MPI_Attr_get( comm, MPI_WTIME_IS_GLOBAL, &v, &flag );
 if (mytid==0) printf(``Time synchronized? %d->%d\n'',flag,*v);
-\end{verbatim}
+\end{lstlisting}
 %\indexmpi{MPI_Wtime} can be either a function or a macro.
 
 %\Level 1 {Profiling}

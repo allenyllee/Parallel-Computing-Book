@@ -290,3 +290,19 @@ run_onesidedbuild :
 	   | ../course-support/catch_onesidedbuild.py || export success=$$? \
 	 && make regress_success SUCCESS=$$success PROGRAM=$${program}
 
+.PHONY: run_rightgraph
+REGRESSIONRUNS += run_rightgraph
+run_rightgraph : 
+	@make run_start PROGRAM=$@ NP=${NP}
+	@export atgram=$@ ; export program=$${atgram##run_} ; \
+	 export np=${NP} ; \
+	 export success=1 ; \
+	 for p in `seq 1 $$(( np-1 ))` ; do \
+	  if [ `cat $$program.out$$p | wc -l` -gt 0 ] ; then \
+	    echo "I was not expecting output from proc $$p" ; \
+	    success=0; \
+	  fi ; \
+	 done ; \
+	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
+	echo
+

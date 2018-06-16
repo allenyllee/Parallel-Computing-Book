@@ -289,14 +289,14 @@ how you translate them.
 \Level 2 {C}
 
 The typically C routine specification in MPI looks like:
-\begin{verbatim}
+\begin{lstlisting}
 int MPI_Comm_size(MPI_Comm comm,int *nprocs)
-\end{verbatim}
+\end{lstlisting}
 This means that
 \begin{itemize}
 \item The routine returns an \n{int} parameter. Strictly speaking you
   would use the routine as
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Comm comm = MPI_COMM_WORLD;
 int nprocs;
 int errorcode;
@@ -306,28 +306,28 @@ if (errorcode!=0) {
          errorcode);
   return 1;
 }
-\end{verbatim}
+\end{lstlisting}
   However, the error codes are hardly ever useful, and there is not
   much your program can do to recover from an error. Most people call
   the routine as
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Comm_world( /* parameter ... */ );
-\end{verbatim}
+\end{lstlisting}
 \item The first argument is of type \n{MPI_Comm}. This is not a C
   built-in datatype, but it behaves like one. There are many of these
   \n{MPI_something} datatypes in MPI. So you can write:
-\begin{verbatim}
-MPI_Comm my_comm = &
+\begin{lstlisting}
+MPI_Comm my_comm =
     MPI_COMM_WORLD; // using a predefined value
 MPI_Comm_size( comm, /* remaining parameters */ );
-\end{verbatim}
+\end{lstlisting}
 \item Finally, there is a `star' parameter. This means that the
   routine wants an address, rather than a value. You would typically write:
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Comm my_comm = MPI_COMM_WORLD; // using a predefined value
 int nprocs;
 MPI_Comm_size( comm, &nprocs );
-\end{verbatim}
+\end{lstlisting}
   Seeing a `star' parameter usually means either: the routine has an
   array argument, or: the routine internally sets the value of a
   variable. The latter is the case here.
@@ -336,19 +336,22 @@ MPI_Comm_size( comm, &nprocs );
 \Level 2 {Fortran}
 
 The Fortran specification looks like:
-\begin{verbatim}
+\lstset{language=Fortran}
+\begin{lstlisting}
 MPI_Comm_size(comm, size, ierror)
 INTEGER, INTENT(IN) :: comm
 INTEGER, INTENT(OUT) :: size
 INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-\end{verbatim}
+\end{lstlisting}
 The syntax of using this routine is close to this specification: you
 write
-\begin{verbatim}
+\begin{lstlisting}
 integer :: comm = MPI_COMM_WORLD
 integer :: size
 CALL MPI_Comm_size( comm, size, ierr )
-\end{verbatim}
+\end{lstlisting}
+\lstset{language=C}
+
 \begin{itemize}
 \item Most Fortran routines have the same parameters as the
   corresponding C routine, except that they all have the error code as
@@ -364,42 +367,44 @@ CALL MPI_Comm_size( comm, size, ierr )
 
 The Python interface to MPI uses classes and objects. Thus, a
 specification like:
-\begin{verbatim}
+\lstset{language=Python}
+\begin{lstlisting}
 MPI.Comm.Send(self, buf, int dest, int tag=0)
-\end{verbatim}
+\end{lstlisting}
 should be parsed as follows.
 \begin{itemize}
 \item First of all, you need the \n{MPI} class:
-\begin{verbatim}
+\begin{lstlisting}
 from mpi4py import MPI
-\end{verbatim}
+\end{lstlisting}
 \item Next, you need a \n{Comm} object. Often you will use the
   predefined communicator
-\begin{verbatim}
+\begin{lstlisting}
 comm = MPI.COMM_WORLD
-\end{verbatim}
+\end{lstlisting}
 \item The keyword \n{self} indicates that the actual routine \n{Send}
   is a method of the \n{Comm} object, so you call:
-\begin{verbatim}
+\begin{lstlisting}
 comm.Send( .... )
-\end{verbatim}
+\end{lstlisting}
 \item Parameters that are listed by themselves, such as \n{buf}, as
   positional. Parameters that are listed with a type, such as \n{int
     dest} are keyword parameters. Keyword parameters that have a value
   specified, such as \n{int tag=0} are optional, with the default
   value indicated. Thus, the typicall call for this routine is:
-\begin{verbatim}
+\begin{lstlisting}
 comm.Send(sendbuf,dest=other)
-\end{verbatim}
+\end{lstlisting}
   specifying the send buffer as positional parameter, the destination
   as keyword parameter, and using the default value for the optional tag.
 \end{itemize}
 Some python routines are `class methods', and their specification
 lacks the \n{self} keyword. For instance:
-\begin{verbatim}
+\begin{lstlisting}
 MPI.Request.Waitall(type cls, requests, statuses=None)
-\end{verbatim}
+\end{lstlisting}
 would be used as
-\begin{verbatim}
+\begin{lstlisting}
 MPI.Request.Waitall(requests)
-\end{verbatim}
+\end{lstlisting}
+\lstset{language=C}

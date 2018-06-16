@@ -136,6 +136,22 @@ MPI_Waitall( ... );
 
 \mpiRoutineRef{MPI_Waitall}
 
+\Level 2 {Non-blocking communication and buffers}
+
+With blocking send and receive calls, a buffer can be reused
+immediately after the call: the call returning means that the buffer
+has been succesfully sent of or filled by a receive. This is not true
+with non-blocking calls: they are sort of a promise that the buffer
+will be correctly handled in the future. As a result, if you do
+multiple non-blocking send calls, you need multiple send buffers;
+similarly with non-blocking receive calls and buffers.
+We need as many buffers as there are
+simultaneous non-blocking sends and receives.
+%
+\cverbatimsnippet[examples/mpi/c/irecvloop.c]{irecvloop}
+
+\Level 2 {Receive status of the wait calls}
+
 The \n{MPI_Wait...} routines have the \indexmpishow{MPI_Status}
 objects as output.
 If you are not interested in
@@ -256,6 +272,39 @@ using \n{MPI_Waitall}.
 \label{fig:jump-nonblock}
 \end{figure}
 
+\Level 2 {Implementing polling with Waitany}
+
+The \indexmpishow{MPI_Waitany} routine can be used to implement
+\indexterm{polling}: occasionally check for incoming messages while
+other work is going on.
+%
+\cverbatimsnippet[examples/mpi/c/waitforany.c]{waitforany}
+%
+\pverbatimsnippet{waitforanyp}
+%
+Each process except for the root does a blocking send; the root
+posts \indexmpishow{MPI_Irecv} from all other processors, then loops
+with \n{MPI_Waitany} until all requests have come in. Use
+\indexmpishow{MPI_SOURCE} to test the index parameter of the wait
+call.
+
+Note the \indexmpishow{MPI_STATUS_IGNORE} parameter: we know everything
+about the incoming message, so we do not need to query a status object.
+Contrast this with the example in section~\ref{ref:mpi-source}.
+
+\begin{pythonnote}
+  In python creating the array for the returned requests is somewhat
+  tricky.
+  %
+  \pverbatimsnippet{irecvallp}  
+\end{pythonnote}
+
+\begin{fortrannote}
+  The \n{index} parameter is the index in the array of requests,
+  so it uses \emph{1-based indexing}\index{Fortran!1-based indexing}.
+\end{fortrannote}
+\fverbatimsnippet{waitforany-f}
+
 \Level 2 {Test: non-blocking request wait}
 \label{sec:mpi-test}
 
@@ -297,50 +346,26 @@ while ( not done ) {
     preferable.
 \end{exercise}
 
-\Level 1 {Reference}
+\Level 2 {More about requests}
 
-Here is a simple code that does a non-blocking exchange between two processors:
-\cverbatimsnippet[examples/mpi/c/irecvnonblock.c]{irecvnonblock}
+Every non-blocking call allocates an \indexmpishow{MPI_REQUEST}
+object. One effect of the various \indexmpishow{MPI_Wait...} calls is
+to deallocate these objects. Thus, it is wise to issue wait calls even
+if you know that the operation has succeeded. For instance, if all
+receive calls are concluded, you know that the corresponding send
+calls are finished and there is no strict need to wait for their
+requests. However, omitting the wait calls would lead to a memory
+leak.
 
-It is possible to omit the status array by specifying \indexmpishow{MPI_STATUSES_IGNORE}.
-Other routines are \n{MPI_Wait} for a single request, and
-\n{MPI_Waitsome}, \n{MPI_Waitany}.
+Another way around this is to call \indexmpishow{MPI_Request_free},
+which sets the request variable to \indexmpishow{MPI_REQUEST_NULL},
+and marks the object for deallocation after completion of the
+operation.
 
-The above fragment is unrealistically simple. In a more general scenario we
-have to manage send and receive buffers: we need as many buffers as there are
-simultaneous non-blocking sends and receives.
-%
-\cverbatimsnippet[examples/mpi/c/irecvall.c]{irecvall}
-
-Instead of waiting for all messages, we can wait for any message to come
-with \indexmpishow{MPI_Waitany}, and process the receive data as it comes in.
-%
-\cverbatimsnippet[examples/mpi/c/waitforany.c]{waitforany}
-%
-\pverbatimsnippet{waitforanyp}
-%
-Each process except for the root does a blocking send; the root
-posts \indexmpishow{MPI_Irecv} from all other processors, then loops
-with \n{MPI_Waitany} until all requests have come in. Use
-\indexmpishow{MPI_SOURCE} to test the index parameter of the wait
-call.
-
-Note the \indexmpishow{MPI_STATUS_IGNORE} parameter: we know everything
-about the incoming message, so we do not need to query a status object.
-Contrast this with the example in section~\ref{ref:mpi-source}.
-
-\begin{pythonnote}
-  In python creating the array for the returned requests is somewhat
-  tricky.
-  %
-  \pverbatimsnippet{irecvallp}  
-\end{pythonnote}
-
-\begin{fortrannote}
-  The \n{index} parameter is the index in the array of requests,
-  so it uses \emph{1-based indexing}\index{Fortran!1-based indexing}.
-\end{fortrannote}
-\fverbatimsnippet{waitforany-f}
+Note that \indexmpishow{MPI_Test...} routines also deallocates the
+request object, setting the handle to \indexmpishow{MPI_REQUEST_NULL},
+but \indexmpishow{MPI_Request_get_status} does not alter the request
+handle or object.
 
 \index{communication!non-blocking|)}
 

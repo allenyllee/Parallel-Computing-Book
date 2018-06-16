@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-6
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% mpi-moredata.tex : more about data
 %%%%
@@ -93,21 +93,21 @@ MPI offers the following:
 With \indexmpishow{MPI_PACK} data elements can be added 
 to a buffer one at a time. The \n{position} parameter is updated
 each time by the packing routine.
-\begin{verbatim}
+\begin{lstlisting}
 int MPI_Pack(
   void *inbuf, int incount, MPI_Datatype datatype,
   void *outbuf, int outcount, int *position,
   MPI_Comm comm);
-\end{verbatim}
+\end{lstlisting}
 
 Conversely, \indexmpishow{MPI_UNPACK} retrieves one element
 from the buffer at a time. You need to specify the MPI datatype.
-\begin{verbatim}
+\begin{lstlisting}
 int MPI_Unpack(
   void *inbuf, int insize, int *position,
   void *outbuf, int outcount, MPI_Datatype datatype,
   MPI_Comm comm);
-\end{verbatim}
+\end{lstlisting}
 
 A packed buffer is sent or received with a datatype of
 \indexmpishow{MPI_PACKED}. The sending routine uses the \n{position}
@@ -125,13 +125,13 @@ Add one time \indexmpishow{MPI_BSEND_OVERHEAD}.
 \begin{exercise}
   \label{ex:packAOS}
   Suppose you have a `structure of arrays'
-\begin{verbatim}
+\begin{lstlisting}
 struct aos {
   int length;
   double *reals;
   double *imags;
 };
-\end{verbatim}
+\end{lstlisting}
   with dynamically created arrays. Write code to send and receive this
   structure.
 \end{exercise}

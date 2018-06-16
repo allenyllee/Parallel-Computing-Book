@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-6
+%%%% by Victor Eijkhout, copyright 2012-8
 %%%%
 %%%% mpi-intercomm.tex : about splitting communicators
 %%%%
@@ -22,13 +22,13 @@ communicators. It would be easier to express messages directly in
 terms of those communicators, and this can be done with
 `inter-communicators'.
 
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Intercomm_create (local_comm, local_leader, bridge_comm, remote_leader, tag, newintercomm, ierr)
-\end{verbatim}
+\end{lstlisting}
 After this, the intercommunicator can be used in collectives such as
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Bcast (buff, count, dtype, root, comm, ierr)
-\end{verbatim}
+\end{lstlisting}
 \begin{itemize}
 \item In group~A, the root process passes \n{MPI_ROOT} as
   `root' value; all others use \n{MPI_NULL_PROC}.

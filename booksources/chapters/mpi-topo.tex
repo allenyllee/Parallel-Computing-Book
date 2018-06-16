@@ -11,16 +11,40 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-In the communicators you have seen so far, processes are linearly ordered.
-In some circumstances the problem you are coding has some structure,
-and expressing the program
-in terms of that structure would be convenient. For this purpose, MPI 
-can define a virtual \indexterm{topology}. There are two types:
-\begin{itemize}
-\item regular, Cartesian, grids; and
-\item general graphs.
-\end{itemize}
+A communicator describes a group of processes, but the structure of
+your computation may not be such that every process will communicate
+with every other process. For instance, in a computation that is
+mathematically defined on a
+Cartesian 2D grid, the
+processes themselves act as if they are two-dimensionally ordered and communicate
+with N/S/E/W neighbours. If MPI had this knowledge about your
+application, it could conceivably optimize for it, for instance by
+renumbering the ranks so that communicating processes are closer
+together physically in your cluster.
 
+The mechanism to declare this structure of a computation to MPI
+is known as a \indextermsub{virtual}{topology}. The following types of
+topology are defined:
+\begin{itemize}
+\item \indexmpishow{MPI_UNDEFINED}: this values holds for communicators where no
+  topology has explicitly been specified.
+\item \indexmpishow{MPI_CART}: this value holds for Cartesian
+  toppologies, where processes act as if they are ordered in a
+  multi-dimensional `brick'; see
+  section~\ref{sec:cartesian}.
+\item \indexmpishow{MPI_GRAPH}: this value describes the graph
+  topology that was defined in \indextermbus{MPI}{1};
+  section~\ref{sec:mpi-1-graph}. It is unnecessarily burdensome, since
+  each process needs to know the total graph, and should therefore be
+  considered obsolete; the type \indexmpishow{MPI_DIST_GRAPH} should
+  be used instead.
+\item \indexmpishow{MPI_DIST_GRAPH}: this value describes the distributed graph
+  topology where each process only describes the edges in the process
+  graph that touch itself; see section~\ref{sec:mpi-dist-graph}.
+\end{itemize}
+These values can be discovered with the routine
+\indexmpishow{MPI_Topo_test}.
+%
 \mpiRoutineRef{MPI_Topo_test}
 
 \Level 0 {Cartesian grid topology}
@@ -57,22 +81,28 @@ general graph topology interface.
 The cartesian topology is specified by giving
 \indexmpishow{MPI_Cart_create} the sizes of the processor grid along
 each axis, and whether the grid is periodic along that axis.
-\begin{verbatim}
+
+\lstset{style=reviewcode,language=C}
+\begin{lstlisting}
 int MPI_Cart_create(
   MPI_Comm comm_old, int ndims, int *dims, int *periods, 
   int reorder, MPI_Comm *comm_cart)
-\end{verbatim}
+\end{lstlisting}
+
 Each point in this new communicator has a coordinate and a rank.  They
 can be queried with \indexmpishow{MPI_Cart_coord} and
 \indexmpishow{MPI_Cart_rank} respectively.
-\begin{verbatim}
+
+\lstset{style=reviewcode,language=C}
+\begin{lstlisting}
 int MPI_Cart_coords(
   MPI_Comm comm, int rank, int maxdims,
   int *coords);
 int MPI_Cart_rank(
   MPI_Comm comm, init *coords, 
   int *rank);
-\end{verbatim}
+\end{lstlisting}
+
 Note that these routines can give the coordinates for any rank,
 not just for the current process.
 %
@@ -84,10 +114,10 @@ in the new communicator that is different from in the old one.
 
 Strangely enough you can only shift in one direction, you can not
 specify a shift vector.
-\begin{verbatim}
+\begin{lstlisting}
 int MPI_Cart_shift(MPI_Comm comm, int direction, int displ, int *source, 
                   int *dest)
-\end{verbatim}
+\end{lstlisting}
 If you specify a processor outside the grid
 the result is \indexmpishow{MPI_PROC_NULL}.
 
@@ -96,38 +126,119 @@ the result is \indexmpishow{MPI_PROC_NULL}.
 \Level 0 {Distributed graph topology}
 \label{sec:mpi-dist-graph}
 
-MPI communicators have a topology type associated. This is tested with
-%
-\indexmpishow{MPI_Topo_test}
-%
-and possible values are:
+\begin{figure}
+  \includegraphics[scale=.5]{graphcollective}
+  \caption{Illustration of a distributed graph topology where each
+    node has four neighbours}
+  \label{fig:graphcollective}
+\end{figure}
+
+In many calculations on a grid (using the term in its mathematical,
+\ac{FEM}, sense), a grid point will collect information from grid
+points around it. Under a sensible distribution of the grid over
+processes, this means that each process will collect information from
+a number of neighbour processes. The number of 
+neighbours is dependent on that process. For instance, in a 2D
+grid (and assuming a five-point stencil for the computation) most
+processes communicate with four neighbours; processes on the edge with
+three, and processes in the corners with two.
+
+Such a topology is illustrated in figure~\ref{fig:graphcollective}.
+
+Thus the minimal description of a process graph contains for each process:
 \begin{itemize}
-\item \indexmpishow{MPI_UNDEFINED} for communicators where nothing
-  topology has explicitly been specified.
-\item \indexmpishow{MPI_CART} for Cartesian toppologies;
-  section~\ref{sec:cartesian}.
-\item \indexmpishow{MPI_GRAPH} for the MPI-1 graph topology;
-  section~\ref{sec:mpi-1-graph}.
-\item \indexmpishow{MPI_DIST_GRAPH} for the distributed graph
-  topology; section~\ref{sec:mpi-dist-graph}.
+\item Degree: the number of neighbour processes; and
+\item the ranks of the processes to communicate with.
+\end{itemize}
+However, this ignores that communication is not always symmetric:
+maybe the processes you receive from are not the ones you send
+to. Worse, maybe only one side of this duality is easily
+described. Therefore, there are two routines:
+\begin{itemize}
+\item \indexmpishow{MPI_Dist_graph_create_adjacent} assumes that a
+  process knows both who it is sending it, and who will send to
+  it. This is the most work for the programmer to specify, but it is
+  ultimately the most efficient.
+\item \indexmpishow{MPI_Dist_graph_create} specifies on each process
+  only what it is the source for; that is, who this process will be sending
+  to.\footnote{I disagree with this design decision. Specifying your
+    sources is usually easier than specifying your
+    destinations.}. Consequently, some amount of processing
+  --~including communication~-- is needed to build the converse
+  information, the ranks that will be sending to a process.
 \end{itemize}
 
 \Level 1 {Creation}
 
-There are two creation routines for process graphs.
-\begin{itemize}
-\item \indexmpishow{MPI_Dist_graph_create_adjacent} assumes that a
-  process knows both who it is sending it, and who will send to
-  it. This means that every edge in the communication graph is
-  represented twice, so the memory footprint is double of what is
-  strictly necessary. However, no communication is needed to build the
-  graph.
-\item \indexmpishow{MPI_Dist_graph_create} specifies on each process
-  only its `sources'. Consequently, some amount of processing
-  --~including communication~-- is needed to build the full graph.
-\end{itemize}
+There are two creation routines for process graphs. These routines are
+fairly general in that they allow any process to specify any part of
+the topology. In practice, of course, you will mostly let each process
+describe its own neighbour structure.
+
+The routine \indexmpishow{MPI_Dist_graph_create_adjacent} assumes that a process
+knows both who it is sending it, and who will send to it. This means
+that every edge in the communication graph is represented twice, so
+the memory footprint is double of what is strictly necessary. However,
+no communication is needed to build the graph.
+
+The second creation routine, \indexmpishow{MPI_Dist_graph_create}, is
+probably easier to use, especially in cases where the communication
+structure of your program is symmetric, meaning that a process sends
+to the same neighbours that it receives from.  Now you specify on each
+process only what it is the source for; that is, who this process will
+be sending to.\footnote{I disagree with this design
+  decision. Specifying your sources is usually easier than specifying
+  your destinations.}. Consequently, some amount of processing
+--~including communication~-- is needed to build the converse
+information, the ranks that will be sending to a process.
 
 \mpiRoutineRef{MPI_Dist_graph_create}
+
+Figure~\ref{fig:graphcollective} describes the common five-point
+stencil structure. If we let each process only describe itself, we get
+the following:
+\begin{itemize}
+\item \n{nsources}$=1$ because the calling process describes on node
+  in the graph: itself.
+\item \n{sources} is an array of length~1, containing the rank of the
+  calling process.
+\item \n{degrees} is an array of length~1, containing the degree
+  (probably:~4) of this process.
+\item \n{destinations} is an array of length the degree of this
+  process, probably again~4. The elements of this array are the ranks
+  of the neighbour nodes; strictly speaking the ones that this process
+  will send to.
+\item \n{weights} is an array declaring the relative importance of the
+  destinations. You can safely set this to all ones.
+\end{itemize}
+
+The resulting communicator has all the processes of the original
+communicator, with the same ranks. Its main point is usage in the
+so-called `neighbour collectives'.
+
+\Level 1 {Neighbour collectives}
+
+We can now use the graph topology to perform a gather or allgather
+that combines only the processes directly connected to the calling
+process.
+
+\mpiRoutineRef{MPI_Neighbor_allgather}
+
+The neighbour collectives have the same argument list as the regular
+collectives, but they apply to a graph communicator.
+
+\begin{figure}[ht]
+  \includegraphics[scale=.5]{rightgraph}
+  \caption{Solving the right-send exercise with neighbourhood
+    collectives}
+  \label{fig:rightgraph}
+\end{figure}
+
+\begin{exercise}
+  \label{ex:rightgraph}
+  Revisit exercise~\ref{ex:serialsend} and solve it using
+  \n{MPI_Dist_graph_create}. Use figure~\ref{fig:rightgraph} for inspiration.
+\end{exercise}
 
 \Level 1 {Query}
 

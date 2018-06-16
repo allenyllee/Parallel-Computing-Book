@@ -59,11 +59,20 @@ You can query the commutativity of an operator:
 
 A created \n{MPI_Op} can be freed again:
 %
-\begin{verbatim}
+\begin{lstlisting}
 int MPI_Op_free(MPI_Op *op)
-\end{verbatim}
+\end{lstlisting}
 %
 This sets the operator to \indexmpishow{MPI_OP_NULL}.
+
+\Level 1 {Local reduction}
+
+The application of an \n{MPI_OP} can be performed with the routine
+\indexmpishow{MPI_Reduce_local}. Using this routine and some
+send/receive scheme you can build your own global reductions. Note
+that this routine does not take a communicator because it is purely local.
+
+\mpiRoutineRef{MPI_Reduce_local}
 
 \index{operator|)}
 
@@ -85,12 +94,12 @@ For instance, computing
 involves a matrix-vector product, which is dominated by computation
 in the \indextermsub{sparse}{matrix} case, and an inner product which is 
 typically dominated by the communication cost. You would code this as
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Iallreduce( .... x ..., &request);
 // compute the matrix vector product
 MPI_Wait(request);
 // do the addition
-\end{verbatim}
+\end{lstlisting}
 
 This can also be used for 3D FFT operations~\cite{Hoefler:case-for-nbc}.
 Occasionally, a non-blocking collective can be used for non-obvious purposes,
@@ -99,118 +108,16 @@ such as the \indexmpishow{MPI_Ibarrier} in~\cite{Hoefler:2010:SCP}.
 The same calling sequence as the blocking counterpart, except for the addition
 of an \indexmpishow{MPI_Request} parameter. For instance 
 \indexmpishow{MPI_Ibcast}:
-\begin{verbatim}
+\begin{lstlisting}
 int MPI_Ibcast(
   void *buffer, int count, MPI_Datatype datatype,
   int root, MPI_Comm comm, 
   MPI_Request *request)
-\end{verbatim}
+\end{lstlisting}
 
 \mpiRoutineRef{MPI_Iallreduce}
 
 \mpiRoutineRef{MPI_Iallgather}
-
-\Level 0 {Barrier and all-to-all}
-\label{sec:barrier}
-\label{sec:alltoall}
-
-There are two collectives we have not mentioned yet.
-
-A~barrier is a
-routine that blocks all processes until they have all reached the barrier
-call. Thus it achieves time synchronization of the processes.
-%
-\mpiRoutineRef{MPI_Barrier}
-%
-This call's simplicity is contrasted with its usefulness, which
-is very limited. It is almost never necessary to synchronize processes
-through a barrier: for most purposes it does not matter if processors
-are out of sync. Conversely, collectives (except the new non-blocking
-ones) introduce a barrier of sorts themselves.
-
-The all-to-all call is a generalization of a scatter and gather: every
-process is scattering an array of data, and every process is gathering
-an array of data. There is also a `v' variant of this routine.
-
-\indexmpishow{MPI_Alltoall}
-\begin{verbatim}
-int MPI_Alltoall
-  (void *sendbuf, int sendcount, MPI_Datatype sendtype, 
-   void *recvbuf, int recvcount, MPI_Datatype recvtype, 
-   MPI_Comm comm)
-\end{verbatim}
-
-\Level 0 {Reduce-scatter}
-\label{reducescatter}
-
-There are several MPI collectives that are functionally equivalent to
-a combination of others. You have already seen \n{MPI_Allreduce} which
-is equivalent to a reduction followed by a broadcast. Often such
-combinations can be more efficient than using the individual calls;
-see~\HPSCref{sec:collective}.
-
-Here is another example: \indexmpishow{MPI_Reduce_scatter} is equivalent
-to a reduction on an array of data (meaning a pointwise reduction on each
-array location) followed by a scatter of this array to the individual 
-processes.
-
-One important example of this command is the
-\indextermsub{sparse}{matrix-vector product};
-see~\HPSCref{sec:spmvp-performance} for background information.
-Each process contains one or more matrix rows, so by looking at indices
-the process can decide what other processes it needs data from.
-The problem is for a process to find out what other processes 
-it needs to send data to. 
-
-Using \indexmpishow{MPI_Reduce_scatter} the process goes as follows:
-\begin{itemize}
-\item Each process creates an array of ones and zeros, describing who
-  it needs data from.
-\item The reduce part of the reduce-scatter yields an array of
-  requester counts; after the scatter each process knows how many
-  processes request data from it.
-\item Next, the sender processes need to find out what elements are
-  requested from it. For this, each process sends out arrays of
-  indices.
-\item The big trick is that each process now knows how many of these
-  requests will be coming in, so it can post precisely that many
-  \n{MPI_Irecv} calls, with a source of \indexmpishow{MPI_ANY_SOURCE}.
-\end{itemize}
-
-The \indexmpishow{MPI_Reduce_scatter} command is equivalent to a reduction
-on an array of data, followed by a scatter of that data to the individual processes.
-
-To be precise, there is an array \n{recvcounts} where \n{recvcounts[i]} gives
-the number of elements that ultimate wind up on process~\n{i}.
-The result is equivalent to doing a reduction with a length equal to the sum
-of the \n{recvcounts[i]} values, followed by a scatter where process~\n{i}
-receives \n{recvcounts[i]} values. (Since the amount of data to be scattered
-depends on the process, this is in fact equivalent to \indexmpishow{MPI_Scatterv}
-rather than a regular scatter.)
-%
-\mpiRoutineRef{MPI_Reduce_scatter}
-%
-For instance, if all \n{recvcounts[i]} values are~1, the sendbuffer has one element
-for each process, and the receive buffer has length~1.
-
-\Level 1 {Examples}
-
-An important application of this is establishing an irregular
-communication pattern.  Assume that each process knows which
-other processes it wants to communicate with; the problem is to
-let the other processes know about this.
-The solution is to use \n{MPI_Reduce_scatter} to find out how many processes
-want to communicate with you, and then wait for precisely that many messages
-with a source value of \indexmpishow{MPI_ANY_SOURCE}.
-\cverbatimsnippet[examples/mpi/c/reducescatter.c]{reducescatter}
-
-Use of \n{MPI_Reduce_scatter} to implement the two-dimensional
-matrix-vector product.
-Set up separate row and column communicators with
-\indexmpishow{MPI_Comm_split}, use \n{MPI_Reduce_scatter} to combine
-local products.
-%
-\cverbatimsnippet[examples/mpi/c/mvp2d.c]{mvp2d}
 
 \Level 0 {Performance of collectives}
 
@@ -271,10 +178,10 @@ of the complexity of collectives is described in more detail in
 
 Collectives, other than a barrier, have a synchronizing effect between processors.
 For instance, in
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Bcast( ....data... root);
 MPI_Send(....);
-\end{verbatim}
+\end{lstlisting}
 the send operations on all processors will occur after the root executes
 the broadcast. 
 \begin{figure}[ht]
@@ -304,7 +211,7 @@ result from core~12, which is on the second node.
   \rightskip=\unitindent
 Code:
 {\tiny
-\begin{verbatim}
+\begin{lstlisting}
 switch(rank) { 
     case 0: 
         MPI_Bcast(buf1, count, type, 0, comm); 
@@ -320,7 +227,7 @@ switch(rank) {
         MPI_Bcast(buf1, count, type, 0, comm); 
         break; 
 }
-\end{verbatim}
+\end{lstlisting}
 }
 The most logical execution is:\par\medskip
 
@@ -343,13 +250,13 @@ In other words, one of the messages seems to go `back in time'.
 While collectives synchronize in a loose sense, it is not possible to
 make any statements about events before and after the collectives
 between processors:
-\begin{verbatim}
+\begin{lstlisting}
 ...event 1...
 MPI_Bcast(....);
 ...event 2....
-\end{verbatim}
+\end{lstlisting}
 Consider a specific scenario:
-\begin{verbatim}
+\begin{lstlisting}
 switch(rank) { 
     case 0: 
         MPI_Bcast(buf1, count, type, 0, comm); 
@@ -365,7 +272,7 @@ switch(rank) {
         MPI_Bcast(buf1, count, type, 0, comm); 
         break; 
 }
-\end{verbatim}
+\end{lstlisting}
 Note the \n{MPI_ANY_SOURCE} parameter in the receive calls on processor~1.
 One obvious execution of this would be:
 \begin{enumerate}

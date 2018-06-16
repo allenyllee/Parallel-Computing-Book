@@ -44,9 +44,9 @@ We now have all the ingredients.
 All the processors specify a send buffer just as with \n{MPI_Gather}.
 However, the receive buffer specification on the root is more complicated. 
 It now consists of:
-\begin{verbatim}
+\begin{lstlisting}
 outbuffer, array-of-outcounts, array-of-displacements, outtype
-\end{verbatim}
+\end{lstlisting}
 and you have just seen how to construct that information.
 
 \Level 1 {Reference}
@@ -63,29 +63,23 @@ buffers of differing sizes.
   variable-sized gather on each process.
 \end{itemize}
 
-\begin{verbatim}
+\begin{lstlisting}
 int MPI_Scatterv
   (void* sendbuf, int *sendcounts, int *displs, MPI_Datatype sendtype, 
    void* recvbuf, int recvcount, MPI_Datatype recvtype, 
    int root, MPI_Comm comm)
-\end{verbatim}
+\end{lstlisting}
 
 \mpiRoutineRef{MPI_Gatherv}
 
-\begin{verbatim}
+\begin{lstlisting}
 int MPI_Allgatherv
   (void *sendbuf, int sendcount, MPI_Datatype sendtype, 
    void *recvbuf, int *recvcounts, int *displs, 
    MPI_Datatype recvtype, MPI_Comm comm)
-\end{verbatim}
+\end{lstlisting}
 
-\indexmpishow{MPI_Alltoallv}.
-\begin{verbatim}
-int MPI_Alltoallv
-  (void *sendbuf, int *sendcnts, int *sdispls, MPI_Datatype sendtype, 
-   void *recvbuf, int *recvcnts, int *rdispls, MPI_Datatype recvtype,
-   MPI_Comm comm)
-\end{verbatim}
+\mpiRoutineRef{MPI_Alltoallv}
 
 For example, in an \indexmpishow{MPI_Gatherv} call each process has an individual
 number of items to contribute. To gather this, the root process needs

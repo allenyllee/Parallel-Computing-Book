@@ -70,21 +70,27 @@
   columns=fullflexible,
   keepspaces=true,
 }
-\lstset{emph={
+\lstset{emph={ %% commands
     MPI_Init,MPI_Finalize,MPI_Abort,
     MPI_Allreduce,MPI_Reduce,MPI_Bcast,MPI_Gather,MPI_Allgather,MPI_Scan,MPI_Exscan,
     MPI_Send,MPI_Recv,MPI_Isend,MPI_Irecv,MPI_Ssend,MPI_Bsend,
-    MPI_Wait,MPI_Wait_all,
+    MPI_Wait,MPI_Waitall,MPI_Waitany,MPI_Test,MPI_Request_free,MPI_Request_get_status,
     MPI_Put,MPI_Get,MPI_Accumulate,
+    MPI_Buffer_attach,MPI_Buffer_detach,
     MPI_Type_commit,MPI_Type_free,MPI_Type_contiguous,MPI_Type_vector,
     MPI_Type_indexed,MPI_Type_create_hindexed,MPI_Type_create_subarray,
+    MPI_Cart_create,MPI_Cart_coords,MPI_Cart_rank,MPI_Cart_shift,
   },emphstyle={\color{red}\bfseries},
-  emph={[2]
+  emph={[2] %% constants
     MPI_IN_PLACE,MPI_REPLACE,
-    MPI_Status,MPI_STATUS_IGNORE,MPI_STATUSES_IGNORE,
-    MPI_Request,MPI_TAG,MPI_SOURCE,
-    MPI_SUM,MPI_MAX,
-  },emphstyle={[2]\color{green}\bfseries}
+    MPI_STATUS_IGNORE,MPI_STATUSES_IGNORE,
+    MPI_TAG,MPI_SOURCE,MPI_PROC_NULL,
+    MPI_COMM_WORLD,
+    MPI_SUM,MPI_MAX, MPI_INT,MPI_CHAR,
+  },emphstyle={[2]\color{green}\bfseries},
+  emph={[3] %% types
+    MPI_Status,MPI_Request,MPI_Comm,
+  },emphstyle={[3]\color{brown}\bfseries}
 }
 
 \def\svnrev{428}

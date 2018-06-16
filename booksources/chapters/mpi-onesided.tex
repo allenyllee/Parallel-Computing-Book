@@ -106,13 +106,13 @@ A window can be characteristized as follows:
 \mpiRoutineRef{MPI_Win}
 
 The typical calls involved are:
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Info info;
 MPI_Win window;
 MPI_Win_create( /* memory area */, info, comm, &window );
 // do put and get calls
 MPI_Win_free( &window );
-\end{verbatim}
+\end{lstlisting}
 
 \begin{figure}[ht]
   \includegraphics[scale=.1]{one-sided-getput}
@@ -137,9 +137,9 @@ can return a pointer to such priviliged memory.
 \mpiRoutineRef{MPI_Alloc_mem}
 
 This memory is freed with
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Free_mem()
-\end{verbatim}
+\end{lstlisting}
 These calls reduce to \n{malloc} and \n{free} if there is no special
 memory area; SGI is an example where such memory does exist.
 
@@ -159,9 +159,9 @@ any data-related calls.
 
 In this section we look at the first mechanism,
 which is to use a \indexterm{fence} operation:\indexmpi{MPI_Win_fence}
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Win_fence (int assert, MPI_Win win)
-\end{verbatim}
+\end{lstlisting}
 This operation is collective on the communicator of the window.
 It is comparable to \n{MPI_Wait} calls for non-blocking communication.
 
@@ -169,11 +169,11 @@ The use of fences is somewhat complicated. The interval between two fences
 is known as an \indextermdef{epoch}.
 You can give various hints to the system about this epoch versus the ones
 before and after through the \n{assert} parameter.
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Win_fence((MPI_MODE_NOPUT | MPI_MODE_NOPRECEDE), win);
 MPI_Get( /* operands */, win);
 MPI_Win_fence(MPI_MODE_NOSUCCEED, win);
-\end{verbatim}
+\end{lstlisting}
 In between the two fences the window is exposed, and while it is you
 should not access it locally. If you absolutely need to access it
 locally, you can use an \ac{RMA} operation for that. Also, there can be only one
@@ -181,12 +181,12 @@ remote process that does a \n{put}; multiple \n{accumulate} accesses are allowed
 
 Fences are, together with other window calls, collective operations. That means they 
 imply some amount of synchronization between processes. Consider:
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Win_fence( ... win ... ); // start an epoch
 if (mytid==0) // do lots of work
 else // do almost nothing
 MPI_Win_fence( ... win ... ); // end the epoch
-\end{verbatim}
+\end{lstlisting}
 and assume that all processes execute the first fence more or less at the same time.
 The zero process does work before it can do the second fence call, but all other
 processes can call it immediately. However, they can not finish that second fence call
@@ -204,7 +204,8 @@ calls in a single epoch. Hence, we can characterize an epoch as an
 \indextermsub{access}{epoch} on the origin, and
 as an \indextermsub{exposure}{epoch} on the target.
 
-Assertions are an integer parameter: you can add or logical-or values.
+Assertions are an integer parameter: you can combine assertions by
+adding them or using logical-or.
 The value zero is always correct. For further information, see
 section~\ref{sec:mpi-assert}.
 
@@ -249,9 +250,11 @@ Specifically, data is written starting at
 
 \begin{fortrannote}
   The \n{disp_unit} variable is declared as 
-\begin{verbatim}
+\lstset{style=reviewcode,language=Fortran}
+\begin{lstlisting}
 integer(kind=MPI_ADDRESS_KIND) :: displacement
-\end{verbatim}
+\end{lstlisting}
+\lstset{style=reviewcode,language=C}
   Specifying a literal constant, such as~\n{0}, can lead to bizarre
   runtime errors.
 \end{fortrannote}
@@ -260,6 +263,12 @@ Here is a single put operation. Note that the window create and window fence cal
 are collective, so they have to be performed on all processors
 of the communicator that was used in the create call.
 \cverbatimsnippet[examples/mpi/c/putblock.c]{putblock}
+
+\begin{exercise}
+  \label{ex:rightput}
+  Revisit exercise~\ref{ex:serialsend} and solve it using
+  \n{MPI_Put}
+\end{exercise}
 
 \begin{exercise}
   \label{ex:randomput}
@@ -300,7 +309,7 @@ assertions, see section~\ref{sec:mpi-assert} below.)
 The \n{NOSTORE} assertion
 states that the local window was not updated: the Put operation only
 works on remote windows.
-\begin{verbatim}
+\begin{lstlisting}
 for ( .... ) {
   update(A); 
   MPI_Win_fence(MPI_MODE_NOPRECEDE, win); 
@@ -308,12 +317,12 @@ for ( .... ) {
     MPI_Put( ... );
   MPI_Win_fence((MPI_MODE_NOSTORE | MPI_MODE_NOSUCCEED), win); 
   }
-\end{verbatim}
+\end{lstlisting}
 
 Next, we split the update in the core part, which can be done purely
 from local values, and the boundary, which needs local and halo
 values. Update of the core can overlap the communication of the halo.
-\begin{verbatim}
+\begin{lstlisting}
 for ( .... ) {
   update_boundary(A); 
   MPI_Win_fence((MPI_MODE_NOPUT | MPI_MODE_NOPRECEDE), win); 
@@ -322,7 +331,7 @@ for ( .... ) {
   update_core(A); 
   MPI_Win_fence(MPI_MODE_NOSUCCEED, win); 
   }
-\end{verbatim}
+\end{lstlisting}
 The \n{NOPRECEDE} and \n{NOSUCCEED} assertions still hold, but the
 \n{Get} operation implies that instead of \n{NOSTORE} in the
 second fence, we use \n{NOPUT} in the first.
@@ -475,18 +484,18 @@ and two for ending the epoch, separately for target and origin.
 
 You start and complete an \indextermsub{exposure}{epoch} with%
 \indexmpi{MPI_Win_post}\indexmpi{MPI_Win_wait}:
-\begin{verbatim}
+\begin{lstlisting}
 int MPI_Win_post(MPI_Group group, int assert, MPI_Win win)
 int MPI_Win_wait(MPI_Win win)
-\end{verbatim}
+\end{lstlisting}
 In other words, this turns your window into the \indexterm{target} for a remote access.
 
 You start and complete an \indextermsub{access}{epoch} with%
 \indexmpi{MPI_Win_start}\indexmpi{MPI_Win_complete}:
-\begin{verbatim}
+\begin{lstlisting}
 int MPI_Win_start(MPI_Group group, int assert, MPI_Win win)
 int MPI_Win_complete(MPI_Win win)
-\end{verbatim}
+\end{lstlisting}
 In other words, these calls border the access to a remote window, with the current processor
 being the \indexterm{origin} of the remote access.
 
@@ -498,7 +507,27 @@ that the receiving process only does the post and wait calls.
 
 \Level 1 {Atomic operations}
 
-The \indexmpi{MPI_Fetch_and_op} call atomically retrieves an item from the window
+One-sided calls are said to emulate shared memory in MPI, but 
+the put and get calls are not enough for certain scenarios with shared
+data. Consider the scenario where:
+\begin{itemize}
+\item One process stores a table of work descriptors, and a pointer to
+  the firt unprocessed descriptor;
+\item Each process reads the pointer, reads the corresponding
+  descriptor, and increments the pointer; and
+\item A process that has read a descriptor then executes the
+  corresponding task.
+\end{itemize}
+The problem is that reading and updating the pointer is not an
+\indexterm{atomic operation}, so
+it is possible that multiple processes get hold of the same value;
+conversely, multiple updates of the pointer may lead to work
+descriptors being skipped. These inconsistent views of the data are
+called a \indexterm{race condition}.
+
+In \indextermbus{MPI}{3} a number of atomic routines have been added.
+For instance,
+the \indexmpi{MPI_Fetch_and_op} call atomically retrieves an item from the window
 indicated, and replaces the item on the target by doing an accumulate on it
 with the data on the origin.
 %
@@ -539,20 +568,20 @@ you use depends on whether the processor is an \indexterm{origin} or
 
 If the current process is going to have the data in its window accessed,
 you define an \indextermsub{exposure}{epoch} by:
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Win_post( /* group of origin processes */ )
 MPI_Win_wait()
-\end{verbatim}
+\end{lstlisting}
 This turns the current processor into a target for access operations issued
 by a different process.
 
 If the current process is going to be issuing one-sided operations,
 you define an \indextermsub{access}{epoch} by:
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Win_start( /* group of target processes */ )
 // access operations
 MPI_Win_complete()
-\end{verbatim}
+\end{lstlisting}
 This turns the current process into the origin of a number of
 one-sided access operations.
 
@@ -573,13 +602,13 @@ on the target.
 
 During an access epoch, a process can initiate and finish a one-sided
 transfer.
-\begin{verbatim}
+\begin{lstlisting}
 If (rank == 0) {
   MPI_Win_lock (MPI_LOCK_EXCLUSIVE, 1, 0, win);
   MPI_Put (outbuf, n, MPI_INT, 1, 0, n, MPI_INT, win);
   MPI_Win_unlock (1, win);
 }
-\end{verbatim}
+\end{lstlisting}
 The two lock types are:
 \begin{itemize}
 \item \indexmpishow{MPI_LOCK_SHARED} which should be used for \n{Get}

@@ -40,14 +40,22 @@ You could start up a single copy of this program with
 \begin{verbatim}
 mpirun -np 1 spawn_manager
 \end{verbatim}
-but with a hostfile that has more than one host. In that case the \indexmpishow{MPI_UNIVERSE_SIZE}
-will tell you to the total number of hosts available. If this option
-is not supported, you can determine yourself how many processes you
-want to spawn. If you exceed the hardware resources, your
-multi-tasking operating system (which is some variant of Unix for
-almost everyone) will use \indexterm{time-slicing}, but you will not
-gain any performance.
+but with a hostfile that has more than one host. In that case the
+\indexmpishow{MPI_UNIVERSE_SIZE} will tell you to the total number of
+hosts available. If this option is not supported, you can determine
+yourself how many processes you want to spawn. If you exceed the
+hardware resources, your multi-tasking operating system (which is some
+variant of Unix for almost everyone) will use
+\indexterm{time-slicing}, but you will not gain any performance.
 
+\begin{taccnote}
+\indextermbus{Intel}{mpi} requires you to pass an option \n{-usize} to
+\n{mpiexec} indicating the size of the comm universe. With the TACC
+jobs starter \indextermtt{ibrun} do the following:
+\begin{verbatim}
+MY_MPIRUN_OPTIONS="-usize 8" ibrun -np 4 spawn_manager
+\end{verbatim}
+\end{taccnote}
 The spawned program looks very much like a regular MPI program, with
 its own initialization and finalize calls.
 

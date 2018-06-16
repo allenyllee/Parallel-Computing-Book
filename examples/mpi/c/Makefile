@@ -42,35 +42,40 @@ listsources :
 	done | awk 'BEGIN { v="" } {v = v " " $$0} END {print v}'
 	@echo tools.{c,h}
 
+info ::
+	@echo "    [ MPICC=... (default: ${MPICC}) ]"
+	@echo "    [ MPICXX=... (default: ${MPICXX}) ]"
+MPICC = mpicc
+MPICXX = mpicxx
 ifdef TACC_TAU_DIR
-  CC = tau_cc.sh -std=c99
+  CC = tau_cc.sh
   CXX = tau_cxx.sh
 else
-  CC  = mpicc -std=c99
-  CXX = mpicxx
+  CC  = ${MPICC}
+  CXX = ${MPICXX}
 endif
 
 OPTLEVEL=2
-OPT_flag = -O${OPTLEVEL} -g
+OPTFLAGS = -O${OPTLEVEL} -g
+CFLAGS = -std=c99
+CXXFLAGS = -std=c++17
 EXTRAFLAGS = 
 info ::
-	@echo "    [CORESPERNODE=nnn (default: ${CORESPERNODE})]"
-	@echo "    [EXTRAFLAGS=whatever]"
-	@echo "     supported: EXTRAFLAGS=-DDEBUG"
+	@echo "    [ CORESPERNODE=nnn (default: ${CORESPERNODE})]"
+	@echo "    [ EXTRAFLAGS=whatever]"
+	@echo "      supported: EXTRAFLAGS=-DDEBUG"
 CORESPERNODE = 16
 %.o : %.c
-	${CC}  ${OPT_FLAG} ${EXTRAFLAGS} -DCORES_PER_NODE=${CORESPERNODE} \
+	${MPICC}  ${CFLAGS} ${OPTFLAGS} ${EXTRAFLAGS} -DCORES_PER_NODE=${CORESPERNODE} \
 	  -c $*.c
 %.o : %.cxx
-	${CXX} ${OPT_FLAG} ${EXTRAFLAGS} -DCORES_PER_NODE=${CORESPERNODE} \
+	${MPICXX} ${CXXFLAGS} ${OPTFLAGS} ${EXTRAFLAGS} -DCORES_PER_NODE=${CORESPERNODE} \
 	  -c $*.cxx
 
 app_dependencies  = tools.o
 .SECONDEXPANSION:
-#  ${app_dependencies}
-#${APPS} : $$@.o
-% : %.o
-	${CXX} -o $@ $@.o
+${APPS} : $$@.o
+	${MPICC} -o $@ $@.o
 ${patsubst %,%.o,${APPS}} tools.o : tools.h globalinit.c
 
 # rules for submitting to the queue and doing tau analysis

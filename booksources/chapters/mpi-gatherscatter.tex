@@ -35,12 +35,12 @@ In the gather/scatter calls you have
 \end{itemize}
 Of course, since we're in SPMD mode, even non-root processes have
 the argument for the send buffer, but they ignore it. For instance:
-\begin{verbatim}
+\begin{lstlisting}
 int MPI_Scatter
   (void* sendbuf, int sendcount, MPI_Datatype sendtype, 
    void* recvbuf, int recvcount, MPI_Datatype recvtype, 
    int root, MPI_Comm comm) 
-\end{verbatim}
+\end{lstlisting}
 The \n{sendcount} is not, as you might expect, the total length of the
 sendbuffer; instead, it is the amount of data sent to each process.
 
@@ -67,13 +67,13 @@ rather the size of \emph{each} contribution. Thus, the two count parameters
 will usually be the same (at least on the root); they can differ if you 
 use different \indexmpishow{MPI_Datatype} values for the sending and receiving
 processors.
-\begin{verbatim}
+\begin{lstlisting}
 int MPI_Gather(
   void *sendbuf, int sendcnt, MPI_Datatype sendtype,
   void *recvbuf, int recvcnt, MPI_Datatype recvtype,
   int root, MPI_Comm comm
 );
-\end{verbatim}
+\end{lstlisting}
 
 Here is a small example:
 \cverbatimsnippet[examples/mpi/c/gather.c]{gather}
@@ -87,12 +87,12 @@ in the receive buffer.
 The \indexmpishow{MPI_Scatter} operation is in some sense the inverse of the gather:
 the root process has an array of length $np$ where $p$~is the number of processors
 and $n$~the number of elements each processor will receive.
-\begin{verbatim}
+\begin{lstlisting}
 int MPI_Scatter
   (void* sendbuf, int sendcount, MPI_Datatype sendtype, 
    void* recvbuf, int recvcount, MPI_Datatype recvtype, 
    int root, MPI_Comm comm) 
-\end{verbatim}
+\end{lstlisting}
 
 \Level 1 {Allgather}
 

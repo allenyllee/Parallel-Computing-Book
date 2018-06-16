@@ -89,7 +89,7 @@ the implementation of that type is not specified.
 See Annex~A of the 3.1 standard for full lists.
 
 The following are the compile-time constants:
-\begin{verbatim}
+\begin{lstlisting}
 MPI_MAX_PROCESSOR_NAME
 MPI_MAX_LIBRARY_VERSION_STRING
 MPI_MAX_ERROR_STRING
@@ -107,10 +107,10 @@ MPI_INTEGER_KIND (Fortran only)
 MPI_OFFSET_KIND (Fortran only)
 MPI_SUBARRAYS_SUPPORTED (Fortran only)
 MPI_ASYNC_PROTECTS_NONBLOCKING (Fortran only)
-\end{verbatim}
+\end{lstlisting}
 
 The following are the link-time constants:
-\begin{verbatim}
+\begin{lstlisting}
 MPI_BOTTOM
 MPI_STATUS_IGNORE
 MPI_STATUSES_IGNORE
@@ -120,10 +120,10 @@ MPI_ARGV_NULL
 MPI_ARGVS_NULL
 MPI_UNWEIGHTED
 MPI_WEIGHTS_EMPTY
-\end{verbatim}
+\end{lstlisting}
 
 Assorted constants:
-\begin{verbatim}
+\begin{lstlisting}
 C type: const int (or unnamed enum)
 Fortran type: INTEGER
 
@@ -136,7 +136,7 @@ MPI_KEYVAL_INVALID
 MPI_LOCK_EXCLUSIVE
 MPI_LOCK_SHARED
 MPI_ROOT
-\end{verbatim}
+\end{lstlisting}
 
 (This section was inspired by
 \url{http://blogs.cisco.com/performance/mpi-outside-of-c-and-fortran}.)
@@ -157,9 +157,10 @@ around this, such as sending a number of
 \Level 2 {Data types}
 
 The equivalent of \indexmpishowsub{MPI_Aint}{in Fortran} is
-\begin{verbatim}
+\lstset{language=Fortran}
+\begin{lstlisting}
 integer(kind=MPI_ADDRESS_KIND) :: winsize
-\end{verbatim}
+\end{lstlisting}
 
 \Level 2 {Type issues}
 
@@ -182,11 +183,12 @@ Since sometimes exact byte counts are necessary,
 for instance in one-sided communication,
 Fortran can use the \indexmpishow{MPI_Sizeof} routine,
 for instance for \indexmpishow{MPI_Win_create}:
-\begin{verbatim}
+\begin{lstlisting}
 call MPI_Sizeof(windowdata,window_element_size,ierr)
 window_size = window_element_size*500
 call MPI_Win_create( windowdata,window_size,window_element_size,... );
-\end{verbatim}
+\end{lstlisting}
+\lstset{language=C}
 
 \index{MPI!Fortran issues|)}
 
@@ -198,20 +200,22 @@ call MPI_Win_create( windowdata,window_size,window_element_size,... );
 
 The \indexmpishow{MPI_Win_create} routine needs a displacement in
 bytes. Here is a good way for finding the size of \indexterm{numpy} datatypes:
-\begin{verbatim}
+\lstset{language=Python}
+\begin{lstlisting}
 numpy.dtype('i').itemsize
-\end{verbatim}
+\end{lstlisting}
 
 \Level 2 {Arrays of objects}
 
 Objects of type \n{MPI.Status} or \n{MPI.Request} often need to be created
 in an array, for instance when looping through a number of \n{Isend} calls.
 In that case the following idiom may come in handy:
-\begin{verbatim}
+\begin{lstlisting}
 requests = [ None ] * nprocs
 for p in range(nprocs):
   requests[p] = comm.Irecv( ... )
-\end{verbatim}
+\end{lstlisting}
+\lstset{language=C}
 
 \index{MPI!Python issues|)}
 
@@ -296,11 +300,11 @@ Timing in parallel is a tricky issue. For instance, most clusters do
 not have a central clock, so you can not relate start and stop times
 on one process to those on another. You can test for a global clock as
 follows\indexmpi{MPI_WTIME_IS_GLOBAL}:
-\begin{verbatim}
+\begin{lstlisting}
 int *v,flag;
 MPI_Attr_get( comm, MPI_WTIME_IS_GLOBAL, &v, &flag );
 if (mytid==0) printf(``Time synchronized? %d->%d\n'',flag,*v);
-\end{verbatim}
+\end{lstlisting}
 %\indexmpi{MPI_Wtime} can be either a function or a macro.
 
 %\Level 1 {Profiling}

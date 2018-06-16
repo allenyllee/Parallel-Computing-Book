@@ -98,11 +98,11 @@
   \lstset{style=reviewcode,language=C}\lstinputlisting{#2}}
 \def\fverbatimsnippet#1{
   \lstset{style=reviewcode,language=Fortran}\lstinputlisting{#1}
-  \lstset{language=C}
+  \lstset{style=reviewcode,language=C}
 }
 \def\pverbatimsnippet#1{
   \lstset{style=reviewcode,language=Python}\lstinputlisting{#1}
-  \lstset{language=C}
+  \lstset{style=reviewcode,language=C}
 }
 
 \newenvironment{question}{\begin{quotation}\textbf{Question.\ }}{\end{quotation}}
@@ -111,6 +111,9 @@
   {\end{quotation}}
 \newenvironment{pythonnote}
   {\begin{quotation}\noindent\textsl{Python note\ }\ignorespaces}
+  {\end{quotation}}
+\newenvironment{taccnote}
+  {\begin{quotation}\noindent\textsl{TACC note\ }\ignorespaces}
   {\end{quotation}}
 
 %% \newenvironment{highermath}

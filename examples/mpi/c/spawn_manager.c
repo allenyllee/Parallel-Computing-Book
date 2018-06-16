@@ -16,7 +16,20 @@
 #include "mpi.h"
 int main(int argc, char *argv[])
 {
-#include "globalinit.c"
+
+#define ASSERT(p) if (!(p)) {printf("Assertion failed for proc %d at line %d\n",procno,__LINE__); return -1;}
+#define ASSERTm(p,m) if (!(p)) {printf("Message<<%s>> for proc %d at line %d\n",m,procno,__LINE__); return -1;}
+
+  MPI_Comm comm;
+  int procno=-1,nprocs,err;
+  MPI_Init(&argc,&argv); 
+  comm = MPI_COMM_WORLD;
+  MPI_Comm_rank(comm,&procno); 
+  MPI_Comm_size(comm,&nprocs); 
+  MPI_Comm_set_errhandler(comm,MPI_ERRORS_RETURN); 
+
+  // Initialize the random number generator
+  srand((int)(procno*(double)RAND_MAX/nprocs));
 
   int world_size,manager_rank, universe_size, *universe_sizep, flag;
   MPI_Comm everyone;           /* intercommunicator */

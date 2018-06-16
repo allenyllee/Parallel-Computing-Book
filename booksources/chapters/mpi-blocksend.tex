@@ -32,13 +32,13 @@ Now, for many values it can compute
 \[ y_{i} = (x_{i-1}+x_{i}+x_{i+1})/3 \]
 %
 \begin{figure}[ht]
-  \includegraphics[scale=.06]{threepoint-scheme}
+  \includegraphics[scale=.3]{threepoint-scheme}
   \caption{Three point averaging}
   \label{fig:3pt}
 \end{figure}
 %
 \begin{figure}[ht]
-  \includegraphics[scale=.06]{threepoint-interior}
+  \includegraphics[scale=.12]{threepoint-interior}
   \caption{Three point averaging in parallel}
   \label{fig:3pt-interior}
 \end{figure}
@@ -49,7 +49,7 @@ However, there is a problem with
 since $x_{i_p}$ is not stored on processor~$p$: it is stored on~$p-\nobreak1$
 %
 \begin{figure}[ht]
-  \includegraphics[scale=.06]{threepoint-msg}
+  \includegraphics[scale=.12]{threepoint-msg}
   \caption{Three point averaging in parallel, case of edge points}
   \label{fig:3pt-msg}
 \end{figure}
@@ -359,6 +359,12 @@ The null processor value is also of use with the
 \indexmpishow{MPI_Sendrecv} call; section~\ref{sec:send-recv}
 
 \begin{exercise}
+  \label{ex:rightsendrecv}
+  Revisit exercise~\ref{ex:serialsend} and solve it using
+  \n{MPI_Sendrecv}
+\end{exercise}
+
+\begin{exercise}
   \label{ex:3ptsendrecv}
   Implement the above three-point combination scheme using \n{MPI_Sendrecv};
   every processor only has a single number to send to its neighbour.
@@ -404,25 +410,21 @@ If the send and receive buffer have the same size, the routine
 The following exercise lets you implement a sorting algorithm with the
 send-receive call\footnote {There is an \n{MPI\_Compare\_and\_swap}
   call. Do not use that.}.
-%
+
+\begin{figure}[ht]
+  \includegraphics[scale=.3]{swapsort1}
+  \caption{Odd-even transposition sort on 4 elements.}
+  \label{fig:swapsort1}
+\end{figure}
+
 \begin{exercise}
   \label{ex:exchangesort}
-\begin{wrapfigure}{r}{3.5in}
-  \includegraphics[scale=.06]{swapsort}
-\end{wrapfigure}
-%
   A very simple sorting algorithm is \indextermsub{exchange}{sort}:
   pairs of processors compare data, and if necessary exchange. The
   elementary step is called a \indexterm{compare-and-swap}: in a pair
   of processors each sends their data to the other; one keeps the
   minimum values, and the other the maximum.
   For simplicity, in this exercise we give each processor just a single number.
-
-  \begin{figure}[ht]
-    \includegraphics[scale=.3]{swapsort1}
-    \caption{Odd-even transposition sort on 4 elements.}
-    \label{fig:swapsort1}
-  \end{figure}
 
   The exchange sort algorithm is split in even and odd stages, where
   in the even stage, processors $2i$ and $2i+1$ compare and swap data,
@@ -436,12 +438,12 @@ send-receive call\footnote {There is an \n{MPI\_Compare\_and\_swap}
   at the beginning and end of the sorting process.
 \end{exercise}
 
-  \begin{figure}[ht]
-    \includegraphics[scale=.3]{swapsort2}
-    \caption{Odd-even transposition sort on 4 processes, holding 2
-      elements each.}
-    \label{fig:swapsort2}
-  \end{figure}
+\begin{figure}[ht]
+  \includegraphics[scale=.3]{swapsort2}
+  \caption{Odd-even transposition sort on 4 processes, holding 2
+    elements each.}
+  \label{fig:swapsort2}
+\end{figure}
 
 \begin{exercise}
   Extend this exercise to the case where each process hold an equal

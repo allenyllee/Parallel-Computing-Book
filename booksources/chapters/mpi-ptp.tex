@@ -327,13 +327,24 @@ As with ordinary send commands, there are the variants
 \Level 1 {Buffered communication}
 \label{sec:buffered}
 
+\begin{figure}[ht]
+  \includegraphics[scale=.5]{bufferattach}
+  \caption{User communication routed through an attached buffer}
+  \label{fig:bufattach}
+\end{figure}
+
 By now you have probably got the notion that managing buffer
 space in MPI is important: data has to be somewhere, either in
 user-allocated arrays or in system buffers. Buffered sends are yet another
 way of managing buffer space.
 \begin{enumerate}
-\item You allocate your own buffer space, and you attach it to your process;
-\item You use the \indexmpishow{MPI_Bsend} call for sending;
+\item You allocate your own buffer space, and you attach it to your
+  process. This buffer is not a send buffer: it is a replacement for
+  buffer space used inside the MPI library or on the network card;
+  figure~\ref{fig:bufattach}. If high-bandwdith memory is available,
+  you could create your buffer there.
+\item You use the \indexmpishow{MPI_Bsend} call for sending, using
+  otherwise normal send and receive buffers;
 \item You detach the buffer when you're done with the buffered sends.
 \end{enumerate}
 
