@@ -67,13 +67,8 @@ rather the size of \emph{each} contribution. Thus, the two count parameters
 will usually be the same (at least on the root); they can differ if you 
 use different \indexmpishow{MPI_Datatype} values for the sending and receiving
 processors.
-\begin{lstlisting}
-int MPI_Gather(
-  void *sendbuf, int sendcnt, MPI_Datatype sendtype,
-  void *recvbuf, int recvcnt, MPI_Datatype recvtype,
-  int root, MPI_Comm comm
-);
-\end{lstlisting}
+
+\mpiRoutineRef{MPI_Gather}
 
 Here is a small example:
 \cverbatimsnippet[examples/mpi/c/gather.c]{gather}

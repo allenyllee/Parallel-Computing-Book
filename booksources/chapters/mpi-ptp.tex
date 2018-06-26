@@ -42,6 +42,8 @@ over the processors, while
 actually manipulating only the local arrays on the processors.
 
 Your typical code then looks like
+
+\lstset{style=reviewcode,language=C}
 \begin{lstlisting}
 int myfirst = .....;
 for (int ilocal=0; ilocal<nlocal; ilocal++) {
@@ -103,6 +105,8 @@ for (int ilocal=0; ilocal<nlocal; ilocal++) {
 If the array size is not perfectly divisible by the number of processors,
 we have to come up with a division that is uneven, but not too much.
 You could for instance, write
+
+\lstset{style=reviewcode,language=C}
 \begin{lstlisting}
 int Nglobal, // is something large
     Nlocal = Nglobal/ntids,

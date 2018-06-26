@@ -44,7 +44,7 @@ Now, for many values it can compute
 \end{figure}
 %
 (figure~\ref{fig:3pt-interior}).
-However, there is a problem with
+However, there is a problem with computing the first index~$i_p$:
 \[ y_{i_p} = (x_{i_p-1}+x_{i_p}+x_{i_p+1})/3 \]
 since $x_{i_p}$ is not stored on processor~$p$: it is stored on~$p-\nobreak1$
 %
@@ -106,7 +106,7 @@ The basic blocking receive command:
 %
 The \n{count} argument indicates the maximum length of a message; the
 actual length of the received message can be determined 
-from the status object. See section~\ref{ref:mpi-status}
+from the status object. See section~\ref{sec:mpi-status}
 for more about the status object.
 
 \begin{exercise}
@@ -432,8 +432,8 @@ send-receive call\footnote {There is an \n{MPI\_Compare\_and\_swap}
   You need to repeat this $P/2$ times, where $P$~is the number of
   processors; see figure~\ref{fig:swapsort1}.
 
-  Implement this algorithm using \n{MPI_Sendrecv}. (You can use
-  \n{MPI_PROC_NULL} for the edge cases, but that is not strictly necessary.)
+  Implement this algorithm using \n{MPI_Sendrecv}. (Use
+  \n{MPI_PROC_NULL} for the edge cases if needed.)
   Use a gather call to print the global state of the distributed array
   at the beginning and end of the sorting process.
 \end{exercise}

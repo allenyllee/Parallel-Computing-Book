@@ -15,10 +15,16 @@ IN root: rank of receiving process (integer)
 IN comm: communicator (handle)
 
 Fortran:
-MPI_Gather(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, root, comm, ierror)
+MPI_Gather
+   (sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, 
+    root, comm, ierror)
 TYPE(*), DIMENSION(..), INTENT(IN) :: sendbuf
 TYPE(*), DIMENSION(..) :: recvbuf
 INTEGER, INTENT(IN) :: sendcount, recvcount, root
 TYPE(MPI_Datatype), INTENT(IN) :: sendtype, recvtype
 TYPE(MPI_Comm), INTENT(IN) :: comm
 INTEGER, OPTIONAL, INTENT(OUT) :: ierror
+
+Python:
+MPI.Comm.Gather
+   (self, sendbuf, recvbuf, int root=0)
