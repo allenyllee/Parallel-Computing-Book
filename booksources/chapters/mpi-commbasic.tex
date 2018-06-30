@@ -23,14 +23,17 @@ assign that value to a variable of type \n{MPI_Comm}:
 
 Examples:
 \begin{verbatim}
+// C:
 #include <mpi.h>
-MPI_Comm comm = MPI_COMM_WORLD; // C
+MPI_Comm comm = MPI_COMM_WORLD;
 
+!! Fortran 2008 interface
+use mpi_f08
+Type(MPI_Comm) :: comm = MPI_COMM_WORLD
+
+!! Fortran legacy interface
 #include <mpif.h>
 Integer :: comm = MPI_COMM_WORLD
-
-use mpi_f08
-Type(MPI_Comm) comm :: MPI_COMM_WORLD ! F08
 \end{verbatim}
 
 However, there are 

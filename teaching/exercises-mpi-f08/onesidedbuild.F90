@@ -5,10 +5,11 @@
 !**** `Parallel programming with MPI and OpenMP'
 !**** by Victor Eijkhout, eijkhout@tacc.utexas.edu
 !****
-!**** copyright Victor Eijkhout 2012-7
+!**** copyright Victor Eijkhout 2012-8
 !****
 !**** MPI Exercise
 !**** onesidedbuild.F90 : put random data everywhere
+!**** fortran 2008 version
 !****
 !****************************************************************/
 

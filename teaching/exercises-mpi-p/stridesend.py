@@ -7,7 +7,7 @@
 #### "Parallel Computing"
 #### by Victor Eijkhout, copyright 2013-6
 ####
-#### MPI python exercise for vector type
+#### stridesend.py : MPI python exercise for vector type
 ####
 ################################################################
 ################################################################

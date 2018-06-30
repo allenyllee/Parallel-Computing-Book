@@ -7,7 +7,7 @@
 #### "Parallel Computing"
 #### by Victor Eijkhout, copyright 2013-7
 ####
-#### MPI python exercise for isend/irecv
+#### isendirecv.py : MPI python exercise for isend/irecv
 ####
 ################################################################
 ################################################################

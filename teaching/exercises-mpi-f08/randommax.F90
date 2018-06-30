@@ -5,9 +5,10 @@
 !**** `Parallel programming with MPI and OpenMP'
 !**** by Victor Eijkhout, eijkhout@tacc.utexas.edu
 !****
-!**** copyright Victor Eijkhout 2012-7
+!**** copyright Victor Eijkhout 2012-8
 !****
 !**** MPI Exercise for MPI_Reduce
+!**** fortran 2008 version
 !****
 !****************************************************************/
 
@@ -23,10 +24,9 @@ Program RandomMax
   integer :: randomint,sender
   integer :: randsize
   integer,allocatable,dimension(:) :: randseed
-  real :: my_random,global_random, scaled_random,sum_random
+  real :: my_random,global_random, scaled_random,sum_random,sum_scaled_random
 
   call MPI_Init(ierr); 
-  comm = MPI_COMM_WORLD;
   call MPI_Comm_rank(comm,procno,ierr); 
   call MPI_Comm_size(comm,nprocs,ierr); 
 
@@ -54,10 +54,13 @@ Program RandomMax
   !!
   call MPI_Allreduce( &
 !!!! your code here !!!!
+       comm,ierr)
+  scaled_random = my_random / sum_random
+  call MPI_Allreduce( &
 !!!! your code here !!!!
        comm,ierr)
-  if (abs(sum_random-1.)>1.e-14) then
-     print *,"Suspicious sum",sum_random,"on process",procno
+  if (abs(sum_scaled_random-1.)>1.e-5) then
+     print *,"Suspicious sum",sum_scaled_random,"on process",procno
   end if
   
 #if 0

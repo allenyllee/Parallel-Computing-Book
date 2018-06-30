@@ -7,7 +7,7 @@
 #### "Parallel Computing"
 #### by Victor Eijkhout, copyright 2013-6
 ####
-#### MPI python exercise for MPI I/O
+#### blockwrite.py : MPI python exercise for MPI I/O
 ####
 ################################################################
 ################################################################

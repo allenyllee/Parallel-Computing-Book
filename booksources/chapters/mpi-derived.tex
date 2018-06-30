@@ -132,6 +132,8 @@ This is illustrated in figure~\ref{fig:data-contiguous}.
 
 \cverbatimsnippet[examples/mpi/c/contiguous.c]{contiguous}
 
+\fverbatimsnippet{contiguous-f}
+
 \Level 1 {Vector type}
 \label{sec:data:vector}
 
@@ -169,6 +171,10 @@ has no knowledge of the stride of the datatype on the sender.
 In this example a vector type is created only on the sender, in order to send
 a strided subset of an array; the receiver receives the data as a contiguous block.
 \cverbatimsnippet[examples/mpi/c/vector.c]{vector}
+%
+\fverbatimsnippet{vector-f}
+%
+\pverbatimsnippet{vectorp}
 
 As an example of this datatype, consider the example of transposing
 a matrix, for instance to convert between
@@ -304,6 +310,10 @@ is the sum of the blocklengths.
 The following example picks items that are on prime number-indexed
 locations.
 \cverbatimsnippet[examples/mpi/c/indexed.c]{indexed}
+%
+\fverbatimsnippet{indexed-f}
+%
+\pverbatimsnippet{indexp}
 
 You can also \indexmpishow{MPI_Type_create_hindexed} which describes blocks
 of a single old type, but with indix locations in bytes, rather than
@@ -391,49 +401,6 @@ MPI_Type_create_struct(struclen+1,.....);
 The structure type is very similar in functionality to \indexmpishow{MPI_Type_hindexed},
 which uses byte-based indexing. The structure-based type is probably cleaner
 in use.
-
-\Level 1 {Examples}
-
-\mpiRoutineRef{MPI_Type_contiguous}
-
-We send a contiguous data type of double and receive it as an array of
-separate doubles; we use \indexmpishow{MPI_Get_count} to ensure that
-we got the right amount of data.
-%
-\cverbatimsnippet[examples/mpi/c/contiguous.c]{contiguous}
-%
-\fverbatimsnippet{contiguous-f}
-
-\mpiexample{MPI_Type_indexed}
-
-We send an indexed data type and receive as separate integers.
-%
-\cverbatimsnippet[examples/mpi/c/indexed.c]{indexed}
-%
-\fverbatimsnippet{indexed-f}
-%
-\pverbatimsnippet{indexp}
-
-\mpiexample{MPI_Type_struct}
-
-A struct data type can consist of different elementary datatypes, so
-in addition to the displacements and blocklengths we now have an array
-of MPI datatypes. Also note how the displacement computation is done
-in bytes.
-%
-\cverbatimsnippet[examples/mpi/c/structure.c]{structure}
-
-\mpiexample{MPI_Type_vector}
-
-Send a strided data object with \n{Type_vector} and receive it as
-individual doubles. Use \indexmpishow{MPI_Get_count} to inspect the
-\n{MPI_Status} object.
-%
-\cverbatimsnippet[examples/mpi/c/vector.c]{vector}
-%
-\fverbatimsnippet{vector-f}
-%
-\pverbatimsnippet{vectorp}
 
 \Level 1 {Type size}
 

@@ -4,7 +4,7 @@
  **** `Parallel programming with MPI and OpenMP'
  **** by Victor Eijkhout, eijkhout@tacc.utexas.edu
  ****
- **** copyright Victor Eijkhout 2012-7
+ **** copyright Victor Eijkhout 2012-8
  ****
  **** MPI Exercise
  ****
@@ -15,14 +15,15 @@
 #include <math.h>
 #include <mpi.h>
 
-int main() {
+int main(int argc,char **argv) {
   MPI_Comm comm = MPI_COMM_WORLD;
   int nprocs, procno;
   
-  MPI_Init(0,0);
+  MPI_Init(&argc,&argv);
 
   // compute communicator rank and size
-/**** your code here ****/
+  MPI_Comm_size(comm,&nprocs);
+  MPI_Comm_rank(comm,&procno);
   
   // Initialize the random number generator
   srand(procno*(double)RAND_MAX/nprocs);
@@ -32,7 +33,6 @@ int main() {
 
   /*
    * Exercise part 1:
-   * (re-enable this part of the code by removing the #if and #endif)
    * -- compute the sum of the values, everywhere
    * -- scale your number by the sum
    * -- check that the sum of scales values is 1
@@ -45,10 +45,24 @@ int main() {
   MPI_Allreduce(
 /**** your code here ****/
 		);
-  if ( abs(sumrandom-1.)>1.e-14 )
+
+  /*
+   * Correctness test
+   */
+  int error=nprocs, errors;
+  if ( abs(sumrandom-1.)>1.e-5 ) {
     printf("Suspicious sum %7.5f on process %3d\n",sumrandom,procno);
-  
-  //#if 0
+    error = procno;
+  }
+  MPI_Allreduce(&error,&errors,1,MPI_INT,MPI_MIN,comm);
+  if (procno==0) {
+    if (errors==nprocs) 
+      printf("Finished; all results correct\n");
+    else
+      printf("First error occurred on proc %d\n",errors);
+  }
+
+#if 0
   // Exercise part 2:
   // -- compute the maximum random value on process zero
   MPI_Reduce(
@@ -56,10 +70,7 @@ int main() {
 	     );
   if (procno==0)
     printf("The maximum number is %7.5f\n",globalrandom);
-  //#endif
-
-  if (procno==0)
-    printf("Success: all tests pass\n");
+#endif
 
   MPI_Finalize();
   return 0;

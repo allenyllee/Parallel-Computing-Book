@@ -7,7 +7,7 @@
 #### "Parallel Computing"
 #### by Victor Eijkhout, copyright 2013-6
 ####
-#### primep.py : prime number finding
+#### prime.py : prime number finding
 ####
 ################################################################
 ################################################################

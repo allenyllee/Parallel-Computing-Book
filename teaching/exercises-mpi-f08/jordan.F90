@@ -5,9 +5,10 @@
 !**** `Parallel programming with MPI and OpenMP'
 !**** by Victor Eijkhout, eijkhout@tacc.utexas.edu
 !****
-!**** copyright Victor Eijkhout 2012-7
+!**** copyright Victor Eijkhout 2012-8
 !****
 !**** MPI Exercise for Gauss-Jordan elimination
+!**** fortran 2008 version
 !****
 !****************************************************************/
 

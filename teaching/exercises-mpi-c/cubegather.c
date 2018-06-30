@@ -4,7 +4,7 @@
  **** `Parallel programming with MPI and OpenMP'
  **** by Victor Eijkhout, eijkhout@tacc.utexas.edu
  ****
- **** copyright Victor Eijkhout 2012-7
+ **** copyright Victor Eijkhout 2012-8
  ****
  **** MPI Exercise for the subarray type
  ****
@@ -15,11 +15,11 @@
 #include <math.h>
 #include <mpi.h>
 
-int main() {
+int main(int argc,char **argv) {
   MPI_Comm comm = MPI_COMM_WORLD;
   int nprocs, procno;
   
-  MPI_Init(0,0);
+  MPI_Init(&argc,&argv);
 
   MPI_Comm_rank(comm,&procno);
   MPI_Comm_size(comm,&nprocs);

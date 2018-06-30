@@ -4,7 +4,7 @@
  **** `Parallel programming with MPI and OpenMP'
  **** by Victor Eijkhout, eijkhout@tacc.utexas.edu
  ****
- **** copyright Victor Eijkhout 2012-7
+ **** copyright Victor Eijkhout 2012-8
  ****
  **** MPI Exercise for the use of Comm_rank/size
  ****
@@ -14,11 +14,12 @@
 #include <stdio.h>
 #include <mpi.h>
 
-int main() {
+int main(int argc,char **argv) {
+
   MPI_Comm comm = MPI_COMM_WORLD;
   int nprocs, procno;
   
-  MPI_Init(0,0);
+  MPI_Init(&argc,&argv);
 
   // Exercise part 1:
   // -- Use the routine

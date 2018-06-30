@@ -12,9 +12,9 @@
 !****************************************************************/
 
 Program SendRecv
-  implicit none
 
-#include <mpif.h>
+  use mpi
+  implicit none
 
   integer :: comm = MPI_COMM_WORLD
   integer :: nprocs, procno,ierr
@@ -40,7 +40,7 @@ Program SendRecv
 !!!! your code here !!!!
   call MPI_Sendrecv( mydata,1,MPI_REAL8, sendto,0, &
        leftdata,1,MPI_REAL8, recvfrom,0, &
-       comm,MPI_STATUS_IGNORE,ierr)
+       comm,MPI_STATUS_IGNORE, ierr)
 
   !! then get right neighbour data
 !!!! your code here !!!!

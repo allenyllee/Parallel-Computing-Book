@@ -12,9 +12,9 @@
 !****************************************************************/
 
 Program CommRank
-  implicit none
 
-#include <mpif.h>
+  use mpi
+  implicit none
 
   integer :: nprocs, procno,ierr
   integer :: comm = MPI_COMM_WORLD

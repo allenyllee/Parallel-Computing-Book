@@ -1,8 +1,9 @@
 C:
-MPI_Comm commvariable // datatype is defined in mpi.h
-
-Fortran:
-Integer :: commvariable
+MPI_Comm commvariable; // datatype is defined in mpi.h
 
 Fortran with 2008 support:
 Type(MPI_Comm) :: commvariable
+
+Fortran legacy interface:
+Integer :: commvariable
+

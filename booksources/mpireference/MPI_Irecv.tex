@@ -18,7 +18,7 @@ TYPE(*), DIMENSION(..) :: buf
 INTEGER, INTENT(IN) :: count, source, tag
 TYPE(MPI_Datatype), INTENT(IN) :: datatype
 TYPE(MPI_Comm), INTENT(IN) :: comm
-TYPE(MPI_Request) :: request
+TYPE(MPI_Request), INTENT(out) :: request
 INTEGER, OPTIONAL, INTENT(OUT) :: ierror
 
 Python native:

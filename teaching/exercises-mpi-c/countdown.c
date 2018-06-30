@@ -3,7 +3,7 @@
    %%%%
    %%%% This program file is part of the book and course
    %%%% "Parallel Computing for Science and Engineering"
-   %%%% by Victor Eijkhout, copyright 2013-7
+   %%%% by Victor Eijkhout, copyright 2013-8
    %%%%
    %%%% MPI exercise for implementing shared memory through one-sided
    %%%%
@@ -19,7 +19,7 @@
 int main(int argc,char **argv) {
 
   int nprocs,procno;
-  MPI_Init(0,0);
+  MPI_Init(&argc,&argv);
   MPI_Comm comm = MPI_COMM_WORLD;
   MPI_Comm_size(comm,&nprocs);
   MPI_Comm_rank(comm,&procno);

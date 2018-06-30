@@ -7,7 +7,7 @@
 #### "Parallel Computing"
 #### by Victor Eijkhout, copyright 2013-6
 ####
-#### hello.py : just init and hello world
+#### commrank.py : communicator rank and size
 ####
 ################################################################
 ################################################################

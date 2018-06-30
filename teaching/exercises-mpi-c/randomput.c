@@ -4,7 +4,7 @@
  **** `Parallel programming with MPI and OpenMP'
  **** by Victor Eijkhout, eijkhout@tacc.utexas.edu
  ****
- **** copyright Victor Eijkhout 2012-7
+ **** copyright Victor Eijkhout 2012-8
  ****
  **** MPI Exercise
  ****
@@ -24,7 +24,7 @@ int main(int argc,char **argv) {
   MPI_Win the_window;
   int my_number=1, my_sum = 0, window_data, other;
 
-  MPI_Init(0,0);
+  MPI_Init(&argc,&argv);
 
   MPI_Comm_size(comm,&nprocs);
   MPI_Comm_rank(comm,&procno);

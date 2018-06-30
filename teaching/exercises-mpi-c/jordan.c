@@ -3,7 +3,7 @@
    %%%%
    %%%% This program file is part of the book and course
    %%%% "Parallel Computing"
-   %%%% by Victor Eijkhout, copyright 2013-7
+   %%%% by Victor Eijkhout, copyright 2013-8
    %%%%
    %%%% jordancol.c : Gauss-Jordan with matrix distributed by columns
    %%%%
@@ -18,7 +18,7 @@
 
 int main(int argc,char **argv) {
 
-  MPI_Init(0,0);
+  MPI_Init(&argc,&argv);
   MPI_Comm comm = MPI_COMM_WORLD;
   int nprocs,procno;
   MPI_Comm_size(comm,&nprocs);
@@ -81,6 +81,9 @@ int main(int argc,char **argv) {
    * using the diagonal element as pivot.
    */
   for (int piv=0; piv<N; piv++) {
+    /*
+     * If this proc owns the pivot, compute the scaling vector
+     */
     if (piv==procno) {
       double pivot = matrix[piv];
       // scaling factors per row
@@ -92,6 +95,7 @@ int main(int argc,char **argv) {
      * make sure that everyone knows the scaling factors
      */
 /**** your code here ****/
+
     /*
      * Now update the matrix.
      * Answer for yourself: why is there no loop over the columns?
@@ -117,7 +121,9 @@ int main(int argc,char **argv) {
   }
   //printf("Diagonal element %d: %e\n",procno,matrix[procno]);
 
-  // solve the system
+  /*
+   * Solve the system
+   */
   double local_solution = rhs[procno]/matrix[procno];
   MPI_Allgather(&local_solution,1,MPI_DOUBLE,solution,1,MPI_DOUBLE,comm);
 

@@ -5,9 +5,10 @@
 !**** `Parallel programming with MPI and OpenMP'
 !**** by Victor Eijkhout, eijkhout@tacc.utexas.edu
 !****
-!**** copyright Victor Eijkhout 2012-7
+!**** copyright Victor Eijkhout 2012-8
 !****
-!**** MPI Exercise 
+!**** MPI Exercise for MPI_Status use
+!**** fortran 2008 version
 !****
 !****************************************************************/
 
@@ -84,6 +85,7 @@ Program Status
           processA,0, comm,ierr)
      !!
      !! Exercise:
+     !! - use MPI_SOURCE to print where the message came from
      !! - use MPI_Get_count to find out how many elements were received
      !!
 !!!! your code here !!!!

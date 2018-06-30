@@ -24,7 +24,8 @@ int main() {
   MPI_Init(0,0);
 
   // compute communicator rank and size
-/**** your code here ****/
+  MPI_Comm_size(comm,&nprocs);
+  MPI_Comm_rank(comm,&procno);
   
   // Initialize the random number generator
   srand(procno*(double)RAND_MAX/nprocs);
@@ -36,19 +37,8 @@ int main() {
     cout << proctext.str();
   }
 
-  // Exercise part 1:
-  // -- compute the maximum random value on process zero
-  MPI_Reduce(
-/**** your code here ****/
-	     );
-  if (procno==0) {
-    stringstream proctext;
-    proctext << "The maximum number is " << globalrandom << endl;
-    cout << proctext.str();
-  }
-
   /*
-   * Exercise part 2:
+   * Exercise part 1:
    * -- compute the sum of the values, everywhere
    * -- scale your number by the sum
    * -- check that the sum of scales values is 1
@@ -61,11 +51,25 @@ int main() {
   MPI_Allreduce(
 /**** your code here ****/
 		);
-  if ( abs(sumrandom-1.)>1.e-14 ) {
+  if ( abs(sumrandom-1.)>1.e-5 ) {
     stringstream proctext;
     proctext << "Suspicious sum " << sumrandom << " on process " << procno << endl;
     cout << proctext.str();
   }
+
+#if 0
+  // Exercise part 2:
+  // -- compute the maximum random value on process zero
+  MPI_Reduce(
+/**** your code here ****/
+	     );
+  if (procno==0) {
+    stringstream proctext;
+    proctext << "The maximum number is " << globalrandom << endl;
+    cout << proctext.str();
+  }
+#endif
+
   if (procno==0) {
     stringstream proctext;
     proctext << "Finished" << endl;

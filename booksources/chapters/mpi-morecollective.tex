@@ -119,6 +119,28 @@ int MPI_Ibcast(
 
 \mpiRoutineRef{MPI_Iallgather}
 
+\Level 1 {Non-blocking barrier}
+\label{sec:ibarrier}
+
+Probably the most surprising non-blocking collective is the
+\indextermsub{non-blocking}{barrier}
+\indexmpishow{MPI_Ibarrier}. The way to understand this is to think of
+a barrier not in terms of temporal synchronization, but state
+agreement: reaching a barrier is a sign that a process has attained a
+certain state, and leaving a barrier means that all processes are in
+the same state. The ordinary barrier is then a blocking wait for
+agreement, while with a non-blocking barrier:
+\begin{itemize}
+\item Posting the barrier means that a process has reached a certain
+  state; and
+\item the request being fullfilled means that all processes have
+  reached the barrier.
+\end{itemize}
+
+\mpiRoutineRef{MPI_Ibarrier}
+
+\cverbatimsnippet{ibarrierpoll}
+
 \Level 0 {Performance of collectives}
 
 It is easy to visualize a broadcast as in figure~\ref{fig:bcast-simple}:

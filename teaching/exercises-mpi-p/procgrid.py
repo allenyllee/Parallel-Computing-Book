@@ -7,7 +7,7 @@
 #### "Parallel Computing"
 #### by Victor Eijkhout, copyright 2013-6
 ####
-#### MPI python exercise for communicator splitting
+#### procgrid.py : MPI python exercise for communicator splitting
 ####
 ################################################################
 ################################################################

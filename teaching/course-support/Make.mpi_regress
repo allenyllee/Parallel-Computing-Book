@@ -167,7 +167,7 @@ run_prime :
 
 .PHONY: run_randommax
 REGRESSIONRUNS += run_randommax
-run_randommax :
+run_randommax : randommax
 	@make run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export np=${NP} ; \
