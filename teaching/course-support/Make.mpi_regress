@@ -14,7 +14,7 @@ info ::
 	@echo "make regression_compile : compile all exercises"
 	@echo "make regression_runs    : run selected exercises"
 	@echo "make regression         : compile and run"
-	@echo "make run_OneProgram (choices: ${REGRESSIONRUNS})"
+	@echo "make run_PROGRAM (choices: ${REGRESSIONRUNS})"
 	@if [ ! -z ${PYTHON} ] ; then \
 	  echo "    [PYTHON=yourlocalpython]" ; \
 	fi
@@ -178,20 +178,26 @@ run_randommax : randommax
 	   fi ; \
 	 done ; \
 	 vmax=-1 ; \
+	 echo "Evaluating part 1" ; \
 	 for p in `seq 0 $$(( np-1 ))` ; do \
 	   v=` cat $$program.out$$p \
 	       | awk '/Process/ { print $$6 }' \
 	       | sed -e s/^1./1/ -e s/^0./0/ ` && \
 	   if [ $$v -gt $$vmax ] ; then vmax=$$v ; fi ; \
 	 done && \
-	 vzero=` cat $$program.out0 \
-	       | awk '/maximum/ {print $$5}' \
-	       | sed -e s/^1./1/ -e s/^0./0/ ` ; \
-	 if [ "$$vzero" != "$$vmax" ] ; then \
-	   echo "Reported max $$vzero is not actual max $$vmax" ; success=0 ; \
-	 else \
-	   echo "Maximum correctly reported as $$vzero" ; \
-	 fi ; \
+	 if [ `cat $$program.out0 | grep "Part 2" | wc -l` -gt 0 ] ; then \
+	   echo "Evaluating part 2" ; \
+	   vzero=` cat $$program.out0 \
+	         | awk '/maximum/ {print $$7}' \
+	         | sed -e s/^1./1/ -e s/^0./0/ ` ; \
+	   if [ "$$vzero" != "$$vmax" ] ; then \
+	     echo "Reported max $$vzero is not actual max $$vmax" ; success=0 ; \
+	   else \
+	     echo "Maximum correctly reported as $$vzero" ; \
+	   fi ; \
+	  else \
+	    echo "Part 2 not evaluated" ; \
+	  fi ; \
 	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
 	echo
 

@@ -14,6 +14,12 @@
 \Level 0 {Rooted collectives: gather and scatter}
 \label{sec:gatherscatter}
 
+\begin{figure}[ht]
+  \includegraphics[scale=.4]{gather}
+  \caption{Gather collects all data onto a root}
+  \label{fig:gather}
+\end{figure}
+
 In the \indexmpishow{MPI_Scatter} operation, the root spreads information to
 all other processes. The difference with a broadcast is that it involves
 individual information from/to every process. Thus, the gather operation typically 
@@ -91,12 +97,19 @@ int MPI_Scatter
 
 \Level 1 {Allgather}
 
+\begin{figure}[ht]
+  \includegraphics[scale=.4]{allgather}
+  \caption{All gather collects all data onto every process}
+  \label{fig:allgather}
+\end{figure}
+
 The \indexmpishow{MPI_Allgather} routine does the same gather onto
-every process.
+every process: each process winds up with the totality of all data;
+figure~\ref{fig:allgather}.
 %
 \mpiRoutineRef{MPI_Allgather}
 
-This routine is used in the
+This routine can be used in the simplest implementation of the 
 %
 \indextermsub{dense}{matrix-vector product} to give each processor the
 full input; see~\HPSCref{sec:densescaling}.

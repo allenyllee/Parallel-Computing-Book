@@ -139,6 +139,11 @@ agreement, while with a non-blocking barrier:
 
 \mpiRoutineRef{MPI_Ibarrier}
 
+We can use a non-blocking barrier to good effect, utilizing the idle
+time that would result from a blocking barrier. In the following code
+fragment processes test for completion of the barrier, and failing to
+detect such completion, perform some local work.
+
 \cverbatimsnippet{ibarrierpoll}
 
 \Level 0 {Performance of collectives}
