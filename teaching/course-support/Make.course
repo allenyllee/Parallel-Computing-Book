@@ -20,5 +20,5 @@ info ::
 .PHONY: clean
 clean ::
 	@/bin/rm -rf ${EXERCISES} ${OTHERPROGRAMS} \
-	    *~ *.o *.pyc *.dSYM ddt.o* *.o[0-9]* *.dat *.log *.out[0-9]* *.out_total \
+	    *~ *.o *.pyc *.dSYM ddt.o* *.o[0-9]* *.dat *.log *.out *.out[0-9]* *.out_total \
 	    tautrace_* dcvserver.out

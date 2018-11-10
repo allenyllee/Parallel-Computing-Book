@@ -1,7 +1,0 @@
-// block1.c
-for (int p=0; p<nprocs; p++)
-  if (p!=procid)
-    MPI_Send(sbuffer,buflen,MPI_INT,p,0,comm);
-for (int p=0; p<nprocs; p++)
-  if (p!=procid)
-    MPI_Recv(rbuffer,buflen,MPI_INT,p,0,comm,MPI_STATUS_IGNORE);

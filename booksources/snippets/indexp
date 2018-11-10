@@ -1,4 +1,4 @@
-// indexed.py
+## indexed.py
 displacements = np.empty(count,dtype=np.int)
 blocklengths = np.empty(count,dtype=np.int)
 source = np.empty(totalcount,dtype=np.float64)

@@ -1,4 +1,4 @@
-// passive.py
+## passive.py
 if procid==repository:
     # repository process creates a table of inputs
     # and associates it with the window

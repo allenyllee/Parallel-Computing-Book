@@ -11,6 +11,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+In this course we have up to now only considered the \ac{SPMD} model
+of running MPI programs.  In some rare cases you may want to run in an
+\ac{MPMD} mode, rather than \ac{SPMD}. This can be achieved either on
+the \ac{OS} level, using options of the \indexterm{mpiexec} mechanism,
+or you can use MPI's built-in process management. Read on if you're
+interested in the latter.
+
 \Level 0 {Process management}
 \label{sec:mpi-dynamic}
 
@@ -28,7 +35,7 @@ to start the whole of your MPI code, but that is likely to be inefficient.
 
 \mpiRoutineRef{MPI_Comm_spawn}
 
-(If you're feeling sure of yourself, specify \indexmpishow{MPI_ERRCODES_IGNORE}.)
+(If you're feeling sure of yourself, specify \indexmpidef{MPI_ERRCODES_IGNORE}.)
 
 Here is an example of a work manager.
 %
@@ -41,7 +48,7 @@ You could start up a single copy of this program with
 mpirun -np 1 spawn_manager
 \end{verbatim}
 but with a hostfile that has more than one host. In that case the
-\indexmpishow{MPI_UNIVERSE_SIZE} will tell you to the total number of
+\indexmpidef{MPI_UNIVERSE_SIZE} will tell you to the total number of
 hosts available. If this option is not supported, you can determine
 yourself how many processes you want to spawn. If you exceed the
 hardware resources, your multi-tasking operating system (which is some

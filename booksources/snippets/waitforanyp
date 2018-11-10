@@ -1,4 +1,4 @@
-// irecv_source.py
+## irecv_source.py
 if procid==nprocs-1:
     receive_buffer = np.empty(nprocs-1,dtype=np.int)
     requests = [ None ] * (nprocs-1)

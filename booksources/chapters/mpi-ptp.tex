@@ -158,8 +158,8 @@ have the data copied.
 
 \mpiRoutineRef{MPI_Probe}
 
-There is a problem with the \indexmpishow{MPI_Probe} call: in a
-multithreaded environment the following scenario can happen.
+There is a problem with the \indexmpishow{MPI_Probe} call in a
+multithreaded environment: the following scenario can happen.
 \begin{enumerate}
 \item A thread determines by probing that a certain message has come
   in.
@@ -265,10 +265,7 @@ such as \indexmpishow{MPI_Ssend}.
 \label{sec:persistent}
 \index{communication!persistent|(textbf}
 
-An \n{Isend} or \n{Irecv} call has an \n{MPI_Request} parameter.
-%
-\mpiRoutineRef{MPI_Request}
-%
+An \n{Isend} or \n{Irecv} call has an \indexmpishow{MPI_Request} parameter.
 This
 is an object that gets created in the send/recv call, and deleted in
 the wait call. You can imagine that this carries some overhead, and if
@@ -401,7 +398,7 @@ sends (section~\ref{sec:persistent}).
 \Level 1 {About \texttt{MPI\_Request}}
 \label{ref:mpirequest}
 
-An \indexmpidef{MPI_Request} object is not actually an object,
+An \indexmpishow{MPI_Request} object is not actually an object,
 unlike \n{MPI_Status}. Instead it is an (opaque) pointer.
 This meeans that when you call, for instance, \n{MPI_Irecv},
 MPI will allocate an actual request object, and return its

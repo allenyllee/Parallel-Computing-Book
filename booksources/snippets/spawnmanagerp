@@ -1,4 +1,4 @@
-// spawn_manager.py
+## spawn_manager.py
 nworkers = universe_size - nprocs
 
 itercomm = comm.Spawn("spawn_worker.py", maxprocs=nworkers)

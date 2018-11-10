@@ -1,4 +1,4 @@
-// persist.py
+## persist.py
 sendbuf = np.ones(size,dtype=np.int)
 recvbuf = np.ones(size,dtype=np.int)
 if procid==src:

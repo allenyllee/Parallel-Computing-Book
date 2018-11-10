@@ -17,6 +17,7 @@
 With \indexmpishow{MPI_Comm_dup} you can make an exact duplicate of a communicator.
 This may seem pointless, but it is actually very useful for the design of
 software libraries. Image that you have a code
+%\lstset{style=reviewcode,language=C}
 \begin{lstlisting}
 MPI_Isend(...); MPI_Irecv(...);
 // library call
@@ -31,7 +32,7 @@ non-overtaking. This may lead to confusing situations, witness the following.
 First of all, here is code where the library stores the communicator
 of the calling program:
 %
-\cverbatimsnippet[examples/mpi/c/wrongcatchlib.c]{wrongcatchlib}
+\cxxverbatimsnippet[examples/mpi/c/wrongcatchlib.cxx]{wrongcatchlib}
 
 This models a main program that does a simple message exchange, and it
 makes two calls to library routines. Unbeknown to the user, the

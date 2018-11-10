@@ -87,6 +87,8 @@ to come'.  This is illustrated in figure~\ref{fig:send-nonblocking}.
 
 \mpiRoutineRef{MPI_Irecv}
 
+\mpiRoutineRef{MPI_Request}
+
 While the use of non-blocking routines prevents deadlock, it
 introduces two new problems:
 \begin{enumerate}
@@ -302,8 +304,8 @@ Contrast this with the example in section~\ref{ref:mpi-source}.
 \begin{fortrannote}
   The \n{index} parameter is the index in the array of requests,
   so it uses \emph{1-based indexing}\index{Fortran!1-based indexing}.
+  \fverbatimsnippet{waitforany-f}
 \end{fortrannote}
-\fverbatimsnippet{waitforany-f}
 
 \Level 2 {Test: non-blocking request wait}
 \label{sec:mpi-test}
@@ -334,6 +336,7 @@ while ( not done ) {
 }
 \end{lstlisting}
 
+\mpiRoutineRef{MPI_Test}
 \mpiRoutineRef{MPI_Testany}
 \mpiRoutineRef{MPI_Testall}
 

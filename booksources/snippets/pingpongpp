@@ -1,4 +1,4 @@
-// scipingpong.py
+## scipingpong.py
 if mytid==0:
     data = np.arange(s, dtype=np.float64)
     rdata = np.empty(s, dtype=np.float64)

@@ -1,9 +1,0 @@
-// block4.c
-int ireq = 0;
-for (int p=0; p<nprocs; p++)
-  if (p!=procid)
-    MPI_Irecv(rbuffers[p],buflen,MPI_INT,p,0,comm,&(requests[ireq++]));
-for (int p=0; p<nprocs; p++)
-  if (p!=procid)
-    MPI_Send(sbuffer,buflen,MPI_INT,p,0,comm);
-MPI_Waitall(nprocs-1,requests,MPI_STATUSES_IGNORE);

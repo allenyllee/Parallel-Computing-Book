@@ -1,2 +1,12 @@
 
-//snippet simdfunction
+for i in range(stride*count):
+    source[i] = i+.5
+
+#snippet vectorp
+
+if procid==sender:
+    print "finished"
+if procid==receiver:
+    for i in range(count):
+        if target[i]!=source[stride*i]:
+            print "error in location %d: %e s/b %e" % (i,target[i],source[stride*i])

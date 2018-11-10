@@ -1,4 +1,4 @@
-// bcast.py
+## bcast.py
 # first native
 if procid==root:
     buffer = [ 5.0 ] * dsize

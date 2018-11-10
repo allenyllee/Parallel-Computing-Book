@@ -1,4 +1,4 @@
-// gatherv.py
+## gatherv.py
 # implicitly using root=0
 globalsize = comm.reduce(localsize)
 if procid==0:

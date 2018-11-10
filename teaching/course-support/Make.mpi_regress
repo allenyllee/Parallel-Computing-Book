@@ -165,6 +165,19 @@ run_prime :
 	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
 	echo
 
+.PHONY: run_blockwrite
+REGRESSIONRUNS += run_blockwrite
+run_blockwrite : 
+	@make run_start PROGRAM=$@ NP=${NP}
+	@export atgram=$@ ; export program=$${atgram##run_} ; \
+	 cat blockwrite.out* > blockwrite.out ; export success=1 ; \
+	nfound=`cat blockwrite.out | grep "correctly" | wc -l` ; \
+	if [ $$nfound -eq 0 ] ; then \
+	  echo "No success reported" ; success=0; \
+	fi ; \
+	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
+	echo
+
 .PHONY: run_randommax
 REGRESSIONRUNS += run_randommax
 run_randommax : randommax
@@ -306,6 +319,22 @@ run_rightgraph :
 	 for p in `seq 1 $$(( np-1 ))` ; do \
 	  if [ `cat $$program.out$$p | wc -l` -gt 0 ] ; then \
 	    echo "I was not expecting output from proc $$p" ; \
+	    success=0; \
+	  fi ; \
+	 done ; \
+	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
+	echo
+
+.PHONY: run_ibarrierupdate
+REGRESSIONRUNS += run_ibarrierupdate
+run_ibarrierupdate : 
+	@make run_start PROGRAM=$@ NP=${NP}
+	@export atgram=$@ ; export program=$${atgram##run_} ; \
+	 export np=${NP} ; \
+	 export success=1 ; \
+	 for p in `seq 1 $$(( np-1 ))` ; do \
+	  if [ `cat $$program.out$$p | grep concluded | wc -l` -eq 0 ] ; then \
+	    echo "Process $$p did not conclude" ; \
 	    success=0; \
 	  fi ; \
 	 done ; \

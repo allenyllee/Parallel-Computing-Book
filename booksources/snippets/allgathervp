@@ -1,4 +1,4 @@
-// allgatherv.py
+## allgatherv.py
 my_count = np.empty(1,dtype=np.int)
 my_count[0] = mycount
 comm.Allgather( my_count,recv_counts )

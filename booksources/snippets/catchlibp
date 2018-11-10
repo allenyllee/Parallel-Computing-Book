@@ -1,4 +1,4 @@
-// commdup.py
+## commdup.py
 class Library():
     def __init__(self,comm):
         # wrong: self.comm = comm

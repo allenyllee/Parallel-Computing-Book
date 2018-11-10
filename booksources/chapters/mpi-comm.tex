@@ -10,6 +10,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \Level 0 {Communicator basics}
+\label{sec:comm-basic}
 
 \input chapters/mpi-commbasic
 
@@ -37,9 +38,18 @@ taking a subset of \indexmpishow{MPI_COMM_WORLD} and turning that subset
 into a new communicator.
 
 Now you understand why the MPI collective calls had an argument for the
-communicator: a~collective involves all proceses \emph{of that communicator}.
+communicator: a~collective involves all processes of that communicator.
 By making a communicator that contains a subset of all available processes,
 you can do a collective on that subset.
+
+\Level 1 {Scenario: distributed linear algebra}
+
+For \emph{scalability} reasons, matrices should often be distributed
+in a 2D manner, that is, each process receives a subblock that is not
+a block of columns or rows. This means that the processors themselves
+are, at least logically, organized in a 2D grid. Operations
+then involve reductions or broadcasts inside rows or columns. For
+this, a row or column of processors needs to be in a subcommunicator.
 
 \Level 1 {Scenario: climate model}
 

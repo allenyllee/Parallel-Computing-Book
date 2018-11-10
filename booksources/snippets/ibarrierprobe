@@ -1,0 +1,10 @@
+// ibarrierupdate.c
+MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,comm,&flag,&recv_status);
+if (flag) {
+	int
+	  source = recv_status.MPI_SOURCE,
+	  tag = recv_status.MPI_TAG;
+	MPI_Recv
+	  (&y,1,MPI_DOUBLE,source,tag,comm,MPI_STATUS_IGNORE);
+	printf("[%d] received from %d\n",procno,source);
+}

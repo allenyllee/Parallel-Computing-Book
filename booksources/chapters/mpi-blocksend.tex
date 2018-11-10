@@ -554,3 +554,35 @@ between pairs.
 %
 \cverbatimsnippet{sendrecvring}
 
+\Level 1 {Review}
+
+Do the following codes:
+\begin{enumerate}
+\item always work;
+\item sometimes deadlock; or
+\item always deadlock?
+\end{enumerate}
+In the `sometimes' case, indicate when it will work and when not.
+
+\begin{verbatim}
+if (procid==0)
+  MPI_Send( /* to: */ 1 );
+else
+  MPI_Recv( /* from: */ 0 );
+\end{verbatim}
+
+\begin{verbatim}
+otherid = nprocs - procid;
+MPI_Send( /* to: */ otherid);
+MPI_Recv( /* from: */ otherid );
+\end{verbatim}
+
+\begin{verbatim}
+if (procid==0)
+  for (int otherid=1; otherid<nprocs; otherid++)
+    MPI_Send( /* to: */ otherid );
+else
+  for (int otherid=0; otherid<nprocs; otherid++)
+    MPI_Recv( /* from: */ otherid );
+\end{verbatim}
+

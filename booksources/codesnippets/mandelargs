@@ -1,3 +1,0 @@
-ierr = parameters_from_commandline
-  (argc,argv,comm,&steps,&iters);
-if (ierr) return MPI_Abort(comm,1);

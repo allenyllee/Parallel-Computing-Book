@@ -145,6 +145,24 @@ three, and processes in the corners with two.
 
 Such a topology is illustrated in figure~\ref{fig:graphcollective}.
 
+MPI's notion of \indexterm{graph topology}, and the
+\indextermsub{neighbourhood}{collectives}, offer an elegant way of
+expressing such communication structures. There are various reasons
+for using graph topologies over the older, simpler methods.
+\begin{itemize}
+\item MPI is allowed to reorder the ranks, so that network proximity
+  in the cluster corresponds to proximity in the structure of the
+  code.
+\item Ordinary collectives could not directly be used for graph
+  problems, unless one would adopt a subcommunicator for each graph
+  neighbourhood. However, scheduling would then lead to deadlock or
+  serialization.
+\item The normal way of dealing with graph problems is through
+  non-blocking communications. However, since the user indicates an
+  explicit order in which they are posted, congestion at certain
+  processes may occur.
+\end{itemize}
+
 Thus the minimal description of a process graph contains for each process:
 \begin{itemize}
 \item Degree: the number of neighbour processes; and
@@ -210,6 +228,8 @@ the following:
   will send to.
 \item \n{weights} is an array declaring the relative importance of the
   destinations. You can safely set this to all ones.
+\item \n{reorder} (\n{int} in~C, \n{LOGICAL} in~Fortran) indicates
+  whether MPI is allowed to shuffle ranks to achieve greater locality.
 \end{itemize}
 
 The resulting communicator has all the processes of the original

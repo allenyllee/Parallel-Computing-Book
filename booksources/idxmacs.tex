@@ -16,8 +16,6 @@
 \makeindex[name=mpi]
 \makeindex[name=omp]
 
-\let\indextermfunction\indextermtt
-
 \newcommand{\indextermp}[1]{\emph{#1s}\index{#1}}
 \newcommand{\indextermsub}[2]{\emph{#1 #2}\index{#2!#1}}
 \newcommand{\indextermsubp}[2]{\emph{#1 #2s}\index{#2!#1}}
@@ -174,11 +172,23 @@
 \index{pragma|see{for list see under `omp'}}
 
 \newcommand{\indexterm}[1]{\emph{#1}\index{#1}}
-%\newcommand{\indextermtt}[1]{\texttt{\emph{#1}}\index{#1|n}}
 \def\indextermdef#1{\emph{#1}\index{#1|textbf}}
-\let\indextermtt\indexmpishow
+{ \catcode`\_=13
+  %% MPI index routines
+\gdef\tttoindex{%\tracingmacros=2
+  \edef\tmp{\noexpand\n{\indexedtt}%
+            \noexpand\index{\indexedtt@{\noexpand\tt{\indexedtt}}}}%
+  \tmp
+  \egroup
+}
+\gdef\indextermtt#{\bgroup \catcode`\_=13 \def_{\char95\discretionary{}{}{}}
+  \catcode`\>=12 \catcode`\<=12
+  \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
+  \tt \afterassignment\tttoindex\edef\indexedtt}
+}
 \let\indextermttdef\indexmpidef
 \let\indexcommand\indexmpishow
 \def\indexclause#1{\texttt{#1}\index[omp]{omp clause!#1}}
 \def\indexclausedef#1{\texttt{#1}\index[omp]{omp clause!#1|textbf}}
 \def\indexclauseoption#1#2{\texttt{#2}\index[omp]{omp clause!#1!#2}}
+\let\indextermfunction\indextermtt

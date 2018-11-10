@@ -1,4 +1,4 @@
-// pingpong.py
+## pingpong.py
 if mytid==0:
     data = [ 2.*i for i in range(s) ]
     starttime = MPI.Wtime()

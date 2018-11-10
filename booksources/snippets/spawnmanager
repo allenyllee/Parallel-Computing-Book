@@ -17,18 +17,9 @@ if (!flag) {
 }
 ASSERTm(universe_size>world_size,"No room to start workers");
 int nworkers = universe_size-world_size;
-
-/*  
- * Now spawn the workers. Note that there is a run-time determination 
- * of what type of worker to spawn, and presumably this calculation must 
- * be done at run time and cannot be calculated before starting 
- * the program. If everything is known when the application is  
- * first started, it is generally better to start them all at once 
- * in a single MPI_COMM_WORLD.  
- */
-
 const char *worker_program = "spawn_worker";
 int errorcodes[nworkers];
+MPI_Comm everyone;           /* intercommunicator */
 MPI_Comm_spawn(worker_program, MPI_ARGV_NULL, nworkers,
 		 MPI_INFO_NULL, 0, MPI_COMM_WORLD, &everyone,
 		 errorcodes);

@@ -238,6 +238,8 @@ a target rank.
 
 \Level 1 {Put}
 
+\includegraphics[scale=.4]{windowdisp}
+
 The \n{MPI_Put} routine is used to put data in the window
 of a target process
 %
@@ -470,8 +472,9 @@ one or more of the following, combined by bitwise OR in C/C++ or
 \Level 1 {More active target synchronization}
 \label{sec:ref:post-wait}
 
-The `fence' mechanism (section~\ref{ref:fence}) uses a global synchronization on the
-communicator of the window, which may 
+The `fence' mechanism (section~\ref{sec:fence}) uses a global synchronization on the
+communicator of the window. As such it is good for applications where
+the processes are largely synchronized, but it may 
 lead to performance inefficiencies if processors are not in step which each other. 
 There is a mechanism that is more fine-grained, by using synchronization only 
 on a processor \indexterm{group}. This takes four different calls, two for starting
@@ -504,6 +507,13 @@ other. Note that they both have their own definition of the group, and
 that the receiving process only does the post and wait calls.
 %
 \cverbatimsnippet[examples/mpi/c/postwaittwo.c]{postwaittwo}
+
+Both pairs of operations declare a
+\indextermbus{group of}{processors}; see section~\ref{sec:comm-group}
+for how to get such a group from a communicator.
+On an origin processor you would specify a group that includes the targets
+you will interact with, on a target processor you specify a group
+that includes the possible origins.
 
 \Level 1 {Atomic operations}
 
@@ -552,45 +562,6 @@ atomic gets and update of that data using \indexterm{passive target
 %
 \pverbatimsnippet{fetchopp}
 
-\Level 0 {More active target synchronization}
-\label{sec:post-wait}
-
-There is a more fine-grained ways of doing 
-\indexterm{active target synchronization}. While fences
-corresponded to a global synchronization of one-sided calls,
-the \n{MPI_Win_start},
-\n{MPI_Win_complete}, \n{MPI_ Win_post}, \n{Win_wait} routines
-are suitable, and possibly more efficient,
-if only a small number of processor pairs is
-involved.  Which routines
-you use depends on whether the processor is an \indexterm{origin} or
-\indexterm{target}.
-
-If the current process is going to have the data in its window accessed,
-you define an \indextermsub{exposure}{epoch} by:
-\begin{lstlisting}
-MPI_Win_post( /* group of origin processes */ )
-MPI_Win_wait()
-\end{lstlisting}
-This turns the current processor into a target for access operations issued
-by a different process.
-
-If the current process is going to be issuing one-sided operations,
-you define an \indextermsub{access}{epoch} by:
-\begin{lstlisting}
-MPI_Win_start( /* group of target processes */ )
-// access operations
-MPI_Win_complete()
-\end{lstlisting}
-This turns the current process into the origin of a number of
-one-sided access operations.
-
-Both pairs of operations declare a
-\indextermbus{group of}{processors}; see section~\ref{sec:comm-group}
-for how to get such a group from a communicator.
-On an origin processor you would specify a group that includes the targets
-you will interact with, on a target processor you specify a group
-that includes the possible origins.
 
 \Level 0 {Passive target synchronization}
 \label{sec:passive-sync}

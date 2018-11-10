@@ -31,9 +31,9 @@ So if you ran an MPI program, each node would have one MPI process;
 %
 figure~\ref{fig:oldmpi}.
 %
-(You could of course run more than one
+You could of course run more than one
 process, using the \indexterm{time slicing} of the \ac{OS}, but that
-would give you no extra performance.)
+would give you no extra performance.
 
 These days the situation is more complicated.
 You can still talk about a node in a cluster, but now a node can contain
@@ -74,6 +74,14 @@ on the implementation level MPI uses a different communication
 mechanism depending on whether  cores are on the same socket or on
 different nodes, so you don't have to worry about lack of efficiency.
 
+\begin{remark}
+  In some rare cases you may want to run in an \ac{MPMD} mode, rather
+  than \ac{SPMD}. This can be achieved either on the \ac{OS} level,
+  using options of the \indexterm{mpiexec} mechanism, or you can use
+  MPI's built-in process management; chapter~\ref{ch:mpi-proc}. Like
+  I~said, this concerns only rare cases.
+\end{remark}
+
 %% \Level 0 {Starting and running MPI processes}
 \input chapters/mpi-running
 
@@ -113,4 +121,6 @@ summarize the results, for instance printing out some total.
 The mechanisms for that you will learn next.
 
 %\input chapters/mpi-intro-func
+
+\Level 0 {Review}
 

@@ -213,7 +213,13 @@ For details see
 There are some visible implications of using the \n{mpi_f08} module,
 mostly related to the fact that some of the `MPI datatypes' such as
 \n{MPI_Comm}, which were declared as \n{Integer}
-previously, are now a Fortran \n{Type}. We will indicate this as needed.
+previously, are now a Fortran \n{Type}.
+%We will indicate this as needed.
+See the following sections for details:
+Communicator~\ref{sec:comm-basic}, Datatype~\ref{sec:mpi-datatype},
+Info~\ref{sec:mpi-info}, Op~\ref{sec:mpi:op-create},
+Request~\ref{sec:nonblocking}, Status~\ref{sec:mpi-status},
+Window~\ref{sec:windows}.
 
 The \indextermtt{mpi_f08} module solves a problem with previous
 \emph{Fortran90 bindings}\index{Fortran!90!bindings}:
@@ -408,3 +414,25 @@ would be used as
 MPI.Request.Waitall(requests)
 \end{lstlisting}
 \lstset{language=C}
+
+\Level 0 {Review}
+
+\begin{review}
+  What determines the parallelism of an MPI job?
+  \begin{itemize}
+  \item The size of the cluster you run on.
+  \item The number of cores per cluster node.
+  \item The parameters of the MPI starter (\n{mpiexec},
+    \n{ibrun},\ldots)
+  \end{itemize}
+\end{review}
+
+\begin{review}
+  Which languages have an object-oriented interface to MPI?
+  \begin{itemize}
+  \item C
+  \item C++
+  \item Fortran2008
+  \item Python
+  \end{itemize}
+\end{review}

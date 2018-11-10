@@ -38,6 +38,20 @@
    \input{\CommentCutFile}
    \end{quote}
    \endgroup}
+\generalcomment{review}
+  {\refstepcounter{excounter}%
+   \begingroup\def\ProcessCutFile{}\par
+   \edef\tmp{\def\noexpand\CommentCutFile
+                 {exercises/\chapshortname\arabic{excounter}.tex}}\tmp
+   }
+  {\begin{quote}
+   \leavevmode
+   \hbox{\kern-\unitindent 
+         \textbf Review \exercisenumber.\hspace{1em}}%
+     \raggedright \ignorespaces
+   \input{\CommentCutFile}
+   \end{quote}
+   \endgroup}
 
 \generalcomment{answer}
   {\begingroup

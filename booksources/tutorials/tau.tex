@@ -27,7 +27,7 @@ else
 endif
 
 % : %.c
-	${CC} -o $@ $^
+<TAB>${CC} -o $@ $^
 \end{verbatim}
 
 \begin{istc}
@@ -35,5 +35,36 @@ To use TAU, do \n{module load tau}. You have to set the environment
 variable \n{TAU_TRACE} to~1; it's advisable to set \n{TRACEDIR} to some directory 
 for all the TAU output. Likewise set \n{TAU_PROFILE} to~1 and set \n{PROFILEDIR}.
 \end{istc}
+
+It is a good move to create a directory for your tracing and profiling
+information. You can use two separate directories, but there is no
+harm in using the same for both:
+\begin{verbatim}
+mkdir tau_trace
+mkdir tau_profile
+export PROFILEDIR=tau_profile
+export TRACEDIR=tau_trace
+
+export TAU_PROFILE=1
+export TAU_TRACE=1
+
+mpirun myprogram
+\end{verbatim}
+
+After this, you view profiling information with \indextermtt{paraprof}
+\begin{verbatim}
+paraprof tau_profile
+\end{verbatim}
+Viewing the traces takes a few steps:
+\begin{verbatim}
+cd tau_trace
+rm -f tau.trc tau.edf
+tau_treemerge.pl
+tau2slog2 tau.trc tau.edf -o yourprogram.slog2 
+\end{verbatim}
+The \n{slog2} file can then be viewed with \indextermtt{jumpshot}:
+\begin{verbatim}
+jumpshot yourprogram.slog2
+\end{verbatim}
 
 \index{TAU|)}

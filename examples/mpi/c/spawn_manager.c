@@ -32,7 +32,6 @@ int main(int argc, char *argv[])
   srand((int)(procno*(double)RAND_MAX/nprocs));
 
   int world_size,manager_rank, universe_size, *universe_sizep, flag;
-  MPI_Comm everyone;           /* intercommunicator */
 
   // this is in globalinit  MPI_Init(&argc, &argv);
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
@@ -65,6 +64,7 @@ int main(int argc, char *argv[])
 
   const char *worker_program = "spawn_worker";
   int errorcodes[nworkers];
+  MPI_Comm everyone;           /* intercommunicator */
   MPI_Comm_spawn(worker_program, MPI_ARGV_NULL, nworkers,
 		 MPI_INFO_NULL, 0, MPI_COMM_WORLD, &everyone,
 		 errorcodes);

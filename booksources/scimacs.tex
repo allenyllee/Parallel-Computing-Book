@@ -96,6 +96,11 @@
   \addchaptersource{{#1}}
   % typeset as nice C code
   \lstset{style=reviewcode,language=C}\lstinputlisting{#2}}
+\newcommand{\cxxverbatimsnippet}[2][XX]{
+  % record this file as bracketed name
+  \addchaptersource{{#1}}
+  % typeset as nice C code
+  \lstset{style=reviewcode,language=C++}\lstinputlisting{#2}}
 \def\fverbatimsnippet#1{
   \lstset{style=reviewcode,language=Fortran}\lstinputlisting{#1}
   \lstset{style=reviewcode,language=C}
@@ -104,16 +109,22 @@
   \lstset{style=reviewcode,language=Python}\lstinputlisting{#1}
   \lstset{style=reviewcode,language=C}
 }
+\newenvironment{clisting}
+    {\lstset{style=reviewcode,language=C}\begin{lstlisting}}
+    {\end{lstlisting}}
+\newenvironment{cxxlisting}
+    {\lstset{style=reviewcode,language=C++}\begin{lstlisting}}
+    {\end{lstlisting}}
 
 \newenvironment{question}{\begin{quotation}\textbf{Question.\ }}{\end{quotation}}
 \newenvironment{fortrannote}
-  {\begin{quotation}\noindent\textsl{Fortran note\ }\ignorespaces}
+  {\begin{quotation}\noindent\textsl{Fortran note.\kern1em}\ignorespaces}
   {\end{quotation}}
 \newenvironment{pythonnote}
-  {\begin{quotation}\noindent\textsl{Python note\ }\ignorespaces}
+  {\begin{quotation}\noindent\textsl{Python note.\kern1em}\ignorespaces}
   {\end{quotation}}
 \newenvironment{taccnote}
-  {\begin{quotation}\noindent\textsl{TACC note\ }\ignorespaces}
+  {\begin{quotation}\noindent\textsl{TACC note.\kern1em}\ignorespaces}
   {\end{quotation}}
 
 %% \newenvironment{highermath}
@@ -140,6 +151,7 @@
 \acroitem{HPF}{High Performance Fortran}
 \acroitem{ICV}{Internal Control Variable}
 \acroitem{MIC}{Many Integrated Cores}
+\acroitem{MPMD}{Multiple Program Multiple Data}
 \acroitem{MIMD}{Multiple Instruction Multiple Data}
 \acroitem{MPI}{Message Passing Interface}
 \acroitem{MTA}{Multi-Threaded Architecture}

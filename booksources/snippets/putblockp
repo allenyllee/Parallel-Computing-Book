@@ -1,4 +1,4 @@
-// putfence.py
+## putfence.py
 window_data = np.zeros(2,dtype=np.int)
 my_number = np.empty(1,dtype=np.int)
 src = 0; tgt = nprocs-1

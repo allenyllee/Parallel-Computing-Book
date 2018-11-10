@@ -247,6 +247,8 @@ will also work on another.
 \Level 0 {Context information}
 \label{sec:context}
 
+See also section~\ref{sec:mpi_attr}.
+
 \Level 1 {Processor name}
 
 You can query the \indexterm{hostname} of a processor.
@@ -265,21 +267,6 @@ The actual length of the name is returned in the \n{resultlen} parameter.
 For runtime determination,
 %
 \mpiRoutineRef{MPI_Get_version}
-
-\Level 1 {Attributes}
-
-\mpiRoutineRef{MPI_Attr_get}
-
-Attributes are:
-\begin{itemize}
-\item \indexmpishow{MPI_UNIVERSE_SIZE}: the total number of processes
-  that can be created. This can be more than the size of
-  \n{MPI_COMM_WORLD} if the host list is larger than the number of
-  initially started processes. See section~\ref{sec:mpi-dynamic}.
-\item \indexmpishow{MPI_APPNUM}: if MPI is used in \ac{MPMD} mode, or
-  if \indexmpishow{MPI_Comm_spawn_multiple} is used, this attribute
-  reports the how-manieth program we are in.
-\end{itemize}
 
 \Level 0 {Timing}
 \label{sec:ref:mpi-timing}

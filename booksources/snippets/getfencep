@@ -1,4 +1,4 @@
-// getfence.py
+## getfence.py
 if procid==0 or procid==nprocs-1:
     win_mem = np.empty( 1,dtype=np.float64 )
     win = MPI.Win.Create( win_mem,comm=comm )

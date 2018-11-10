@@ -1,4 +1,4 @@
-// irecvloop.py
+## irecvloop.py
 requests = [ None ] * (2*nprocs)
 sendbuffer = np.empty( nprocs, dtype=np.int )
 recvbuffer = np.empty( nprocs, dtype=np.int )

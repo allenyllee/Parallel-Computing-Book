@@ -65,6 +65,7 @@ MPI_Type_free( &newtype );
 \end{lstlisting}
 
 \Level 2 {Datatype objects}
+\label{sec:mpi-datatype}
 
 MPI derived data types are stored in variables of type
 \indexmpishow{MPI_Datatype}.
@@ -101,7 +102,7 @@ type, which makes MPI do the indexing calculations for the data type.
 When you no longer
 need the data type, you call \indexmpishow{MPI_Type_free}.
 \begin{lstlisting}
-int MPI_Type_free (MPI_datatype *datatype)
+int MPI_Type_free (MPI_Datatype *datatype)
 \end{lstlisting}
 \begin{itemize}
 \item The definition of the datatype identifier will be changed to
@@ -323,13 +324,20 @@ int MPI_Type_create_hindexed
  (int count, int blocklens[], MPI_Aint indices[],
   MPI_Datatype old_type,MPI_Datatype *newtype)
 \end{lstlisting}
-You can use this to pick all occurrences of a single component out of
-an array of structures. However, you need to be very careful with the
-index calculation. Use pointer arithmetic, as in the example in
-section~\ref{ref:data:struct}.  Another use of this function is in
-sending an \n{stl<vector>}\index{C++!standard library!vector}, that
+A slightly simpler version assumes constant block length:
+%
+\mpiRoutineRef{MPI_Type_create_hindexed_block}
+
+There is an important difference with the above \n{MPI_Type_indexed}:
+that one described offsets from a base location; these routines
+describes absolute memory addresses.
+You can use this to send for instance the elements of a
+linked list. You would traverse the list, recording the addresses of
+the elements.
+In C++ you can use this to
+send an \n{stl<vector>}\index{C++!standard library!vector}, that
 is, a vector object from the \indextermbus{C++}{standard library}, if
-the component type is a pointer. No further explanation here.
+the component type is a pointer.
 
 \Level 1 {Struct type}
 \label{sec:data:struct}

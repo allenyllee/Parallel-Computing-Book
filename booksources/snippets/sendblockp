@@ -1,4 +1,4 @@
-// sendblock.py
+## sendblock.py
 size = 1
 while size<2000000000:
     sendbuf = np.empty(size, dtype=np.int)

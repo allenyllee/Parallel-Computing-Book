@@ -1,4 +1,4 @@
-// vector.py
+## vector.py
 source = np.empty(stride*count,dtype=np.float64)
 target = np.empty(count,dtype=np.float64)
 if procid==sender:
