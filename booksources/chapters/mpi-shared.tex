@@ -56,18 +56,17 @@ In order to do such user-level copying:
   shared space; this is done with \indexmpishow{MPI_Win_shared_query}.
 \end{enumerate}
 
-\Level 1 {Creating a shared window}
+\Level 1 {Pointers to a shared window}
 
-First we create a window with memory that is allocated by the MPI
-library. Presumably this places the memory close the
+The first step is to create a window (in the sense of one-sided MPI;
+section~\ref{sec:windows}) on the processes on one node.
+Using the \indexmpishow{MPI_Win_allocate_shared} call presumably will
+put the memory close to the 
 \indexterm{socket} on which the process runs.
 
-\mpiRoutineRef{MPI_Win_allocate_shared}
+\cverbatimsnippet[code/mpi/shared.c]{mpisharedwindow}
 
-As an example, which consider the 1D heat equation. On each process we
-create a local area of three point:
-%
-\cverbatimsnippet{allocateshared3pt}
+\mpiRoutineRef{MPI_Win_allocate_shared}
 
 \Level 1 {Querying the shared structure}
 
@@ -75,5 +74,13 @@ Even though the window created above is shared, that doesn't mean it's
 contiguous. Hence it is necessary to retrieve the pointer to the area
 of each process that you want to communicate with.
 
+\cverbatimsnippet[code/mpi/shared.c]{mpisharedpointer}
+
 \mpiRoutineRef{MPI_Win_shared_query}
 
+\Level 1 {Heat equation example}
+
+As an example, which consider the 1D heat equation. On each process we
+create a local area of three point:
+%
+\cverbatimsnippet{allocateshared3pt}

@@ -1,0 +1,39 @@
+# -*- makefile -*-
+################################################################
+####
+#### This makefile is part of `Parallel Programming in MPI and OpenMP'
+#### Victor Eijkhout
+#### eijkhout@tacc.utexas.edu
+####
+#### copyright Victor Eijkhout 2018
+####
+#### Makefile for TAU instrumentation
+####
+################################################################
+
+info ::
+	@echo "make taurun PROGRAM=<any prog> OPTIONS=<whatever>"
+taurun :
+	@if [ -z "${PROGRAM}" ] ; then \
+	   echo "Usage: make ibrun program option"; exit 1 ; fi
+	@export TAU_EXT="_${PROGRAM}" ; \
+	export TAU_DUMP_DIR=`pwd`/tautrace$$TAU_EXT ; \
+	  rm -rf $${TAU_DUMP_DIR}; mkdir -p $${TAU_DUMP_DIR} ; \
+	  TAU_TRACE=1 TAU_PROFILE=1 \
+	  TRACEDIR=$${TAU_DUMP_DIR} \
+	  PROFILEDIR=$${TAU_DUMP_DIR} \
+	    ibrun ${PROGRAM} ${OPTIONS}
+info ::
+	@echo "make tau PROGRAM=... (this does the post-processing)"
+tau :
+	@export HOME=`pwd` ; \
+	export TAU_EXT=`if [ ! -z "${PROGRAM}" ] ; then echo "_" ; fi`${PROGRAM} ; \
+	export TAU_DUMP_DIR=`pwd`/tautrace$$TAU_EXT ; \
+	  cd $$TAU_DUMP_DIR ; \
+	  echo ".. analyzing files in <$$TAU_DUMP_DIR>" ; \
+	  rm -f tau.trc tau.edf ; \
+	  tau_treemerge.pl ; \
+	  tau2slog2 tau.trc tau.edf -o $$HOME/taulog$$TAU_EXT.slog2
+
+clean ::
+	@/bin/rm -f tautrace* taulog*
