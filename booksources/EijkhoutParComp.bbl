@@ -1,10 +1,16 @@
-\begin{thebibliography}{1}
+\begin{thebibliography}{10}
 
 \bibitem{Chan2007Collective}
 Ernie Chan, Marcel Heimlich, Avi Purkayastha, and Robert van~de Geijn.
 \newblock Collective communication: theory, practice, and experience.
 \newblock {\em Concurrency and Computation: Practice and Experience},
   19:1749--1783, 2007.
+
+\bibitem{cornebize:EmulateHPCms}
+Tom Cornebize, Franz~C Heinrich, Arnaud Legrand, and J{\'e}r{\^o}me Vienne.
+\newblock {Emulating High Performance Linpack on a Commodity Server at the
+  Scale of a Supercomputer}.
+\newblock working paper or preprint, December 2017.
 
 \bibitem{Eijkhout:IHPSClulu}
 {Eijkhout, Victor with Robert van de Geijn and Edmond Chow}.
@@ -34,6 +40,11 @@ Torsten Hoefler, Prabhanjan Kambadur, Richard~L. Graham, Galen Shipman, and
 Torsten Hoefler, Christian Siebert, and Andrew Lumsdaine.
 \newblock Scalable communication protocols for dynamic sparse data exchange.
 \newblock {\em SIGPLAN Not.}, 45(5):159--168, January 2010.
+
+\bibitem{simgrid-homepage}
+INRIA.
+\newblock {SimGrid} homepage.
+\newblock \url{http://simgrid.gforge.inria.fr/}.
 
 \bibitem{charmpp}
 L.~V. Kale and S.~Krishnan.

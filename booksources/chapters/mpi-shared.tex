@@ -68,6 +68,14 @@ put the memory close to the
 
 \mpiRoutineRef{MPI_Win_allocate_shared}
 
+The memory allocated by \indexmpishow{MPI_Win_allocate_shared} is
+contiguous between the processes. This makes it possible to do address
+calculation. However, if a cluster node has a \ac{NUMA} structure, for
+instance if two sockets have memory directly attached to each, this
+would increase latency for some processes. To prevent this, the key
+\indextermtt{alloc_shared_noncontig} can be set to \n{true} in the
+\indextermtt{MPI_Info} object.
+
 \Level 1 {Querying the shared structure}
 
 Even though the window created above is shared, that doesn't mean it's

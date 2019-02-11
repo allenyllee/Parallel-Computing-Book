@@ -4,9 +4,10 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-8
+%%%% by Victor Eijkhout, copyright 2012-9
 %%%%
 %%%% mpiref.tex : MPI reference
+%%%% this file should be abandoned.
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -157,7 +158,7 @@ around this, such as sending a number of
 \Level 2 {Data types}
 
 The equivalent of \indexmpishowsub{MPI_Aint}{in Fortran} is
-\lstset{language=Fortran}
+\lstset{language=Fortran} %pyskip
 \begin{lstlisting}
 integer(kind=MPI_ADDRESS_KIND) :: winsize
 \end{lstlisting}
@@ -188,85 +189,9 @@ call MPI_Sizeof(windowdata,window_element_size,ierr)
 window_size = window_element_size*500
 call MPI_Win_create( windowdata,window_size,window_element_size,... );
 \end{lstlisting}
-\lstset{language=C}
+\lstset{language=C} %pyskip
 
 \index{MPI!Fortran issues|)}
-
-\Level 1 {Python issues}
-\label{sec:python-stuff}
-\index{MPI!Python issues|(}
-
-\Level 2 {Byte calculations}
-
-The \indexmpishow{MPI_Win_create} routine needs a displacement in
-bytes. Here is a good way for finding the size of \indexterm{numpy} datatypes:
-\lstset{language=Python}
-\begin{lstlisting}
-numpy.dtype('i').itemsize
-\end{lstlisting}
-
-\Level 2 {Arrays of objects}
-
-Objects of type \n{MPI.Status} or \n{MPI.Request} often need to be created
-in an array, for instance when looping through a number of \n{Isend} calls.
-In that case the following idiom may come in handy:
-\begin{lstlisting}
-requests = [ None ] * nprocs
-for p in range(nprocs):
-  requests[p] = comm.Irecv( ... )
-\end{lstlisting}
-\lstset{language=C}
-
-\index{MPI!Python issues|)}
-
-\Level 1 {Cancelling messages}
-
-In section~\ref{sec:mpi-source} we showed a master-worker example where the 
-master accepts in arbitrary order the messages from the workers.
-Here we will show a slightly
-more complicated example, where only the result of the first task to
-complete is needed. Thus, we issue an \n{MPI_Recv}
-with \indexmpishow{MPI_ANY_SOURCE} as source.  When a result comes, we
-broadcast its source to all processes.  All the other workers then use
-this information to cancel their message with
-an \indexmpishow{MPI_Cancel} operation.
-
-\verbatimsnippet{cancel}
-
-\Level 1 {Constants}
-
-MPI constants such as \n{MPI_COMM_WORLD} or \n{MPI_INT} are not
-necessarily statitally defined, such as by a \n{#define} statement:
-the best you can say is that they have a value after
-\indexmpishow{MPI_Init} or \indexmpishow{MPI_Init_thread}.
-That means you can not transfer a compiled MPI file between
-platforms, or even between compilers on one platform.
-However, a working MPI source on one MPI implementation
-will also work on another.
-
-\Level 0 {Context information}
-\label{sec:context}
-
-See also section~\ref{sec:mpi_attr}.
-
-\Level 1 {Processor name}
-
-You can query the \indexterm{hostname} of a processor.
-This name need not be unique between different processor ranks.
-%
-\mpiRoutineRef{MPI_Get_processor_name}
-%
-You have to pass in the character storage:
-the character array must be at least \indexmpidef{MPI_MAX_PROCESSOR_NAME} characters long.
-The actual length of the name is returned in the \n{resultlen} parameter.
-
-\Level 1 {Version information}
-
-\mpiRoutineRef{MPI_VERSION}
-
-For runtime determination,
-%
-\mpiRoutineRef{MPI_Get_version}
 
 \Level 0 {Timing}
 \label{sec:ref:mpi-timing}
@@ -297,39 +222,3 @@ if (mytid==0) printf(``Time synchronized? %d->%d\n'',flag,*v);
 %\Level 1 {Profiling}
 %\label{sec:ref:profile}
 
-\Level 0 {Multi-threading}
-\label{sec:ref:mpi-thread}
-
-Hybrid MPI/threaded codes need to replace \indexmpishow{MPI_Init}
-by \n{MPI_Init_thread}:
-%
-\mpiRoutineRef{MPI_Init_thread}
-%
-With the \n{required} parameter the user requests a certain level of support,
-and MPI reports the actual capabilities in the \n{provided} parameter.
-
-The following constants are defined:
-\begin{itemize}
-\item \indexmpishow{MPI_THREAD_SINGLE}: each MPI process can only have
-  a single thread.
-\item \indexmpishow{MPI_THREAD_FUNNELED}: an MPI process can be
-  multithreaded, but all MPI calls need to be done from a single
-  thread.
-\item \indexmpishow{MPI_THREAD_SERIALIZED}: a processes can sustain
-  multiple threads that make MPI calls, but these threads can not be
-  simultaneous: they need to be for instance in an OpenMP
-  \indexterm{critical section}.
-\item \indexmpishow{MPI_THREAD_MULTIPLE}: processes can be fully
-  generally multi-threaded.
-\end{itemize}
-These values are monotonically increasing.
-
-After the initialization call, you can query the support level
-with \n{MPI_Query_thread}:
-%
-\mpiRoutineRef{MPI_Query_thread}
-
-In case more than one thread performs communication, the following routine
-can determine whether a thread is the main thread:
-%
-\mpiRoutineRef{MPI_Is_thread_main}

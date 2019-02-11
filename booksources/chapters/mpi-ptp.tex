@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-8
+%%%% by Victor Eijkhout, copyright 2012-9
 %%%%
 %%%% mpi-ptp.tex : about point-to-point communication
 %%%%
@@ -43,7 +43,7 @@ actually manipulating only the local arrays on the processors.
 
 Your typical code then looks like
 
-\lstset{style=reviewcode,language=C}
+\lstset{style=reviewcode,language=C} %pyskip
 \begin{lstlisting}
 int myfirst = .....;
 for (int ilocal=0; ilocal<nlocal; ilocal++) {
@@ -106,7 +106,7 @@ If the array size is not perfectly divisible by the number of processors,
 we have to come up with a division that is uneven, but not too much.
 You could for instance, write
 
-\lstset{style=reviewcode,language=C}
+\lstset{style=reviewcode,language=C} %pyskip
 \begin{lstlisting}
 int Nglobal, // is something large
     Nlocal = Nglobal/ntids,
@@ -179,27 +179,31 @@ that message through an object of type \indexmpidef{MPI_Message}.
 
 \mpiRoutineRef{MPI_Mrecv}
 
-\Level 1 {Wildcards in the receive call}
-\label{sec:mpi-status}
+\Level 1 {The Status object and wildcards}
+\label{sec:mpi-wildcard}
+\index{message!status|(textbf}
 
 With some receive calls you know everything about the message in advance:
 its source, tag, and size. In other cases you want to leave some options
 open, and inspect the message for them after it was received.
-To do this, the receive call has a \emph{status}\index{status!of receive call}
-parameter.
-%
-\mpiRoutineRef{MPI_Status}
-%
+To do this, the receive call has a \indexmpishow{MPI_Status}
+parameter. This was discussed in section~\ref{sec:mpi-status}.
+
 This status is a property of the actually received messsage, so \n{MPI_Irecv}
 does not have a status parameter, but \n{MPI_Wait} does.
 
-Here are some of the uses of the status:
+The \indexmpishow{MPI_Status} object
+is a structure with the following
+freely accessible members:
 
-\heading{Source}
-%
+\Level 2 {Source}
+
 In some applications it makes sense that a message can come from 
 one of a number of processes. In this case, it is possible to specify
-\indexmpishow{MPI_ANY_SOURCE} as the source. To find out where the message actually
+\indexmpishow{MPI_ANY_SOURCE} as the source.
+%
+To find out the \emph{source}\index{message!status!source}
+where the message actually
 came from, you would use the \indexmpishow{MPI_SOURCE} field of the status object
 that is delivered by \n{MPI_Recv} or the \n{MPI_Wait...} call after an \n{MPI_Irecv}.
 \begin{lstlisting}
@@ -208,28 +212,64 @@ MPI_Recv(recv_buffer+p,1,MPI_INT, MPI_ANY_SOURCE,0,comm,
 sender = status.MPI_SOURCE;
 \end{lstlisting}
 
+The source of a message is a member of the status structure.
+
+\mpiRoutineRef{MPI_SOURCE}
+
 There are various scenarios where receiving from `any source' makes sense.
 One is that of the \indexterm{master-worker model}. The master task would first send
 data to the worker tasks, then issues a blocking wait for the data of whichever process
 finishes first.
 
-\heading{Tag}
-%
+\Level 2 {Tag}
+
 If a processor is expecting more than one messsage from a single other processor,
 message tags are used to distinguish between them. In that case,
-a value of \indexmpishow{MPI_ANY_TAG} can be used, and the actual tag
-of a message can be retrieved with
-\begin{lstlisting}
-int tag = status.MPI_TAG;
-\end{lstlisting}
+a value of \indexmpishow{MPI_ANY_TAG} can be used, and the actual
+\emph{tag}\index{message!status!tag}
+of a message can be retrieved from the status structure.
 
-\heading{Count}
-%
-If the amount of data received is not known a~priori, the amount received
+\mpiRoutineRef{MPI_TAG}
+
+\Level 2 {Error}
+
+Any \emph{errors}\index{message!status!error}
+during the receive operation can be found in the status
+structurel
+
+\mpiRoutineRef{MPI_ERROR}
+
+\Level 2 {Count}
+
+If the amount of data received is not known a~priori, the
+\emph{count}\index{message!count} of elements received
 can be found as
 \begin{lstlisting}
 MPI_Get_count(&recv_status,MPI_INT,&recv_count);
 \end{lstlisting}
+This may be necessary since the \n{count} argument to \n{MPI_Recv} is 
+the buffer size, not an indication of the actually expected number of
+data items.
+
+Note that unlike the above this is not directly a member of the status
+structure.
+
+\mpiRoutineRef{MPI_Get_count}
+
+\Level 2 {Example: receiving from any source}
+
+Using the \indexmpishow{MPI_ANY_SOURCE} specifier. We retrieve the
+actual source from the \indexmpishow{MPI_Status} object through the
+\indexmpishow{MPI_SOURCE} field.
+%
+\cverbatimsnippet[examples/mpi/c/anysource.c]{anysource}
+%
+\pverbatimsnippet{anysourcep}
+
+In sections \ref{prj:mandelbrot} and~\ref{sec:mpi-test} we explained
+the manager-worker model, and how it offers an opportunity for inspecting the
+\indexmpishow{MPI_SOURCE} field of the \indexmpishow{MPI_Status}
+object describing the data that was received.
 
 \Level 1 {Synchronous and asynchronous communication}
 

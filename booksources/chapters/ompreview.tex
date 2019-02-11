@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the lecture slides for
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-6
+%%%% by Victor Eijkhout, copyright 2012-9
 %%%%
 %%%% ompreview.tex : OpenMP concepts review
 %%%%
@@ -91,9 +91,9 @@ dependencies
 \Level 1 {Directives}
 
 What do the following program output?
-\lstset{frame=single}
+\lstset{frame=single} %pyskip
 
-\lstset{language=C}
+\lstset{language=C} %pyskip
 \begin{multicols}{2}
 \small
 \begin{lstlisting}
@@ -125,7 +125,7 @@ int main() {
 \end{lstlisting}
 \end{multicols}
 
-\lstset{language=Fortran}
+\lstset{language=Fortran} %pyskip
 \begin{multicols}{2}
 \small
 \begin{lstlisting}
@@ -163,7 +163,7 @@ End Program
 Can the following loops be parallelized? If so, how?
 (Assume that all arrays are already filled in,
 and that there are no out-of-bounds errors.) 
-\lstset{language=C}
+\lstset{language=C} %pyskip
 \begin{multicols}{2}
 \small
 \begin{lstlisting}
@@ -200,7 +200,7 @@ for (i=1; i<N; i++) {
 \end{lstlisting}
 \end{multicols}
 
-\lstset{language=Fortran}
+\lstset{language=Fortran} %pyskip
 \begin{multicols}{2}
 \small
 \begin{lstlisting}
@@ -245,7 +245,7 @@ end do
 
 What is the output of the following fragments? Assume that there are four threads.
 
-\lstset{language=C}
+\lstset{language=C} %pyskip
 \begin{multicols}{2}
 \small
 \begin{lstlisting}
@@ -309,7 +309,7 @@ int nt;
 \end{lstlisting}
 \end{multicols}
 
-\lstset{language=Fortran}
+\lstset{language=Fortran} %pyskip
 \begin{multicols}{2}
 \small
 \begin{lstlisting}
@@ -372,7 +372,7 @@ Assume that all variables and arrays are defined.
 What errors and potential problems do you see in this code? How would you fix them?
 
 \begin{multicols}{2}
-\lstset{language=C}
+\lstset{language=C} %pyskip
 \small
 \begin{lstlisting}
 #pragma omp parallel
@@ -386,7 +386,7 @@ What errors and potential problems do you see in this code? How would you fix th
 \end{lstlisting}
 \columnbreak
 
-\lstset{language=Fortran}
+\lstset{language=Fortran} %pyskip
 \begin{lstlisting}
 !$OMP parallel
   x = f()

@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-8
+%%%% by Victor Eijkhout, copyright 2012-9
 %%%%
 %%%% mpi-blocksend.tex : blocking sends
 %%%%
@@ -301,7 +301,29 @@ deadlock-free execution, but doing so is a bit cumbersome.
 \end{exercise}
 
 There are better solutions which we will
-explore next.
+explore in the next section.
+
+\Level 1 {Bucket brigade}
+
+The problem with the previous exercise was that an operation that was
+conceptually parallel, became serial in execution. On the other hand,
+sometimes the operation is actually serial in nature. One example is
+the \indextermdef{bucket brigade} operation, where a piece of data is
+successively passed down a sequence of processors.
+
+\begin{exercise}
+  \label{ex:bucket-block}
+  Take the code of exercise~\ref{ex:linear-sequential} and modify it
+  so that the data from process zero gets propagated to every
+  process. Specifically: compute
+  \[ 
+  \begin{cases}
+    x_0 = 1&\hbox{on process zero}\\
+    x_p = x_{p-1}+(p+1)^2 & \hbox{on process $p$}\\
+  \end{cases}
+  \]
+  Use \n{MPI_Send} and \n{MPI_recv}; make sure to get the order right.
+\end{exercise}
 
 \index{communication!blocking|)}
 
@@ -459,6 +481,9 @@ send-receive call\footnote {There is an \n{MPI\_Compare\_and\_swap}
 In section~\ref{sec:mpi-send-recv}
 you saw that \indexmpishow{MPI_Receive} has a `status' argument
 of type \indexmpishow{MPI_STATUS} that \indexmpishow{MPI_Send} lacks.
+%
+\mpiRoutineRef{MPI_Status}
+%
 (The various \indexmpishow{MPI_Wait...}  routines also have a status
 argument; see section~\ref{sec:nonblocking}.) The reason for this
 argument is
@@ -466,7 +491,7 @@ as follows.
 
 In some circumstances the recipient may not know all details of a
 message when you make the receive call, so MPI has a way of querying
-the \emph{message status}
+the \emph{status}\index{status!of received message} of the message:
 \begin{itemize}
 \item If you are expecting multiple incoming messages, it may be most
   efficient to deal with them in the order in which they arrive. So,
@@ -482,8 +507,6 @@ the \emph{message status}
   out how much data is being sent.
 \end{itemize}
 
-\mpiRoutineRef{MPI_Status}
-
 If you 
 precisely know what is going to be sent, the status argument tells you 
 nothing new. Therefore, there is a special value \indexmpishow{MPI_STATUS_IGNORE}
@@ -491,40 +514,7 @@ that you can supply instead of a status object, which tells MPI that the
 status does not have to be reported. For routines such as \indexmpishow{MPI_Waitany}
 where an array of statuses is needed, you can supply \indexmpishow{MPI_STATUSES_IGNORE}.
 
-The \indexmpishow{MPI_Status} object
-is a structure with the following
-freely accessible members:
-%
-\mpiRoutineRef{MPI_SOURCE}
-%
-\mpiRoutineRef{MPI_TAG}
-%
-\mpiRoutineRef{MPI_ERROR}
-
-There is also
-opaque information: the amount of data received can be retrieved by a
-function call to \indexmpishow{MPI_Get_count}.
-%
-\mpiRoutineRef{MPI_Get_count}
-%
-This may be necessary since the \n{count} argument to \n{MPI_Recv} is 
-the buffer size, not an indication of the actually expected number of
-data items.
-
-\Level 2 {Example: receiving from any source}
-
-Using the \indexmpishow{MPI_ANY_SOURCE} specifier. We retrieve the
-actual source from the \indexmpishow{MPI_Status} object through the
-\indexmpishow{MPI_SOURCE} field.
-%
-\cverbatimsnippet[examples/mpi/c/anysource.c]{anysource}
-%
-\pverbatimsnippet{anysourcep}
-
-In sections \ref{prj:mandelbrot} and~\ref{sec:mpi-test} we explained
-the manager-worker model, and how it offers an opportunity for inspecting the
-\indexmpishow{MPI_SOURCE} field of the \indexmpishow{MPI_Status}
-object describing the data that was received.
+This subject is further discussed in section~\ref{sec:mpi-wildcard}.
 
 \index{message!status|)}
 

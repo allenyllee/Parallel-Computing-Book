@@ -25,14 +25,14 @@ int main(int argc,char **argv) {
     return -1;
   }
   int sender = 0, receiver = 1, the_other = 1-procno,
-    count = 5,totalcount = 15;
+    count = 5,totalcount = 15, targetbuffersize = 2*totalcount;
   int *source,*target;
   int *displacements,*blocklengths;
 
   displacements = (int*) malloc(count*sizeof(int));
   blocklengths = (int*) malloc(count*sizeof(int));
   source = (int*) malloc(totalcount*sizeof(int));
-  target = (int*) malloc(count*sizeof(int));
+  target = (int*) malloc(targetbuffersize*sizeof(int));
 
   displacements[0] = 2; displacements[1] = 3; displacements[2] = 5;
   displacements[3] = 7; displacements[4] = 11;
@@ -50,7 +50,7 @@ int main(int argc,char **argv) {
   } else if (procno==receiver) {
     MPI_Status recv_status;
     int recv_count;
-    MPI_Recv(target,count,MPI_INT,the_other,0,comm,
+    MPI_Recv(target,targetbuffersize,MPI_INT,the_other,0,comm,
       &recv_status);
     MPI_Get_count(&recv_status,MPI_INT,&recv_count);
     ASSERT(recv_count==count);

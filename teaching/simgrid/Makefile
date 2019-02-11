@@ -29,3 +29,6 @@ CFLAGS = -O2 -std=c99
 .SECONDEXPANSION:
 ${EXERCISES} : $$@.c
 	${MPI_C_COMPILER} ${CFLAGS} -o $@ $^
+
+clean ::
+	@/bin/rm -f ${EXERCISES}

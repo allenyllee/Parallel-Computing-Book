@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-8
+%%%% by Victor Eijkhout, copyright 2012-9
 %%%%
 %%%% mpi-started.tex : introductory chapter about MPI
 %%%%
@@ -342,7 +342,7 @@ MPI_Comm_size( comm, &nprocs );
 \Level 2 {Fortran}
 
 The Fortran specification looks like:
-\lstset{language=Fortran}
+\lstset{language=Fortran} %pyskip
 \begin{lstlisting}
 MPI_Comm_size(comm, size, ierror)
 INTEGER, INTENT(IN) :: comm
@@ -356,7 +356,7 @@ integer :: comm = MPI_COMM_WORLD
 integer :: size
 CALL MPI_Comm_size( comm, size, ierr )
 \end{lstlisting}
-\lstset{language=C}
+\lstset{language=C} %pyskip
 
 \begin{itemize}
 \item Most Fortran routines have the same parameters as the
@@ -373,7 +373,7 @@ CALL MPI_Comm_size( comm, size, ierr )
 
 The Python interface to MPI uses classes and objects. Thus, a
 specification like:
-\lstset{language=Python}
+\lstset{language=Python} %pyskip
 \begin{lstlisting}
 MPI.Comm.Send(self, buf, int dest, int tag=0)
 \end{lstlisting}
@@ -413,7 +413,7 @@ would be used as
 \begin{lstlisting}
 MPI.Request.Waitall(requests)
 \end{lstlisting}
-\lstset{language=C}
+\lstset{language=C} %pyskip
 
 \Level 0 {Review}
 

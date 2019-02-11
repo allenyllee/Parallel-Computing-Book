@@ -436,16 +436,17 @@ with the next code in the parallel region:
 
 In the following example, threads that are finished with the first loop
 can start on the second. Note that this requires both loops to have
-the same schedule.
+the same schedule. We specify the static schedule here to have an
+identical scheduling of iterations over threads:
 \begin{verbatim}
 #pragma omp parallel
 {
   x = local_computation()
-#pragma omp for nowait
+#pragma omp for schedule(static) nowait
   for (i=0; i<N; i++) { 
     x[i] = ... 
   }
-#pragma omp for 
+#pragma omp for schedule(static)
   for (i=0; i<N; i++) { 
     y[i] = ... x[i] ...
   }

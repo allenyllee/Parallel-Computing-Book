@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-8
+%%%% by Victor Eijkhout, copyright 2012-9
 %%%%
 %%%% mpi-nonblock.tex : blocking sends
 %%%%
@@ -21,13 +21,13 @@ With some regular applications we also get a regular communication pattern.
 Consider again the above operation:
 \[ y_i=x_{i-1}+x_i+x_{i+1}\colon i=1,\ldots,N-1 \]
 Doing this in parallel induces communication, as pictured in figure~\ref{fig:3pt}.
-%
-\begin{figure}[ht]
-  \includegraphics[scale=.09]{threepoint}
-  \caption{Communication in an one-dimensional operation}
-  \label{fig:3pt}
-\end{figure}
-%
+
+%% \begin{figure}[ht]
+%%   \includegraphics[scale=.09]{threepoint}
+%%   \caption{Communication in an one-dimensional operation}
+%%   \label{fig:3pt}
+%% \end{figure}
+
 We note:
 \begin{itemize}
 \item The data is one-dimensional, and we have a linear ordering of the processors.
@@ -82,6 +82,8 @@ By contrast, the non-blocking calls \indexmpishow{MPI_Isend} and
 they tell the runtime system `here is some data and please send it as
 follows' or `here is some buffer space, and expect such-and-such data
 to come'.  This is illustrated in figure~\ref{fig:send-nonblocking}.
+Issuing the \n{Isend/Irecv} call is sometimes referred to as
+\indexterm{posting} a send/receive.
 
 \mpiRoutineRef{MPI_Isend}
 
@@ -137,6 +139,13 @@ MPI_Waitall( ... );
 \end{lstlisting}
 
 \mpiRoutineRef{MPI_Waitall}
+
+\begin{exercise}
+  \label{ex:bucket-nonblock}
+  Revisit exercise~\ref{ex:bucket-block} and consider replacing the blocking
+  calls by non-blocking ones. How far apart can you put the
+  \n{Isend/Irecv} calls and the corresponding \n{Wait}s?
+\end{exercise}
 
 \Level 2 {Non-blocking communication and buffers}
 
@@ -292,7 +301,7 @@ call.
 
 Note the \indexmpishow{MPI_STATUS_IGNORE} parameter: we know everything
 about the incoming message, so we do not need to query a status object.
-Contrast this with the example in section~\ref{ref:mpi-source}.
+Contrast this with the example in section~\ref{sec:mpi-source}.
 
 \begin{pythonnote}
   In python creating the array for the returned requests is somewhat

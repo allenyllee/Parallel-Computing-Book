@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-8
+%%%% by Victor Eijkhout, copyright 2012-9
 %%%%
 %%%% mpi-topo.tex : about communicator topologies
 %%%%
@@ -82,7 +82,7 @@ The cartesian topology is specified by giving
 \indexmpishow{MPI_Cart_create} the sizes of the processor grid along
 each axis, and whether the grid is periodic along that axis.
 
-\lstset{style=reviewcode,language=C}
+\lstset{style=reviewcode,language=C} %pyskip
 \begin{lstlisting}
 int MPI_Cart_create(
   MPI_Comm comm_old, int ndims, int *dims, int *periods, 
@@ -93,7 +93,7 @@ Each point in this new communicator has a coordinate and a rank.  They
 can be queried with \indexmpishow{MPI_Cart_coord} and
 \indexmpishow{MPI_Cart_rank} respectively.
 
-\lstset{style=reviewcode,language=C}
+\lstset{style=reviewcode,language=C} %pyskip
 \begin{lstlisting}
 int MPI_Cart_coords(
   MPI_Comm comm, int rank, int maxdims,

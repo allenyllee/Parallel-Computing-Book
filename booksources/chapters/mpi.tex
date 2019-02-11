@@ -4,12 +4,110 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-8
+%%%% by Victor Eijkhout, copyright 2012-9
 %%%%
 %%%% mpi.tex : leftover MPI topics
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\Level 0 {Info objects}
+\label{sec:mpi:info}
+
+\indexmpidef{MPI_Info_create}
+\begin{verbatim}
+MPI_INFO_CREATE(info)
+OUT info        info object created (handle)
+
+C:
+int MPI_Info_create(MPI_Info *info)
+
+Fortran legacy:
+MPI_INFO_CREATE(INFO, IERROR)
+INTEGER INFO, IERROR 
+\end{verbatim}
+
+\indexmpidef{MPI_Info_delete}
+\begin{verbatim}
+  MPI_INFO_DELETE(info, key)
+  INOUT infoinfo object (handle)
+  IN keykey (string)
+  int MPI_Info_delete(MPI_Info info, char *key)
+  MPI_INFO_DELETE(INFO, KEY, IERROR)
+  INTEGER INFO, IERROR
+  CHARACTER*(*) KEY
+\end{verbatim}
+
+\indexmpidef{MPI_Info_set}
+\begin{verbatim}
+  MPI_INFO_SET(info, key, value)
+  INOUT infoinfo object (handle)
+  IN keykey (string)
+  IN valuevalue (string)
+  int MPI_Info_set(MPI_Info info, char *key, char *value)
+  MPI_INFO_SET(INFO, KEY, VALUE, IERROR)
+  INTEGER INFO, IERROR
+  CHARACTER*(*) KEY, VALUE
+\end{verbatim}
+
+\indexmpidef{MPI_Info_get}
+\begin{verbatim}
+  MPI_INFO_GET(info, key, valuelen, value, flag)
+  IN infoinfo object (handle)
+  IN keykey (string)
+  IN valuelenlength of value arg (integer)
+  OUT valuevalue (string)
+  OUT flagtrue if key defined, false if not (boolean)
+int MPI_Info_get(MPI_Info info, char *key, int valuelen, char *value,
+int *flag)
+MPI_INFO_GET(INFO, KEY, VALUELEN, VALUE, FLAG, IERROR)
+INTEGER INFO, VALUELEN, IERROR
+CHARACTER*(*) KEY, VALUE
+LOGICAL FLAG
+\end{verbatim}
+
+Maximum length of a key: \indexmpidef{MPI_MAX_INFO_KEY}.
+
+\indexmpidef{MPI_Info_get_nkeys}
+\begin{verbatim}
+  MPI_INFO_GET_NKEYS(info, nkeys)
+  IN infoinfo object (handle)
+  OUT nkeysnumber of defined keys (integer)
+  int MPI_Info_get_nkeys(MPI_Info info, int *nkeys)
+  MPI_INFO_GET_NKEYS(INFO, NKEYS, IERROR)
+  INTEGER INFO, NKEYS, IERROR
+\end{verbatim}
+
+\indexmpidef{MPI_Info_free}
+\begin{verbatim}
+  MPI_INFO_FREE(info)
+  INOUT infoinfo object (handle)
+  int MPI_Info_free(MPI_Info *info)
+  MPI_INFO_FREE(INFO, IERROR)
+  INTEGER INFO, IERROR
+\end{verbatim}
+
+\indexmpidef{MPI_Info_dup}
+\begin{verbatim}
+  MPI_INFO_DUP(info, newinfo)
+  IN infoinfo object (handle)
+  OUT newinfoinfo object (handle)
+  int MPI_Info_dup(MPI_Info info, MPI_Info *newinfo)
+  MPI_INFO_DUP(INFO, NEWINFO, IERROR)
+  INTEGER INFO, NEWINFO, IERROR
+\end{verbatim}
+
+\indexmpidef{MPI_Info_get_nthkey}
+\begin{verbatim}
+  MPI_INFO_GET_NTHKEY(info, n, key)
+  IN infoinfo object (handle)
+  IN nkey number (integer)
+  OUT keykey (string)
+  int MPI_Info_get_nthkey(MPI_Info info, int n, char *key)
+  MPI_INFO_GET_NTHKEY(INFO, N, KEY, IERROR)
+  INTEGER INFO, N, IERROR
+  CHARACTER*(*) KEY
+\end{verbatim}
 
 \Level 0 {Error handling}
 \label{sec:mpi:error}
@@ -194,7 +292,7 @@ hang. Can we deal with this case? Yes, but it involves some
 programming.
 
 First of all, one of the possible MPI error return codes
-(section~\ref{mpi:error}) is \n{MPI_ERR_COMM}, which can be returned
+(section~\ref{sec:mpi:error}) is \n{MPI_ERR_COMM}, which can be returned
 if a processor in the communicator is unavailable. You may want to
 catch this error, and add a `replacement processor' to the
 program. For this, the \indexmpishow{MPI_Comm_spawn} can be used
@@ -208,17 +306,84 @@ collection of inter-communicators to begin with.
 \Level 0 {Context information}
 \label{sec:context}
 
+See also section~\ref{sec:mpi_attr}.
+
+\Level 1 {Processor name}
+
+You can query the \indexterm{hostname} of a processor.
+This name need not be unique between different processor ranks.
+%
+\mpiRoutineRef{MPI_Get_processor_name}
+%
+You have to pass in the character storage:
+the character array must be at least \indexmpidef{MPI_MAX_PROCESSOR_NAME} characters long.
+The actual length of the name is returned in the \n{resultlen} parameter.
+
+\Level 1 {Version information}
+
+For runtime determination,
 The \indextermbus{MPI}{version} is available through two parameters
 \indexmpishow{MPI_VERSION} and \indexmpishow{MPI_SUBVERSION}
-or the function \indexmpishow{MPI_Get_version}.
+or the function \indexmpishow{MPI_Get_version}:
+%
+\mpiRoutineRef{MPI_Get_version}
+
+\Level 1 {Attributes}
+\label{sec:mpi_attr}
+
+\mpiRoutineRef{MPI_Attr_get}
+
+Attributes are:
+\begin{itemize}
+\item \indexmpishow{MPI_TAG_UB}
+  Upper bound for \emph{tag value}\index{tag!bound on value}.
+\item \indexmpishow{MPI_HOST}
+  Host process rank, if such exists, \indexmpishow{MPI_PROC_NULL}, otherwise.
+\item \indexmpishow{MPI_IO}
+rank of a node that has regular I/O facilities (possibly
+myrank). Nodes in the same communicator may return different values
+for this parameter.
+\item \indexmpishow{MPI_WTIME_IS_GLOBAL}
+Boolean variable that indicates whether clocks are synchronized.
+\end{itemize}
+
+Also:
+\begin{itemize}
+\item \indexmpishow{MPI_UNIVERSE_SIZE}: the total number of processes
+  that can be created. This can be more than the size of
+  \n{MPI_COMM_WORLD} if the host list is larger than the number of
+  initially started processes. See section~\ref{sec:mpi-dynamic}.
+\item \indexmpishow{MPI_APPNUM}: if MPI is used in \ac{MPMD} mode, or
+  if \indexmpishow{MPI_Comm_spawn_multiple} is used, this attribute
+  reports the how-manieth program we are in.
+\end{itemize}
 
 \Level 0 {Timing}
 \label{sec:mpi-timing}
 \index{timing!MPI|(}
 
-Timing of parallel programs is tricky. On each node you can use a timer,
-typically based on some \ac{OS} call. MPI supplies its own routine
-\indexmpishow{MPI_Wtime} which gives \indexterm{wall clock time}.
+MPI has a \indexterm{wall clock} timer: \indexmpishow{MPI_Wtime}
+%
+\mpiRoutineRef{MPI_Wtime}
+%
+which gives the number of seconds from a certain point in the past.
+(Note the absence of the error parameter in the fortran call.)
+\verbatimsnippet{pingpong}
+
+The timer has a resolution of \indexmpishow{MPI_Wtick}:
+%
+\mpiRoutineRef{MPI_Wtick}
+
+Timing in parallel is a tricky issue. For instance, most clusters do
+not have a central clock, so you can not relate start and stop times
+on one process to those on another. You can test for a global clock as
+follows\indexmpi{MPI_WTIME_IS_GLOBAL}:
+\begin{lstlisting}
+int *v,flag;
+MPI_Attr_get( comm, MPI_WTIME_IS_GLOBAL, &v, &flag );
+if (mytid==0) printf(``Time synchronized? %d->%d\n'',flag,*v);
+\end{lstlisting}
+
 Normally you don't worry about the starting point for this timer: 
 you call it before and after an event and subtract the values.
 \begin{lstlisting}
@@ -480,18 +645,28 @@ around this, such as sending a number of
 \label{sec:python-stuff}
 \index{MPI!Python issues|(}
 
+\Level 2 {Byte calculations}
+
+The \indexmpishow{MPI_Win_create} routine needs a displacement in
+bytes. Here is a good way for finding the size of \indexterm{numpy} datatypes:
+\lstset{language=Python} %pyskip
+\begin{lstlisting}
+numpy.dtype('i').itemsize
+\end{lstlisting}
+
 \Level 2 {Arrays of objects}
 
 Objects of type \n{MPI.Status} or \n{MPI.Request} often need to be created
 in an array, for instance when looping through a number of \n{Isend} calls.
 In that case the following idiom may come in handy:
-\lstset{language=Python}
+
+\lstset{language=Python} %pyskip
 \begin{lstlisting}
 requests = [ None ] * nprocs
 for p in range(nprocs):
   requests[p] = comm.Irecv( ... )
 \end{lstlisting}
-\lstset{language=C}
+\lstset{language=C} %pyskip
 
 \index{MPI!Python issues|)}
 
@@ -519,76 +694,6 @@ That means you can not transfer a compiled MPI file between
 platforms, or even between compilers on one platform.
 However, a working MPI source on one MPI implementation
 will also work on another.
-
-\Level 0 {Context information}
-\label{sec:context}
-
-\Level 1 {Version information}
-
-\mpiRoutineRef{MPI_VERSION}
-
-For runtime determination,
-%
-\mpiRoutineRef{MPI_Get_version}
-
-\Level 1 {Attributes}
-\label{sec:mpi_attr}
-
-\mpiRoutineRef{MPI_Attr_get}
-
-Attributes are:
-\begin{itemize}
-\item \indexmpishow{MPI_TAG_UB}
-  Upper bound for \emph{tag value}\index{tag!bound on value}.
-\item \indexmpishow{MPI_HOST}
-  Host process rank, if such exists, \indexmpishow{MPI_PROC_NULL}, otherwise.
-\item \indexmpishow{MPI_IO}
-rank of a node that has regular I/O facilities (possibly
-myrank). Nodes in the same communicator may return different values
-for this parameter.
-\item \indexmpishow{MPI_WTIME_IS_GLOBAL}
-Boolean variable that indicates whether clocks are synchronized.
-\end{itemize}
-
-Also:
-\begin{itemize}
-\item \indexmpishow{MPI_UNIVERSE_SIZE}: the total number of processes
-  that can be created. This can be more than the size of
-  \n{MPI_COMM_WORLD} if the host list is larger than the number of
-  initially started processes. See section~\ref{sec:mpi-dynamic}.
-\item \indexmpishow{MPI_APPNUM}: if MPI is used in \ac{MPMD} mode, or
-  if \indexmpishow{MPI_Comm_spawn_multiple} is used, this attribute
-  reports the how-manieth program we are in.
-\end{itemize}
-
-\Level 0 {Timing}
-\label{sec:ref:mpi-timing}
-
-MPI has a \indexterm{wall clock} timer: \indexmpishow{MPI_Wtime}
-%
-\mpiRoutineRef{MPI_Wtime}
-%
-which gives the number of seconds from a certain point in the past.
-(Note the absence of the error parameter in the fortran call.)
-\verbatimsnippet{pingpong}
-
-The timer has a resolution of \indexmpishow{MPI_Wtick}:
-%
-\mpiRoutineRef{MPI_Wtick}
-
-Timing in parallel is a tricky issue. For instance, most clusters do
-not have a central clock, so you can not relate start and stop times
-on one process to those on another. You can test for a global clock as
-follows\indexmpi{MPI_WTIME_IS_GLOBAL}:
-\begin{lstlisting}
-int *v,flag;
-MPI_Attr_get( comm, MPI_WTIME_IS_GLOBAL, &v, &flag );
-if (mytid==0) printf(``Time synchronized? %d->%d\n'',flag,*v);
-\end{lstlisting}
-%\indexmpi{MPI_Wtime} can be either a function or a macro.
-
-%\Level 1 {Profiling}
-%\label{sec:ref:profile}
 
 \Level 0 {Multi-threading}
 \label{sec:ref:mpi-thread}

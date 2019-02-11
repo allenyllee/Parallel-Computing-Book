@@ -6,9 +6,13 @@ import sys
 indict = {}; outdict = {}
 for line in sys.stdin:
     line = line.strip()
-    if re.match('[0-9]*$',line):
-        NP = int(line)
-        print "Analyzing",NP,"processes"
+    if re.match('[0-9]+$',line):
+        try :
+            NP = int(line)
+        except:
+            print("Could not parse line for int: <<%s>>" % line)
+            sys.exit(1)
+        print("Analyzing %d processes" % NP)
         continue
     if not re.match(r'\[',line): continue
     number = re.sub(r'\[',"",re.sub(r'\]',"",line)).split()[0]
@@ -36,12 +40,12 @@ for line in sys.stdin:
 #print "Recvs:",indict
     
 if not indict==outdict:
-    print "Success"
+    print("Success")
     sys.exit(1)
 else:
-    print "Mismatch:"
+    print("Mismatch:")
     for p in outdict.keys():
         ip = int(p)
-        print "Proc %d was written %s times; claims %s" \
-            % (ip, str(outdict[p]), str(indict[p]) )
+        print("Proc %d was written %s times; claims %s" \
+              % (ip, str(outdict[p]), str(indict[p]) ) )
     sys.exit(0)

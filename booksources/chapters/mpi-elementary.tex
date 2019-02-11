@@ -87,7 +87,7 @@ predefined MPI datatypes. Hence the following routines exist to make
 \mpiRoutineRef{MPI_Type_create_f90_complex}
 
 Examples:
-\lstset{style=reviewcode,language=Fortran}
+\lstset{style=reviewcode,language=Fortran} %pyskip
 \begin{lstlisting}
 INTEGER ( KIND = SELECTED_INTEGER_KIND(15) ) , &
  DIMENSION(100) :: array INTEGER :: root , integertype , error 
@@ -105,7 +105,7 @@ COMPLEX ( KIND = SELECTED_REAL_KIND(15 ,300) ) , &
  DIMENSION(100) :: array 
 CALL MPI_Type_create_f90_complex( 15 , 300 , complextype , error )
 \end{lstlisting}
-\lstset{style=reviewcode,language=C}
+\lstset{style=reviewcode,language=C} %pyskip
 
 \Level 1 {Python}
 \index{datatype!elementary!in Python}
@@ -133,21 +133,21 @@ See also the \indexmpishow{MPI_Sizeof} routine.
 \Level 2 {Fortran}
 
 The equivalent of \indexmpishowsub{MPI_Aint}{in Fortran} is
-\lstset{style=reviewcode,language=Fortran}
+\lstset{style=reviewcode,language=Fortran} %pyskip
 \begin{lstlisting}
 integer(kind=MPI_ADDRESS_KIND) :: winsize
 \end{lstlisting}
-\lstset{style=reviewcode,language=C}
+\lstset{style=reviewcode,language=C} %pyskip
 
 \Level 2 {Python}
 
 The \indexmpishow{MPI_Win_create} routine needs a displacement in
 bytes. Here is a good way for finding the size of \indexterm{numpy} datatypes:
-\lstset{style=reviewcode,language=Python}
+\lstset{style=reviewcode,language=Python} %pyskip
 \begin{lstlisting}
 numpy.dtype('i').itemsize
 \end{lstlisting}
-\lstset{language=C}
+\lstset{language=C} %pyskip
 
 \index{datatype!elementary|)}
 

@@ -14,10 +14,6 @@ info ::
 	@echo "make regression_compile : compile all exercises"
 	@echo "make regression_runs    : run selected exercises"
 	@echo "make regression         : compile and run"
-	@echo "make run_PROGRAM (choices: ${REGRESSIONRUNS})"
-	@if [ ! -z ${PYTHON} ] ; then \
-	  echo "    [PYTHON=yourlocalpython]" ; \
-	fi
 regression : regression_compile regression_runs
 regression_compile : clean
 	@for e in ${EXERCISES} ; do \
@@ -33,6 +29,17 @@ regression_runs :
 	    make $$r ; \
 	  done ; \
 	fi
+
+info ::
+	@echo "make run_PROGRAM (choices: ${REGRESSIONRUNS})"
+	@if [ ! -z ${PYTHON} ] ; then \
+	  echo "    [PYTHON=yourlocalpython]" ; \
+	fi
+	@echo "make list_regressions"
+.PHONY: list_regressions
+list_regressions :
+	@echo ${REGRESSIONRUNS}
+
 .PHONY: regress_out regress_display regress_success
 info ::
 	@echo "make regress_out"
@@ -47,9 +54,13 @@ else
 endif
 NP = 4
 CATCHER = ../course-support/catchout
-.PHONY: catchrun
+.PHONY: run catchrun
 info ::
-	@echo "make catchrun [ PROGRAM=... NP=... ] : run with orderly output"
+	@echo "make run/catchrun"
+	@echo "    ( catchrun gives orderly output)"
+	@echo "    [ PROGRAM=... NP=... ]"
+run :
+	@${MPIRUN} -np ${NP} ${PROGRAM}
 catchrun :
 	@${MPIRUN} -np ${NP} ${CATCHER} ${PROGRAM} >/dev/null 2>&1
 	@for i in `seq 0 $$(( NP-1 ))` ; do \
@@ -295,9 +306,9 @@ run_randomput :
 	    success=0; \
 	 else \
 	    echo "Values 1:$$v1 and 2:$$v2 correctly add up to 0:$$vs" ; \
-	 fi ; \
-	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
-	echo
+	 fi \
+	&& make regress_success SUCCESS=$$success PROGRAM=$${program} \
+	&& echo
 
 .PHONY: run_onesidedbuild
 REGRESSIONRUNS += run_onesidedbuild
