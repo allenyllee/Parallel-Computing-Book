@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-8
+%%%% by Victor Eijkhout, copyright 2012-9
 %%%%
 %%%% mpi-bcastreduce.tex : about broadcast & reduce collectives
 %%%%
@@ -22,7 +22,7 @@ items.
 Let's take the gather calls as an example. Assume that each processor 
 does a local computation that produces a number of data elements,
 and this number is different for each processor (or at least not
-the same for all). In the regular \n{MPI_Gather} call the root processor
+the same for all). In the regular \lstinline$MPI_Gather$ call the root processor
 had a buffer of size~$nP$, where $n$~is the number of elements produced
 on each processor, and $P$~the number of processors. The contribution
 from processor~$p$ would go into locations $pn,\ldots,(p+1)n-1$.
@@ -41,15 +41,20 @@ the root processor needs to have all the $n_p$ numbers, and it can collect
 them with an \indexmpishow{MPI_Gather} call.
 
 We now have all the ingredients.
-All the processors specify a send buffer just as with \n{MPI_Gather}.
+All the processors specify a send buffer just as with \lstinline$MPI_Gather$.
 However, the receive buffer specification on the root is more complicated. 
 It now consists of:
-\begin{lstlisting}
+\begin{verbatim}
 outbuffer, array-of-outcounts, array-of-displacements, outtype
-\end{lstlisting}
+\end{verbatim}
 and you have just seen how to construct that information.
 
-\Level 1 {Reference}
+For example, in an \indexmpishow{MPI_Gatherv} call each process has an individual
+number of items to contribute. To gather this, the root process needs
+to find these individual amounts with an \lstinline$MPI_Gather$ call, and
+locally construct the offsets array. Note how the offsets array has
+size \n{ntids+1}: the final offset value is automatically the total
+size of all incoming data. See the example below.
 
 There are various calls where processors can have
 buffers of differing sizes.
@@ -79,29 +84,16 @@ int MPI_Allgatherv
    MPI_Datatype recvtype, MPI_Comm comm)
 \end{lstlisting}
 
-\mpiRoutineRef{MPI_Alltoallv}
+\Level 1 {Example of Gatherv}
 
-For example, in an \indexmpishow{MPI_Gatherv} call each process has an individual
-number of items to contribute. To gather this, the root process needs
-to find these individual amounts with an \n{MPI_Gather} call, and
-locally construct the offsets array. Note how the offsets array has
-size \n{ntids+1}: the final offset value is automatically the total
-size of all incoming data.  
-%
-\cverbatimsnippet{gatherv}
-
-\Level 1 {Examples}
-
-\mpiexample{MPI_Gatherv}
-
-Gather irregularly sized data onto a root. We first need an
-\n{MPI_Gather} to determine offsets.
+We use \indexmpishow{MPI_Gatherv} to do an irregular gather onto a root. We first need an
+\indexmpishow{MPI_Gather} to determine offsets.
 %
 \cverbatimsnippet{gatherv}
 %
 \pverbatimsnippet{gathervp}
 
-\mpiexample{MPI_Allgatherv}
+\Level 1 {Example of Allgatherv}
 
 Prior to the actual gatherv call, we need to construct the count and
 displacement arrays. The easiest way is to use a reduction.
@@ -112,4 +104,8 @@ In python the receive buffer has to contain the counts and
 displacements arrays.
 
 \pverbatimsnippet{allgathervp}
+
+\Level 1 {Variable all-to-all}
+
+\mpiRoutineRef{MPI_Alltoallv}
 

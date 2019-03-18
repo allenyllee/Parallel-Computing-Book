@@ -35,10 +35,10 @@ only one element is used.
 \begin{exercise}
   \label{ex:randommaxscale}
   Let each process compute a random number,
-  and compute the sum of these numbers using the \n{MPI_Allreduce}
+  and compute the sum of these numbers using the \lstinline$MPI_Allreduce$
   routine.
 
-  (The operator is \n{MPI_SUM} for C/Fortran, or \n{MPI.SUM} for
+  (The operator is \lstinline$MPI_SUM$ for C/Fortran, or \lstinline$MPI.SUM$ for
   Python.)
   
   Each process then scales its value
@@ -53,12 +53,12 @@ is the \indexterm{inner product} computation. Typically, you have two vectors $x
 that have the same distribution, that is,
 where all processes store equal parts of $x$ and~$y$.
 The computation is then
-\begin{verbatim}
+\begin{lstlisting}
 local_inprod = 0;
 for (i=0; i<localsize; i++)
   local_inprod += x[i]*y[i];
 MPI_Allreduce( &local_inprod, &global_inprod, 1,MPI_DOUBLE ... ) 
-\end{verbatim}
+\end{lstlisting}
 
 \Level 1 {Reduce in place}
 \label{sec:allreduce-inplace}
@@ -105,9 +105,9 @@ array of \n{real/int} structs, where the \n{int} is the rank of the number.
 
 For use in reductions and scans it is possible to define your own operator.
 
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Op_create( MPI_User_function *func, int commute, MPI_Op *op);
-\end{verbatim}
+\end{lstlisting}
 
 \Level 0 {Rooted collectives: broadcast, reduce}
 \label{sec:rooted}
@@ -132,10 +132,10 @@ processes. Reduction operations go the other way: each process has a
 data item, and these are all brought together into a single item.
 
 Here are the essential elements of a reduction operation:
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Reduce( senddata, recvdata..., operator,
     root, comm ); 
-\end{verbatim}
+\end{lstlisting}
 \begin{itemize}
 \item There is the original data, and the data resulting from the
   reduction. It is a design decision of MPI that it will not by
@@ -203,13 +203,13 @@ these address calculations:
 \label{sec:bcast}
 
 The broadcast call has the following structure:
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Bcast( data..., root , comm);
-\end{verbatim}
+\end{lstlisting}
 The root is the process that is sending its data.
 Typically, it will be the root of a broadcast tree.
 The \n{comm} argument is a communicator:
-for now you can use \n{MPI_COMM_WORLD}.
+for now you can use \lstinline$MPI_COMM_WORLD$.
 Unlike with send/receive there is no message tag,
 because collectives are blocking, so you can have only one collective active at a
 time. 
@@ -218,11 +218,11 @@ The data in a broadcast (or any other MPI operation for that matter)
 is specified as
 \begin{itemize}
 \item A buffer. In~C this is the address in memory of the data. This means
-  that you broadcast a single scalar as \n{MPI_Bcast( &value, ... )},
-  but an array as \n{MPI_Bcast( array, ... )}.
+  that you broadcast a single scalar as \lstinline$MPI_Bcast$\n{( &value, ... )},
+  but an array as \lstinline$MPI_Bcast$\n{( array, ... )}.
 \item The number of items and their datatype. The allowable datatypes
-  are such things as \n{MPI_INT} and \n{MPI_FLOAT} for~C, and
-  \n{MPI_INTEGER} and \n{MPI_REAL} for Fortran, or more complicated types.
+  are such things as \lstinline$MPI_INT$ and \lstinline$MPI_FLOAT$ for~C, and
+  \lstinline$MPI_INTEGER$ and \lstinline$MPI_REAL$ for Fortran, or more complicated types.
   See section~\ref{ch:mpi-data} for details.
 \end{itemize}
 \begin{pythonnote}

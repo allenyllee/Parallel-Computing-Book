@@ -30,8 +30,8 @@ After this, the intercommunicator can be used in collectives such as
 MPI_Bcast (buff, count, dtype, root, comm, ierr)
 \end{lstlisting}
 \begin{itemize}
-\item In group~A, the root process passes \n{MPI_ROOT} as
-  `root' value; all others use \n{MPI_NULL_PROC}.
+\item In group~A, the root process passes \lstinline$MPI_ROOT$ as
+  `root' value; all others use \lstinline$MPI_PROC_NULL$.
 \item In group~B, all processes use a `root' value that is the
   rank of the root process in the root group.
 \end{itemize}

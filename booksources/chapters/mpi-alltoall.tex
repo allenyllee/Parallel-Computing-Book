@@ -69,7 +69,7 @@ percents of the running time.
 \label{sec:reducescatter}
 
 There are several MPI collectives that are functionally equivalent to
-a combination of others. You have already seen \n{MPI_Allreduce} which
+a combination of others. You have already seen \lstinline$MPI_Allreduce$ which
 is equivalent to a reduction followed by a broadcast. Often such
 combinations can be more efficient than using the individual calls;
 see~\HPSCref{sec:collective}.
@@ -113,7 +113,7 @@ Using \indexmpishow{MPI_Reduce_scatter} the process goes as follows:
   indices.
 \item The big trick is that each process now knows how many of these
   requests will be coming in, so it can post precisely that many
-  \n{MPI_Irecv} calls, with a source of \indexmpishow{MPI_ANY_SOURCE}.
+  \lstinline$MPI_Irecv$ calls, with a source of \indexmpishow{MPI_ANY_SOURCE}.
 \end{itemize}
 
 The \indexmpishow{MPI_Reduce_scatter} command is equivalent to a reduction
@@ -138,15 +138,15 @@ An important application of this is establishing an irregular
 communication pattern.  Assume that each process knows which
 other processes it wants to communicate with; the problem is to
 let the other processes know about this.
-The solution is to use \n{MPI_Reduce_scatter} to find out how many processes
+The solution is to use \lstinline$MPI_Reduce_scatter$ to find out how many processes
 want to communicate with you, and then wait for precisely that many messages
 with a source value of \indexmpishow{MPI_ANY_SOURCE}.
 \cverbatimsnippet[examples/mpi/c/reducescatter.c]{reducescatter}
 
-Use of \n{MPI_Reduce_scatter} to implement the two-dimensional
+Use of \lstinline$MPI_Reduce_scatter$ to implement the two-dimensional
 matrix-vector product.
 Set up separate row and column communicators with
-\indexmpishow{MPI_Comm_split}, use \n{MPI_Reduce_scatter} to combine
+\indexmpishow{MPI_Comm_split}, use \lstinline$MPI_Reduce_scatter$ to combine
 local products.
 %
 \cverbatimsnippet[examples/mpi/c/mvp2d.c]{mvp2d}

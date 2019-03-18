@@ -66,13 +66,13 @@ To distinguish between processes in a communicator, MPI provides two calls
   process is that calls this routine.
 \end{enumerate}
 
-If every process executes the \n{MPI_Comm_size} call, they all get the
+If every process executes the \lstinline$MPI_Comm_size$ call, they all get the
 same result, namely the total number of processes in your run.
 %
 \mpiRoutineRef{MPI_Comm_size}
 %
 On the
-other hand, if every process executes \n{MPI_Comm_rank}, they all get
+other hand, if every process executes \lstinline$MPI_Comm_rank$, they all get
 a different result, namely their own unique number, an integer in the
 range from zero to the the number of processes minus~1.
 See figure~\ref{fig:rank-parallel}.

@@ -7,7 +7,7 @@ for ( ; ; step++) {
   } else {
     int flag; MPI_Status status;
     MPI_Iprobe
-	( MPI_ANY_SOURCE,MPI_ANY_TAG,
-	  comm, &flag, &status );
+      ( MPI_ANY_SOURCE,MPI_ANY_TAG,
+        comm, &flag, &status );
   }
 }

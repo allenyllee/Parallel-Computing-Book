@@ -12,6 +12,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \Level 0 {Non-blocking point-to-point operations}
+\label{sec:nonblock}
 
 \Level 1 {Irregular data exchange}
 
@@ -124,7 +125,7 @@ the \indexmpishow{MPI_Irecv} routine does not
 yield an \indexmpishow{MPI_Status} object.
 This makes sense: the status object
 describes the actually received data, and at the completion of the
-\n{MPI_Irecv} call there is no received data yet.
+\lstinline$MPI_Irecv$ call there is no received data yet.
 
 MPI has two types of routines for handling requests; we will start
 with the \indexmpishow{MPI_Wait...} routines. These
@@ -177,7 +178,7 @@ and \indexmpishow{MPI_Waitsome}.
   Now use nonblocking send/receive routines to implement
   the three-point averaging operation
   \[ y_i=\bigl( x_{i-1}+x_i+x_{i+1} \bigr)/3\colon i=1,\ldots,N-1 \]
-  on a distributed array. (Hint: use \n{MPI_PROC_NULL} at the ends.)
+  on a distributed array. (Hint: use \lstinline$MPI_PROC_NULL$ at the ends.)
 \end{exercise}
 
 There is a second motivation for the \n{Isend/Irecv} calls:
@@ -214,10 +215,31 @@ hardware, firmware, and MPI implementation.
 
 \begin{remark}
   There is nothing special about a non-blocking or
-  synchronous message. The \n{MPI_Recv} call can match any of the
-  send routines you have seen so far (but not \n{MPI_Sendrecv}), and
-  conversely a message sent with \n{MPI_Send} can be received by \n{MPI_Irecv}.
+  synchronous message. The \lstinline$MPI_Recv$ call can match any of the
+  send routines you have seen so far (but not \lstinline$MPI_Sendrecv$), and
+  conversely a message sent with \lstinline$MPI_Send$ can be received by \lstinline$MPI_Irecv$.
 \end{remark}
+
+\Level 2 {Asynchronous progress}
+
+Above we saw that \n{Isend/Irecv} calls can overlap communication and
+computation. However, for this to happen we need for the MPI to make
+\indextermsub{asynchronous}{progress}: the message needs to make its way
+through the network while the application is busy computing.
+This can happen in a number of ways:
+\begin{itemize}
+\item Compute nodes may have a dedicated communications processor. The
+  \indextermbus{Intel}{Paragon} was of this design; modern
+  multicore processors are a more efficient realization of this idea.
+\item The MPI library may reserve a core or thread for communications
+  processing. This is implementation dependent; for instance,
+  \indextermbus{Intel}{MPI} has a number of
+  \indextermtt{I_MPI_ASYNC_PROGRESS_...} variables.
+\item Absent such dedicated resources, the application can force MPI
+  to make progress by occasional calls to a \indexterm{polling}
+  routine such as \indexmpishow{MPI_Iprobe}.
+\end{itemize}
+
 
 \Level 2 {Wait and test calls}
 \label{sec:waittest}
@@ -272,11 +294,11 @@ reference, and not an array of statuses!
 
 Finally, \indexmpishow{MPI_Waitsome} is very much like \n{Waitany},
 except that it returns multiple numbers, if multiple requests are
-satisfied. Now the status argument is an array of \n{MPI_Status}
+satisfied. Now the status argument is an array of \lstinline$MPI_STATUS$
 objects.
 
 Figure~\ref{fig:jump-nonblock} shows the trace of a non-blocking execution
-using \n{MPI_Waitall}.
+using \lstinline$MPI_Waitall$.
 \begin{figure}[ht]
 \includegraphics[scale=.4]{graphics/linear-nonblock}
 \caption{A trace of a nonblocking send between neighbouring processors}
@@ -295,7 +317,7 @@ other work is going on.
 %
 Each process except for the root does a blocking send; the root
 posts \indexmpishow{MPI_Irecv} from all other processors, then loops
-with \n{MPI_Waitany} until all requests have come in. Use
+with \lstinline$MPI_Waitany$ until all requests have come in. Use
 \indexmpishow{MPI_SOURCE} to test the index parameter of the wait
 call.
 

@@ -26,7 +26,7 @@ threads to bring a certain order to the sequence in which they do things.
   be able to use hardware support for atomic updates.
 \item \texttt{barrier}: section~\ref{sec:ompbarrier}.
 \item \texttt{ordered}: section~\ref{sec:omp-ordered}.
-\item locks: section \ref{ompref:locks}.
+\item locks: section \ref{sec:ompref:locks}.
 \item \texttt{flush}: section \ref{sec:omp:flush}.
 \item \texttt{nowait}: section~\ref{sec:omp-nowait}.
 \end{itemize}
@@ -86,7 +86,7 @@ only the master thread continues. Therefore, there is an
 There is some \emph{barrier behaviour}\index{omp!for!barrier
   behaviour} associated with \n{omp for} loops and other
 \emph{worksharing constructs}\index{worksharing constructs!implied
-  barriers at} (see section~\ref{sec:workshare}).  For instance, there
+  barriers at} (see section~\ref{sec:fortran-workshare}).  For instance, there
 is an \indexterm{implicit barrier} at the end of the loop. This
 barrier behaviour can be cancelled with the \indexclause{nowait}
 clause.
@@ -177,7 +177,8 @@ The problem with \n{critical} sections being mutually exclusive can be mitigated
 \end{verbatim}
 
 \Level 0 {Locks}
-\indexterm{lock|(textbf}
+\index{lock|(textbf}
+\label{sec:ompref:locks}
 
 OpenMP also has the traditional mechanism of a \indexterm{lock}. A~lock is somewhat similar to 
 a critical section: it guarantees that some instructions can only be performed by one

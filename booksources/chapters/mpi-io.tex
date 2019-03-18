@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-8
+%%%% by Victor Eijkhout, copyright 2012-9
 %%%%
 %%%% mpi-io.tex : MPI/O
 %%%%
@@ -94,14 +94,14 @@ File accesses:
 
 \begin{figure}[ht]
   \label{fig:write-at}
-  \caption{Writing into contiguous locations}
+  \caption{Writing at an offset}
   \includegraphics[scale=.4]{write-at-offset}
 \end{figure}
 
 \begin{exercise}
   \label{ex:blockwrite}
   Create a buffer of length \n{nwords=3} on each process, and write
-  these buffers as a sequence to one file with \n{MPI_File_write_at}.
+  these buffers as a sequence to one file with \lstinline$MPI_File_write_at$.
 \end{exercise}
 
 These modes are enough for writing simple contiguous blocks. However,
@@ -131,7 +131,7 @@ This call is collective, even if not all processes access the file.
 \begin{exercise}
   \label{ex:viewwrite}
   Write a file in the same way as in exercise~\ref{ex:blockwrite},
-  but now use \n{MPI_File_write} and use \n{MPI_File_set_view} to set
+  but now use \lstinline$MPI_File_write$ and use \lstinline$MPI_File_set_view$ to set
   a view that determines where the data is written.
 \end{exercise}
 

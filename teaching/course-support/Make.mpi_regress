@@ -60,7 +60,7 @@ info ::
 	@echo "    ( catchrun gives orderly output)"
 	@echo "    [ PROGRAM=... NP=... ]"
 run :
-	@${MPIRUN} -np ${NP} ${PROGRAM}
+	@${MPIRUN} -np ${NP} ${PROGRAM}${PROGRAM_EXTENSION} ${OPTIONS}
 catchrun :
 	@${MPIRUN} -np ${NP} ${CATCHER} ${PROGRAM} >/dev/null 2>&1
 	@for i in `seq 0 $$(( NP-1 ))` ; do \
@@ -100,6 +100,9 @@ run_start :
 	export code=$$? ; \
 	if [ $${code} -ne 0 ]; then \
 	  echo "Failed to compile $${program}" ; \
+	  echo "%%%%%%%% compile log %%%%%%%%" ; \
+	  cat $${program}.log ; \
+	  echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" ; \
 	  exit 1 ; \
 	else \
 	  make regress_out NP=${NP} PROGRAM=$${program} ; \
@@ -323,6 +326,22 @@ run_onesidedbuild :
 .PHONY: run_rightgraph
 REGRESSIONRUNS += run_rightgraph
 run_rightgraph : 
+	@make run_start PROGRAM=$@ NP=${NP}
+	@export atgram=$@ ; export program=$${atgram##run_} ; \
+	 export np=${NP} ; \
+	 export success=1 ; \
+	 for p in `seq 1 $$(( np-1 ))` ; do \
+	  if [ `cat $$program.out$$p | wc -l` -gt 0 ] ; then \
+	    echo "I was not expecting output from proc $$p" ; \
+	    success=0; \
+	  fi ; \
+	 done ; \
+	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
+	echo
+
+.PHONY: run_bucketblock
+REGRESSIONRUNS += run_bucketblock
+run_bucketblock : 
 	@make run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export np=${NP} ; \

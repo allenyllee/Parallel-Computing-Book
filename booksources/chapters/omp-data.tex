@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-8
+%%%% by Victor Eijkhout, copyright 2012-9
 %%%%
 %%%% omp-data.tex : about thread data
 %%%%
@@ -212,13 +212,13 @@ can be shared or private, depending on the clause you use.
 \end{enumerate}
 Example of the first type: in
 %
-\verbatimsnippet{privatearray}
+\cverbatimsnippet{privatearray}
 %
 each thread gets a private copy of the array, properly initialized.
 
 On the other hand, in
 %
-\verbatimsnippet{privatepointer}
+\cverbatimsnippet{privatepointer}
 %
 each thread gets a private pointer, but all pointers point to the same
 object.
@@ -290,7 +290,7 @@ set their thread-private variable. Later, this variable is read by a
 larger team: the variables that have not been set are undefined,
 though often simply zero:
 %
-\verbatimsnippet{threadprivate}
+\cverbatimsnippet{threadprivate}
 
 On the other hand, if the thread private data starts out identical in
 all threads, the \indexclause{copyin} clause can be used:

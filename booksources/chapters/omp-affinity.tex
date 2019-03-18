@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-8
+%%%% by Victor Eijkhout, copyright 2012-9
 %%%%
 %%%% omp-affinity.tex : thread affinity
 %%%%
@@ -221,7 +221,7 @@ Good examples of \emph{thread placement} on the
 As an example, consider a code where two threads write to a shared
 location.
 %
-\verbatimsnippet{shareboth}
+\cverbatimsnippet{shareboth}
 %
 There is now a big difference in runtime depending on how close the
 threads are. We test this on a processor with both cores and

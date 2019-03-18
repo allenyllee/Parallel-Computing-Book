@@ -97,7 +97,7 @@ The blocking send command:
 \mpiRoutineRef{MPI_Send}
 %
 This routine may not blocking for small messages; to force blocking
-behaviour use \n{MPI_Ssend} with the same argument list.
+behaviour use \lstinline$MPI_Ssend$ with the same argument list.
 \url{http://www.mcs.anl.gov/research/projects/mpi/www/www3/MPI_Ssend.html}
 
 The basic blocking receive command:
@@ -111,7 +111,7 @@ for more about the status object.
 
 \begin{exercise}
   \label{ex:pingpong}
-  Implement the ping-pong program. Add a timer using \n{MPI_Wtime}.
+  Implement the ping-pong program. Add a timer using \lstinline$MPI_Wtime$.
   For the \n{status} argument of the receive call, use
   \indexmpishow{MPI_STATUS_IGNORE}.
 
@@ -189,7 +189,7 @@ the receive has been posted. This relies on the availability of
 some amount of available buffer space. The size under which this behaviour
 is used is sometimes referred to as the \indexterm{eager limit}.)
 
-The following code is guaranteed to block, since a \n{MPI_Recv}
+The following code is guaranteed to block, since a \lstinline$MPI_Recv$
 always blocks:
 \cverbatimsnippet[examples/mpi/c/recvblock.c]{recvblock}
 On the other hand, if we put the send call before the receive,
@@ -209,7 +209,7 @@ hangs because of a deadlock.
 
 
 If you want a code to behave the same for all message sizes,
-you force the send call to be blocking by using \n{MPI_Ssend}:
+you force the send call to be blocking by using \lstinline$MPI_Ssend$:
 \cverbatimsnippet[examples/mpi/c/ssendblock.c]{ssendblock}
 Formally you can describe deadlock as follows. Draw up a graph where
 every process is a node, and draw a directed arc from process~A to~B if
@@ -284,7 +284,7 @@ figure~\ref{fig:serialization}.
 
 \begin{exercise}
   \label{ex:linear-sequential}
-  Implement the above algorithm using \n{MPI_Send} and \n{MPI_Receive} calls.
+  Implement the above algorithm using \lstinline$MPI_Send$ and \lstinline$MPI_Recv$ calls.
   Run the code, and reproduce the trace output 
   of figure~\ref{fig:serialization}. See chapter~\ref{tut:tau}
   on how to use the TAU utility. If you don't have TAU, can you show this serialization
@@ -322,7 +322,7 @@ successively passed down a sequence of processors.
     x_p = x_{p-1}+(p+1)^2 & \hbox{on process $p$}\\
   \end{cases}
   \]
-  Use \n{MPI_Send} and \n{MPI_recv}; make sure to get the order right.
+  Use \lstinline$MPI_Send$ and \lstinline$MPI_Recv$; make sure to get the order right.
 \end{exercise}
 
 \index{communication!blocking|)}
@@ -334,7 +334,7 @@ Above you saw that with blocking sends the precise ordering of the
 send and receive calls is crucial. Use the wrong ordering and you get
 either deadlock, or something that is not efficient at all in
 parallel. MPI has a way out of this problem that is sufficient for
-many purposes: the combined send/recv call\indexmpishow{MPI_Sendrecv}
+many purposes: the combined send/recv call \indexmpishow{MPI_Sendrecv}:
 
 \mpiRoutineRef{MPI_Sendrecv}  
 
@@ -347,7 +347,7 @@ with the right choice of source and destination. For instance, to send
 data to your right neighbour:
 \begin{lstlisting}
 MPI_Comm_rank(comm,&procno);
-sendrecv( .... 
+MPI_Sendrecv( .... 
     /* from: */ procno-1
      ... ... 
     /* to:   */ procno+1
@@ -383,12 +383,12 @@ The null processor value is also of use with the
 \begin{exercise}
   \label{ex:rightsendrecv}
   Revisit exercise~\ref{ex:serialsend} and solve it using
-  \n{MPI_Sendrecv}
+  \lstinline$MPI_Sendrecv$
 \end{exercise}
 
 \begin{exercise}
   \label{ex:3ptsendrecv}
-  Implement the above three-point combination scheme using \n{MPI_Sendrecv};
+  Implement the above three-point combination scheme using \lstinline$MPI_Sendrecv$;
   every processor only has a single number to send to its neighbour.
 
   If you have TAU installed, make a trace. Does it look different
@@ -454,8 +454,8 @@ send-receive call\footnote {There is an \n{MPI\_Compare\_and\_swap}
   You need to repeat this $P/2$ times, where $P$~is the number of
   processors; see figure~\ref{fig:swapsort1}.
 
-  Implement this algorithm using \n{MPI_Sendrecv}. (Use
-  \n{MPI_PROC_NULL} for the edge cases if needed.)
+  Implement this algorithm using \lstinline$MPI_Sendrecv$. (Use
+  \lstinline$MPI_PROC_NULL$ for the edge cases if needed.)
   Use a gather call to print the global state of the distributed array
   at the beginning and end of the sorting process.
 \end{exercise}
@@ -539,7 +539,7 @@ get a reliable measurement of the time taken.
 
 \mpiexample{MPI_Sendrecv}
 
-We set up a ring structure and use \n{MPI_Sendrecv} to communicate
+We set up a ring structure and use \lstinline$MPI_Sendrecv$ to communicate
 between pairs.
 %
 \cverbatimsnippet{sendrecvring}
@@ -554,25 +554,25 @@ Do the following codes:
 \end{enumerate}
 In the `sometimes' case, indicate when it will work and when not.
 
-\begin{verbatim}
+\begin{lstlisting}
 if (procid==0)
   MPI_Send( /* to: */ 1 );
 else
   MPI_Recv( /* from: */ 0 );
-\end{verbatim}
+\end{lstlisting}
 
-\begin{verbatim}
+\begin{lstlisting}
 otherid = nprocs - procid;
 MPI_Send( /* to: */ otherid);
 MPI_Recv( /* from: */ otherid );
-\end{verbatim}
+\end{lstlisting}
 
-\begin{verbatim}
+\begin{lstlisting}
 if (procid==0)
   for (int otherid=1; otherid<nprocs; otherid++)
     MPI_Send( /* to: */ otherid );
 else
   for (int otherid=0; otherid<nprocs; otherid++)
     MPI_Recv( /* from: */ otherid );
-\end{verbatim}
+\end{lstlisting}
 

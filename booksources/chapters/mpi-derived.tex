@@ -26,7 +26,7 @@ as you have seen so far.
 \item MPI communication routines can only send multiples of a
   single data type: it is not possible to send items of different
   types, even if they are contiguous in memory. It would be possible
-  to use the \n{MPI_BYTE} data type, but this is not advisable.
+  to use the \lstinline$MPI_BYTE$ data type, but this is not advisable.
 \item It is also ordinarily not possible to send items of one type if they are
   not contiguous in memory. You could of course send a contiguous memory area
   that contains the items you want to send, but that is wasteful of
@@ -106,7 +106,7 @@ int MPI_Type_free (MPI_Datatype *datatype)
 \end{lstlisting}
 \begin{itemize}
 \item The definition of the datatype identifier will be changed to
-  \indexmpishow{MPI_DATATYPE_NULL}.
+  \indexmpidef{MPI_DATATYPE_NULL}.
 \item Any communication using this data type, that was already
   started, will be completed succesfully.
 \item Datatypes that are defined in terms of this data type will still
@@ -279,13 +279,13 @@ The possibilities for the \n{order} parameter are
 
   Assume that your number of processors is $P=Q^3$, and that each
   process has an array of identical size. Use
-  \n{MPI_Type_create_subarray} to gather all data onto a root process.
+  \lstinline$MPI_Type_create_subarray$ to gather all data onto a root process.
   Use a sequence of send and receive calls;
   \indexmpishow{MPI_Gather} does not work here.
 
 \begin{tacc}
-This is one of the rare cases where you should use \n{ibrun -np 27}
-and such: normally you use \n{ibrun} without process count argument.
+If you haven't started \n{idev} with the right number of processes,
+use \n{ibrun -np 27}: normally you use \n{ibrun} without process count argument.
 \end{tacc}
 
 \end{exercise}
@@ -328,7 +328,7 @@ A slightly simpler version assumes constant block length:
 %
 \mpiRoutineRef{MPI_Type_create_hindexed_block}
 
-There is an important difference with the above \n{MPI_Type_indexed}:
+There is an important difference with the above \lstinline$MPI_Type_indexed$:
 that one described offsets from a base location; these routines
 describes absolute memory addresses.
 You can use this to send for instance the elements of a

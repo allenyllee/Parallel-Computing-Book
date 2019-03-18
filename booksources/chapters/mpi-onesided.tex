@@ -18,7 +18,7 @@
 Above, you saw  point-to-point operations of the two-sided type:
 they require the co-operation of a sender and
 receiver. This co-operation could be loose: you can post a receive
-with \n{MPI_ANY_SOURCE} as sender, but there had to be both a send and
+with \lstinline$MPI_ANY_SOURCE$ as sender, but there had to be both a send and
 receive call. In this section, you will see one-sided communication 
 routines where a process
 can do a `put' or `get' operation, writing data to or reading it from
@@ -55,7 +55,7 @@ during which its window can be accessed.
 The main advantage
 of this mode is that the origin program can perform many small transfers, which are
 aggregated behind the scenes. Active RMA acts much like asynchronous transfer with a
-concluding \n{Waitall}.
+concluding \lstinline$MPI_Waitall$.
 
 In \indextermsub{passive}{RMA}, or \indexterm{passive target synchronization},
 the target process puts no limitation on when its window can be accessed.
@@ -106,6 +106,7 @@ A window can be characteristized as follows:
 \mpiRoutineRef{MPI_Win}
 
 The typical calls involved are:
+\lstset{style=reviewcode,language=C}
 \begin{lstlisting}
 MPI_Info info;
 MPI_Win window;
@@ -120,7 +121,7 @@ MPI_Win_free( &window );
   \label{fig:putget}
 \end{figure}
 
-\Level 1 {Window allocation}
+\Level 1 {Window creation and allocation}
 \label{sec:win-alloc}
 \index{window!memory allocation|(}
 
@@ -134,10 +135,15 @@ ways you can associate data with a window:
   receives the pointer to the data from MPI. This can again be done in two ways:
   \begin{enumerate}
   \item Use \indexmpishow{MPI_Win_allocate} to create the data and the
-    window in one call; or
+    window in one call, and its variant
+    \indexmpishow{MPI_Win_allocate_shared} which facilitates dealing
+    with shared memory; or
   \item Use \indexmpishow{MPI_Win_alloc} to allocate the memory, and
     \indexmpishow{MPI_Win_create} to create the window.
   \end{enumerate}
+\item Finally, you can create a window with
+  \indexmpishow{MPI_Win_create_dynamic} which postpones the allocation;
+  see section~\ref{sec:mpi-alloc}.
 \end{enumerate}
 
 First of all, the create call from a pointer to memory:
@@ -156,10 +162,11 @@ Next, one can obtain the memory from MPI by using
 %
 which has the data pointer as output. Note the \n{void*} in the
 C~prototype; it is still necessary to pass a pointer to a pointer:
-\begin{verbatim}
+\lstset{style=reviewcode,language=C}
+\begin{lstlisting}
 double *window_data;
 MPI_Win_allocate( ... &window_data ... );
-\end{verbatim}
+\end{lstlisting}
 The routine \indexmpishow{MPI_Alloc_mem} performs only the allocation
 part of \indexmpishow{MPI_Win_allocate}, after which you need to
 \indexmpishow{MPI_Win_create}:
@@ -176,6 +183,25 @@ memory area; SGI is an example where such memory does exist.
 There will be more discussion of window memory in section~\ref{sec:mpi-alloc}.
 
 \index{window!memory allocation|)}
+
+\Level 2 {Window usage hints}
+\label{sec:window-info}
+
+The following keys can be passed as info argument:
+\begin{itemize}
+\item \indexmpishow{no_locks}: if set to true, passive target synchronization
+  (section~\ref{sec:passive-sync}) will not be used on this window.
+\item \indexmpishow{accumulate_ordering}: a comma-separated list of
+  the keywords \indextermtt{rar}, \indextermtt{raw},
+  \indextermtt{war}, \indextermtt{waw} can be specified. This
+  indicates that reads or writes from \indexmpishow{MPI_Accumulate} or
+  \indexmpishow{MPI_Get_accumulate} can be reordered, subject to
+  certain constraints.
+\item \indexmpishow{accumulate_ops}: the value \indexmpishow{same_op}
+  indicates that concurrent Accumulate calls use the same operator;
+  \indexmpishow{same_op_no_op} indicates the same operator or
+  \indexmpishow{MPI_NO_OP}.
+\end{itemize}
 
 \Level 0 {Active target synchronization: epochs}
 \label{sec:fence}
@@ -195,7 +221,7 @@ which is to use a \indexterm{fence} operation:\indexmpi{MPI_Win_fence}
 MPI_Win_fence (int assert, MPI_Win win)
 \end{lstlisting}
 This operation is collective on the communicator of the window.
-It is comparable to \n{MPI_Wait} calls for non-blocking communication.
+It is comparable to \lstinline$MPI_Wait$ calls for non-blocking communication.
 
 The use of fences is somewhat complicated. The interval between two fences
 is known as an \indextermdef{epoch}.
@@ -231,10 +257,10 @@ until all one-sided communication is finished, which means they wait for the zer
 \end{figure}
 \cverbatimsnippet[examples/mpi/c/putblock.c]{putblock}
 
-As a further restriction, you can not mix \n{Get} with \n{Put} or \n{Accumulate}
-calls in a single epoch. Hence, we can characterize an epoch as an
-\indextermsub{access}{epoch} on the origin, and
-as an \indextermsub{exposure}{epoch} on the target.
+As a further restriction, you can not mix \lstinline$MPI_Get$ with \lstinline$MPI_Put$
+or \lstinline$MPI_Accumulate$ calls in a single epoch. Hence, we can
+characterize an epoch as an \indextermsub{access}{epoch} on the
+origin, and as an \indextermsub{exposure}{epoch} on the target.
 
 Assertions are an integer parameter: you can combine assertions by
 adding them or using logical-or.
@@ -261,26 +287,45 @@ section~\ref{sec:mpi-assert}.
 \Level 0 {Put, get, accumulate}
 \label{sec:putget}
 
-Window areas are 
-accessible to other processes in the communicator by specifying the
-process rank and an offset from the base of the window.
+We will now look at the first three routines for doing one-sided
+operations: the Put, Get, and Accumulate call. (We will look at
+so-called `atomic' operations in section~\ref{sec:mpi-atomic}.)
+These calls are somewhat
+similar to a Send, Receive and Reduce, except that of course only one
+process makes a call.
+Since one process does all the work, its calling sequence contains
+both a description of the data on the origin (the calling process) and
+the target (the affect other process).
 
 As in the two-sided case, \indexmpishow{MPI_PROC_NULL} can be used as
 a target rank.
 
 \Level 1 {Put}
 
-\includegraphics[scale=.4]{windowdisp}
+The \indexmpishow{MPI_Put} call can be considered as a one-sided
+send. As such, it needs to specify
+\begin{itemize}
+\item the target rank
+\item the data to be sent from the origin, and
+\item the location where it is to be written on the target.
+\end{itemize}
 
-The \n{MPI_Put} routine is used to put data in the window
-of a target process
-%
-\mpiRoutineRef{MPI_Put}
-%
-The data is written in the buffer of the target window,
-using the window parameters that were specified on the target.
+The description of the data on the origin is the usual trio of
+buffer/count/datatype. However, the description of the data on the
+target is more complicated. It has a count and a datatype, but instead
+of an address it has a
+\emph{displacement}\index{window!displacement} with respect to the
+start of the window on the target. This displacement can be given in
+bytes, so its type is \indexmpishow{MPI_Aint}, but strictly speaking
+it is a multiple of the displacement unit that was specified in the
+window definition.
+
 Specifically, data is written starting at
 \[ \mathtt{window\_base} + \mathtt{target\_disp}\times \mathtt{disp\_unit}. \]
+
+\includegraphics[scale=.4]{windowdisp}
+
+\mpiRoutineRef{MPI_Put}
 
 \begin{fortrannote}
   The \n{disp_unit} variable is declared as 
@@ -301,7 +346,7 @@ of the communicator that was used in the create call.
 \begin{exercise}
   \label{ex:rightput}
   Revisit exercise~\ref{ex:serialsend} and solve it using
-  \n{MPI_Put}
+  \lstinline$MPI_Put$
 \end{exercise}
 
 \begin{exercise}
@@ -336,7 +381,7 @@ that comes from bordering processors, either through Put or Get operations.
 
 In a first version we separate computation and communication.
 Each iteration has two fences. Between the two fences in the loop body
-we do the \n{MPI_Put} operation; between the second and and first one
+we do the \lstinline$MPI_Put$ operation; between the second and and first one
 of the next iteration there is only computation, so we add the
 \n{NOPRECEDE} and \n{NOSUCCEED} assertions. (For much more about
 assertions, see section~\ref{sec:mpi-assert} below.)
@@ -378,10 +423,10 @@ that are being put:
 
 \mpiRoutineRef{MPI_Accumulate}
 
-Accumulate is a reduction with remote result. As with \n{MPI_Reduce}, the 
+Accumulate is a reduction with remote result. As with \lstinline$MPI_Reduce$, the 
 order in which the operands are accumulated is undefined. 
 The same predefined operators are available, but no
-user-defined ones. There is one extra operator: \indexmpishow{MPI_REPLACE},
+user-defined ones. There is one extra operator: \indexmpidef{MPI_REPLACE},
 this has the effect that only the last result to arrive is retained.
 
 \begin{exercise}
@@ -406,9 +451,30 @@ this has the effect that only the last result to arrive is retained.
   counter the same way?
 \end{exercise}
 
+\Level 1 {Ordering and coherence of RMA operations}
+
+There are few guarantees about what happens inside one epoch.
+\begin{itemize}
+\item No ordering of Get and Put/Accumulate operations: if you do
+  both, there is no guarantee whether the Get will find the value
+  before or after the update.
+\item No ordering of multiple Puts. It is safer to do an Accumulate.
+\end{itemize}
+The following operations are well-defined inside one epoch:
+\begin{itemize}
+\item Instead of multiple Put operations, use Accumulate with
+  \indexmpishow{MPI_REPLACE}.
+\item \indexmpishow{MPI_Get_accumulate} with
+  \indexmpishow{MPI_NO_OP} is safe.
+\item Multiple Accumulate operations from one origin are done in
+  program order by default. To allow reordering, for instance to have
+  all reads happen after all writes, use the info parameter
+  when the window is created; section~\ref{sec:window-info}.
+\end{itemize}
+
 \Level 1 {Request-based operations}
 
-Analogous to \n{MPI_Isend} there are request based one-sided operations:
+Analogous to \lstinline$MPI_Isend$ there are request based one-sided operations:
 %
 \mpiRoutineRef{MPI_Rput}
 %
@@ -420,7 +486,7 @@ Any \indexmpishow{MPI_Win_flush...} call also terminates these transfers.
 \Level 1 {Assertions}
 \label{sec:mpi-assert}
 
-The \n{MPI_Win_fence} call, as well \n{MPI_Win_start} and such, take an argument
+The \lstinline$MPI_Win_fence$ call, as well \lstinline$MPI_Win_start$ and such, take an argument
 through which assertions can be passed about the activity before, after, and during the epoch.
 The value zero is always allowed, by you can make your program more efficient by specifying
 one or more of the following, combined by bitwise OR in C/C++ or
@@ -548,6 +614,7 @@ you will interact with, on a target processor you specify a group
 that includes the possible origins.
 
 \Level 1 {Atomic operations}
+\label{sec:mpi-atomic}
 
 One-sided calls are said to emulate shared memory in MPI, but 
 the put and get calls are not enough for certain scenarios with shared
@@ -567,17 +634,26 @@ conversely, multiple updates of the pointer may lead to work
 descriptors being skipped. These inconsistent views of the data are
 called a \indexterm{race condition}.
 
-In \indextermbus{MPI}{3} a number of atomic routines have been added.
-For instance,
-the \indexmpi{MPI_Fetch_and_op} call atomically retrieves an item from the window
-indicated, and replaces the item on the target by doing an accumulate on it
+In \indextermbus{MPI}{3} some atomic routines have been added.
+Both \indexmpi{MPI_Fetch_and_op} and \indexmpi{MPI_Get_accumulate}
+atomically retrieve data from the window indicated,
+and apply an operator, combining the data on the target
 with the data on the origin.
 %
 \mpiRoutineRef{MPI_Fetch_and_op}
+%
+\mpiRoutineRef{MPI_Get_accumulate}
+
+Both routines perform the same operations: return data before the
+operation, then atomically update data on the target, but
+\indexmpishow{MPI_Get_accumulate} is more flexible in data type
+handling. The more simple routine, \indexmpishow{MPI_Fetch_and_op},
+which operates on only a single element,
+allows for faster implementations, in particular through hardware support.
 
 \begin{exercise}
   \label{ex:countdownop}
-  Redo exercise~\ref{ex:countdown} using \n{MPI_Fetch_and_op}. The
+  Redo exercise~\ref{ex:countdown} using \lstinline$MPI_Fetch_and_op$. The
   problem is again to make sure all processes have the same view of
   the shared counter.
 
@@ -586,14 +662,20 @@ with the data on the origin.
   multiple processes can update the counter at the same time?
 \end{exercise}
 
-A root process has a table of data; the other processes do 
-atomic gets and update of that data using
-\indexterm{passive target synchronization} through \indexmpishow{MPI_Win_lock}.
-%
-\cverbatimsnippet[examples/mpi/c/fetchop.c]{fetchop}
-%
-\pverbatimsnippet{fetchopp}
+\begin{example}
+  A root process has a table of data; the other processes do 
+  atomic gets and update of that data using
+  \indexterm{passive target synchronization} through \indexmpishow{MPI_Win_lock}.
+  %
+  \cverbatimsnippet[examples/mpi/c/fetchop.c]{fetchop}
+  %
+  \pverbatimsnippet{fetchopp}
+\end{example}
 
+Finally, \indexmpishow{MPI_Compare_and_swap} swaps the origin and
+target data if the target data equals some comparison value.
+%
+\mpiRoutineRef{MPI_Compare_and_swap}
 
 \Level 0 {Passive target synchronization}
 \label{sec:passive-sync}
@@ -733,7 +815,7 @@ treatments of that buffer:
 \item You can leave the buffer allocation to mpi with
   \indexmpishow{MPI_Win_allocate}; and
 \item If a communicator is on a shared memory (see
-  section~\ref{mpi-comm-split-type}) you can create a winow in that
+  section~\ref{mpi-comm-split-type}) you can create a window in that
   shared memory with \indexmpishow{MPI_Win_allocate_shared}.
 \end{itemize}
 
@@ -759,18 +841,23 @@ and its inverse:
 %
 \mpiRoutineRef{MPI_Win_detach}
 
+If processes are on the same node, it may be advantageous to have the
+windows be in consecutive memory:
+%
+\mpiRoutineRef{MPI_Win_allocate_shared}
+
 \Level 1 {Window information}
 
 The \indexmpishow{MPI_Info} parameter can be used to pass implementation-dependent 
 information; see section~\ref{sec:mpi-info}.
 
-\begin{verbatim}
+\begin{lstlisting}
 MPI_Win_get_attr(win, MPI_WIN_BASE, &base, &flag), 
 MPI_Win_get_attr(win, MPI_WIN_SIZE, &size, &flag), 
 MPI_Win_get_attr(win, MPI_WIN_DISP_UNIT, &disp_unit, &flag), 
 MPI_Win_get_attr(win, MPI_WIN_CREATE_FLAVOR, &create_kind, &flag), and 
 MPI_Win_get_attr(win, MPI_WIN_MODEL, &memory_model, &flag) will return in base a pointer to the start of the window win, and will return in size, disp_unit, create_kind, and memory_model pointers to the size, displacement unit of the window, the kind of routine used to create the window, and the memory model, respectively.
-\end{verbatim}
+\end{lstlisting}
 
 \begin{verbatim}
 int MPI_Win_get_group(MPI_Win win, MPI_Group *group) 

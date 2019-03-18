@@ -1,3 +1,15 @@
+% -*- latex -*-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Parallel Programming in MPI and OpenMP'
+%%%% by Victor Eijkhout, copyright 2012-8
+%%%%
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \Level 0 {Distributed computing and distributed data}
 
 One reason for using MPI is that sometimes you need to work on
@@ -42,13 +54,13 @@ it acts like you're working with a large distributed array.
 If the array size is not perfectly divisible by the number of processors,
 we have to come up with a division that is uneven, but not too much.
 You could for instance, write
-\begin{verbatim}
+\begin{lstlisting}
 int Nglobal, // is something large
     Nlocal = Nglobal/ntids,
     excess = Nglobal%ntids;
 if (mytid==ntids-1) 
   Nlocal += excess;
-\end{verbatim}
+\end{lstlisting}
 
 \begin{exercise}
   Read the section \HPSCref{sec:load} about load balancing, and argue that this strategy
@@ -94,7 +106,7 @@ Read section~\ref{sec:mpi-timing}, and in particular~\ref{sec:ping-time}. Do the
 \Level 1 {Pairwise exchange}
 
 \begin{exercise}
-  Implement the above averaging scheme using \n{MPI_Sendrecv}.
+  Implement the above averaging scheme using \lstinline$MPI_Sendrecv$.
 \end{exercise}
 
 \begin{exercise}
@@ -102,7 +114,7 @@ Read section~\ref{sec:mpi-timing}, and in particular~\ref{sec:ping-time}. Do the
 \end{exercise}
 
 \begin{exercise}
-  Implement the above averaging scheme using \n{MPI_Isend} and \n{MPI_Irecv}.
+  Implement the above averaging scheme using \lstinline$MPI_Isend$ and \lstinline$MPI_Irecv$.
 \end{exercise}
 
 \Level 1 {Neighbourhood exchange}

@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-8
+%%%% by Victor Eijkhout, copyright 2012-9
 %%%%
 %%%% mpi-elementary.tex : elementary datatypes
 %%%%
@@ -18,8 +18,8 @@
 MPI has a number of elementary data types, corresponding to the 
 simple data types of programming languages.
 The names are made to resemble the types of C and~Fortran, 
-for instance \n{MPI_FLOAT} and \n{MPI_DOUBLE} versus
-\n{MPI_REAL} and \n{MPI_DOUBLE_PRECISION}.
+for instance \lstinline$MPI_FLOAT$ and \lstinline$MPI_DOUBLE$ versus
+\lstinline$MPI_REAL$ and \lstinline$MPI_DOUBLE_PRECISION$.
 
 MPI calls accept arrays of elements:
 \begin{lstlisting}
@@ -124,9 +124,9 @@ CALL MPI_Type_create_f90_complex( 15 , 300 , complextype , error )
 \Level 1 {Byte addressing type}
 
 So far we have mostly been taking about datatypes in the context of
-sending them. The \indextermttdef{MPI_Aint} type is not so much for
+sending them. The \indexmpidef{MPI_Aint} type is not so much for
 sending, as it is for describing the size of objects, such as the size
-of an \indextermtt{MPI_Win} object; section~\ref{sec:windows}.
+of an \indexmpishow{MPI_Win} object; section~\ref{sec:windows}.
 
 See also the \indexmpishow{MPI_Sizeof} routine.
 

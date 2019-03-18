@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-8
+%%%% by Victor Eijkhout, copyright 2012-9
 %%%%
 %%%% mpi-morecollective.tex : obscure stuff
 %%%%
@@ -51,13 +51,13 @@ the function.
 For example, here is an operator for finding the smallest non-zero
 number in an array of nonnegative integers:
 %
-\verbatimsnippet{mpirwz}
+\cverbatimsnippet{mpirwz}
 
 You can query the commutativity of an operator:
 %
 \mpiRoutineRef{MPI_Op_commutative}
 
-A created \n{MPI_Op} can be freed again:
+A created \lstinline$MPI_Op$ can be freed again:
 %
 \begin{lstlisting}
 int MPI_Op_free(MPI_Op *op)
@@ -67,7 +67,7 @@ This sets the operator to \indexmpishow{MPI_OP_NULL}.
 
 \Level 1 {Local reduction}
 
-The application of an \n{MPI_OP} can be performed with the routine
+The application of an \lstinline$MPI_OP$ can be performed with the routine
 \indexmpishow{MPI_Reduce_local}. Using this routine and some
 send/receive scheme you can build your own global reductions. Note
 that this routine does not take a communicator because it is purely local.
@@ -300,7 +300,7 @@ switch(rank) {
         break; 
 }
 \end{lstlisting}
-Note the \n{MPI_ANY_SOURCE} parameter in the receive calls on processor~1.
+Note the \lstinline$MPI_ANY_SOURCE$ parameter in the receive calls on processor~1.
 One obvious execution of this would be:
 \begin{enumerate}
 \item The send from~2 is caught by processor~1;

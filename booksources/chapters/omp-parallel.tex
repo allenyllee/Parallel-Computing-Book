@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-8
+%%%% by Victor Eijkhout, copyright 2012-9
 %%%%
 %%%% omp-parallel.tex : about parallel regions, nesting and stuff.
 %%%%
@@ -55,9 +55,9 @@ result = fresult + gresult + hresult;
 The first thing we want to do is create a team of threads. This
 is done with a \indexterm{parallel region}.
 Here is a very simple example:
-\verbatimsnippet{hello-omp}
+\cverbatimsnippet{hello-omp}
 or in Fortran
-\verbatimsnippet{hello-who-omp-f}
+\fverbatimsnippet{hello-who-omp-f}
 This code corresponds to the model we just discussed:
 \begin{itemize}
 \item Immediately preceding the parallel block, one thread will be

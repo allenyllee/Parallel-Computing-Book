@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Computing'
-%%%% by Victor Eijkhout, copyright 2012-8
+%%%% by Victor Eijkhout, copyright 2012-9
 %%%%
 %%%% parcompbook.tex : master file for the book
 %%%%
@@ -53,60 +53,6 @@
  {\everymath{\strut}
   \begin{procedure}[H]\leftskip=\unitindent\caption{#1(#2)}}
  {\end{procedure}}
-
-% listings
-\usepackage{listings,xcolor}
-\lstdefinestyle{reviewcode}{
-  belowcaptionskip=1\baselineskip,
-  breaklines=true,
-  frame=L,
-  xleftmargin=\unitindent,
-  showstringspaces=false,
-  basicstyle=\footnotesize\ttfamily,
-  keywordstyle=\bfseries\color{blue},
-  commentstyle=\color{red!60!black},
-  identifierstyle=\slshape\color{black},
-  stringstyle=\color{green!60!black},
-  columns=fullflexible,
-  keepspaces=true,
-}
-\lstset{emph={ %% commands
-    MPI_Init,MPI_Finalize,MPI_Abort,MPI_Comm_size,MPI_Comm_rank,
-    MPI_Comm_spawn,MPI_Comm_remote_size,MPI_Comm_get_parent,
-    MPI_Allreduce,MPI_Reduce,MPI_Bcast,MPI_Gather,MPI_Allgather,MPI_Scan,MPI_Exscan,
-    MPI_Send,MPI_Recv,MPI_Isend,MPI_Irecv,MPI_Ssend,MPI_Bsend,
-    MPI_Send_init,MPI_Recv_init,MPI_Start_all,
-    MPI_Wait,MPI_Waitall,MPI_Waitany,MPI_Test,MPI_Request_free,MPI_Request_get_status,
-    MPI_Get_count,
-    MPI_Buffer_attach,MPI_Buffer_detach,
-    MPI_Type_commit,MPI_Type_free,MPI_Type_contiguous,MPI_Type_vector,
-    MPI_Type_indexed,MPI_Type_create_hindexed,MPI_Type_create_subarray,
-    MPI_Type_create_struct,
-    MPI_Type_create_f90_integer,MPI_Type_create_f90_real,MPI_Type_create_f90_complex,
-    MPI_Type_size,MPI_Type_extent,MPI_Type_get_extent,MPI_Type_get_true_extent,
-    MPI_Pack,MPI_Unpack,
-    MPI_Win_create,MPI_Win_free,MPI_Alloc_mem,MPI_Win_fence,
-    MPI_Win_lock,MPI_Win_unlock,
-    MPI_Win_post,MPI_Win_start,MPI_Win_wait,MPI_Win_complete,
-    MPI_Put,MPI_Get,MPI_Accumulate,MPI_Fetch_and_op,
-    MPI_Cart_create,MPI_Cart_coords,MPI_Cart_rank,MPI_Cart_shift,
-  },emphstyle={\color{red}\bfseries},
-  emph={[2] %% constants
-    MPI_INFO_NULL,MPI_ARGV_NULL,MPI_PROC_NULL,
-    MPI_IN_PLACE,MPI_REPLACE,
-    MPI_STATUS_IGNORE,MPI_STATUSES_IGNORE,
-    MPI_TAG,MPI_SOURCE,MPI_ANY_SOURCE,MPI_ANY_TAG,
-    MPI_COMM_WORLD,
-    MPI_SUM,MPI_MAX,
-    MPI_INT,MPI_FLOAT,MPI_DOUBLE,MPI_REAL,MPI_CHAR,MPI_ADDRESS_KIND,
-    MPI_LOCK_EXCLUSIVE,
-  },emphstyle={[2]\color{green}\bfseries},
-  emph={[3] %% types
-    MPI_Aint,
-    MPI_Status,MPI_Request,MPI_Comm,MPI_Datatype,
-    MPI_Info,MPI_Win,
-  },emphstyle={[3]\color{brown}\bfseries}
-}
 
 \def\svnrev{428}
 % dashed lines; this may interfere with other table packages
@@ -233,10 +179,12 @@
 \setcounter{secnumdepth}{4}
 \OutlineLevelStart4{\paragraph{\bf #1}}
 
-\input scimacs
+\input acromacs
+\input bookmacs
 \input exmacs
 \input tutmacs
 \input idxmacs
+\input listingmacs
 
 \newcommand\commandref[1]{\label{sec:#1}
   \begin{quotation}

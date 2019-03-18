@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-6
+%%%% by Victor Eijkhout, copyright 2012-9
 %%%%
 %%%% omp-task.tex : openmp tasking
 %%%%
@@ -420,20 +420,20 @@ which the tasks are cancelled.
 
 As an example of the use of tasks, consider computing an array of Fibonacci values:
 %
-\verbatimsnippet{fiboarray}
+\cverbatimsnippet{fiboarray}
 %
 If you simply turn each calculation into a task, results will be
 unpredictable (confirm this!) since tasks can be executed in any sequence.
 To solve this, we put dependencies on the tasks:
 %
-\verbatimsnippet{fibotaskdepend}
+\cverbatimsnippet{fibotaskdepend}
 
 \Level 1 {Binomial coefficients}
 
 \begin{exercise}
   An array of binomial coefficients can be computed as follows:
   %
-  \verbatimsnippet{binomialarray}
+  \cverbatimsnippet{binomialarray}
   %
   Putting a single task group around the double loop, and use
   \n{depend} clauses to make the execution satisfy the proper dependencies.

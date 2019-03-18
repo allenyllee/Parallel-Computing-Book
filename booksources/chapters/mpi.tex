@@ -11,6 +11,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\lstset{style=reviewcode,language=C}
 \Level 0 {Info objects}
 \label{sec:mpi:info}
 
@@ -134,6 +135,28 @@ A few examples of what can go wrong:
   (including non-blocking ones) than are sent to it.
 \end{itemize}
 
+\Level 1 {Error codes}
+\label{sec:mpi-err-codes}
+
+\begin{itemize}
+\item \indexmpidef{MPI_SUCCESS}: 
+  no error; MPI routine completed successfully.
+\item \indexmpidef{MPI_ERR_COMM}: 
+  invalid communicator. A common error is to use a null communicator in
+  a call.
+\item \indexmpishow{MPI_ERR_BUFFER} The buffer pointer is invalid;
+  this typically means that you have supplied a null pointer.
+\item \indexmpishow{MPI_ERR_INTERN} An internal error in MPI has been detected.
+\item \indexmpidef{MPI_ERR_INFO}: 
+  invalid info object.
+\item \indexmpidef{MPI_ERR_PORT}: invalid port; this applies to
+  \indexmpishow{MPI_Comm_connect} and such.
+\item \indexmpishow{MPI_ERR_SERVICE}: invalid service in
+  \indexmpishow{MPI_Unpublish_name}.
+\end{itemize}
+
+\Level 1 {Error handling}
+
 The MPI library has a general mechanism for dealing with errors that
 it detects. The default behaviour, where the full run is aborted, is
 equivalent to your code having the following
@@ -151,13 +174,13 @@ return value. The values \indexmpidef{MPI_ERRORS_ARE_FATAL} and
 \indexmpidef{MPI_ERRORS_RETURN} are of type \indexmpidef{MPI_Errhandler}.
 
 In most cases where an MPI error occurs a complete abort is the
-sensible thing, since there are few ways to recover. The second
-possibility can for instance be used to print out debugging
-information:
+sensible thing, since there are few ways to recover.
+Alternatively, you could compare the return code to \indexmpidef{MPI_SUCCESS}
+and  print out debugging information:
 \begin{lstlisting}
 int ierr;
 ierr = MPI_Something();
-if (ierr!=0) {
+if (ierr!=MPI_SUCCESS) {
     // print out information about what your programming is doing
     MPI_Abort();
 }
@@ -168,27 +191,30 @@ Fatal error in MPI_Waitall:
 See the MPI_ERROR field in MPI_Status for the error code
 \end{verbatim}
 You could then retrieve the \indexmpishow{MPI_ERROR} field of the
-status, and print out an error string with \indexmpidef{MPI_Error_string}:
+status, and print out an error string with
+\indexmpidef{MPI_Error_string}
+or maximal size \indexmpidef{MPI_MAX_ERROR_STRING}:
 \begin{lstlisting}
 MPI_Comm_set_errhandler(MPI_COMM_WORLD,MPI_ERRORS_RETURN);
 ierr = MPI_Waitall(2*ntids-2,requests,status);
 if (ierr!=0) {
-   char errtxt[200];
+   char errtxt[MPI_MAX_ERROR_STRING];
    for (int i=0; i<2*ntids-2; i++) {
-       int err = status[i].MPI_ERROR; int len=200;
-       MPI_Error_string(err,errtxt,&len);
-       printf("Waitall error: %d %s\n",err,errtxt);
+     int err = status[i].MPI_ERROR;
+     int len=MPI_MAX_ERROR_STRING;
+     MPI_Error_string(err,errtxt,&len);
+     printf("Waitall error: %d %s\n",err,errtxt);
    }
    MPI_Abort(MPI_COMM_WORLD,0);
 }
 \end{lstlisting}
 One cases where errors can be handled is that of \emph{MPI file
-  I/O}\indexterm{MPI!I/O}: if an output file has the wrong
+  I/O}\index{MPI!I/O}: if an output file has the wrong
 permissions, code can possibly progress without writing data, or
 writing to a temporary file.
 
 MPI operators (\indexmpishow{MPI_Op}) do not return an error code. In case of
-an error they call \n{MPI_Abort}; if \indexmpishow{MPI_ERRORS_RETURN}
+an error they call \indexmpishow{MPI_Abort}; if \indexmpishow{MPI_ERRORS_RETURN}
 is the error handler, errors may be silently ignore.
 
 You can create your own error handler with
@@ -292,7 +318,7 @@ hang. Can we deal with this case? Yes, but it involves some
 programming.
 
 First of all, one of the possible MPI error return codes
-(section~\ref{sec:mpi:error}) is \n{MPI_ERR_COMM}, which can be returned
+(section~\ref{sec:mpi:error}) is \lstinline$MPI_ERR_COMM$, which can be returned
 if a processor in the communicator is unavailable. You may want to
 catch this error, and add a `replacement processor' to the
 program. For this, the \indexmpishow{MPI_Comm_spawn} can be used
@@ -300,7 +326,7 @@ program. For this, the \indexmpishow{MPI_Comm_spawn} can be used
 %
 But this requires a change of program design: the communicator
 containing the new process(es) is not part of the
-old \n{MPI_COMM_WORLD}, so it is better to set up your code as a
+old \lstinline$MPI_COMM_WORLD$, so it is better to set up your code as a
 collection of inter-communicators to begin with.
 
 \Level 0 {Context information}
@@ -349,11 +375,11 @@ Boolean variable that indicates whether clocks are synchronized.
 
 Also:
 \begin{itemize}
-\item \indexmpishow{MPI_UNIVERSE_SIZE}: the total number of processes
+\item \indexmpidef{MPI_UNIVERSE_SIZE}: the total number of processes
   that can be created. This can be more than the size of
-  \n{MPI_COMM_WORLD} if the host list is larger than the number of
+  \lstinline$MPI_COMM_WORLD$ if the host list is larger than the number of
   initially started processes. See section~\ref{sec:mpi-dynamic}.
-\item \indexmpishow{MPI_APPNUM}: if MPI is used in \ac{MPMD} mode, or
+\item \indexmpidef{MPI_APPNUM}: if MPI is used in \ac{MPMD} mode, or
   if \indexmpishow{MPI_Comm_spawn_multiple} is used, this attribute
   reports the how-manieth program we are in.
 \end{itemize}
@@ -368,7 +394,8 @@ MPI has a \indexterm{wall clock} timer: \indexmpishow{MPI_Wtime}
 %
 which gives the number of seconds from a certain point in the past.
 (Note the absence of the error parameter in the fortran call.)
-\verbatimsnippet{pingpong}
+%
+\cverbatimsnippet{pingpong}
 
 The timer has a resolution of \indexmpishow{MPI_Wtick}:
 %
@@ -496,7 +523,7 @@ a process. This requires a separate thread of execution, with
 obvious performance problems. Therefore, in practice overlap may
 not actually happen, and for the message to make progress
 it is necessary for the MPI library to become active occasionally.
-For instance, people have inserted dummy \n{MPI_Probe} calls.
+For instance, people have inserted dummy \lstinline$MPI_Probe$ calls.
 
 A similar problem arises with passive target synchronization:
 it is possible that the origin process may hang until 
@@ -527,7 +554,7 @@ mistake! Of course, if you then run a larger problem, and the small
 message becomes larger than the threshold, the deadlock will suddenly
 occur. So you find yourself in the situation that a bug only manifests
 itself on large problems, which are usually harder to debug. In this
-case, replacing every \n{MPI_Send} with a \indexmpishow{MPI_Ssend} will force the
+case, replacing every \lstinline$MPI_Send$ with a \indexmpishow{MPI_Ssend} will force the
 handshake, even for small messages.
 
 Conversely, you may sometimes wish to avoid the handshake on large
@@ -676,17 +703,17 @@ In section~\ref{sec:mpi-source} we showed a master-worker example where the
 master accepts in arbitrary order the messages from the workers.
 Here we will show a slightly
 more complicated example, where only the result of the first task to
-complete is needed. Thus, we issue an \n{MPI_Recv}
+complete is needed. Thus, we issue an \lstinline$MPI_Recv$
 with \indexmpishow{MPI_ANY_SOURCE} as source.  When a result comes, we
 broadcast its source to all processes.  All the other workers then use
 this information to cancel their message with
 an \indexmpishow{MPI_Cancel} operation.
-
-\verbatimsnippet{cancel}
+%
+\cverbatimsnippet{cancel}
 
 \Level 1 {Constants}
 
-MPI constants such as \n{MPI_COMM_WORLD} or \n{MPI_INT} are not
+MPI constants such as \lstinline$MPI_COMM_WORLD$ or \lstinline$MPI_INT$ are not
 necessarily statitally defined, such as by a \n{#define} statement:
 the best you can say is that they have a value after
 \indexmpishow{MPI_Init} or \indexmpishow{MPI_Init_thread}.
@@ -699,7 +726,7 @@ will also work on another.
 \label{sec:ref:mpi-thread}
 
 Hybrid MPI/threaded codes need to replace \indexmpishow{MPI_Init}
-by \n{MPI_Init_thread}:
+by \indexmpishow{MPI_Init_thread}:
 %
 \mpiRoutineRef{MPI_Init_thread}
 %
@@ -723,7 +750,7 @@ The following constants are defined:
 These values are monotonically increasing.
 
 After the initialization call, you can query the support level
-with \n{MPI_Query_thread}:
+with \lstinline$MPI_Query_thread$:
 %
 \mpiRoutineRef{MPI_Query_thread}
 
@@ -731,6 +758,46 @@ In case more than one thread performs communication, the following routine
 can determine whether a thread is the main thread:
 %
 \mpiRoutineRef{MPI_Is_thread_main}
+
+\Level 0 {Shell scripting cuteness}
+
+Letting MPI processes interact with the environment is not entirely
+straightforward.
+For instance,
+\index{redirection|see{shell, input redirection}}%
+\indextermsub{shell}{input redirection}
+as in
+\begin{verbatim}
+mpirun -np 2 mpiprogram < someinput
+\end{verbatim}
+may not work.
+
+Instead, use a script \n{programscript} that has one parameter:
+\begin{verbatim}
+#!/bin/bash
+mpirunprogram < $1
+\end{verbatim}
+and run this in parallel:
+\begin{verbatim}
+mpirun -np 2 programscript someinput
+\end{verbatim}
+
+This sort of script can also be used to implement \indexac{MPMD} runs:
+we let the script start one of a number of programs. For this, we use
+the fact that the MPI rank is known in the environment as
+\indextermtt{PMI_RANK}. Use a script \n{mpmdscript}:
+\begin{verbatim}
+#!/bin/bash
+if [ ${PMI_RANK} -eq 0 ] ; then
+  ./programmaster
+else
+  ./programworker
+fi
+\end{verbatim}
+which is then run in parallel:
+\begin{verbatim}
+mpirun -np 25 mpmdscript
+\end{verbatim}
 
 \Level 0 {The origin of one-sided communication in ShMem}
 

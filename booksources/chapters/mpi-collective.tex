@@ -116,6 +116,7 @@ For instance, if $x,y$ are distributed vector objects, and you want to compute
 which is part of the Gramm-Schmidt algorithm; see~\HPSCref{app:gram-schmidt}.
 Now you need the inner product value on all processors. You could do this
 by writing a reduction followed by a broadcast:
+\lstset{style=reviewcode,language=C}
 \begin{lstlisting}
 // compute local value
 localvalue = innerproduct( x[ localpart], y[ localpart ] );
@@ -149,7 +150,7 @@ are said to be `collective on their communicator', but which do not
 involve data movement. Collective then means that all processors must
 call this routine; not to do so is an error that will 
 manifest itself in `hanging' code. One such example is
-\n{MPI_Win_fence}.
+\lstinline$MPI_Win_fence$.
 
 \Level 1 {Collectives in MPI}
 
