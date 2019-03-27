@@ -5,7 +5,7 @@
 !**** `Parallel programming with MPI and OpenMP'
 !**** by Victor Eijkhout, eijkhout@tacc.utexas.edu
 !****
-!**** copyright Victor Eijkhout 2012-8
+!**** copyright Victor Eijkhout 2012-9
 !****
 !**** MPI Exercise to illustrate sequentialization
 !**** fortran 2008 version
@@ -28,10 +28,10 @@ Program Isendirecv
   integer :: sendto,recvfrom
   type(MPI_Request) :: requests(4)
  
-  call MPI_Init(ierr)
+  call MPI_Init()
 
-  call MPI_Comm_size(comm,nprocs,ierr)
-  call MPI_Comm_rank(comm,procno,ierr)
+  call MPI_Comm_size(comm,nprocs)
+  call MPI_Comm_rank(comm,procno)
   mydata = procno
 
   !! Exercise:
@@ -56,7 +56,7 @@ Program Isendirecv
   else
      error = nprocs
   end if
-  call MPI_Allreduce(error,errors,1,MPI_INTEGER,MPI_MIN,comm,ierr)
+  call MPI_Allreduce(error,errors,1,MPI_INTEGER,MPI_MIN,comm)
   if (procno.eq.0) then
      if (errors.eq.nprocs) then
         print *,"Finished; all results correct"
@@ -65,7 +65,7 @@ Program Isendirecv
      end if
   end if
 
-  call MPI_Finalize(ierr)
+  call MPI_Finalize()
   
 end Program Isendirecv
 

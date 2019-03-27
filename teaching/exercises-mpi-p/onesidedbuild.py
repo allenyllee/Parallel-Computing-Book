@@ -5,7 +5,7 @@
 ####
 #### This program file is part of the book and course
 #### "Parallel Computing"
-#### by Victor Eijkhout, copyright 2013-7
+#### by Victor Eijkhout, copyright 2013-8
 ####
 #### onesidedbuild.py : put random data everywhere
 ####
@@ -55,5 +55,5 @@ for inum in range(NUMBERS):
 the_window.Free()
 
 if procno==0:
-    print "Finished"
+    print("Finished")
 

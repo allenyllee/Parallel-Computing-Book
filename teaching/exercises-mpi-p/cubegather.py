@@ -5,7 +5,7 @@
 ####
 #### This program file is part of the book and course
 #### "Parallel Computing"
-#### by Victor Eijkhout, copyright 2013-6
+#### by Victor Eijkhout, copyright 2013-8
 ####
 #### cubegatherp.py : use subarray type
 ####
@@ -30,7 +30,7 @@ procno = comm.Get_rank()
 procs_per_side = int( math.pow(nprocs+1,1./3) )
 if pow(procs_per_side,3) != nprocs:
     if procno==0:
-        print "Number of processors needs to be a perfect square"
+        print("Number of processors needs to be a perfect square")
     comm.Barrier()
     comm.Abort(0)
 

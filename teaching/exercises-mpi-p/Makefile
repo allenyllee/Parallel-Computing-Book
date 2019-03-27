@@ -16,8 +16,9 @@ MODE = mpi
 info ::
 	@echo "nothing to make here...."
 EXERCISES = \
-    commrank prime pingpong \
-    isendirecv \
+    hello commrank prime randommax pingpong \
+    rightsend isendirecv ibarrierupdate \
+    bucketblock \
     stridesend cubegather \
     randomput countdown onesidedbuild \
     procgrid blockwrite viewwrite
@@ -31,21 +32,25 @@ info ::
 	@echo "         [OPTIONS=programoptions]"
 .PHONY: run
 NP = 4
+PYTHON_clang = /opt/local/bin/python
 PYTHON_gcc  = /opt/local/bin/python2.7
-PYTHON_intel = python
+PYTHON_intel = python3
 PYTHON = ${PYTHON_${TACC_FAMILY_COMPILER}}
 PROGRAM = hello
 OPTIONS =
-run :
-	mpirun -np ${NP} ${PYTHON} ${PROGRAM}.py ${OPTIONS}
+
+##
+## compilation is phony
+##
+.PHONY: ${EXERCISES}
+${EXERCISES} :
+
+PROGRAM_EXTENSION = .py
 
 ####
 #### Regression tests
 ####
-.PHONY: commrank prime pingpong \
-    isendirecv \
-    stridesend cubegather randomput \
-    procgrid blockwrite viewwrite
+.PHONY: ${EXERCISES} 
 
 include ../course-support/Make.mpi_regress
 CATCHER = ../course-support/catchout -p ${PYTHON}

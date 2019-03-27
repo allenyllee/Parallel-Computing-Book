@@ -48,7 +48,8 @@ You could start up a single copy of this program with
 mpirun -np 1 spawn_manager
 \end{verbatim}
 but with a hostfile that has more than one host. In that case the
-\indexmpidef{MPI_UNIVERSE_SIZE} will tell you to the total number of
+attribute \indexmpidef{MPI_UNIVERSE_SIZE}, retrieved with
+\indexmpishow{MPI_Attr_get}, will tell you to the total number of
 hosts available. If this option is not supported, you can determine
 yourself how many processes you want to spawn. If you exceed the
 hardware resources, your multi-tasking operating system (which is some

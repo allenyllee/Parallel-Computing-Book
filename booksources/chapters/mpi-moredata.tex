@@ -59,7 +59,7 @@ as follows.
 \item The trick with sending elements of a derived type still works, but
 \item There are new routines that can return the correct information about the
   total amount of data; for instance, \indexmpishow{MPI_Get_elements_x}
-  returns its result as a \lstinline$MPI_Count$.
+  returns its result as a \indexmpishow{MPI_Count}.
 \end{itemize}
 
 \index{datatype!big|)}
@@ -90,7 +90,7 @@ MPI offers the following:
 \item the buffer is sent with a datatype of \indexmpishow{MPI_PACKED}.
 \end{itemize}
 
-With \indexmpishow{MPI_PACK} data elements can be added 
+With \indexmpishow{MPI_Pack} data elements can be added 
 to a buffer one at a time. The \n{position} parameter is updated
 each time by the packing routine.
 \begin{lstlisting}
@@ -100,7 +100,7 @@ int MPI_Pack(
   MPI_Comm comm);
 \end{lstlisting}
 
-Conversely, \indexmpishow{MPI_UNPACK} retrieves one element
+Conversely, \indexmpishow{MPI_Unpack} retrieves one element
 from the buffer at a time. You need to specify the MPI datatype.
 \begin{lstlisting}
 int MPI_Unpack(

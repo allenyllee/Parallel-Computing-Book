@@ -2,7 +2,7 @@
 ################################################################
 ####
 #### This makefile is part of `Parallel Programming in MPI and OpenMP'
-#### by Victor Eijkhout, copyright 2013-7
+#### by Victor Eijkhout, copyright 2013-9
 #### eijkhout@tacc.utexas.edu
 ####
 #### Makefile for  MPI course exercises in Fortran
@@ -14,10 +14,11 @@ info ::
 COURSE = mpi
 MODE = mpi
 info ::
-	@echo "make EXERCISE (where EXERCISE=${CEXERCISES} ${FEXERCISES})"
+	@echo "make EXERCISE (where EXERCISE=${EXERCISES}"
 EXERCISES = hello \
     commrank prime randommax jordan \
     pingpong sendrecv sumsquares \
+    rightsend bucketblock \
     isendirecv isendirecvarray \
     cubegather procgrid \
     randomput countdown onesidedbuild \

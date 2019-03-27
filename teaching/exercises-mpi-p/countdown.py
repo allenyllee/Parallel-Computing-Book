@@ -5,7 +5,7 @@
 ####
 #### This program file is part of the book and course
 #### "Parallel Computing"
-#### by Victor Eijkhout, copyright 2013-7
+#### by Victor Eijkhout, copyright 2013-8
 ####
 #### countdown.py : implementing shared memory through one-sided
 ####
@@ -24,7 +24,7 @@ procno = comm.Get_rank()
 random.seed(procno)
 
 if nprocs<2:
-    print "Need at least 2 procs"
+    print("Need at least 2 procs")
     sys.exit(1)
 
 counter_process = nprocs-1
@@ -72,7 +72,7 @@ while True:
     ##
 #### your code here ####
     if procno==counter_process:
-        print "Step: %d, counter at %d" % (step,window_data)
+        print("Step: %d, counter at %d" % (step,window_data))
     if is_zero==0:
         break
     step += 1
@@ -80,5 +80,5 @@ while True:
 win.Free()
 
 if procno==0:
-    print "Finished"
+    print("Finished")
 

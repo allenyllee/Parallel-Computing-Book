@@ -21,7 +21,7 @@ Program RandomPut
 
   integer :: the_window,window_data,window_elt_size
   integer(kind=MPI_ADDRESS_KIND) :: window_size,sizeofint,displacement
-  integer :: err,iteration
+  integer :: iteration
   real randomfraction
 
   integer :: my_number=1, my_sum = 0, other
@@ -38,11 +38,11 @@ Program RandomPut
   !! Exercise 2:
   !! -- Replace MPI_Win_create by MPI_Win_allocate
   !!
-  call MPI_Sizeof(window_data,window_elt_size,err)
+  call MPI_Sizeof(window_data,window_elt_size,ierr)
   window_size = window_elt_size
   call MPI_Win_create( &
 !!!! your code here !!!!
-       MPI_INFO_NULL,comm,the_window,err)
+       MPI_INFO_NULL,comm,the_window,ierr)
 
   !!
   !! Put twenty numbers from proc 0 into 1 or 2,
@@ -66,7 +66,7 @@ Program RandomPut
      !!
      !! Now we have an epoch where proc 0 puts data either in 1 or 2
      !!
-     call MPI_Win_fence(0,the_window,err)
+     call MPI_Win_fence(0,the_window,ierr)
      if (procno==0) then
         displacement = 0
         call MPI_Put( &
@@ -75,9 +75,9 @@ Program RandomPut
              ! where are you putting it:
              ! (use an MPI_ADDRESS_KIND variable for displacement!)
 !!!! your code here !!!!
-             the_window, err)
+             the_window, ierr)
      end if
-     call MPI_Win_fence(0,the_window,err)
+     call MPI_Win_fence(0,the_window,ierr)
      my_sum = my_sum+window_data
 
   end do
@@ -91,7 +91,7 @@ Program RandomPut
      print *,"Sums on 1 and 2 together should be: 20"
   end if
   
-  call MPI_Win_free(the_window,err)
+  call MPI_Win_free(the_window,ierr)
   
   call MPI_Finalize(ierr)
   

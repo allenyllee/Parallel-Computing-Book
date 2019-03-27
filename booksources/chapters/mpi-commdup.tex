@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-8
+%%%% by Victor Eijkhout, copyright 2012-9
 %%%%
 %%%% mpi-commbasic.tex : communicator basics
 %%%%
@@ -17,7 +17,7 @@
 With \indexmpishow{MPI_Comm_dup} you can make an exact duplicate of a communicator.
 This may seem pointless, but it is actually very useful for the design of
 software libraries. Image that you have a code
-%\lstset{style=reviewcode,language=C}
+\lstset{style=reviewcode,language=C}
 \begin{lstlisting}
 MPI_Isend(...); MPI_Irecv(...);
 // library call

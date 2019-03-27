@@ -5,7 +5,7 @@
 !**** `Parallel programming with MPI and OpenMP'
 !**** by Victor Eijkhout, eijkhout@tacc.utexas.edu
 !****
-!**** copyright Victor Eijkhout 2012-8
+!**** copyright Victor Eijkhout 2012-9
 !****
 !**** MPI Exercise for Gauss-Jordan elimination
 !**** fortran 2008 version
@@ -32,9 +32,9 @@ Program GaussJordan
   integer :: row,piv,n,i
   logical :: success = .true.
 
-  call MPI_Init(ierr)
-  call MPI_Comm_size(comm,nprocs,ierr)
-  call MPI_Comm_rank(comm,procno,ierr)
+  call MPI_Init()
+  call MPI_Comm_size(comm,nprocs)
+  call MPI_Comm_rank(comm,procno)
 
   !!
   !! Initialize the random number generator
@@ -73,7 +73,7 @@ Program GaussJordan
   !! so that the solution is identically one
   !! We use one long reduction
   !!
-  call MPI_Allreduce(matrix,rhs,N,MPI_REAL8,MPI_SUM,comm,ierr)
+  call MPI_Allreduce(matrix,rhs,N,MPI_REAL8,MPI_SUM,comm)
 
   !!
   !! Now iterate over the columns,
@@ -120,7 +120,7 @@ Program GaussJordan
   !! Solve the system
   !!
   local_solution = rhs(procno)/matrix(procno)
-  call MPI_Allgather(local_solution,1,MPI_REAL8,solution,1,MPI_REAL8,comm,ierr)
+  call MPI_Allgather(local_solution,1,MPI_REAL8,solution,1,MPI_REAL8,comm)
 
   !!
   !! Check correctness of the solution
@@ -135,7 +135,7 @@ Program GaussJordan
      if (success) print *,"Success"
   end if
   
-  call MPI_Finalize(ierr)
+  call MPI_Finalize()
   
 end Program GaussJordan
 

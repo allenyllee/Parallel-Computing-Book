@@ -138,7 +138,7 @@ ways you can associate data with a window:
     window in one call, and its variant
     \indexmpishow{MPI_Win_allocate_shared} which facilitates dealing
     with shared memory; or
-  \item Use \indexmpishow{MPI_Win_alloc} to allocate the memory, and
+  \item Use \indexmpishow{MPI_Win_allocate} to allocate the memory, and
     \indexmpishow{MPI_Win_create} to create the window.
   \end{enumerate}
 \item Finally, you can create a window with
@@ -492,10 +492,10 @@ The value zero is always allowed, by you can make your program more efficient by
 one or more of the following, combined by bitwise OR in C/C++ or
 \n{IOR} in Fortran.
 
-\begin{description}
-\item[\texttt{MPI\_WIN\_START}] Supports the option:
-  \begin{description}
-    \item[\texttt{MPI\_MODE\_NOCHECK}] the matching calls to \n{MPI_WIN_POST} have already
+\begin{itemize}
+\item[\indexmpishow{MPI_Win_start}] Supports the option:
+  \begin{itemize}
+    \item[\indexmpishow{MPI_MODE_NOCHECK}] the matching calls to \n{MPI_WIN_POST} have already
     completed on all target processes when the call to \n{MPI_WIN_START} is
     made. The nocheck option can be specified in a start call if and
     only if it is specified in each matching post call. This is similar
@@ -503,69 +503,47 @@ one or more of the following, combined by bitwise OR in C/C++ or
     the handshake is implicit in the code. (However, ready-send is
     matched by a regular receive, whereas both start and post must
     specify the nocheck option.)
-  \end{description}
-\item[\texttt{MPI\_WIN\_POST}] supports the following options:
-  \begin{description}
-  \item[\texttt{MPI\_MODE\_NOCHECK}] the matching calls to \n{MPI_WIN_START} have not
+  \end{itemize}
+\item[\indexmpishow{MPI_Win_post}] supports the following options:
+  \begin{itemize}
+  \item[\indexmpishow{MPI_MODE_NOCHECK}] the matching calls to \n{MPI_WIN_START} have not
     yet occurred on any origin processes when the call to \n{MPI_WIN_POST}
     is made. The nocheck option can be specified by a post call if and
     only if it is specified by each matching start call.
-  \item[\texttt{MPI\_MODE\_NOSTORE}] the local window was not updated by local
+  \item[\indexmpishow{MPI_MODE_NOSTORE}] the local window was not updated by local
     stores (or local get or receive calls) since last
     synchronization. This may avoid the need for cache synchronization
     at the post call.
-  \item[\texttt{MPI\_MODE\_NOPUT}] the local window will not be updated by put or
+  \item[\indexmpishow{MPI_MODE_NOPUT}] the local window will not be updated by put or
     accumulate calls after the post call, until the ensuing (wait)
     synchronization. This may avoid the need for cache synchronization
     at the wait call.
-  \end{description}
-\item[\texttt{MPI\_WIN\_FENCE}] supports the following options:
-  \begin{description}
-  \item[\texttt{MPI\_MODE\_NOSTORE}] the local window was not updated by local
+  \end{itemize}
+\item[\indexmpishow{MPI_Win_fence}] supports the following options:
+  \begin{itemize}
+  \item[\indexmpishow{MPI_MODE_NOSTORE}] the local window was not updated by local
     stores (or local get or receive calls) since last synchronization.
-  \item[\texttt{MPI\_MODE\_NOPUT}] the local window will not be updated by put or
+  \item[\indexmpishow{MPI_MODE_NOPUT}] the local window will not be updated by put or
     accumulate calls after the fence call, until the ensuing (fence)
     synchronization.
-  \item[\texttt{MPI\_MODE\_NOPRECEDE}] the fence does not complete any sequence of
+  \item[\indexmpishow{MPI_MODE_NOPRECEDE}] the fence does not complete any sequence of
     locally issued RMA calls. If this assertion is given by any
     process in the window group, then it must be given by all
     processes in the group.
-  \item[\texttt{MPI\_MODE\_NOSUCCEED}] the fence does not start any
+  \item[\indexmpishow{MPI_MODE_NOSUCCEED}] the fence does not start any
     sequence of locally issued RMA calls. If the assertion is given by
     any process in the window group, then it must be given by all
     processes in the group.
-  \end{description}
-\item[\texttt{MPI\_WIN\_LOCK}] supports the following option:
-  \begin{description}
-    \item[\texttt{MPI\_MODE\_NOCHECK}] no other process holds, or will attempt to
+  \end{itemize}
+\item[\indexmpishow{MPI_Win_lock}] supports the following option:
+  \begin{itemize}
+    \item[\indexmpishow{MPI_MODE_NOCHECK}] no other process holds, or will attempt to
     acquire a conflicting lock, while the caller holds the window
     lock. This is useful when mutual exclusion is achieved by other
     means, but the coherence operations that may be attached to the
     lock and unlock calls are still required.
-  \end{description}
-\end{description}
-
-\begin{comment}
-  \begin{itemize}
-  \item \indexmpishow{MPI_MODE_NOCHECK}: this is used with
-    \indexmpishow{MPI_Win_start} and \indexmpishow{MPI_Win_post}; it
-    indicates that when the origin `start' call is made, the target
-    `post' call has already been issued. This is comparable to using
-    \indexmpishow{MPI_Rsend}.
-  \item \indexmpishow{MPI_MODE_NOSTORE}: this is used to specify that
-    the local window was not updated in the preceding epoch.
-  \item \indexmpishow{MPI_MODE_NOPUT}: this is used to specify that a local
-    window will not be used as target in this epoch.
-  \item \indexmpishow{MPI_MODE_NOPRECEDE}: this states that the
-    \indexmpishow{MPI_Win_fence} call does not conclude a sequence of
-    RMA operations. If this assertion is made on any process in a window group,
-    it must be specified by all.
-  \item \indexmpishow{MPI_MODE_NOSUCCEED}: this states that the
-    \indexmpishow{MPI_Win_fence} call is not the start of a sequence of
-    local RMA calls. If any process in a window group specifies this,
-    all process must do so.
   \end{itemize}
-\end{comment}
+\end{itemize}
 
 \Level 1 {More active target synchronization}
 \label{sec:ref:post-wait}
@@ -900,7 +878,7 @@ actual sends and receive are executed.
   Assume that only Get operations are performed during an epoch. 
   Sketch how these are translated to send/receive pairs. 
   The problem here is how the senders find out that they need to send.
-  Show that you can solve this with an \indexmpishow{MPI_Scatter_reduce} call.
+  Show that you can solve this with an \indexmpishow{MPI_Reduce_scatter} call.
 \end{exercise}
 
 The previous paragraph noted that a collective operation was necessary

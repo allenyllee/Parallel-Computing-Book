@@ -13,9 +13,11 @@ if (procno==sender) {
   MPI_Type_get_true_extent
     (subarraytype,&true_lb,&true_extent);
   MPI_Aint
-    comp_lb = ( starts[0]*sizes[1]+starts[1] )*sizeof(double),
-    comp_extent = ( (starts[0]+subsizes[0]-1)*sizes[1] + starts[1]+subsizes[1] )
-                  *sizeof(double) - comp_lb;
+    comp_lb =
+        ( starts[0]*sizes[1]+starts[1] )*sizeof(double),
+    comp_extent =
+        ( (starts[0]+subsizes[0]-1)*sizes[1] + starts[1]+subsizes[1] )
+        *sizeof(double) - comp_lb;
   //    ASSERT(extent==true_lb+extent);
   ASSERT(true_lb==comp_lb);
   ASSERT(true_extent==comp_extent);

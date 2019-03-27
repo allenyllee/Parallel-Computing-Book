@@ -5,7 +5,7 @@
 ####
 #### This program file is part of the book and course
 #### "Parallel Computing"
-#### by Victor Eijkhout, copyright 2013-6
+#### by Victor Eijkhout, copyright 2013-8
 ####
 #### pingpong.py : MPI python exercise for send/recv
 ####
@@ -23,7 +23,7 @@ procno = comm.Get_rank()
 ntests = 100
 
 if procno==0 or procno==nprocs-1:
-    print "Node name:",MPI.Get_processor_name()
+    print("Node name:",MPI.Get_processor_name())
 
 ## Determine who will be communicating:
 ## set processA, processB
@@ -60,10 +60,10 @@ for s in [1,10,100,1000,10000,100000,1000000]:
         ##
         ## Report time and detect errors
         ##
-        print "Size=%d, elapsed time: %e" % (s,elapsed)
+        print("Size=%d, elapsed time: %e" % (s,elapsed))
         c = send_data==recv_data
         if not c.all():
-            print "oops",send_data,recv_data
+            print("oops",send_data,recv_data)
     elif procno==processB:
         ####
         #### Other process

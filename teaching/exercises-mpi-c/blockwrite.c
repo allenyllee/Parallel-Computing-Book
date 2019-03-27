@@ -65,6 +65,7 @@ int main(int argc,char **argv) {
    * Check correctness of the output file
    */
   if (procno==0) {
+    int error=nprocs, errors;
     FILE *f;
     f = fopen("blockwrite.dat","r");
     int location = 0;
@@ -74,15 +75,21 @@ int main(int argc,char **argv) {
 	int fromfile,success;
 	success = fread(&fromfile,sizeof(int),1,f);
 	if (success==EOF) {
+	  error = procno;
 	  printf("Premature end of file\n"); break;
 	}
 	if (fromfile!=location+1)
+	  error = procno;
 	  printf("Error %d:%d\n",location,fromfile);
 	location++;
       }
     }
+    errors = error;
     fclose(f);
-    printf("Success.\n");
+    if (errors==nprocs) 
+      printf("Execution finished correctly\n");
+    else
+      printf("Execution finished with errors\n");
   }
 
   MPI_Finalize();

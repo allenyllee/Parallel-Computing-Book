@@ -29,10 +29,10 @@ Program CountDown
   real(4) :: randomfraction
   logical :: i_must_update
 
-  call MPI_Init(ierr)
+  call MPI_Init()
 
-  call MPI_Comm_size(comm,nprocs,ierr)
-  call MPI_Comm_rank(comm,procno,ierr)
+  call MPI_Comm_size(comm,nprocs)
+  call MPI_Comm_rank(comm,procno)
 
 
   counter_process = nprocs-1
@@ -42,7 +42,7 @@ Program CountDown
   !! We only need a nonzero size on the last process,
   !! which we label the `counter_process'
   !!
-  call MPI_Sizeof(window_data,window_elt_size,ierr)
+  call MPI_Sizeof(window_data,window_elt_size)
   if (procno==counter_process) then
      window_data = nprocs-1; window_size = 1
      call MPI_Win_create( &
@@ -96,9 +96,9 @@ Program CountDown
       step = step+1
    end do
 
-   call MPI_Win_free(the_window,err)
+   call MPI_Win_free(the_window)
 
-   call MPI_Finalize(err)
+   call MPI_Finalize()
 
  end Program CountDown
  

@@ -382,7 +382,7 @@ while ( not done ) {
 
 \Level 2 {More about requests}
 
-Every non-blocking call allocates an \indexmpishow{MPI_REQUEST}
+Every non-blocking call allocates an \indexmpishow{MPI_Request}
 object. One effect of the various \indexmpishow{MPI_Wait...} calls is
 to deallocate these objects. Thus, it is wise to issue wait calls even
 if you know that the operation has succeeded. For instance, if all

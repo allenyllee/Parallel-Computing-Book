@@ -5,7 +5,7 @@
 !**** `Parallel programming with MPI and OpenMP'
 !**** by Victor Eijkhout, eijkhout@tacc.utexas.edu
 !****
-!**** copyright Victor Eijkhout 2012-8
+!**** copyright Victor Eijkhout 2012-9
 !****
 !**** MPI Exercise for pingpong
 !**** fortran 2008 version
@@ -24,10 +24,10 @@ Program PingPong
   integer :: nexperiments = 100,iexperiment,nanosec
   double precision :: t,s=1.
 
-  call MPI_Init(ierr)
+  call MPI_Init()
 
-  call MPI_Comm_size(comm,nprocs,ierr)
-  call MPI_Comm_rank(comm,procno,ierr)
+  call MPI_Comm_size(comm,nprocs)
+  call MPI_Comm_rank(comm,procno)
   
   !! Exercise:
   !! -- set source and target processors two ways:
@@ -41,11 +41,11 @@ Program PingPong
         call MPI_Send(senddata,1,MPI_DOUBLE_PRECISION, &
              !! fill in dest and tag
 !!!! your code here !!!!
-             comm,ierr)
+             comm)
         call MPI_Recv(recvdata,1,MPI_DOUBLE_PRECISION, &
              !! fill in source and tag
 !!!! your code here !!!!
-             comm,MPI_STATUS_IGNORE,ierr)
+             comm,MPI_STATUS_IGNORE)
         s = s + recvdata(1)
      end do     
      t = MPI_Wtime()-t
@@ -57,14 +57,14 @@ Program PingPong
         call MPI_Recv(recvdata,1,MPI_DOUBLE_PRECISION, &
              !! fill in source and tag
 !!!! your code here !!!!
-             comm,MPI_STATUS_IGNORE,ierr)
+             comm,MPI_STATUS_IGNORE)
         call MPI_Send(recvdata,1,MPI_DOUBLE_PRECISION, &
              !! fill in dest and tag
 !!!! your code here !!!!
-             comm,ierr)
+             comm)
      end do     
   end if
   
-  call MPI_Finalize(ierr)
+  call MPI_Finalize()
   
 end Program PingPong

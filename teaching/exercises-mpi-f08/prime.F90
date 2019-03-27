@@ -5,7 +5,7 @@
 !**** `Parallel programming with MPI and OpenMP'
 !**** by Victor Eijkhout, eijkhout@tacc.utexas.edu
 !****
-!**** copyright Victor Eijkhout 2012-8
+!**** copyright Victor Eijkhout 2012-9
 !****
 !**** MPI Exercise 
 !**** fortran 2008 version
@@ -24,7 +24,7 @@ Program Prime
   integer :: myfactor, &
 !!!! your code here !!!!
   
-  call MPI_Init(ierr)
+  call MPI_Init()
 
   !! Exercise:
   !! -- Parallelize the do loop so that each processor
@@ -39,6 +39,6 @@ Program Prime
           print *,"Processor",procno,"found factor",myfactor
   end do
   
-  call MPI_Finalize(ierr)
+  call MPI_Finalize()
   
 end Program Prime

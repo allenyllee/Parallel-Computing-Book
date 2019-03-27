@@ -5,7 +5,7 @@
 ####
 #### This program file is part of the book and course
 #### "Parallel Computing"
-#### by Victor Eijkhout, copyright 2013-7
+#### by Victor Eijkhout, copyright 2013-8
 ####
 #### randomput.py : put in random neighbour by one-sided
 ####
@@ -23,7 +23,7 @@ nprocs = comm.Get_size()
 procno = comm.Get_rank()
 
 if nprocs<3:
-    print "Need at least 3 procs"
+    print("Need at least 3 procs")
     sys.exit(1)
 
 window_data = np.zeros(1,dtype=np.int)
@@ -72,7 +72,7 @@ for iteration in range(20):
 win.Free()
 
 if procno in [1,2]:
-    print "Sum on %d: %d" % (procno,my_sum)
+    print("Sum on %d: %d" % (procno,my_sum))
 if procno==0:
-    print "Sums on 1 and 2 together should be: 20"
+    print("Sums on 1 and 2 together should be: 20")
 

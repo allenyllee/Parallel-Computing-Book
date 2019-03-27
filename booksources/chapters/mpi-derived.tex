@@ -218,6 +218,12 @@ by replacing the index expression by \n{mat+1}.
   processors.
 \end{exercise}
 
+\begin{figure}[ht]
+  \includegraphics[scale=.5]{stridesend}
+  \caption{Send strided data from process zero to all others}
+  \label{fig:stridesend}
+\end{figure}
+
 \begin{exercise}
   \label{ex:stridesend}
   Let processor~0 have an array~$x$ of length $10P$, where $P$~is the number of processors.
@@ -234,7 +240,8 @@ by replacing the index expression by \n{mat+1}.
 \begin{exercise}
   Write code to compare the time it takes to send a strided subset
   from an array: copy the elements by hand to a smaller buffer, or use
-  a vector data type. What do you find?
+  a vector data type. What do you find? You may need to test on fairly
+  large arrays.
 \end{exercise}
 
 \Level 2 {Subarrays as vector data}
@@ -285,7 +292,11 @@ The possibilities for the \n{order} parameter are
 
 \begin{tacc}
 If you haven't started \n{idev} with the right number of processes,
-use \n{ibrun -np 27}: normally you use \n{ibrun} without process count argument.
+use
+\begin{verbatim}
+ibrun -np 27 cubegather
+\end{verbatim}
+Normally you use \n{ibrun} without process count argument.
 \end{tacc}
 
 \end{exercise}

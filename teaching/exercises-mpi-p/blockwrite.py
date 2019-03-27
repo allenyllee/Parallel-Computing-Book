@@ -5,7 +5,7 @@
 ####
 #### This program file is part of the book and course
 #### "Parallel Computing"
-#### by Victor Eijkhout, copyright 2013-6
+#### by Victor Eijkhout, copyright 2013-8
 ####
 #### blockwrite.py : MPI python exercise for MPI I/O
 ####
@@ -35,8 +35,9 @@ for iw in range(nwords):
 ## -- open a file for writing;
 ##    if it doesn't exist yet, it needs to be created
 ##
+filename = "blockwrite.dat"
 mpifile = MPI.File.Open \
-          (comm,"blockwrite.dat",
+          (comm,filename,
 #### your code here ####
           )
 
@@ -59,5 +60,18 @@ if procno<nwriters:
 
 mpifile.Close()
 
+##
+## Check correctness of the output file
+##
 if procno==0:
-    print "Finished"
+    error = 0; errors = np.full(nprocs,nprocs,np.int)
+    # with open(filename,"r") as timefile:
+    #     location = 0
+    #     for ip in range(nwriters):
+    #         for iw in range(nwords):
+    #             line = timefile.readline()
+    #             print(line)
+    if errors[0]==nprocs:
+        print("Finished: (read not implemented in python)")
+    else:
+        print("Finished: first error occurred on rank %d" % errors[0])

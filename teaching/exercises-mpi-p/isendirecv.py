@@ -5,7 +5,7 @@
 ####
 #### This program file is part of the book and course
 #### "Parallel Computing"
-#### by Victor Eijkhout, copyright 2013-7
+#### by Victor Eijkhout, copyright 2013-8
 ####
 #### isendirecv.py : MPI python exercise for isend/irecv
 ####
@@ -85,12 +85,12 @@ def approxeq(x,y):
         or abs(x-y)/abs(x)<1.e-14
 
 if not approxeq(mydata,check):
-    print "Data on %d should be %e, not %e" % (procno,check,mydata)
+    print("Data on %d should be %e, not %e" % (procno,check,mydata))
     error[0] = procno
 
 comm.Allreduce(error,errors,op=MPI.MIN)
 if procno==0:
     if errors[0]<nprocs:
-        print "First error appeared on proc",errors[0]
+        print("First error appeared on proc",errors[0])
     else:
-        print "Finished: all results correct"
+        print("Finished: all results correct")

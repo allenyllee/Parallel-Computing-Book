@@ -47,6 +47,10 @@ int main(int argc,char **argv) {
     MPI_Datatype scattertype;
     int count,stride,blocklength;
 /**** your code here ****/
+
+    /* 
+     * loop over all processes you are sending to
+     */
     for (int sendto=0; sendto<nprocs; sendto++) {
       if (sendto==procno)
 	continue;
@@ -56,6 +60,10 @@ int main(int argc,char **argv) {
        */
 /**** your code here ****/
     }
+    /*
+     * Make sure you free the datatype again
+     * - do you do that here or inside the send loop?
+     */
 /**** your code here ****/
   } else {
     int *mydata = (int*) malloc(localsize*sizeof(int));

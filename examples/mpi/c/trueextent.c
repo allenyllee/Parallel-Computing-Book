@@ -45,9 +45,11 @@ int main(int argc,char **argv) {
     MPI_Type_get_true_extent
       (subarraytype,&true_lb,&true_extent);
     MPI_Aint
-      comp_lb = ( starts[0]*sizes[1]+starts[1] )*sizeof(double),
-      comp_extent = ( (starts[0]+subsizes[0]-1)*sizes[1] + starts[1]+subsizes[1] )
-                    *sizeof(double) - comp_lb;
+      comp_lb =
+          ( starts[0]*sizes[1]+starts[1] )*sizeof(double),
+      comp_extent =
+          ( (starts[0]+subsizes[0]-1)*sizes[1] + starts[1]+subsizes[1] )
+          *sizeof(double) - comp_lb;
     printf("Found lb=%ld, extent=%ld\n",true_lb,true_extent);
     printf("Computing lb=%ld extent=%ld\n",comp_lb,comp_extent);
     //    ASSERT(extent==true_lb+extent);

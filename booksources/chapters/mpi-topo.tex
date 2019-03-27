@@ -90,7 +90,7 @@ int MPI_Cart_create(
 \end{lstlisting}
 
 Each point in this new communicator has a coordinate and a rank.  They
-can be queried with \indexmpishow{MPI_Cart_coord} and
+can be queried with \indexmpishow{MPI_Cart_coords} and
 \indexmpishow{MPI_Cart_rank} respectively.
 
 \lstset{style=reviewcode,language=C} %pyskip
@@ -232,7 +232,7 @@ the following:
   will send to.
 \item \n{weights} is an array declaring the relative importance of the
   destinations. For an \indextermsub{unweighted}{graph} use
-  \indextermtt{MPI_UNWEIGHTED}.
+  \indexmpishow{MPI_UNWEIGHTED}.
 \item \n{reorder} (\n{int} in~C, \n{LOGICAL} in~Fortran) indicates
   whether MPI is allowed to shuffle ranks to achieve greater locality.
 \end{itemize}

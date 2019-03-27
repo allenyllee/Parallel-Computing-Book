@@ -5,7 +5,7 @@
 !**** `Parallel programming with MPI and OpenMP'
 !**** by Victor Eijkhout, eijkhout@tacc.utexas.edu
 !****
-!**** copyright Victor Eijkhout 2012-8
+!**** copyright Victor Eijkhout 2012-9
 !****
 !**** MPI Exercise for communicator rank/size
 !**** fortran 2008 version
@@ -20,7 +20,7 @@ Program CommRank
   integer :: nprocs, procno,ierr
   type(MPI_Comm) :: comm = MPI_COMM_WORLD
 
-  call MPI_Init(ierr)
+  call MPI_Init()
 
   !! Exercise part 1:
   !! -- Use the routine
@@ -36,6 +36,6 @@ Program CommRank
   !!    reporting only the total number
 !!!! your code here !!!!
   
-  call MPI_Finalize(ierr)
+  call MPI_Finalize()
   
 end Program CommRank

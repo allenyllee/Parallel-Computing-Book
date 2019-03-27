@@ -5,7 +5,7 @@
 ####
 #### This program file is part of the book and course
 #### "Parallel Computing"
-#### by Victor Eijkhout, copyright 2013-6
+#### by Victor Eijkhout, copyright 2013-8
 ####
 #### stridesend.py : MPI python exercise for vector type
 ####
@@ -22,7 +22,7 @@ nprocs = comm.Get_size()
 procno = comm.Get_rank()
 
 if nprocs<2:
-    print "C'mon, get real...."
+    print("C'mon, get real....")
     sys.exit(1)
 
 ## process zero will do the sending
@@ -83,8 +83,8 @@ else:
     ## disabled test
     for i in range(count):
         if target[i]!=nprocs*i+procno:
-            print "Mismatch: proc %d, elt %d is %d s/b %d" % \
-                (procno,i,target[i],nprocs*i+procno)
+            print("Mismatch: proc %d, elt %d is %d s/b %d" % \
+                  (procno,i,target[i],nprocs*i+procno))
 
 if procno==0:
-    print "Finished"
+    print("Finished")

@@ -2,19 +2,17 @@
 ################################################################
 ####
 #### This makefile is part of `Parallel Programming in MPI and OpenMP'
-#### by Victor Eijkhout, copyright 2013-8
+#### by Victor Eijkhout, copyright 2013-9
 #### eijkhout@tacc.utexas.edu
 ####
 #### Make include file for course programs
 ####
 ################################################################
 
-.PHONY: regression regression_compile regression_runs
+.PHONY: regression regression_compile
 info ::
 	@echo "make regression_compile : compile all exercises"
-	@echo "make regression_runs    : run selected exercises"
 	@echo "make regression         : compile and run"
-regression : regression_compile regression_runs
 regression_compile : clean
 	@for e in ${EXERCISES} ; do \
 	  echo ".. $$e" ; \
@@ -23,7 +21,22 @@ regression_compile : clean
 	    echo "Failed:" ; cat $$e.log ; \
 	  fi ; \
 	done
-regression_runs :
+regression :
+	@rm -f ../regress.out && touch ../regress.out
+	for e in ${EXERCISES} ; do \
+	  if [ ` grep run_$${e} ../course-support/Make.mpi_regress | wc -l ` -gt 0 ] ; then \
+	    make run_$${e} ; \
+	  else \
+	    echo "no regression defined for $${e}" >>  ../regress.out ; \
+	  fi ; \
+	done
+	@if [ ` cat ../regress.out | wc -l ` -gt 0 ] ; then \
+	  echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" ; \
+	  cat ../regress.out ; \
+	  echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" ; \
+	fi
+	@rm -f ../regress.out
+old_runs :
 	@if [ ! -z "${REGRESSIONRUNS}" ] ; then \
 	  for r in ${REGRESSIONRUNS} ; do \
 	    make $$r ; \
@@ -108,7 +121,7 @@ run_start :
 	  make regress_out NP=${NP} PROGRAM=$${program} ; \
 	fi
 REGRESSIONRUNS += run_hello
-run_hello :
+run_hello : hello
 	@make run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ && export program=$${atgram##run_} && \
 	export np=${NP} && \
@@ -132,7 +145,7 @@ run_hello :
 
 .PHONY: run_commrank
 REGRESSIONRUNS += run_commrank
-run_commrank : 
+run_commrank :  commrank
 	@make run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export np=${NP} ; \
@@ -151,6 +164,7 @@ run_commrank :
 	    success=0 ; fi ; \
 	  if [ -f $$outfile ] ; then \
 	    reportrank=`cat $$outfile | awk '/Hello/ { print $$4 }'` ; \
+	    echo "reportrank=$${reportrank}" ; \
 	    if [ $$reportrank -ne $$rank ] ; then \
 	      echo "Process $$rank incorrectly reported as $$reportrank" ; \
 	      success=0 ; \
@@ -162,7 +176,7 @@ run_commrank :
 
 .PHONY: run_prime
 REGRESSIONRUNS += run_prime
-run_prime : 
+run_prime :  prime
 	@make run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 cat prime.out* > prime.out ; export success=1 ; \
@@ -179,9 +193,41 @@ run_prime :
 	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
 	echo
 
+.PHONY: run_rightsend
+REGRESSIONRUNS += run_rightsend
+run_rightsend :  rightsend
+	@make run_start PROGRAM=$@ NP=${NP}
+	@export atgram=$@ ; export program=$${atgram##run_} ; \
+	 export np=${NP} ; \
+	 export success=` cat $${program}.out0 | grep "all results correct" | wc -l ` ; \
+	 for p in `seq 1 $$(( np-1 ))` ; do \
+	  if [ `cat $$program.out$$p | wc -l` -gt 0 ] ; then \
+	    echo "I was not expecting output from proc $$p" ; \
+	    success=0; \
+	  fi ; \
+	 done ; \
+	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
+	echo
+
+.PHONY: run_stridesend
+REGRESSIONRUNS += run_stridesend
+run_stridesend :  stridesend
+	@make run_start PROGRAM=$@ NP=${NP}
+	@export atgram=$@ ; export program=$${atgram##run_} ; \
+	 export np=${NP} ; \
+	 export success=` cat $${program}.out0 | grep "Finished" | wc -l ` ; \
+	 for p in `seq 1 $$(( np-1 ))` ; do \
+	  if [ `cat $$program.out$$p | wc -l` -gt 0 ] ; then \
+	    echo "I was not expecting output from proc $$p" ; \
+	    success=0; \
+	  fi ; \
+	 done ; \
+	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
+	echo
+
 .PHONY: run_blockwrite
 REGRESSIONRUNS += run_blockwrite
-run_blockwrite : 
+run_blockwrite :  blockwrite
 	@make run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 cat blockwrite.out* > blockwrite.out ; export success=1 ; \
@@ -228,9 +274,25 @@ run_randommax : randommax
 	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
 	echo
 
+.PHONY: run_jordan
+REGRESSIONRUNS += run_jordan
+run_jordan :  jordan
+	@make run_start PROGRAM=$@ NP=${NP}
+	@export atgram=$@ ; export program=$${atgram##run_} ; \
+	 export np=${NP} ; \
+	 export success=` grep Success $${program}.out0 | wc -l` ; \
+	 for p in `seq 1 $$(( np-1 ))` ; do \
+	  if [ `cat $$program.out$$p | wc -l` -gt 0 ] ; then \
+	    echo "I was not expecting output from proc $$p" ; \
+	    success=0; \
+	  fi ; \
+	 done ; \
+	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
+	echo
+
 .PHONY: run_pingpong
 REGRESSIONRUNS += run_pingpong
-run_pingpong : 
+run_pingpong :  pingpong
 	@make run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export np=${NP} ; \
@@ -247,7 +309,7 @@ run_pingpong :
 
 .PHONY: run_sendrecv
 REGRESSIONRUNS += run_sendrecv
-run_sendrecv : 
+run_sendrecv :  sendrecv
 	@make run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export np=${NP} ; \
@@ -263,7 +325,23 @@ run_sendrecv :
 
 .PHONY: run_isendirecv
 REGRESSIONRUNS += run_isendirecv
-run_isendirecv :
+run_isendirecv : isendirecv
+	@make run_start PROGRAM=$@ NP=${NP}
+	@export atgram=$@ ; export program=$${atgram##run_} ; \
+	 export np=${NP} ; \
+	 export success=1 ; \
+	 for p in `seq 1 $$(( np-1 ))` ; do \
+	  if [ `cat $$program.out$$p | wc -l` -gt 0 ] ; then \
+	    echo "I was not expecting output from proc $$p" ; \
+	    success=0; \
+	  fi ; \
+	 done ; \
+	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
+	echo
+
+.PHONY: run_isendirecvarray
+REGRESSIONRUNS += run_isendirecvarray
+run_isendirecvarray : isendirecvarray
 	@make run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export np=${NP} ; \
@@ -279,7 +357,7 @@ run_isendirecv :
 
 .PHONY: run_procgrid
 REGRESSIONRUNS += run_procgrid
-run_procgrid : 
+run_procgrid :  procgrid
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export success=1 ; \
 	 for np in 4 6 8 9 ; do \
@@ -296,7 +374,7 @@ run_procgrid :
 
 .PHONY: run_randomput
 REGRESSIONRUNS += run_randomput
-run_randomput :
+run_randomput : randomput
 	@make run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export success=1 ; \
@@ -315,7 +393,7 @@ run_randomput :
 
 .PHONY: run_onesidedbuild
 REGRESSIONRUNS += run_onesidedbuild
-run_onesidedbuild :
+run_onesidedbuild : onesidedbuild
 	@make run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export success=1 ; \
@@ -325,7 +403,7 @@ run_onesidedbuild :
 
 .PHONY: run_rightgraph
 REGRESSIONRUNS += run_rightgraph
-run_rightgraph : 
+run_rightgraph :  rightgraph
 	@make run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export np=${NP} ; \
@@ -341,7 +419,7 @@ run_rightgraph :
 
 .PHONY: run_bucketblock
 REGRESSIONRUNS += run_bucketblock
-run_bucketblock : 
+run_bucketblock :  bucketblock
 	@make run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export np=${NP} ; \
@@ -357,7 +435,7 @@ run_bucketblock :
 
 .PHONY: run_ibarrierupdate
 REGRESSIONRUNS += run_ibarrierupdate
-run_ibarrierupdate : 
+run_ibarrierupdate :  ibarrierupdate
 	@make run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export np=${NP} ; \

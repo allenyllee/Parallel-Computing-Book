@@ -304,6 +304,7 @@ There are better solutions which we will
 explore in the next section.
 
 \Level 1 {Bucket brigade}
+\label{sec:bucketbrigade}
 
 The problem with the previous exercise was that an operation that was
 conceptually parallel, became serial in execution. On the other hand,
@@ -383,13 +384,7 @@ The null processor value is also of use with the
 \begin{exercise}
   \label{ex:rightsendrecv}
   Revisit exercise~\ref{ex:serialsend} and solve it using
-  \lstinline$MPI_Sendrecv$
-\end{exercise}
-
-\begin{exercise}
-  \label{ex:3ptsendrecv}
-  Implement the above three-point combination scheme using \lstinline$MPI_Sendrecv$;
-  every processor only has a single number to send to its neighbour.
+  \lstinline$MPI_Sendrecv$.
 
   If you have TAU installed, make a trace. Does it look different
   from the serialized send/recv code? If you don't have TAU, run your
@@ -402,17 +397,30 @@ specify the other as both target and source. However, there need not
 be any such relation between target and source: it is possible to
 receive from a predecessor in some ordering, and send to a successor
 in that ordering; see figure~\ref{fig:sendrecv}.
+
 \begin{figure}[ht]
-%% \begin{lulu}
-%%     \includegraphics[scale=.6]{sendrecv-actual}
-%% \end{lulu}
-%\begin{notlulu}
-  %\includegraphics[scale=.09]{sendrecv}
   \includegraphics[scale=.5]{sendrecv-right}
-%\end{notlulu}
   \caption{An MPI Sendrecv call}
   \label{fig:sendrecv}
 \end{figure}
+
+\begin{figure}[ht]
+  \includegraphics[scale=.5]{sendrecv-steps}
+  \caption{Two steps of send/recv to do a three-point combination}
+  \label{fig:sendrecv-steps}.
+\end{figure}
+
+For the above three-point combination scheme you need to move data
+both left right, so you need two \indexmpishow{MPI_Sendrecv} calls;
+see figure~\ref{fig:sendrecv-steps}.
+
+\begin{exercise}
+  \label{ex:3ptsendrecv}
+  Implement the above three-point combination scheme using \lstinline$MPI_Sendrecv$;
+  every processor only has a single number to send to its neighbour.
+
+\end{exercise}
+
 \begin{itemize}
 \item Each process does one send and one receive; if a process needs
   to skip one or the other, you can specify
@@ -441,7 +449,8 @@ send-receive call\footnote {There is an \n{MPI\_Compare\_and\_swap}
 
 \begin{exercise}
   \label{ex:exchangesort}
-  A very simple sorting algorithm is \indextermsub{exchange}{sort}:
+  A very simple sorting algorithm is \indextermsub{swap}{sort} or
+  \indextermsub{odd-even transposition}{sort}:
   pairs of processors compare data, and if necessary exchange. The
   elementary step is called a \indexterm{compare-and-swap}: in a pair
   of processors each sends their data to the other; one keeps the

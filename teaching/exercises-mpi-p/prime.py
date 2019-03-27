@@ -5,7 +5,7 @@
 ####
 #### This program file is part of the book and course
 #### "Parallel Computing"
-#### by Victor Eijkhout, copyright 2013-6
+#### by Victor Eijkhout, copyright 2013-8
 ####
 #### prime.py : prime number finding
 ####
@@ -40,7 +40,7 @@ for myfactor in range(
 #### your code here ####
         ):
     if bignum%myfactor==0:
-        print "Processor %d found factor %d" % (procno,myfactor)
+        print("Processor %d found factor %d" % (procno,myfactor))
 
 
 

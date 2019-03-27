@@ -5,7 +5,7 @@
 !**** `Parallel programming with MPI and OpenMP'
 !**** by Victor Eijkhout, eijkhout@tacc.utexas.edu
 !****
-!**** copyright Victor Eijkhout 2012-8
+!**** copyright Victor Eijkhout 2012-9
 !****
 !**** MPI Exercise for MPI_Reduce
 !**** fortran 2008 version
@@ -18,7 +18,7 @@ Program RandomMax
   implicit none
 
   type(MPI_Comm) :: comm = MPI_COMM_WORLD
-  integer :: nprocs, procno,ierr, i
+  integer :: nprocs, procno,error,errors, ierr,i
 
   ! stuff for the random number generator
   integer :: randomint,sender
@@ -26,9 +26,9 @@ Program RandomMax
   integer,allocatable,dimension(:) :: randseed
   real :: my_random,global_random, scaled_random,sum_random,sum_scaled_random
 
-  call MPI_Init(ierr); 
-  call MPI_Comm_rank(comm,procno,ierr); 
-  call MPI_Comm_size(comm,nprocs,ierr); 
+  call MPI_Init(); 
+  call MPI_Comm_rank(comm,procno); 
+  call MPI_Comm_size(comm,nprocs); 
 
   !!
   !! Initialize the random number generator
@@ -43,7 +43,7 @@ Program RandomMax
 
   !! My own random
   call random_number(my_random)
-  print *,"Process",procno,"has random value",my_random
+  print '(("Process",i4,x,"has random value",x,f9.7))', procno,my_random
 
   !!
   !! Exercise part 1:
@@ -54,15 +54,28 @@ Program RandomMax
   !!
   call MPI_Allreduce( &
 !!!! your code here !!!!
-       comm,ierr)
+       comm)
   scaled_random = my_random / sum_random
   call MPI_Allreduce( &
 !!!! your code here !!!!
-       comm,ierr)
+       comm)
+
+  !!
+  !! Correctness test
+  !!
   if (abs(sum_scaled_random-1.)>1.e-5) then
-     print *,"Suspicious sum",sum_scaled_random,"on process",procno
+     print *,"Suspicious sum",sum_scaled_random,"on rank",procno
+     error = procno
   end if
-  
+  call MPI_Allreduce(error,errors,1,MPI_INTEGER,MPI_MIN,comm)
+  if (procno==0) then
+     if (errors==nprocs) then
+        print *,"Part 1 finished; all results correct"
+     else
+        print *,"Part 1: first error occurred on rank",errors
+     end if
+  end if
+
 #if 0
   !!
   !! Exercise part 2:
@@ -70,7 +83,7 @@ Program RandomMax
   !!
   call MPI_Reduce( &
 !!!! your code here !!!!
-       comm,ierr)
+       comm)
   if (procno==0) then
      print *,"The maximum number is",global_random
   end if
@@ -80,7 +93,7 @@ Program RandomMax
      print *,"Success: all tests pass"
   end if
   
-  call MPI_Finalize(ierr)
+  call MPI_Finalize()
   
 end Program RandomMax
 

@@ -5,7 +5,7 @@
 !**** `Parallel programming with MPI and OpenMP'
 !**** by Victor Eijkhout, eijkhout@tacc.utexas.edu
 !****
-!**** copyright Victor Eijkhout 2012-8
+!**** copyright Victor Eijkhout 2012-9
 !****
 !**** MPI Exercise for random one-sided operations
 !**** fortran 2008 version
@@ -28,10 +28,10 @@ Program RandomPut
 
   integer :: my_number=1, my_sum = 0, other
 
-  call MPI_Init(ierr)
+  call MPI_Init()
 
-  call MPI_Comm_size(comm,nprocs,ierr)
-  call MPI_Comm_rank(comm,procno,ierr)
+  call MPI_Comm_size(comm,nprocs)
+  call MPI_Comm_rank(comm,procno)
 
   !!
   !! Exercise 1:
@@ -95,7 +95,7 @@ Program RandomPut
   
   call MPI_Win_free(the_window,err)
   
-  call MPI_Finalize(ierr)
+  call MPI_Finalize()
   
 end Program RandomPut
 

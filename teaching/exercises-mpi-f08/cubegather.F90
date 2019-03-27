@@ -5,7 +5,7 @@
 !**** `Parallel programming with MPI and OpenMP'
 !**** by Victor Eijkhout, eijkhout@tacc.utexas.edu
 !****
-!**** copyright Victor Eijkhout 2012-8
+!**** copyright Victor Eijkhout 2012-9
 !****
 !**** MPI Exercise for the subarray type
 !**** fortran 2008 version
@@ -28,10 +28,10 @@ Program CubeGather
   integer,dimension(:),allocatable :: cubedata
   integer :: sides(3),sub_sizes(3),startpoint(3)
  
-  call MPI_Init(ierr)
+  call MPI_Init()
 
-  call MPI_Comm_size(comm,nprocs,ierr)
-  call MPI_Comm_rank(comm,procno,ierr)
+  call MPI_Comm_size(comm,nprocs)
+  call MPI_Comm_rank(comm,procno)
   
   !!
   !! See if you can arrange the processes
@@ -44,7 +44,7 @@ Program CubeGather
      if (procs_per_side*procs_per_side*procs_per_side>nprocs) then
         if (procno==0) &
              print *,"Number of processes is not a cube"
-        call MPI_Abort(comm,0,ierr)
+        call MPI_Abort(comm,0)
      end if
      procs_per_side = procs_per_side+1
   end do
@@ -54,7 +54,7 @@ Program CubeGather
   !! Exercise: why are we using Isend here?
   !!
   mydata = procno+1
-  call MPI_Isend(mydata,1,MPI_INT,0,0,comm,send_request,ierr)
+  call MPI_Isend(mydata,1,MPI_INT,0,0,comm,send_request)
 
   !!
   !! Now process zero receives all the contributions using the subarray type
@@ -72,15 +72,15 @@ Program CubeGather
 !!!! your code here !!!!
               call MPI_Type_create_subarray( 3,sides,sub_sizes,startpoint, &
                    MPI_ORDER_FORTRAN,MPI_INT, insert_type, ierr)
-              call MPI_Type_commit(insert_type,ierr)
+              call MPI_Type_commit(insert_type)
               !! 
               !! Now the receive call.
               !!
               sender = ( prock*procs_per_side + procj )*procs_per_side +proci
               call MPI_Recv( &
 !!!! your code here !!!!
-                   sender,0, comm,MPI_STATUS_IGNORE,ierr)
-              call MPI_Type_free(insert_type,ierr)
+                   sender,0, comm,MPI_STATUS_IGNORE)
+              call MPI_Type_free(insert_type)
            end do
         end do
      end do
@@ -89,8 +89,8 @@ Program CubeGather
                   i=1,procs_per_side),j=1,procs_per_side),k=1,procs_per_side)
   end if
   
-  call MPI_Wait(send_request,MPI_STATUS_IGNORE,ierr)
+  call MPI_Wait(send_request,MPI_STATUS_IGNORE)
 
-  call MPI_Finalize(ierr)
+  call MPI_Finalize()
   
 end Program CubeGather

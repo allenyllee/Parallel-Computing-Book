@@ -57,8 +57,6 @@ sendbuffer; instead, it is the amount of data sent to each process.
   is computed. What collective(s) do you use? Write a short program.
 \end{exercise}
 
-\Level 1 {Reference}
-
 In the gather and scatter calls, each processor has $n$ elements of individual
 data. There is also a root processor that has an array of length~$np$, where $p$
 is the number of processors. The gather call collects all this data from the 
@@ -94,6 +92,26 @@ int MPI_Scatter
    void* recvbuf, int recvcount, MPI_Datatype recvtype, 
    int root, MPI_Comm comm) 
 \end{lstlisting}
+
+\Level 1 {Example}
+
+In some applications, each process computes a row or column of a
+matrix, but for some calculation (such as the determinant) it is more
+efficient to have the whole matrix on one process. You should of
+course only do this if this matrix is essentially smaller than the
+full problem, such as an interface system or the last coarsening level
+in multigrid.
+
+\begin{figure}[ht]
+  \includegraphics[scale=.4]{allgathermatrix}
+  \caption{Gather a distributed matrix onto one process}
+  \label{fig:allgathermatrix}
+\end{figure}
+
+Figure~\ref{fig:allgathermatrix} pictures this. Note that conceptually
+we are gathering a two-dimensional object, but the buffer is of course
+one-dimensional. You will later see how this can be done more
+elegantly with the `subarray' datatype; section~\ref{sec:type_subarray}.
 
 \Level 1 {Allgather}
 

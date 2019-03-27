@@ -67,6 +67,7 @@ int main(int argc,char **argv) {
    * Check correctness of the output file
    */
   if (procno==0) {
+    int error=nprocs, errors;
     FILE *f;
     f = fopen("blockwrite.dat","r");
     int location = 0;
@@ -77,19 +78,26 @@ int main(int argc,char **argv) {
 	int fromfile,success;
 	success = fread(&fromfile,sizeof(int),1,f);
 	if (success==EOF) {
+	  error = procno;
 	  proctext << "Premature end of file" << endl;
 	  cout << proctext.str();
 	  break;
 	}
 	if (fromfile!=location+1) {
+	  error = procno;
 	  proctext << "Error " << location << ":" << fromfile << endl;
 	  cout << proctext.str();
 	}
 	location++;
       }
     }
+    errors = error;
     fclose(f);
-    proctext << "Success." << endl;
+    if (errors==nprocs) 
+      proctext << "Execution finished correctly";
+    else
+      proctext << "Execution finished with errors";
+    proctext << endl;
     cout << proctext.str();
   }
 

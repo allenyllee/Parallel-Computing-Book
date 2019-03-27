@@ -4,7 +4,7 @@
  **** `Parallel programming with MPI and OpenMP'
  **** by Victor Eijkhout, eijkhout@tacc.utexas.edu
  ****
- **** copyright Victor Eijkhout 2012-7
+ **** copyright Victor Eijkhout 2012-8
  ****
  **** MPI Exercise
  ****
@@ -36,10 +36,13 @@ int main(int argc,char **argv) {
     MPI_Abort(comm,0);
   }
 
-  //
-  // Take the variable `window_data' and make it into a window
-  // of size 1 integer
-  //
+  /*
+   * Exercise 1:
+   * -- Take the variable `window_data' and make it into a window
+   *    of size 1 integer
+   * Exercise 2:
+   * -- replace MPI_Win_create by MPI_Win_alloc
+   */
   MPI_Win_create(
 /**** your code here ****/
 		 MPI_INFO_NULL,comm,&the_window);
@@ -48,7 +51,8 @@ int main(int argc,char **argv) {
   // Put ten numbers from proc 0 into 1 or 2,
   // depending on random chance
   //
-  for (int c=0; c<20; c++) {
+#define TOTALPUT 20
+  for (int c=0; c<TOTALPUT; c++) {
     //
     // compute `other': where to put the data
     //
@@ -63,9 +67,10 @@ int main(int argc,char **argv) {
     if (procno==1 || procno==2)
       window_data = 0;
 
-    //
-    // Now we have an epoch where proc 0 puts data either in 1 or 2
-    //
+    /*
+     * Now we have an epoch where proc 0 puts data either in 1 or 2
+     * Exercise: fill in the missing parameters
+     */
     MPI_Win_fence(0,the_window);
     if (procno==0) {
       MPI_Put( /* data on origin: */   &my_number, 1,MPI_INT,
@@ -89,7 +94,7 @@ int main(int argc,char **argv) {
     cout << proctext.str();
   }
   if (procno==0) {
-    proctext << "(sums on 1 & together should be 20)" << endl;
+    proctext << "Sums on 1 & 2 together should be: " << TOTALPUT << endl;
     cout << proctext.str();
   }
     

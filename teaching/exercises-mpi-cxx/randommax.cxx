@@ -51,9 +51,23 @@ int main() {
   MPI_Allreduce(
 /**** your code here ****/
 		);
+  /*
+   * Correctness test
+   */
+  int error=nprocs, errors;
   if ( abs(sumrandom-1.)>1.e-5 ) {
     stringstream proctext;
     proctext << "Suspicious sum " << sumrandom << " on process " << procno << endl;
+    cout << proctext.str();
+    error = procno;
+  }
+  MPI_Allreduce(&error,&errors,1,MPI_INT,MPI_MIN,comm);
+  if (procno==0) {
+    stringstream proctext;
+    if (errors==nprocs) 
+      proctext << "Part 1 finished; all results correct" << endl;
+    else
+      proctext << "Part 1: first error occurred on rank " << errors << endl;
     cout << proctext.str();
   }
 
@@ -65,16 +79,10 @@ int main() {
 	     );
   if (procno==0) {
     stringstream proctext;
-    proctext << "The maximum number is " << globalrandom << endl;
+    proctext << "Part 2: The maximum number is " << globalrandom << endl;
     cout << proctext.str();
   }
 #endif
-
-  if (procno==0) {
-    stringstream proctext;
-    proctext << "Finished" << endl;
-    cout << proctext.str();
-  }
 
   MPI_Finalize();
   return 0;

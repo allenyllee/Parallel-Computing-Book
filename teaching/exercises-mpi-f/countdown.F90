@@ -21,7 +21,7 @@ Program CountDown
   !! data specifically for this program
   integer :: &
        counter_process,my_number, &
-       err,step,is_zero,minus_one=-1
+       step,is_zero,minus_one=-1
   integer :: the_window,window_data,window_elt_size
   integer(kind=MPI_ADDRESS_KIND) :: window_size,sizeofint,displacement=0
   real(4) :: randomfraction
@@ -45,12 +45,12 @@ Program CountDown
      window_data = nprocs-1; window_size = 1
      call MPI_Win_create( &
           window_data,window_size,window_elt_size, &
-          MPI_INFO_NULL,comm,the_window,err)
+          MPI_INFO_NULL,comm,the_window,ierr)
   else
      window_size = 0
      call MPI_Win_create( &
           window_data,window_size,window_elt_size, &
-          MPI_INFO_NULL,comm,the_window,err)
+          MPI_INFO_NULL,comm,the_window,ierr)
   end if
 
   !!
@@ -64,7 +64,7 @@ Program CountDown
      !! update the global counter
      call random_number(randomfraction)
      i_must_update = randomfraction<.5/nprocs
-     call MPI_Win_fence(0,the_window,err)
+     call MPI_Win_fence(0,the_window,ierr)
      if (i_must_update) then
 	!!
         !! Exercise:
@@ -81,7 +81,7 @@ Program CountDown
       !!   MPI_Get
       !!   ( /* data on origin: */   is_zero, 1,MPI_INT, &
       !!     /* data on target: */   counter_process, displacement, 1,MPI_INT, &
-      !!     the_window,err);
+      !!     the_window,ierr);
       !! - The problem is having having your data synchronized.
       !!   Where are you going to have Win_fence calls?
       !!   Is the one at the start of the loop enough?
@@ -94,9 +94,9 @@ Program CountDown
       step = step+1
    end do
 
-   call MPI_Win_free(the_window,err)
+   call MPI_Win_free(the_window,ierr)
 
-   call MPI_Finalize(err)
+   call MPI_Finalize(ierr)
 
  end Program CountDown
  

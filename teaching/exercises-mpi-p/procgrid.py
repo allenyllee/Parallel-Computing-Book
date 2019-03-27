@@ -5,7 +5,7 @@
 ####
 #### This program file is part of the book and course
 #### "Parallel Computing"
-#### by Victor Eijkhout, copyright 2013-6
+#### by Victor Eijkhout, copyright 2013-8
 ####
 #### procgrid.py : MPI python exercise for communicator splitting
 ####
@@ -23,7 +23,7 @@ nprocs = comm.Get_size()
 procno = comm.Get_rank()
 
 if nprocs<2:
-    print "C'mon, get real...."
+    print("C'mon, get real....")
     sys.exit(1)
 
 for nrows in range( int( math.sqrt(nprocs+1) ),0,-1 ):
@@ -33,12 +33,12 @@ ncols = nprocs/nrows
 
 if nrows==1:
     if procno==0:
-        print "Number of processors is prime"
+        print("Number of processors is prime")
     comm.Barrier()
     comm.Abort(-1)
 else:
     if procno==0:
-        print "Processor grid %d x %d" % (nrows,ncols)
+        print("Processor grid %d x %d" % (nrows,ncols))
 
 ##
 ## Find the coordinates of this process
@@ -67,8 +67,8 @@ col_rank = col_comm.Get_rank()
 row_rank = row_comm.Get_rank()
 
 if row_rank!=col_no or col_rank!=row_no:
-    print "[%d] = (%d,%d) wrong, should be (%d,%d)" % \
-        (procno,col_rank,row_rank,row_no,col_no)
-
+    print("[%d] = (%d,%d) wrong, should be (%d,%d)" % \
+          (procno,col_rank,row_rank,row_no,col_no))
+    
 if procno==0:
-    print "Finished"
+    print("Finished")

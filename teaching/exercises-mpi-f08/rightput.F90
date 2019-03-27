@@ -5,7 +5,7 @@
 !**** `Parallel programming with MPI and OpenMP'
 !**** by Victor Eijkhout, eijkhout@tacc.utexas.edu
 !****
-!**** copyright Victor Eijkhout 2012-8
+!**** copyright Victor Eijkhout 2012-9
 !****
 !**** MPI Exercise to illustrate one-sided operations
 !**** fortran 2008 version
@@ -32,23 +32,23 @@ Program RightPut
        check
   integer :: sendto
  
-  call MPI_Init(ierr)
+  call MPI_Init()
 
-  call MPI_Comm_size(comm,nprocs,ierr)
-  call MPI_Comm_rank(comm,procno,ierr)
+  call MPI_Comm_size(comm,nprocs)
+  call MPI_Comm_rank(comm,procno)
   mydata = procno
 
   !! set `sendto'
   sendto = procno+1
   if (procno==nprocs-1) sendto = MPI_PROC_NULL
 
-  call MPI_Sizeof(window_data,window_elt_size,ierr)
+  call MPI_Sizeof(window_data,window_elt_size)
   window_size = window_elt_size
   call MPI_Win_create( &
 !!!! your code here !!!!
-       MPI_INFO_NULL,comm,the_window,ierr)
+       MPI_INFO_NULL,comm,the_window)
 
-  call MPI_Win_fence(0,the_window,ierr)
+  call MPI_Win_fence(0,the_window)
   displacement = 0
   call MPI_Put( &
        ! specify data to put:
@@ -57,7 +57,7 @@ Program RightPut
        ! (use an MPI_ADDRESS_KIND variable for displacement!)
 !!!! your code here !!!!
        the_window, ierr)
-  call MPI_Win_fence(0,the_window,ierr)
+  call MPI_Win_fence(0,the_window)
   leftdata = window_data
 
   !!
@@ -68,7 +68,7 @@ Program RightPut
   else
      error = nprocs
   end if
-  call MPI_Allreduce(error,errors,1,MPI_INTEGER,MPI_MIN,comm,ierr)
+  call MPI_Allreduce(error,errors,1,MPI_INTEGER,MPI_MIN,comm)
   if (procno.eq.0) then
      if (errors.eq.nprocs) then
         print *,"Finished; all results correct"
@@ -77,7 +77,7 @@ Program RightPut
      end if
   end if
 
-  call MPI_Win_free(the_window,ierr)
-  call MPI_Finalize(ierr)
+  call MPI_Win_free(the_window)
+  call MPI_Finalize()
   
 end Program RightPut

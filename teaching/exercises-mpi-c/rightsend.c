@@ -37,7 +37,7 @@ int main(int argc,char **argv) {
     mydata=procno, // my data that will be sent right
     leftdata=-2;   // container for data that will be received
 
-  // Exercise:
+  // Exercise part 1:
   // -- set `sendto' and `recvfrom'
   // -- make sure the first and last processor are handled right!
   int sendto =
@@ -47,10 +47,10 @@ int main(int argc,char **argv) {
 /**** your code here ****/
     ;
 
-  // Exercise 1:
-  // -- now do the send and receive calls
   // Exercise 2:
-  // -- use the MPI_Sendrecv call
+  // -- now do the MPI_Send and MPI_Recv calls
+  // Exercise 3:
+  // -- use the MPI_Sendrecv call instead
 /**** your code here ****/
 
 #ifdef SIMGRID

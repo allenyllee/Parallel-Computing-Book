@@ -5,7 +5,7 @@
 !**** `Parallel programming with MPI and OpenMP'
 !**** by Victor Eijkhout, eijkhout@tacc.utexas.edu
 !****
-!**** copyright Victor Eijkhout 2012-8
+!**** copyright Victor Eijkhout 2012-9
 !****
 !**** MPI Exercise for MPI_Status use
 !**** fortran 2008 version
@@ -48,9 +48,9 @@ Program Status
   !!
   !! Setup MPI
   !!
-  call MPI_Init(ierr)
-  call MPI_Comm_size(comm,nprocs,ierr)
-  call MPI_Comm_rank(comm,procno,ierr)
+  call MPI_Init()
+  call MPI_Comm_size(comm,nprocs)
+  call MPI_Comm_rank(comm,procno)
   
   !! Exercise:
   !! -- set source and target processors two ways:
@@ -67,11 +67,11 @@ Program Status
      call MPI_Send(senddata,randomsize,MPI_DOUBLE_PRECISION, &
           !! fill in dest and tag
 !!!! your code here !!!!
-          comm,ierr)
+          comm)
      call MPI_Recv(recvdata,1,MPI_DOUBLE_PRECISION, &
           !! fill in source and tag
 !!!! your code here !!!!
-          comm,MPI_STATUS_IGNORE,ierr)
+          comm,MPI_STATUS_IGNORE)
   else if (procno==processB) then
      call MPI_Recv(recvdata, &
           !!
@@ -80,9 +80,9 @@ Program Status
           !!   no matter how much is actually sent.
           !!
 !!!! your code here !!!!
-          processA,0,comm,recv_status,ierr)
+          processA,0,comm,recv_status)
      call MPI_Send(recvdata,1,MPI_DOUBLE_PRECISION, &
-          processA,0, comm,ierr)
+          processA,0, comm)
      !!
      !! Exercise:
      !! - use MPI_SOURCE to print where the message came from
@@ -92,6 +92,6 @@ Program Status
      print *,"Received elements:",randomsize
   end if
   
-  call MPI_Finalize(ierr)
+  call MPI_Finalize()
   
 end Program Status

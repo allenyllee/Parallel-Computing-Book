@@ -5,7 +5,7 @@
 ####
 #### This program file is part of the book and course
 #### "Parallel Computing"
-#### by Victor Eijkhout, copyright 2013-6
+#### by Victor Eijkhout, copyright 2013-8
 ####
 #### viewwrite.py : MPI python exercise for MPI I/O
 ####
@@ -65,8 +65,8 @@ if procno==0:
         ## python 2
         fromfile = struct.unpack("<L",bytestring)[0]
         if fromfile!=i+1:
-            print "Error: s/b %d, got %d" % (i+1,fromfile)
+            print("Error: s/b %d, got %d" % (i+1,fromfile))
     f.close()
 
 if procno==0:
-    print "Finished"
+    print("Finished")

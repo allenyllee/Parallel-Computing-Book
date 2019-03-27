@@ -5,7 +5,7 @@
 !**** `Parallel programming with MPI and OpenMP'
 !**** by Victor Eijkhout, eijkhout@tacc.utexas.edu
 !****
-!**** copyright Victor Eijkhout 2012-8
+!**** copyright Victor Eijkhout 2012-9
 !****
 !**** MPI Exercise for Isend/Irecv
 !**** fortran 2008 version
@@ -28,10 +28,10 @@ Program IsendIrecvArray
   integer :: sendto,recvfrom,i
   type(MPI_Request) :: requests(4)
  
-  call MPI_Init(ierr)
+  call MPI_Init()
 
-  call MPI_Comm_size(comm,nprocs,ierr)
-  call MPI_Comm_rank(comm,procno,ierr)
+  call MPI_Comm_size(comm,nprocs)
+  call MPI_Comm_rank(comm,procno)
   
   forall (i=1:N) indata(i) = 1.
   
@@ -104,7 +104,7 @@ Program IsendIrecvArray
      print *,"Finished"
   end if
   
-  call MPI_Finalize(ierr)
+  call MPI_Finalize()
   
 end Program IsendIrecvArray
 

@@ -35,9 +35,9 @@ int main(int argc,char **argv) {
    * Exercise part 1:
    * -- compute the sum of the values, everywhere
    * -- scale your number by the sum
-   * -- check that the sum of scales values is 1
+   * -- check that the sum of the scaled values is 1
    */
-  float sumrandom, scaled_random;
+  float sumrandom, scaled_random, sum_scaled_random;
   MPI_Allreduce(
 /**** your code here ****/
 		);
@@ -50,16 +50,16 @@ int main(int argc,char **argv) {
    * Correctness test
    */
   int error=nprocs, errors;
-  if ( abs(sumrandom-1.)>1.e-5 ) {
-    printf("Suspicious sum %7.5f on process %3d\n",sumrandom,procno);
+  if ( abs(sum_scaled_random-1.)>1.e-5 ) {
+    printf("Suspicious sum %7.5f on process %3d\n",sum_scaled_random,procno);
     error = procno;
   }
   MPI_Allreduce(&error,&errors,1,MPI_INT,MPI_MIN,comm);
   if (procno==0) {
     if (errors==nprocs) 
-      printf("Finished; all results correct\n");
+      printf("Part 1 finished; all results correct\n");
     else
-      printf("First error occurred on proc %d\n",errors);
+      printf("Part 1: first error occurred on rank %d\n",errors);
   }
 
 #if 0
@@ -69,7 +69,7 @@ int main(int argc,char **argv) {
 /**** your code here ****/
 	     );
   if (procno==0)
-    printf("The maximum number is %7.5f\n",globalrandom);
+    printf("Part 2: The maximum number is %7.5f\n",globalrandom);
 #endif
 
   MPI_Finalize();

@@ -5,7 +5,7 @@
 !**** `Parallel programming with MPI and OpenMP'
 !**** by Victor Eijkhout, eijkhout@tacc.utexas.edu
 !****
-!**** copyright Victor Eijkhout 2012-7
+!**** copyright Victor Eijkhout 2012-8
 !****
 !**** MPI Exercise for I/O
 !****
@@ -25,6 +25,9 @@ Program BlockWrite
   integer,allocatable,dimension(:) :: output_data
   integer :: mpifile ! there is no MPI_File in Fortran
   integer(kind=MPI_OFFSET_KIND) offset
+
+  !! regression testing
+  integer :: error,errors
 
   call MPI_Init(ierr)
   call MPI_Comm_size(comm,nprocs,ierr)
@@ -71,28 +74,37 @@ Program BlockWrite
   !! Check correctness of the output file
   !!
   if (procno==0) then
+     error = nprocs
      open(mpiunit,file="blockwrite.dat",action="read",&
           access="stream",form="unformatted")
      write(6,'("Trying to read",i4," integers")') nwriters*nwords
      location = 0
-     do ip=1,nwriters
+     readloop: do ip=1,nwriters
         do iw=1,nwords
            read(mpiunit,err=998,end=999) fromfile
            if (fromfile.ne.location+1) then
               print *,"Found",fromfile,"; should be",location+1
            end if
            location = location+1
+           cycle
+
+998        print *,"Error after",location,"ints"
+           error = procno
+           exit readloop
+999        print *,"End of file after",location,"ints"
+           error = procno
+           exit readloop
         end do
-     end do
+     end do readloop
      close(mpiunit)
-     print *,"Success: read and validated",location," integers"
+     errors = error
+     if (errors==nprocs) then
+        print *,"Execution finished correctly: read and validated",location," integers"
+     else
+        print *,"Execution finished with errors"
+     end if
   end if
   
   call MPI_Finalize(ierr)
-  stop
-  998 print *,"Error after",location,"ints"
-  stop
-  999 print *,"End of file after",location,"ints"
-  stop
-end Program BlockWrite
 
+end Program BlockWrite

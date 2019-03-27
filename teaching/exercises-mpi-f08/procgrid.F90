@@ -5,7 +5,7 @@
 !**** `Parallel programming with MPI and OpenMP'
 !**** by Victor Eijkhout, eijkhout@tacc.utexas.edu
 !****
-!**** copyright Victor Eijkhout 2012-8
+!**** copyright Victor Eijkhout 2012-9
 !****
 !**** MPI Exercise for comm_split
 !**** fortran 2008 version
@@ -27,10 +27,10 @@ Program ProcGrid
     row_rank,col_rank
   type(MPI_Comm) :: row_comm,col_comm;
 
-  call MPI_Init(ierr)
+  call MPI_Init()
 
-  call MPI_Comm_size(comm,nprocs,ierr)
-  call MPI_Comm_rank(comm,procno,ierr)
+  call MPI_Comm_size(comm,nprocs)
+  call MPI_Comm_rank(comm,procno)
 
   !!
   !! Try to arrange the processors in a grid
@@ -45,7 +45,7 @@ Program ProcGrid
   if (nrows==1) then
      if (procno==0) then
         print *,"Number of processes is prime"
-        call MPI_Abort(comm,0,ierr)
+        call MPI_Abort(comm,0)
      end if
   end if
   ncols = nprocs/nrows;
@@ -103,6 +103,6 @@ Program ProcGrid
      print *,"Finished"
   endif
  
-  call MPI_Finalize(ierr)
+  call MPI_Finalize()
   
 end Program 
