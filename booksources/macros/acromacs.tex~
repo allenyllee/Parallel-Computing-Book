@@ -1,0 +1,50 @@
+\usepackage{acronym}
+\newwrite\acrowrite
+\openout\acrowrite=acronyms.tex
+\def\acroitem#1#2{\acrodef{#1}{#2}
+    \write\acrowrite{\message{defining #1}\noexpand\acitem{#1}{#2}}
+}
+\acroitem{AVX}{Advanced Vector Extensions}
+\acroitem{BSP}{Bulk Synchronous Parallel}
+\acroitem{CAF}{Co-array Fortran}
+\acroitem{CUDA}{Compute-Unified Device Architecture}
+\acroitem{DAG}{Directed Acyclic Graph}
+\acroitem{DSP}{Digital Signal Processing}
+\acroitem{FPU}{Floating Point Unit}
+\acroitem{FFT}{Fast Fourier Transform}
+\acroitem{FSA}{Finite State Automaton}
+\acroitem{GPU}{Graphics Processing Unit}
+\acroitem{HPC}{High-Performance Computing}
+\acroitem{HPF}{High Performance Fortran}
+\acroitem{ICV}{Internal Control Variable}
+\acroitem{MIC}{Many Integrated Cores}
+\acroitem{MPMD}{Multiple Program Multiple Data}
+\acroitem{MIMD}{Multiple Instruction Multiple Data}
+\acroitem{MPI}{Message Passing Interface}
+\acroitem{MTA}{Multi-Threaded Architecture}
+\acroitem{NUMA}{Non-Uniform Memory Access}
+\acroitem{OS}{Operating System}
+\acroitem{PGAS}{Partitioned Global Address Space}
+\acroitem{PDE}{Partial Diffential Equation}
+\acroitem{PRAM}{Parallel Random Access Machine}
+\acroitem{RDMA}{Remote Direct Memory Access}
+\acroitem{RMA}{Remote Memory Access}
+\acroitem{SAN}{Storage Area Network}
+\acroitem{SaaS}{Software as-a Service}
+\acroitem{SFC}{Space-Filling Curve}
+\acroitem{SIMD}{Single Instruction Multiple Data}
+\acroitem{SIMT}{Single Instruction Multiple Thread}
+\acroitem{SM}{Streaming Multiprocessor}
+\acroitem{SMP}{Symmetric Multi Processing}
+\acroitem{SOR}{Successive Over-Relaxation}
+\acroitem{SP}{Streaming Processor}
+\acroitem{SPMD}{Single Program Multiple Data}
+\acroitem{SPD}{symmetric positive definite}
+\acroitem{SSE}{SIMD Streaming Extensions}
+\acroitem{TLB}{Translation Look-aside Buffer}
+\acroitem{UMA}{Uniform Memory Access}
+\acroitem{UPC}{Unified Parallel C}
+\acroitem{WAN}{Wide Area Network}
+\acresetall
+\closeout\acrowrite
+

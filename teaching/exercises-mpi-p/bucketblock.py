@@ -1,0 +1,61 @@
+#!/usr/bin/env python
+
+################################################################
+################################################################
+####
+#### This program file is part of the book and course
+#### "Parallel Computing"
+#### by Victor Eijkhout, copyright 2019
+####
+#### bucketblock.py : blocking bucket brigade send
+####
+################################################################
+################################################################
+
+from mpi4py import MPI
+import numpy as np
+
+comm = MPI.COMM_WORLD
+
+nprocs = comm.Get_size()
+procno = comm.Get_rank()
+
+N = 10
+
+mydata = np.zeros(N,dtype=np.float64)
+mydata[0] = procno
+leftdata = np.zeros(N,dtype=np.float64)
+
+#
+# set the `sendto' and `recvfrom' processes
+#
+if procno<nprocs-1:
+    sendto = procno+1
+else: sendto = MPI.PROC_NULL
+if procno>0:
+    recvfrom = procno-1
+else: recvfrom = MPI.PROC_NULL
+
+
+## Exercise:
+## -- do the MPI_Send and MPI_Recv calls
+
+#### your code here ####
+
+##
+## Check correctness
+##
+
+p1 = procno+1.
+my_sum_of_squares = p1*p1*p1/3 + p1*p1/2 + p1/6
+error = np.zeros(1,dtype=np.int)
+error[0] = nprocs
+errors = np.zeros(1,dtype=np.int)
+if abs( (my_sum_of_squares-mydata[N-1])/mydata[N-1] ) > 1.e-12:
+    error = procno
+comm.Allreduce(error,errors,MPI.MIN)
+if procno==0:
+    if errors==nprocs:
+        print("Finished; all results correct");
+    else:
+      print("First error occurred on proc %d" % errors)

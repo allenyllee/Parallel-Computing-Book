@@ -1,0 +1,230 @@
+% -*- latex -*-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This LaTeX file is part of the source of 
+%%%% `Parallel Computing'
+%%%% by Victor Eijkhout, copyright 2012-9
+%%%%
+%%%% idxmacs.tex : index-related macros.
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage[original]{imakeidx}
+\makeindex
+\makeindex[name=mpi]
+\makeindex[name=omp]
+
+\newcommand{\indextermp}[1]{\emph{#1s}\index{#1}}
+\newcommand{\indextermsub}[2]{\emph{#1 #2}\index{#2!#1}}
+\newcommand{\indextermsubdef}[2]{\emph{#1 #2}\index{#2!#1|textbf}}
+\newcommand{\indextermsubp}[2]{\emph{#1 #2s}\index{#2!#1}}
+\newcommand{\indextermbus}[2]{\emph{#1 #2}\index{#1!#2}}
+\newcommand{\indextermbusdef}[2]{\emph{#1 #2}\index{#1!#2|textbf}}
+\newcommand{\indextermstart}[1]{\emph{#1}\index{#1|(}}
+\newcommand{\indextermend}[1]{\index{#1|)}}
+\newcommand{\indexstart}[1]{\index{#1|(}}
+\newcommand{\indexend}[1]{\index{#1|)}}
+\makeatletter
+\newcommand\indexac[1]{\emph{\ac{#1}}%
+  %\tracingmacros=2 \tracingcommands=2
+  \edef\tmp{\noexpand\index{%
+    \expandafter\expandafter\expandafter
+        \@secondoftwo\csname fn@#1\endcsname%
+    @\acl{#1} (#1)}}\tmp}
+\newcommand\indexacp[1]{\emph{\ac{#1}}%
+  %\tracingmacros=2 \tracingcommands=2
+  \edef\tmp{\noexpand\index{%
+    \expandafter\expandafter\expandafter
+        \@secondoftwo\csname fn@#1\endcsname%
+    @\acl{#1} (#1)}}\tmp}
+\newcommand\indexacf[1]{\emph{\acf{#1}}%
+  \edef\tmp{\noexpand\index{%
+    \expandafter\expandafter\expandafter
+        \@secondoftwo\csname fn@#1\endcsname
+    @\acl{#1} (#1)}}\tmp}
+\newcommand\indexacstart[1]{%
+  \edef\tmp{\noexpand\index{%
+    \expandafter\expandafter\expandafter
+        \@secondoftwo\csname fn@#1\endcsname
+    @\acl{#1} (#1)|(}}\tmp}
+\newcommand\indexacend[1]{%
+  \edef\tmp{\noexpand\index{%
+    \expandafter\expandafter\expandafter
+        \@secondoftwo\csname fn@#1\endcsname
+    @\acl{#1} (#1)|)}}\tmp}
+\makeatother
+
+\newif\ifShowRoutine
+{ \catcode`\_=13
+  %% MPI index routines
+  \gdef\indexmpishow#{\bgroup
+    \catcode`\_=12 \catcode`\>=12 \catcode`\<=12
+    \catcode`\&=12 \catcode`\^=12 \catcode`\~=12
+    \def\\{\char`\\}\relax
+    \ShowRoutinetrue
+    %\tt
+    \afterassignment\mpitoindex\edef\indexedmpi}
+  \gdef\indexmpidef#{\bgroup 
+    \catcode`\_=12 % 13 \def_{\char95\discretionary{}{}{}}
+    \catcode`\>=12 \catcode`\<=12
+    \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
+    \ShowRoutinetrue
+    \tt \afterassignment\mpitoindexbf\edef\indexedmpi}
+  \gdef\indexmpiex#{\bgroup
+    \catcode`\_=12 % 13 \def_{\char95\discretionary{}{}{}}
+    \catcode`\>=12 \catcode`\<=12
+    \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
+    \ShowRoutinetrue
+    \tt \afterassignment\mpitoindexit\edef\indexedmpi}
+  \gdef\indexmpi#{\bgroup
+    \catcode`\_=12 % 13 \def_{\char95\discretionary{}{}{}}
+    \catcode`\>=12 \catcode`\<=12
+    \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
+    \ShowRoutinefalse
+    \tt \afterassignment\mpitoindex\edef\indexedmpi}
+  %% same for OpenMP
+  \gdef\indexompshow#{\bgroup
+    \catcode`\_=12 % 13 \def_{\char95\discretionary{}{}{}}
+    \catcode`\>=12 \catcode`\<=12
+    \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
+    \ShowRoutinetrue
+    \tt \afterassignment\omptoindex\edef\indexedomp}
+  \gdef\indexompdef#{\bgroup
+    \catcode`\_=12 % 13 \def_{\char95\discretionary{}{}{}}
+    \catcode`\>=12 \catcode`\<=12
+    \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
+    \ShowRoutinetrue
+    \tt \afterassignment\omptoindexbf\edef\indexedomp}
+  \global\let\indexompshowdef\indexompdef
+  \gdef\indexompex#{\bgroup
+    \catcode`\_=12 % 13 \def_{\char95\discretionary{}{}{}}
+    \catcode`\>=12 \catcode`\<=12
+    \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
+    \ShowRoutinetrue
+    \tt \afterassignment\omptoindexit\edef\indexedomp}
+  \gdef\indexomp#{\bgroup
+    \catcode`\_=12 % 13 \def_{\char95\discretionary{}{}{}}
+    \catcode`\>=12 \catcode`\<=12
+    \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
+    \ShowRoutinefalse
+    \tt \afterassignment\omptoindex\edef\indexedomp}
+}
+\def\mpitoindex{%\tracingmacros=2
+  \edef\tmp{%
+    \noexpand\ifShowRoutine
+        \noexpand\lstinline+\indexedmpi+\noexpand\nobreak
+    \noexpand\fi
+    \noexpand\index[mpi]{\indexedmpi@{\catcode95=12 \noexpand\texttt{\indexedmpi}}}%
+  }%
+  \tmp
+  \egroup\nobreak
+}
+\def\mpitoindexbf{%\tracingmacros=2
+  \edef\tmp{%
+    \noexpand\lstinline+\indexedmpi+%
+    \noexpand\index[mpi]{\indexedmpi@{\catcode95=12 \noexpand\texttt{\indexedmpi}}|textbf}%
+  }%
+  \tmp
+  \egroup
+}
+\def\mpitoindexit{%\tracingmacros=2
+  \edef\tmp{%
+    \noexpand\n{\indexedmpi}%
+    \noexpand\index[mpi]{\indexedmpi@{\catcode95=12 \noexpand\texttt{\indexedmpi}}|textsl}}%
+  \tmp
+  \egroup
+}
+
+\def\omptoindex{%\tracingmacros=2
+  \edef\tmp{%
+    \noexpand\n{\indexedomp}%
+    \noexpand\index[omp]{\indexedomp@{\catcode95=12 \noexpand\texttt{\indexedomp}}}}%
+  \tmp
+  \egroup
+}
+\def\omptoindexbf{%\tracingmacros=2
+  \edef\tmp{%
+    \noexpand\lstinline+\indexedomp+%
+    \noexpand\index[omp]{\indexedomp@{\catcode95=12 \noexpand\texttt{\indexedomp}}|textbf}%
+  }%
+  \tmp
+  \egroup
+}
+\def\omptoindexit{%\tracingmacros=2
+  \edef\tmp{%
+    \noexpand\lstinline+\indexedomp+
+    %\noexpand\n{\indexedomp}%
+    \noexpand\index[omp]{\indexedomp@{\catcode95=12 \noexpand\texttt{\indexedomp}}|textsl}%
+  }%
+  \tmp
+  \egroup
+}
+
+{ \catcode`\_=13
+\gdef\indexmpishowsub#{\bgroup \catcode`\_=13 \def_{\char95\discretionary{}{}{}}
+  \catcode`\>=12 \catcode`\<=12
+  \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
+  \tt \afterassignment\defineindexmpisubtwo \xdef\indexedmpisubone}
+\gdef\defineindexmpisubtwo{\afterassignment\mpitoindexsub \gdef\indexedmpisubtwo}
+\gdef\mpiRefDisplay{\par
+  \def_{\underscore}%\edef\plainname{\indexedmpi}
+  %\def_{\char95\discretionary{}{}{}}
+  % first write index
+  \edef\tmp{%
+    \noexpand\index[mpi]{\indexedmpi@{\catcode95=12 \noexpand\texttt{\indexedmpi}}|textbf}}%
+  \tmp\nobreak
+  % then input
+  \def_{\underscore}\edef\tmp{\noexpand\verbatiminput{\indexedmpi}}\tmp
+  \nobreak
+  { \hskip\unitindent \textsl{\small How to read routine prototypes:~\ref{sec:protos}.}\par }
+  \egroup
+}
+} % end of catcode`\_=13
+
+\def\RoutineRefStyle{ \small }
+\def\mpiRoutineRef#{\bgroup \RoutineRefStyle \catcode`\_=13
+  \afterassignment\mpiRefDisplay\def\indexedmpi
+}
+\def\petscRoutineRef#{\bgroup \RoutineRefStyle \catcode`\_=13
+  \afterassignment\mpiRefDisplay\def\indexedmpi
+}
+\def\underscore{_}
+
+\def\mpitoindexsub{%\tracingmacros=2
+  \edef\tmp{\noexpand\n{\indexedmpisubone} {\indexedmpisubtwo}%
+        \noexpand\index[mpi]{\indexedmpisubone@{\noexpand\texttt{\indexedmpisubone}}!\indexedmpisubtwo@{\indexedmpisubtwo}}}%
+  \tmp
+  \egroup
+}
+
+\def\boldtt#1{\textbf{\texttt{#1}}}
+
+\def\indexpragma#1{\texttt{#1}\index[omp]{omp!#1|texttt}}
+\def\indexpragmadef#1{\texttt{#1}\index[omp]{omp!#1|textbf}}
+\index{pragma|see{for list see under `omp'}}
+
+\newcommand{\indexterm}[1]{\emph{#1}\index{#1}}
+\def\indextermdef#1{\emph{#1}\index{#1|textbf}}
+{ \catcode`\_=13
+  %% MPI index routines
+\gdef\tttoindex{%\tracingmacros=2
+  \edef\tmp{%
+    \noexpand\n{\indexedtt}%
+    \noexpand\index{\indexedtt@{\catcode95=12 \noexpand\texttt{\indexedtt}}}%
+  }%
+  \tmp
+  \egroup
+}
+\gdef\indextermtt#{\bgroup \catcode`\_=12 % 13 \def_{\char95\discretionary{}{}{}}
+  \catcode`\>=12 \catcode`\<=12
+  \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
+  \tt \afterassignment\tttoindex\edef\indexedtt}
+}
+\let\indextermttdef\indexmpidef
+\let\indexcommand\indexmpishow
+\def\indexclause#1{\texttt{#1}\index[omp]{omp clause!#1}}
+\def\indexclausedef#1{\texttt{#1}\index[omp]{omp clause!#1|textbf}}
+\def\indexclauseoption#1#2{\texttt{#2}\index[omp]{omp clause!#1!#2}}
+\let\indextermfunction\indextermtt
