@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-8
+%%%% by Victor Eijkhout, copyright 2012-9
 %%%%
 %%%% mpi-intercomm.tex : about splitting communicators
 %%%%
@@ -30,8 +30,8 @@ After this, the intercommunicator can be used in collectives such as
 MPI_Bcast (buff, count, dtype, root, comm, ierr)
 \end{lstlisting}
 \begin{itemize}
-\item In group~A, the root process passes \lstinline$MPI_ROOT$ as
-  `root' value; all others use \lstinline$MPI_PROC_NULL$.
+\item In group~A, the root process passes \indexmpishow{MPI_ROOT} as
+  `root' value; all others use \indexmpishow{MPI_PROC_NULL}.
 \item In group~B, all processes use a `root' value that is the
   rank of the root process in the root group.
 \end{itemize}

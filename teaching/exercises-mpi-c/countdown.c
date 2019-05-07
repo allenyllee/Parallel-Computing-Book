@@ -3,7 +3,7 @@
    %%%%
    %%%% This program file is part of the book and course
    %%%% "Parallel Computing for Science and Engineering"
-   %%%% by Victor Eijkhout, copyright 2013-8
+   %%%% by Victor Eijkhout, copyright 2013-9
    %%%%
    %%%% MPI exercise for implementing shared memory through one-sided
    %%%%
@@ -57,6 +57,7 @@ int main(int argc,char **argv) {
      * - at random times update the counter on the counter process
      * - and read out the counter to see if we stop
      */
+    int final_value=nprocs;
     for (int step=0; ; step++) {
       /*
        * Some dynamic condition to determine whether we 
@@ -91,8 +92,22 @@ int main(int argc,char **argv) {
 /**** your code here ****/
       if (procno==counter_process)
 	printf("Step: %d, counter at %d\n",step,window_data);
-      if (is_zero==0)
+      if (is_zero<=0) {
+	final_value = is_zero;
 	break;
+      }
+    }
+
+    {
+      int final_min,final_max;
+      MPI_Allreduce(&final_value,&final_min,1,MPI_INT,MPI_MIN,comm);
+      MPI_Allreduce(&final_value,&final_max,1,MPI_INT,MPI_MAX,comm);
+      if (procno==0) {
+	if (final_min==final_max)
+	  printf("Success: everyone agrees on the final value\n");
+	else
+	  printf("Failure: someone exits with %d, someone with %d\n",final_min,final_max);
+      }
     }
 
     MPI_Win_free(&the_window);

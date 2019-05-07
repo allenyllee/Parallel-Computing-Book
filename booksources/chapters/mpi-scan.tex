@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-8
+%%%% by Victor Eijkhout, copyright 2012-9
 %%%%
 %%%% mpi-bcastreduce.tex : about broadcast & reduce collectives
 %%%%
@@ -22,11 +22,11 @@ then the scan operation leaves $x_0\oplus\cdots\oplus x_i$ on processor~$i$.
 This type of operation is often called a \indexterm{prefix operation};
 see \HPSCref{app:prefix}.
 
-The \lstinline$MPI_Scan$ routine is an \indextermsub{inclusive}{scan} operation.
+The \indexmpishow{MPI_Scan} routine is an \indextermsub{inclusive}{scan} operation.
 %
 \mpiRoutineRef{MPI_Scan}
 %
-The \lstinline$MPI_Op$ operations do not return an error code.
+The \indexmpishow{MPI_Op} operations do not return an error code.
 
 In python native mode the result is a function return value.
 %
@@ -43,26 +43,26 @@ with the same prototype.
 The result of the exclusive scan is undefined on processor~0
 (\n{None} in python),
 and on processor~1 it is a copy of the send value of processor~1.
-In particular, the \lstinline$MPI_Op$ need not be called on these two 
+In particular, the \indexmpishow{MPI_Op} need not be called on these two 
 processors.
 
 \begin{exercise}
   The exclusive definition, which computes
   $x_0\oplus x_{i-1}$ on processor~$i$, can easily be derived
-  from the inclusive operation for operations such as \lstinline$MPI_PLUS$ or \lstinline$MPI_MULT$.
+  from the inclusive operation for operations such as \indexmpishow{MPI_PLUS} or \indexmpishow{MPI_MULT}.
   Are there operators where that is not the case?
 \end{exercise}
 
 \Level 1 {Use of scan operations}
 
-The \lstinline$MPI_Scan$ operation is often useful with indexing data. Suppose that
+The \indexmpishow{MPI_Scan} operation is often useful with indexing data. Suppose that
 every processor~$p$ has a local vector where the number of elements~$n_p$ is dynamically 
 determined. In order to translate the local numbering $0\ldots n_p-1$ to a global numbering
 one does a scan with the number of local elements as input. The output is then the global 
 number of the first local variable.
 
 \begin{exercise}
-  Do you use \lstinline$MPI_Scan$ or \lstinline$MPI_Exscan$ for this operation? How
+  Do you use \indexmpishow{MPI_Scan} or \indexmpishow{MPI_Exscan} for this operation? How
   would you describe the result of the other scan operation, given the
   same input?
 \end{exercise}

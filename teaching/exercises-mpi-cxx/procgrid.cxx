@@ -4,7 +4,7 @@
  **** `Parallel programming with MPI and OpenMP'
  **** by Victor Eijkhout, eijkhout@tacc.utexas.edu
  ****
- **** copyright Victor Eijkhout 2012-7
+ **** copyright Victor Eijkhout 2012-9
  ****
  **** MPI Exercise for communicator splitting
  ****
@@ -42,7 +42,7 @@ int main() {
   if (nrows==1) {
     if (procno==0) {
       proctext << "Number of processes is prime" << endl;
-      cout << proctext.str();
+      cerr << proctext.str(); proctext.clear();
     }
     MPI_Abort(comm,0);
   }
@@ -88,7 +88,7 @@ int main() {
   if (row_rank!=col_no) {
     proctext << "[" << procno << "=" << row_no << "," << col_no << "] wrong row rank "
 	     << row_rank << endl;
-    cout << proctext.str();
+    cerr << proctext.str(); proctext.clear();
   }
 
   //
@@ -97,12 +97,12 @@ int main() {
   if (col_rank!=row_no) {
     proctext << "[" << procno << "=" << row_no << "," << col_no << "] wrong col rank "
 	     << col_rank << endl;
-    cout << proctext.str();
+    cerr << proctext.str(); proctext.clear();
   }
 
   if (procno==0) {
     proctext << "Finished" << endl;
-    cout << proctext.str();
+    cerr << proctext.str(); proctext.clear();
   }
   
   MPI_Finalize();

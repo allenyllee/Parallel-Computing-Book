@@ -19,11 +19,39 @@ operators, such as sum or maximum, have been built into the MPI
 library, but it is possible to define new operators.
 
 \Level 1 {Pre-defined operators}
+\label{sec:operator-list}
 
-\emph{Pre-defined operators}\index{operator!predefined}
-are listed in section~\ref{sec:operator-list}.
+The following is the list of \emph{pre-defined operators}\index{operator!predefined}
+\indexmpidef{MPI_OP} values.
+
+{\catcode`\_=12 %pyskip
+  \begin{tabular}{|lll|}
+    \hline
+  MPI type&meaning&applies to\\ \hline
+  \indexmpidef{MPI_MAX}&maximum&integer, floating point\\
+  \indexmpidef{MPI_MIN}&minimum&\\
+  \indexmpidef{MPI_SUM}&sum&integer, floating point, complex,
+  multilanguage types\\
+  \indexmpidef{MPI_PROD}&product&\\
+  \indexmpidef{MPI_LAND}&logical and&C integer, logical\\
+  \indexmpidef{MPI_LOR}&logical or&\\
+  \indexmpidef{MPI_LXOR}&logical xor&\\
+  \indexmpidef{MPI_BAND}&bitwise and&integer, byte, multilanguage types\\
+  \indexmpidef{MPI_BOR}&bitwise or&\\
+  \indexmpidef{MPI_BXOR}&bitwise xor&\\
+  \indexmpidef{MPI_MAXLOC}&max value and
+  location&\indexmpishow{MPI_DOUBLE_INT} and such\\
+  \indexmpidef{MPI_MINLOC}&min value and location&\\
+  \hline
+\end{tabular}
+} %pyskip
+
+The \indexmpishow{MPI_MAXLOC} operation yields both the maximum and
+the rank on which it occurs. However, to use it the input should be an
+array of \n{real/int} structs, where the \n{int} is the rank of the number.
 
 \Level 1 {User-defined operators}
+\label{sec:mpi-op-create}
 
 In addition to predefined operators, MPI has the possibility of
 \emph{user-defined operators}\index{operator!user-defined}
@@ -44,9 +72,17 @@ INTEGER LEN, TYPE
 \end{verbatim}
 
 The function has an array length argument~\n{len}, to allow for
-pointwise reduction on a a whole array at once. The \n{inoutvec} array
+pointwise reduction on a whole array at once. The \n{inoutvec} array
 contains partially reduced results, and is typically overwritten by
 the function.
+
+There are some restrictions on the user function:
+\begin{itemize}
+\item It may not call MPI functions, except for
+  \indexmpishow{MPI_Abort}.
+\item It must be associative; it can be optionally commutative, which
+  fact is passed to the \indexmpishow{MPI_Op_create} call.
+\end{itemize}
 
 For example, here is an operator for finding the smallest non-zero
 number in an array of nonnegative integers:
@@ -57,7 +93,7 @@ You can query the commutativity of an operator:
 %
 \mpiRoutineRef{MPI_Op_commutative}
 
-A created \lstinline$MPI_Op$ can be freed again:
+A created \indexmpishow{MPI_Op} can be freed again:
 %
 \begin{lstlisting}
 int MPI_Op_free(MPI_Op *op)
@@ -67,7 +103,7 @@ This sets the operator to \indexmpishow{MPI_OP_NULL}.
 
 \Level 1 {Local reduction}
 
-The application of an \lstinline$MPI_Op$ can be performed with the routine
+The application of an \indexmpishow{MPI_Op} can be performed with the routine
 \indexmpishow{MPI_Reduce_local}. Using this routine and some
 send/receive scheme you can build your own global reductions. Note
 that this routine does not take a communicator because it is purely local.
@@ -114,6 +150,28 @@ int MPI_Ibcast(
   int root, MPI_Comm comm, 
   MPI_Request *request)
 \end{lstlisting}
+
+Non-blocking collectives offer a number of performance advantages:
+\begin{itemize}
+\item Do two reductions (on the same communicator) with different
+  operators simultaneously;
+\item do collectives on overlapping communicators simultaneously;
+\item overlap a non-blocking collective with a blocking one. (However,
+  note that blocking and non-blocking don't match: either all process 
+  call the non-blocking or all call the blocking one.)
+\end{itemize}
+
+\begin{exercise}
+  \label{ex:procgridnonblock}
+  Revisit exercise~\ref{ex:rowcolcomm}. Let only the first row and
+  first column have certain data, which they broadcast through columns
+  and rows respectively. Each process is now involved in two
+  simultaneous collectives. Implement this with non-blocking
+  broadcasts, and time the difference between a blocking and a
+  non-blocking solution.
+\end{exercise}
+
+\mpiRoutineRef{MPI_Ibcast}
 
 \mpiRoutineRef{MPI_Iallreduce}
 
@@ -300,7 +358,7 @@ switch(rank) {
         break; 
 }
 \end{lstlisting}
-Note the \lstinline$MPI_ANY_SOURCE$ parameter in the receive calls on processor~1.
+Note the \indexmpishow{MPI_ANY_SOURCE} parameter in the receive calls on processor~1.
 One obvious execution of this would be:
 \begin{enumerate}
 \item The send from~2 is caught by processor~1;

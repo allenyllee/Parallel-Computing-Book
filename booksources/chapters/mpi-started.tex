@@ -211,7 +211,7 @@ For details see
 
 There are some visible implications of using the \n{mpi_f08} module,
 mostly related to the fact that some of the `MPI datatypes' such as
-\lstinline$MPI_Comm$, which were declared as \n{Integer}
+\indexmpishow{MPI_Comm}, which were declared as \n{Integer}
 previously, are now a Fortran \n{Type}.
 %We will indicate this as needed.
 See the following sections for details:
@@ -320,7 +320,7 @@ if (errorcode!=MPI_SUCCESS) {
 MPI_Comm_world( /* parameter ... */ );
 \end{lstlisting}
 For more on error handling, see section~\ref{sec:mpi:error}.
-\item The first argument is of type \lstinline$MPI_Comm$. This is not a C
+\item The first argument is of type \indexmpishow{MPI_Comm}. This is not a C
   built-in datatype, but it behaves like one. There are many of these
   \n{MPI_something} datatypes in MPI. So you can write:
 \begin{lstlisting}
@@ -365,7 +365,7 @@ CALL MPI_Comm_size( comm, size, ierr )
   final parameter, instead of as a function result. As with~C, you can
   ignore the value of that parameter. Just don't forget it.
 \item The types of the parameters are given in the specification.
-\item Where C routines have \lstinline$MPI_Comm$ and \lstinline$MPI_Request$ and such
+\item Where C routines have \indexmpishow{MPI_Comm} and \indexmpishow{MPI_Request} and such
   parameters, Fortran has \n{INTEGER} parameters, or sometimes arrays
   of integers.
 \end{itemize}

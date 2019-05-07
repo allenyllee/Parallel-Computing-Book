@@ -35,10 +35,10 @@ only one element is used.
 \begin{exercise}
   \label{ex:randommaxscale}
   Let each process compute a random number,
-  and compute the sum of these numbers using the \lstinline$MPI_Allreduce$
+  and compute the sum of these numbers using the \indexmpishow{MPI_Allreduce}
   routine.
 
-  (The operator is \lstinline$MPI_SUM$ for C/Fortran, or \lstinline$MPI.SUM$ for
+  (The operator is \indexmpishow{MPI_SUM} for C/Fortran, or \indexmpishow{MPI.SUM} for
   Python.)
   
   Each process then scales its value
@@ -73,41 +73,17 @@ This has the advantage of saving half the memory.
 
 \Level 1 {Reduction operations}
 \label{sec:mpi:op-create}
-\label{sec:operator-list}
 
-The following is the list of predefined \indexmpidef{MPI_OP} values.
-
-{\catcode`\_=12 %pyskip
-  \begin{tabular}{|lll|}
-    \hline
-  MPI type&meaning&applies to\\ \hline
-  \indexmpidef{MPI_MAX}&maximum&integer, floating point\\
-  \indexmpidef{MPI_MIN}&minimum&\\
-  \indexmpidef{MPI_SUM}&sum&integer, floating point, complex,
-  multilanguage types\\
-  \indexmpidef{MPI_PROD}&product&\\
-  \indexmpidef{MPI_LAND}&logical and&C integer, logical\\
-  \indexmpidef{MPI_LOR}&logical or&\\
-  \indexmpidef{MPI_LXOR}&logical xor&\\
-  \indexmpidef{MPI_BAND}&bitwise and&integer, byte, multilanguage types\\
-  \indexmpidef{MPI_BOR}&bitwise or&\\
-  \indexmpidef{MPI_BXOR}&bitwise xor&\\
-  \indexmpidef{MPI_MAXLOC}&max value and
-  location&\indexmpishow{MPI_DOUBLE_INT} and such\\
-  \indexmpidef{MPI_MINLOC}&min value and location&\\
-  \hline
-\end{tabular}
-} %pyskip
-
-The \indexmpishow{MPI_MAXLOC} operation yields both the maximum and
-the rank on which it occurs. However, to use it the input should be an
-array of \n{real/int} structs, where the \n{int} is the rank of the number.
+Several \indexmpishow{MPI_OP} values are pre-defined. For the list,
+see section~\ref{sec:operator-list}.
 
 For use in reductions and scans it is possible to define your own operator.
 
 \begin{lstlisting}
 MPI_Op_create( MPI_User_function *func, int commute, MPI_Op *op);
 \end{lstlisting}
+
+For more details, see section~\ref{sec:mpi-op-create}.
 
 \Level 0 {Rooted collectives: broadcast, reduce}
 \label{sec:rooted}
@@ -209,7 +185,7 @@ MPI_Bcast( data..., root , comm);
 The root is the process that is sending its data.
 Typically, it will be the root of a broadcast tree.
 The \n{comm} argument is a communicator:
-for now you can use \lstinline$MPI_COMM_WORLD$.
+for now you can use \indexmpishow{MPI_COMM_WORLD}.
 Unlike with send/receive there is no message tag,
 because collectives are blocking, so you can have only one collective active at a
 time. 
@@ -218,11 +194,11 @@ The data in a broadcast (or any other MPI operation for that matter)
 is specified as
 \begin{itemize}
 \item A buffer. In~C this is the address in memory of the data. This means
-  that you broadcast a single scalar as \lstinline$MPI_Bcast$\n{( &value, ... )},
-  but an array as \lstinline$MPI_Bcast$\n{( array, ... )}.
+  that you broadcast a single scalar as \indexmpishow{MPI_Bcast}\n{( &value, ... )},
+  but an array as \indexmpishow{MPI_Bcast}\n{( array, ... )}.
 \item The number of items and their datatype. The allowable datatypes
-  are such things as \lstinline$MPI_INT$ and \lstinline$MPI_FLOAT$ for~C, and
-  \lstinline$MPI_INTEGER$ and \lstinline$MPI_REAL$ for Fortran, or more complicated types.
+  are such things as \indexmpishow{MPI_INT} and \indexmpishow{MPI_FLOAT} for~C, and
+  \indexmpishow{MPI_INTEGER} and \indexmpishow{MPI_REAL} for Fortran, or more complicated types.
   See section~\ref{ch:mpi-data} for details.
 \end{itemize}
 \begin{pythonnote}

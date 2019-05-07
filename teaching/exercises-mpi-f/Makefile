@@ -25,9 +25,6 @@ EXERCISES = hello \
     blockwrite
 OTHERPROGRAMS = write
 
-include ../course-support/Make.course
-include ../course-support/Make.inc
-
 FFLAGS = -O1
 .SECONDEXPANSION:
 ${EXERCISES} : $$@.F90
@@ -37,5 +34,6 @@ ${EXERCISES} : $$@.F90
 #### Regression tests
 ####
 
+include ../course-support/Make.inc
 include ../course-support/Make.mpi_regress
 run_hello : hello

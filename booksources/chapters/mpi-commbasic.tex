@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-8
+%%%% by Victor Eijkhout, copyright 2012-9
 %%%%
 %%%% mpi-commbasic.tex : communicator basics
 %%%%
@@ -13,11 +13,11 @@
 
 A communicator is an object describing a group of processes. In many 
 applications all processes work together closely coupled, and the
-only communicator you need is \indextermttdef{MPI_COMM_WORLD}, the
+only communicator you need is \indexmpishow{MPI_COMM_WORLD}, the
 group describing all processes that your job starts with.
 
-If you don't want to write \lstinline$MPI_COMM_WORLD$ repeatedly, you can
-assign that value to a variable of type \lstinline$MPI_Comm$:
+If you don't want to write \indexmpishow{MPI_COMM_WORLD} repeatedly, you can
+assign that value to a variable of type \indexmpishow{MPI_Comm}:
 %
 \mpiRoutineRef{MPI_Comm}
 

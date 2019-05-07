@@ -5,7 +5,7 @@
 ####
 #### This program file is part of the book and course
 #### "Parallel Computing"
-#### by Victor Eijkhout, copyright 2013-8
+#### by Victor Eijkhout, copyright 2013-9
 ####
 #### countdown.py : implementing shared memory through one-sided
 ####
@@ -73,12 +73,19 @@ while True:
 #### your code here ####
     if procno==counter_process:
         print("Step: %d, counter at %d" % (step,window_data))
-    if is_zero==0:
-        break
+    if is_zero<=0:
+        final_value = is_zero; break
     step += 1
 
-win.Free()
+final_min = np.zeros(1,dtype=np.int)
+final_max = np.zeros(1,dtype=np.int)
+comm.Allreduce(final_value,final_min,MPI.MIN)
+comm.Allreduce(final_value,final_max,MPI.MAX)
 
 if procno==0:
-    print("Finished")
-
+    if final_min==final_max:
+        print("Success: everyone agrees on the final value")
+    else:
+        printf("Failure: someone exits with %d, someone with %d" % (final_min,final_max))
+    
+win.Free()

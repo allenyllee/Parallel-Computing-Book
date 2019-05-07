@@ -5,9 +5,10 @@
 !**** `Parallel programming with MPI and OpenMP'
 !**** by Victor Eijkhout, eijkhout@tacc.utexas.edu
 !****
-!**** copyright Victor Eijkhout 2012-6
+!**** copyright Victor Eijkhout 2012-9
 !****
-!**** MPI Exercise 
+!**** MPI Exercise for fake shared memory
+!**** fortran 90 version
 !****
 !****************************************************************/
 
@@ -22,9 +23,13 @@ Program CountDown
   integer :: &
        counter_process,my_number, &
        step,is_zero,minus_one=-1
-  integer :: the_window,window_data,window_elt_size
+  integer :: the_window
+  integer :: window_data,window_elt_size, final_value,final_min,final_max
   integer(kind=MPI_ADDRESS_KIND) :: window_size,sizeofint,displacement=0
+  !! random data
   real(4) :: randomfraction
+  integer :: seedsize
+  integer,dimension(:),allocatable :: seed
   logical :: i_must_update
 
   call MPI_Init(ierr)
@@ -32,8 +37,11 @@ Program CountDown
   call MPI_Comm_size(comm,nprocs,ierr)
   call MPI_Comm_rank(comm,procno,ierr)
 
-
   counter_process = nprocs-1
+  call random_seed(size=seedsize)
+  allocate(seed(seedsize))
+  seed(:) = procno
+  call random_seed(put=seed)
   
   !!
   !! Create a window.
@@ -58,7 +66,7 @@ Program CountDown
   !! - at random times update the counter on the counter process
   !! - and read out the counter to see if we stop
   !!
-  step = 0; is_zero = 0
+  step = 0; is_zero = 0; final_value = nprocs
   do 
      !! Some dynamic condition to determine whether we 
      !! update the global counter
@@ -90,10 +98,22 @@ Program CountDown
       if (procno==counter_process) then
          print *,"Step:",step,"counter at ",window_data
       end if
-      if (is_zero==0) exit
+      if (is_zero.le.0) then
+         final_value = is_zero
+         exit
+      end if
       step = step+1
    end do
 
+   call MPI_Allreduce(final_value,final_min,1,MPI_INTEGER,MPI_MIN,comm,ierr)
+   call MPI_Allreduce(final_value,final_max,1,MPI_INTEGER,MPI_MAX,comm,ierr)
+   if (procno==0) then
+      if (final_min==final_max) then
+         print *,"Success: everyone agrees on the final value"
+      else
+         print *,"Failure: someone exits with",final_min,", someone with",final_max
+      end if
+   end if
    call MPI_Win_free(the_window,ierr)
 
    call MPI_Finalize(ierr)

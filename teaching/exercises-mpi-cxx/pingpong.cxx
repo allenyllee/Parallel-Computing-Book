@@ -53,7 +53,7 @@ int main() {
       int nanosec = t*1000000000;
       proctext << "Time for pingpong: " << fixed << setprecision(3) << nanosec*1.e-3 << " (microsec)" << endl;
     }
-    cout << proctext.str();
+    cerr << proctext.str(); proctext.clear();
   } else if (procno==processB) {
     for (int n=0; n<NEXPERIMENTS; n++) {
       MPI_Recv(recv,1,MPI_DOUBLE,

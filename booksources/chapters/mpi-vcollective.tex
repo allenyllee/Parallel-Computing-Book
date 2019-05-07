@@ -22,7 +22,7 @@ items.
 Let's take the gather calls as an example. Assume that each processor 
 does a local computation that produces a number of data elements,
 and this number is different for each processor (or at least not
-the same for all). In the regular \lstinline$MPI_Gather$ call the root processor
+the same for all). In the regular \indexmpishow{MPI_Gather} call the root processor
 had a buffer of size~$nP$, where $n$~is the number of elements produced
 on each processor, and $P$~the number of processors. The contribution
 from processor~$p$ would go into locations $pn,\ldots,(p+1)n-1$.
@@ -41,7 +41,7 @@ the root processor needs to have all the $n_p$ numbers, and it can collect
 them with an \indexmpishow{MPI_Gather} call.
 
 We now have all the ingredients.
-All the processors specify a send buffer just as with \lstinline$MPI_Gather$.
+All the processors specify a send buffer just as with \indexmpishow{MPI_Gather}.
 However, the receive buffer specification on the root is more complicated. 
 It now consists of:
 \begin{verbatim}
@@ -51,7 +51,7 @@ and you have just seen how to construct that information.
 
 For example, in an \indexmpishow{MPI_Gatherv} call each process has an individual
 number of items to contribute. To gather this, the root process needs
-to find these individual amounts with an \lstinline$MPI_Gather$ call, and
+to find these individual amounts with an \indexmpishow{MPI_Gather} call, and
 locally construct the offsets array. Note how the offsets array has
 size \n{ntids+1}: the final offset value is automatically the total
 size of all incoming data. See the example below.

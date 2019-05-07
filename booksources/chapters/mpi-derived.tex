@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-8
+%%%% by Victor Eijkhout, copyright 2012-9
 %%%%
 %%%% mpi-derived.tex : derived datatypes
 %%%%
@@ -26,7 +26,7 @@ as you have seen so far.
 \item MPI communication routines can only send multiples of a
   single data type: it is not possible to send items of different
   types, even if they are contiguous in memory. It would be possible
-  to use the \lstinline$MPI_BYTE$ data type, but this is not advisable.
+  to use the \indexmpishow{MPI_BYTE} data type, but this is not advisable.
 \item It is also ordinarily not possible to send items of one type if they are
   not contiguous in memory. You could of course send a contiguous memory area
   that contains the items you want to send, but that is wasteful of
@@ -286,7 +286,7 @@ The possibilities for the \n{order} parameter are
 
   Assume that your number of processors is $P=Q^3$, and that each
   process has an array of identical size. Use
-  \lstinline$MPI_Type_create_subarray$ to gather all data onto a root process.
+  \indexmpishow{MPI_Type_create_subarray} to gather all data onto a root process.
   Use a sequence of send and receive calls;
   \indexmpishow{MPI_Gather} does not work here.
 
@@ -339,12 +339,15 @@ A slightly simpler version assumes constant block length:
 %
 \mpiRoutineRef{MPI_Type_create_hindexed_block}
 
-There is an important difference with the above \lstinline$MPI_Type_indexed$:
+There is an important difference with the above \indexmpishow{MPI_Type_indexed}:
 that one described offsets from a base location; these routines
 describes absolute memory addresses.
 You can use this to send for instance the elements of a
 linked list. You would traverse the list, recording the addresses of
-the elements.
+the elements with \indexmpishow{MPI_Get_address}.
+
+\mpiRoutineRef{MPI_Get_address}
+
 In C++ you can use this to
 send an \n{stl<vector>}\index{C++!standard library!vector}, that
 is, a vector object from the \indextermbus{C++}{standard library}, if

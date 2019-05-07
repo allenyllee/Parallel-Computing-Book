@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-8
+%%%% by Victor Eijkhout, copyright 2012-9
 %%%%
 %%%% mpi-collective.tex : driver file for the collectives chapter
 %%%%
@@ -92,10 +92,10 @@ However, a more common scenario is
 that the result of a collective is needed on all processes.
 
 Consider the computation of the \indexterm{standard deviation}:
-\[ \sigma = \sqrt{\frac1N \sum_i^N (x_i-\mu) }
+\[ \sigma = \sqrt{\frac1{N-1} \sum_i^N (x_i-\mu)^2 }
 \qquad\hbox{where}\qquad \mu = \frac{\sum_i^Nx_i}N
 \]
-and assume that every processor stores just one~$x_i$ value.
+and assume that every process stores just one~$x_i$ value.
 \begin{enumerate}
 \item The calculation of the average~$\mu$ is a reduction, since all
   the distributed values need to be added.
@@ -150,7 +150,7 @@ are said to be `collective on their communicator', but which do not
 involve data movement. Collective then means that all processors must
 call this routine; not to do so is an error that will 
 manifest itself in `hanging' code. One such example is
-\lstinline$MPI_Win_fence$.
+\indexmpishow{MPI_Win_fence}.
 
 \Level 1 {Collectives in MPI}
 

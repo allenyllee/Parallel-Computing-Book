@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-8
+%%%% by Victor Eijkhout, copyright 2012-9
 %%%%
 %%%% mpi-rank.tex : comm size and rank and such
 %%%%
@@ -33,13 +33,14 @@ of each MPI process as a first way of distinguishing between processes.
   init and finalize statement, and print out on what processor your process runs.
   Confirm that you are able to run a program that uses two different nodes.
 
-  (The character buffer needs to be allocated by you, it is not
+  The character buffer needs to be allocated by you, it is not
   created by MPI, with size at
-  least \indexmpishow{MPI_MAX_PROCESSOR_NAME}.)
+  least \indexmpishow{MPI_MAX_PROCESSOR_NAME}.
+
 \begin{tacc}
-TACC nodes have a hostname \n{cRRR-CNN}, where RRR is the rack number, C is the chassis
-number in the rack, and NN is the node number within the chassis. Communication
-is faster inside a rack than between racks!
+    TACC nodes have a hostname \n{cRRR-CNN}, where RRR is the rack number, C is the chassis
+    number in the rack, and NN is the node number within the chassis. Communication
+    is faster inside a rack than between racks!
 \end{tacc}
 \end{exercise}
 
@@ -66,13 +67,13 @@ To distinguish between processes in a communicator, MPI provides two calls
   process is that calls this routine.
 \end{enumerate}
 
-If every process executes the \lstinline$MPI_Comm_size$ call, they all get the
+If every process executes the \indexmpishow{MPI_Comm_size} call, they all get the
 same result, namely the total number of processes in your run.
 %
 \mpiRoutineRef{MPI_Comm_size}
 %
 On the
-other hand, if every process executes \lstinline$MPI_Comm_rank$, they all get
+other hand, if every process executes \indexmpishow{MPI_Comm_rank}, they all get
 a different result, namely their own unique number, an integer in the
 range from zero to the the number of processes minus~1.
 See figure~\ref{fig:rank-parallel}.

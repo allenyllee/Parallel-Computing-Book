@@ -12,7 +12,7 @@
 !****
 !****************************************************************/
 
-Program Isendirecv
+Program RightSend
 
   use mpi_f08
   implicit none
@@ -67,5 +67,5 @@ Program Isendirecv
 
   call MPI_Finalize()
   
-end Program Isendirecv
+end Program RightSend
 

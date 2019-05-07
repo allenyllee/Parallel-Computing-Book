@@ -4,7 +4,7 @@
  **** `Parallel programming with MPI and OpenMP'
  **** by Victor Eijkhout, eijkhout@tacc.utexas.edu
  ****
- **** copyright Victor Eijkhout 2012-7
+ **** copyright Victor Eijkhout 2012-9
  ****
  **** MPI Exercise for the use of Comm_rank/size
  ****
@@ -29,7 +29,10 @@ int main() {
   //    reporting its number and the total number.
   stringstream proctext;
 /**** your code here ****/
-  cout << proctext.str();
+  proctext << "Hello"
+/**** your code here ****/
+	   << endl;
+  cerr << proctext.str(); proctext.clear();
 
   // Exercise part 2:
   // -- let only processs zero print out

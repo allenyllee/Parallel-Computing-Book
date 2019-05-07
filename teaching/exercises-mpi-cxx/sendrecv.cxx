@@ -4,7 +4,7 @@
  **** `Parallel programming with MPI and OpenMP'
  **** by Victor Eijkhout, eijkhout@tacc.utexas.edu
  ****
- **** copyright Victor Eijkhout 2012-7
+ **** copyright Victor Eijkhout 2012-9
  ****
  **** MPI Exercise for sendrecv : three-point combination
  ****
@@ -58,7 +58,7 @@ int main() {
       proctext << "Data on proc " << procno << " should be 2, not " << mydata << endl;
       error = procno;
     }
-    cout << proctext.str();
+    cerr << proctext.str(); proctext.clear();
   } else {
     if (mydata!=3) {
       proctext << "Data on proc " << procno << " should be 3, not " << mydata << endl;
@@ -72,7 +72,7 @@ int main() {
       proctext << "Finished; all results correct" << endl;
     else
       proctext << "First error occurred on proc " << errors << endl;
-    cout << proctext.str();
+    cerr << proctext.str(); proctext.clear();
   }
 
   MPI_Finalize();

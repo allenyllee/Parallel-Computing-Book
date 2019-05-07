@@ -4,7 +4,7 @@
  **** `Parallel programming with MPI and OpenMP'
  **** by Victor Eijkhout, eijkhout@tacc.utexas.edu
  ****
- **** copyright Victor Eijkhout 2012-7
+ **** copyright Victor Eijkhout 2012-9
  ****
  **** MPI Exercise 
  ****
@@ -36,7 +36,7 @@ int main() {
        ) {
     if (bignum%myfactor==0) {
       proctext << "Processor " << procno << " found factor " << myfactor << endl;
-      cout << proctext.str();
+      cerr << proctext.str(); proctext.clear();
     }
   }
 

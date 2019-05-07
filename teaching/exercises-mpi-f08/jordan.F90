@@ -29,7 +29,7 @@ Program GaussJordan
   !! data for this program
   real(8),dimension(:),allocatable :: matrix,solution,rhs,scalings
   real(8) :: pivot,local_solution
-  integer :: row,piv,n,i
+  integer :: row,pivot_column,n,i
   logical :: success = .true.
 
   call MPI_Init()
@@ -80,11 +80,11 @@ Program GaussJordan
   !! using the diagonal element as pivot
   !! (We use zero-based indexing for convenience)
   !!
-  do piv=0,N-1
-     if (piv==procno) then
-        pivot = matrix(piv)
+  do pivot_column=0,N-1
+     if (pivot_column==procno) then
+        pivot = matrix(pivot_column)
         do row=0,N-1
-           scalings(row) = matrix(row)/pivot
+           scalings(row) = matrix(row)/pivot_columnot
         end do
      end if
      !!
@@ -97,13 +97,13 @@ Program GaussJordan
      !! Answer for yourself: why is there no loop over the columns?
      !!
      do row=0,N-1
-        if (row==piv) cycle
-        matrix(row) = matrix(row) - scalings(row)*matrix(piv)
+        if (row==pivot_column) cycle
+        matrix(row) = matrix(row) - scalings(row)*matrix(pivot_column)
      end do
      !! update the rhs
      do row=0,N-1
-        if (row==piv) cycle
-        rhs(row) = rhs(row) - scalings(row)*rhs(piv)
+        if (row==pivot_column) cycle
+        rhs(row) = rhs(row) - scalings(row)*rhs(pivot_column)
      end do
   end do
 

@@ -26,7 +26,6 @@ EXERCISES = hello \
     blockwrite ibarrierupdate
 OTHERPROGRAMS = write
 
-include ../course-support/Make.course
 include ../course-support/Make.inc
 
 FFLAGS = -O1

@@ -4,7 +4,7 @@
  **** `Parallel programming with MPI and OpenMP'
  **** by Victor Eijkhout, eijkhout@tacc.utexas.edu
  ****
- **** copyright Victor Eijkhout 2012-8
+ **** copyright Victor Eijkhout 2012-9
  ****
  **** MPI Exercise
  ****
@@ -32,7 +32,7 @@ int main(int argc,char **argv) {
 
   if (nprocs<3) {
     proctext << "Need at least 3 procs" << endl;
-    cout << proctext.str();
+    cerr << proctext.str(); proctext.clear();
     MPI_Abort(comm,0);
   }
 
@@ -91,11 +91,11 @@ int main(int argc,char **argv) {
   //
   if (procno>0 && procno<3) {
     proctext << "Sum on " << procno << ": " << my_sum << endl;
-    cout << proctext.str();
+    cerr << proctext.str(); proctext.clear();
   }
   if (procno==0) {
     proctext << "Sums on 1 & 2 together should be: " << TOTALPUT << endl;
-    cout << proctext.str();
+    cerr << proctext.str(); proctext.clear();
   }
     
   MPI_Win_free(&the_window);

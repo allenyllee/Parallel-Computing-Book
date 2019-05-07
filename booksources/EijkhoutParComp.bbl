@@ -12,6 +12,11 @@ Tom Cornebize, Franz~C Heinrich, Arnaud Legrand, and J{\'e}r{\^o}me Vienne.
   Scale of a Supercomputer}.
 \newblock working paper or preprint, December 2017.
 
+\bibitem{Eijkhout:MPItype-arxiv}
+Victor {Eijkhout}.
+\newblock {Performance of {MPI} sends of non-contiguous data}.
+\newblock {\em arXiv e-prints}, page arXiv:1809.10778, Sep 2018.
+
 \bibitem{Eijkhout:IHPSClulu}
 {Eijkhout, Victor with Robert van de Geijn and Edmond Chow}.
 \newblock {\em Introduction to High Performance Scientific Computing}.
@@ -51,6 +56,13 @@ L.~V. Kale and S.~Krishnan.
 \newblock Charm++: Parallel programming with message-driven objects.
 \newblock In {\em Parallel Programming using C++, G. V. Wilson and P. Lu,
   editors}, pages 175--213. MIT Press, 1996.
+
+\bibitem{LI:MpiDataUMR}
+M.~Li, H.~Subramoni, K.~Hamidouche, X.~Lu, and D.~K. Panda.
+\newblock High performance mpi datatype support with user-mode memory
+  registration: Challenges, designs, and benefits.
+\newblock In {\em 2015 IEEE International Conference on Cluster Computing},
+  pages 226--235, Sept 2015.
 
 \bibitem{Liu:2003:OMP-SPMD}
 Zhenying Liu, Barbara Chapman, Tien-Hsiung Weng, and Oscar Hernandez.

@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-8
+%%%% by Victor Eijkhout, copyright 2012-9
 %%%%
 %%%% mpi-commsplit.tex : about splitting communicators
 %%%%
@@ -26,7 +26,7 @@ so processes now have two different contexts in which to communicate.
 
 The ranking of processes in the new communicator is determined by a `key' value.
 Most of the time, there is no reason to use a relative ranking that is different from
-the global ranking, so the \lstinline${MPI_Comm_rank$ value of the global communicator
+the global ranking, so the \indexmpishow{MPI_Comm_rank} value of the global communicator
 is a good choice.
 
 Here is one example of communicator splitting. Suppose your processors
@@ -54,6 +54,16 @@ which controls how the processes in the new communicator are
 ordered. By supplying the rank from the original communicator you let
 them be arranged in the same order.
 
+\begin{figure}[ht]
+  \includegraphics[scale=.1]{procgrid-bcast}
+  \caption{Row and column broadcasts in subcommunicators}
+  \label{fig:procgrid-bcast}
+\end{figure}
+
+One application of communicator splitting is setting up a processor
+grid, with the possibility of using MPI solely within one row or
+column; see figure~\ref{fig:procgrid-bcast}.
+
 \begin{exercise}
   \label{ex:rowcolcomm}
   Organize your processes in a grid, and make subcommunicators for
@@ -64,8 +74,8 @@ them be arranged in the same order.
   on a $2\times3$ processor grid you should find:
 \begin{verbatim}
 Global ranks:  Ranks in row:  Ranks in colum:
-  0  1  2      0  1  2        0  0
-  3  4  5      0  1  2        1  1
+  0  1  2      0  1  2        0  0  0
+  3  4  5      0  1  2        1  1  1
 \end{verbatim}
 
   Check that the rank in the row communicator is the column number,
@@ -109,13 +119,16 @@ group from a communicator, combine different groups, and form a new
 communicator from the resulting group.
 
 The group mechanism is more involved. You get the group from a
-communicator, or conversely make a communicator from a group with
-\indexmpishow{MPI_Comm_group} and \indexmpishow{MPI_Comm_create}:
-\begin{lstlisting}
-MPI_Comm_group( comm, &group);
-MPI_Comm_create( old_comm, group, &new_comm );
-\end{lstlisting}
-and groups are manipulated with
+communicator with \indexmpishow{MPI_Comm_group},
+or conversely make a communicator from a group with \indexmpishow{MPI_Comm_create}.
+
+\mpiRoutineRef{MPI_Comm_create}
+
+Creating a new communicator from a group is collective on the old communicator.
+There is also a routine \indexmpishow{MPI_Comm_create_group} that only
+needs to be called on the group that constitutes the new communicator.
+
+Groups are manipulated with
 \indexmpishow{MPI_Group_incl}, \indexmpishow{MPI_Group_excl},
 \indexmpishow{MPI_Group_difference} and a few more.
 
@@ -146,7 +159,7 @@ MPI_Group_rank(group, rank, ierr)
 \label{sec:comm-group}
 
 We start by exploring the mechanisms for creating a communicator that
-encompasses a subset of \lstinline$MPI_COMM_WORLD$. 
+encompasses a subset of \indexmpishow{MPI_COMM_WORLD}. 
 
 The most general mechanism for creating communicators is through
 process groups: you can query the group of processes of a

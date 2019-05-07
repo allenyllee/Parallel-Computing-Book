@@ -108,7 +108,7 @@ not just for the current process.
 %
 \cverbatimsnippet{cart}
 
-The \n{reorder} parameter to \lstinline$MPI_Cart_create$
+The \n{reorder} parameter to \indexmpishow{MPI_Cart_create}
 indicates whether processes can have a rank
 in the new communicator that is different from in the old one.
 
@@ -145,8 +145,8 @@ three, and processes in the corners with two.
 
 Such a topology is illustrated in figure~\ref{fig:graphcollective}.
 
-MPI's notion of \indextermbus{graph}{topology}, and the
-\indextermsub{neighbourhood}{collectives}, offer an elegant way of
+MPI's notion of \indextermbusdef{graph}{topology}, and the
+\indextermsubdef{neighbourhood}{collectives}, offer an elegant way of
 expressing such communication structures. There are various reasons
 for using graph topologies over the older, simpler methods.
 \begin{itemize}
@@ -262,7 +262,7 @@ collectives, but they apply to a graph communicator.
 \begin{exercise}
   \label{ex:rightgraph}
   Revisit exercise~\ref{ex:serialsend} and solve it using
-  \lstinline$MPI_Dist_graph_create$. Use figure~\ref{fig:rightgraph} for inspiration.
+  \indexmpishow{MPI_Dist_graph_create}. Use figure~\ref{fig:rightgraph} for inspiration.
 \end{exercise}
 
 The other collective is \indexmpishow{MPI_Neighbor_alltoall}.

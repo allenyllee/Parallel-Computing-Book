@@ -72,7 +72,7 @@ int main(int argc,char **argv) {
     f = fopen("blockwrite.dat","r");
     int location = 0;
     proctext << "Trying to read " << nwriters*nwords << " integers\n" << endl;
-    cout << proctext.str();
+    cerr << proctext.str(); proctext.clear();
     for (int ip=0; ip<nwriters; ip++) { // loop over processes
       for (int iw=0; iw<nwords; iw++) { // loop over size of local buffer
 	int fromfile,success;
@@ -80,13 +80,13 @@ int main(int argc,char **argv) {
 	if (success==EOF) {
 	  error = procno;
 	  proctext << "Premature end of file" << endl;
-	  cout << proctext.str();
+	  cerr << proctext.str(); proctext.clear();
 	  break;
 	}
 	if (fromfile!=location+1) {
 	  error = procno;
 	  proctext << "Error " << location << ":" << fromfile << endl;
-	  cout << proctext.str();
+	  cerr << proctext.str(); proctext.clear();
 	}
 	location++;
       }
@@ -98,7 +98,7 @@ int main(int argc,char **argv) {
     else
       proctext << "Execution finished with errors";
     proctext << endl;
-    cout << proctext.str();
+    cerr << proctext.str(); proctext.clear();
   }
 
   MPI_Finalize();

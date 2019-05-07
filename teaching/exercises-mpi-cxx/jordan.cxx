@@ -84,9 +84,9 @@ int main(int argc,char **argv) {
    * Now iterate over the columns, 
    * using the diagonal element as pivot.
    */
-  for (int piv=0; piv<N; piv++) {
-    if (piv==procno) {
-      double pivot = matrix[piv];
+  for (int pivot_column=0; pivot_column<N; pivot_column++) {
+    if (pivot_column==procno) {
+      double pivot = matrix[pivot_column];
       // scaling factors per row
       for (int row=0; row<N; row++)
 	scalings[row] = matrix[row]/pivot;
@@ -101,14 +101,14 @@ int main(int argc,char **argv) {
      * Answer for yourself: why is there no loop over the columns?
      */
     for (int row=0; row<N; row++) {
-      if (row==piv) continue;
+      if (row==pivot_column) continue;
       matrix[row] =
-	matrix[row] - scalings[row]*matrix[piv];
+	matrix[row] - scalings[row]*matrix[pivot_column];
     }
     // update the right hand side
     for (int row=0; row<N; row++) {
-      if (row==piv) continue;
-      rhs[row] = rhs[row] - scalings[row]*rhs[piv];
+      if (row==pivot_column) continue;
+      rhs[row] = rhs[row] - scalings[row]*rhs[pivot_column];
     }
   }
 
@@ -117,7 +117,7 @@ int main(int argc,char **argv) {
     if (row==procno) continue;
     if (abs(matrix[row])>1.e-13) {
       proctext << "Wrong value at [" << row << "," << procno << "]:" << matrix[row] << endl;
-      cout << proctext.str();
+      cerr << proctext.str(); proctext.clear();
     }
   }
 
@@ -131,14 +131,14 @@ int main(int argc,char **argv) {
     for (int row=0; row<N; row++)
       if ( abs(solution[row]-1.)>1.e-13 ) {
 	proctext << "Wrong solution at [" << row << "]:" << solution[row] << endl;
-	cout << proctext.str();
+	cerr << proctext.str(); proctext.clear();
 	success = false;
       }
     if (success)
       proctext << "Success" << endl;
     else
       proctext << "Failure" << endl;
-    cout << proctext.str();
+    cerr << proctext.str(); proctext.clear();
   }
 
   MPI_Finalize();

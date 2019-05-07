@@ -7,7 +7,26 @@
 ####
 #### Make include file for course programs
 ####
+#### https://apple.stackexchange.com/questions/3271/how-to-get-rid-of-firewall-accept-incoming-connections-dialog
+####
 ################################################################
+
+##
+## source listing
+##
+
+.PHONY: sources
+info ::
+	@echo "make sources: list all exercises"
+sources :
+	@echo ${EXERCISES}
+
+clean ::
+	@/bin/rm -f ${EXERCISES}
+
+##
+## regression
+##
 
 .PHONY: regression regression_compile
 info ::
@@ -16,7 +35,7 @@ info ::
 regression_compile : clean
 	@for e in ${EXERCISES} ; do \
 	  echo ".. $$e" ; \
-	  make $$e >./$$e.log 2>&1 ; \
+	  make --no-print-directory $$e >./$$e.log 2>&1 ; \
 	  if [ $$? -ne 0 ] ; then \
 	    echo "Failed:" ; cat $$e.log ; \
 	  fi ; \
@@ -25,7 +44,7 @@ regression :
 	@rm -f ../regress.out && touch ../regress.out
 	for e in ${EXERCISES} ; do \
 	  if [ ` grep run_$${e} ../course-support/Make.mpi_regress | wc -l ` -gt 0 ] ; then \
-	    make run_$${e} ; \
+	    make --no-print-directory run_$${e} ; \
 	  else \
 	    echo "no regression defined for $${e}" >>  ../regress.out ; \
 	  fi ; \
@@ -39,7 +58,7 @@ regression :
 old_runs :
 	@if [ ! -z "${REGRESSIONRUNS}" ] ; then \
 	  for r in ${REGRESSIONRUNS} ; do \
-	    make $$r ; \
+	    make --no-print-directory $$r ; \
 	  done ; \
 	fi
 
@@ -95,6 +114,8 @@ regress_display :
 	  echo "==== $$f:" ; cat $$f ; done
 SUCCESS = 1
 regress_success :
+	@if [ -z "${SUCCESS}" ] ; then \
+	   echo "Null SUCCESS value for program <<${PROGRAM}>>" ; exit 1 ; fi
 	@if [ ${SUCCESS} -eq 0 ] ; then \
 	  for f in ${PROGRAM}.out* ; do \
 	    echo "==== $$f:" ; cat $$f ; done ; \
@@ -109,7 +130,7 @@ run_start :
 	 echo "Regression run for $$program, np=${NP}" ; \
 	 echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" ; \
 	/bin/rm -f $${program} ; \
-	make $$program >./$${program}.log 2>&1 ; \
+	make --no-print-directory $$program >./$${program}.log 2>&1 ; \
 	export code=$$? ; \
 	if [ $${code} -ne 0 ]; then \
 	  echo "Failed to compile $${program}" ; \
@@ -118,11 +139,11 @@ run_start :
 	  echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" ; \
 	  exit 1 ; \
 	else \
-	  make regress_out NP=${NP} PROGRAM=$${program} ; \
+	  make --no-print-directory regress_out NP=${NP} PROGRAM=$${program} ; \
 	fi
 REGRESSIONRUNS += run_hello
 run_hello : hello
-	@make run_start PROGRAM=$@ NP=${NP}
+	@make --no-print-directory run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ && export program=$${atgram##run_} && \
 	export np=${NP} && \
 	export success=1 && \
@@ -140,13 +161,13 @@ run_hello : hello
 	    echo "Number of hellos should be 1, not $$hellos" && \
 	    success=0; fi ; \
 	done && \
-	make regress_success SUCCESS=$$success PROGRAM=$${program} && \
+	make --no-print-directory regress_success SUCCESS=$$success PROGRAM=$${program} && \
 	echo
 
 .PHONY: run_commrank
 REGRESSIONRUNS += run_commrank
 run_commrank :  commrank
-	@make run_start PROGRAM=$@ NP=${NP}
+	@make --no-print-directory run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export np=${NP} ; \
 	 export success=1 ; \
@@ -171,13 +192,13 @@ run_commrank :  commrank
 	    fi; \
 	  fi; \
 	done && \
-	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
+	make --no-print-directory regress_success SUCCESS=$$success PROGRAM=$${program} ; \
 	echo
 
 .PHONY: run_prime
 REGRESSIONRUNS += run_prime
 run_prime :  prime
-	@make run_start PROGRAM=$@ NP=${NP}
+	@make --no-print-directory run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 cat prime.out* > prime.out ; export success=1 ; \
 	nfound=`cat prime.out | grep "found factor" | wc -l` ; \
@@ -190,58 +211,72 @@ run_prime :  prime
 	if [ $$nfound -lt 1 ] ; then \
 	  echo "You are not reporting the correct smallest factor" ; success=0; \
 	fi ; \
-	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
+	make --no-print-directory regress_success SUCCESS=$$success PROGRAM=$${program} ; \
 	echo
 
 .PHONY: run_rightsend
 REGRESSIONRUNS += run_rightsend
 run_rightsend :  rightsend
-	@make run_start PROGRAM=$@ NP=${NP}
+	@make --no-print-directory run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export np=${NP} ; \
-	 export success=` cat $${program}.out0 | grep "all results correct" | wc -l ` ; \
-	 for p in `seq 1 $$(( np-1 ))` ; do \
-	  if [ `cat $$program.out$$p | wc -l` -gt 0 ] ; then \
-	    echo "I was not expecting output from proc $$p" ; \
-	    success=0; \
-	  fi ; \
-	 done ; \
-	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
-	echo
+	 export success=` cat $${program}.out0 | grep "all results correct" | wc -l ` \
+	 && export success=$$(( success + 0 )) \
+	 && for p in `seq 1 $$(( np-1 ))` ; do \
+	      if [ `cat $$program.out$$p | wc -l` -gt 0 ] ; then \
+	        echo "I was not expecting output from proc $$p" ; \
+	        success=0; \
+	      fi ; \
+	    done \
+	&& make --no-print-directory regress_success SUCCESS=$$success PROGRAM=$${program} \
+	&& echo
 
 .PHONY: run_stridesend
 REGRESSIONRUNS += run_stridesend
 run_stridesend :  stridesend
-	@make run_start PROGRAM=$@ NP=${NP}
-	@export atgram=$@ ; export program=$${atgram##run_} ; \
-	 export np=${NP} ; \
-	 export success=` cat $${program}.out0 | grep "Finished" | wc -l ` ; \
-	 for p in `seq 1 $$(( np-1 ))` ; do \
-	  if [ `cat $$program.out$$p | wc -l` -gt 0 ] ; then \
-	    echo "I was not expecting output from proc $$p" ; \
-	    success=0; \
-	  fi ; \
-	 done ; \
-	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
-	echo
+	@make --no-print-directory run_start PROGRAM=$@ NP=${NP}
+	@export atgram=$@ ; export program=$${atgram##run_} \
+	 && export np=${NP} \
+	 && export errors=$$((  `make only_zero_out NP=np PROGRAM=$${program}` )) \
+	 && if [ $${errors} -gt 0 ] ; then export success=0; else \
+	      export success=$$(( ` cat $${program}.out0 | grep "Finished" | wc -l ` )) ; \
+	      fi \
+	&& make --no-print-directory SUCCESS=$${success} PROGRAM=$${program} regress_success \
+	&& echo
+only_zero_out :
+	@export error=0 \
+	&& for p in `seq 1 $$(( ${NP}-1 ))` ; do \
+	     if [ `cat ${PROGRAM}.out$$p | wc -l` -gt 0 ] ; then \
+	        echo "I was not expecting output from proc $$p" ; \
+	        export error=1 ; \
+	     fi ; \
+	   done \
+	&& echo $${error}
+
+	 # && for p in `seq 1 $$(( np-1 ))` ; do \
+	 #    if [ `cat $$program.out$$p | wc -l` -gt 0 ] ; then \
+	 #      echo "I was not expecting output from proc $$p" ; \
+	 #      success=0; \
+	 #    fi ; \
+	 #   done \
 
 .PHONY: run_blockwrite
 REGRESSIONRUNS += run_blockwrite
 run_blockwrite :  blockwrite
-	@make run_start PROGRAM=$@ NP=${NP}
+	@make --no-print-directory run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 cat blockwrite.out* > blockwrite.out ; export success=1 ; \
 	nfound=`cat blockwrite.out | grep "correctly" | wc -l` ; \
 	if [ $$nfound -eq 0 ] ; then \
 	  echo "No success reported" ; success=0; \
 	fi ; \
-	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
+	make --no-print-directory regress_success SUCCESS=$$success PROGRAM=$${program} ; \
 	echo
 
 .PHONY: run_randommax
 REGRESSIONRUNS += run_randommax
 run_randommax : randommax
-	@make run_start PROGRAM=$@ NP=${NP}
+	@make --no-print-directory run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export np=${NP} ; \
 	 export success=1 ; \
@@ -271,29 +306,30 @@ run_randommax : randommax
 	  else \
 	    echo "Part 2 not evaluated" ; \
 	  fi ; \
-	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
+	make --no-print-directory regress_success SUCCESS=$$success PROGRAM=$${program} ; \
 	echo
 
 .PHONY: run_jordan
 REGRESSIONRUNS += run_jordan
 run_jordan :  jordan
-	@make run_start PROGRAM=$@ NP=${NP}
-	@export atgram=$@ ; export program=$${atgram##run_} ; \
-	 export np=${NP} ; \
-	 export success=` grep Success $${program}.out0 | wc -l` ; \
-	 for p in `seq 1 $$(( np-1 ))` ; do \
-	  if [ `cat $$program.out$$p | wc -l` -gt 0 ] ; then \
-	    echo "I was not expecting output from proc $$p" ; \
-	    success=0; \
-	  fi ; \
-	 done ; \
-	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
-	echo
+	@make --no-print-directory run_start PROGRAM=$@ NP=${NP}
+	@export atgram=$@ ; export program=$${atgram##run_} \
+	&& export np=${NP} \
+	&& export success=` grep Success $${program}.out0 | wc -l` \
+	&& export success=$$(( success + 0 )) \
+	&& for p in `seq 1 $$(( np-1 ))` ; do \
+	     if [ `cat $$program.out$$p | wc -l` -gt 0 ] ; then \
+	       echo "I was not expecting output from proc $$p" ; \
+	       success=0; \
+	     fi ; \
+	    done \
+	&& make --no-print-directory regress_success SUCCESS=$$success PROGRAM=$${program} \
+	&& echo
 
 .PHONY: run_pingpong
 REGRESSIONRUNS += run_pingpong
 run_pingpong :  pingpong
-	@make run_start PROGRAM=$@ NP=${NP}
+	@make --no-print-directory run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export np=${NP} ; \
 	 export success=1 ; \
@@ -304,13 +340,13 @@ run_pingpong :  pingpong
 	 done ; \
 	export ntime=` cat $$program.out_total | awk '{print $$4}' ` && \
 	echo "Micro seconds for pingpong: $$ntime" && \
-	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
+	make --no-print-directory regress_success SUCCESS=$$success PROGRAM=$${program} ; \
 	echo
 
 .PHONY: run_sendrecv
 REGRESSIONRUNS += run_sendrecv
 run_sendrecv :  sendrecv
-	@make run_start PROGRAM=$@ NP=${NP}
+	@make --no-print-directory run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export np=${NP} ; \
 	 export success=1 ; \
@@ -320,13 +356,13 @@ run_sendrecv :  sendrecv
 	    success=0; \
 	  fi ; \
 	 done ; \
-	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
+	make --no-print-directory regress_success SUCCESS=$$success PROGRAM=$${program} ; \
 	echo
 
 .PHONY: run_isendirecv
 REGRESSIONRUNS += run_isendirecv
 run_isendirecv : isendirecv
-	@make run_start PROGRAM=$@ NP=${NP}
+	@make --no-print-directory run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export np=${NP} ; \
 	 export success=1 ; \
@@ -336,13 +372,13 @@ run_isendirecv : isendirecv
 	    success=0; \
 	  fi ; \
 	 done ; \
-	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
+	make --no-print-directory regress_success SUCCESS=$$success PROGRAM=$${program} ; \
 	echo
 
 .PHONY: run_isendirecvarray
 REGRESSIONRUNS += run_isendirecvarray
 run_isendirecvarray : isendirecvarray
-	@make run_start PROGRAM=$@ NP=${NP}
+	@make --no-print-directory run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export np=${NP} ; \
 	 export success=1 ; \
@@ -352,16 +388,18 @@ run_isendirecvarray : isendirecvarray
 	    success=0; \
 	  fi ; \
 	 done ; \
-	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
+	make --no-print-directory regress_success SUCCESS=$$success PROGRAM=$${program} ; \
 	echo
 
-.PHONY: run_procgrid
-REGRESSIONRUNS += run_procgrid
+.PHONY: run_procgrid run_procgridnonblock
+REGRESSIONRUNS += run_procgrid run_procgridnonblock
 run_procgrid :  procgrid
+run_procgridnonblock :  procgridnonblock
+run_procgrid run_procgridnonblock :
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export success=1 ; \
 	 for np in 4 6 8 9 ; do \
-	   make run_start PROGRAM=$@ NP=$${np} && \
+	   make --no-print-directory run_start PROGRAM=$@ NP=$${np} && \
 	   for p in `seq 1 $$(( np-1 ))` ; do \
 	    if [ `cat $$program.out$$p | wc -l` -gt 0 ] ; then \
 	      echo "I was not expecting output from proc $$p" ; \
@@ -369,13 +407,13 @@ run_procgrid :  procgrid
 	    fi ; \
 	   done ; \
 	 done ; \
-	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
+	make --no-print-directory regress_success SUCCESS=$$success PROGRAM=$${program} ; \
 	echo
 
 .PHONY: run_randomput
 REGRESSIONRUNS += run_randomput
 run_randomput : randomput
-	@make run_start PROGRAM=$@ NP=${NP}
+	@make --no-print-directory run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export success=1 ; \
 	 export np=${NP} ; \
@@ -388,23 +426,33 @@ run_randomput : randomput
 	 else \
 	    echo "Values 1:$$v1 and 2:$$v2 correctly add up to 0:$$vs" ; \
 	 fi \
-	&& make regress_success SUCCESS=$$success PROGRAM=$${program} \
+	&& make --no-print-directory regress_success SUCCESS=$$success PROGRAM=$${program} \
 	&& echo
 
 .PHONY: run_onesidedbuild
 REGRESSIONRUNS += run_onesidedbuild
 run_onesidedbuild : onesidedbuild
-	@make run_start PROGRAM=$@ NP=${NP}
+	@make --no-print-directory run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export success=1 ; \
-	 make catchrun PROGRAM=onesidedbuild NP=${NP} \
+	 make --no-print-directory catchrun PROGRAM=onesidedbuild NP=${NP} \
 	   | ../course-support/catch_onesidedbuild.py || export success=$$? \
-	 && make regress_success SUCCESS=$$success PROGRAM=$${program}
+	 && make --no-print-directory regress_success SUCCESS=$$success PROGRAM=$${program}
+
+.PHONY: run_countdown
+REGRESSIONRUNS += run_countdown
+run_countdown : countdown
+	@make --no-print-directory run_start PROGRAM=$@ NP=${NP}
+	@export atgram=$@ ; export program=$${atgram##run_} ; \
+	 export success=1 ; \
+	 make --no-print-directory catchrun PROGRAM=countdown NP=${NP} \
+	   | ../course-support/catch_countdown.py || export success=$$? \
+	 && make --no-print-directory regress_success SUCCESS=$$success PROGRAM=$${program}
 
 .PHONY: run_rightgraph
 REGRESSIONRUNS += run_rightgraph
 run_rightgraph :  rightgraph
-	@make run_start PROGRAM=$@ NP=${NP}
+	@make --no-print-directory run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export np=${NP} ; \
 	 export success=1 ; \
@@ -414,13 +462,17 @@ run_rightgraph :  rightgraph
 	    success=0; \
 	  fi ; \
 	 done ; \
-	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
+	make --no-print-directory regress_success SUCCESS=$$success PROGRAM=$${program} ; \
 	echo
 
-.PHONY: run_bucketblock
-REGRESSIONRUNS += run_bucketblock
+.PHONY: run_bucketblock run_bucketnonblock run_bucketpipe run_bucketpipenonblock
+REGRESSIONRUNS += run_bucketblock run_bucketnonblock run_bucketpipe run_bucketpipenonblock
 run_bucketblock :  bucketblock
-	@make run_start PROGRAM=$@ NP=${NP}
+run_bucketnonblock :  bucketnonblock
+run_bucketpipe : bucketpipe
+run_bucketpipenonblock : bucketpipenonblock
+run_bucketblock run_bucketnonblock run_bucketpipe run_bucketpipenonblock :
+	@make --no-print-directory run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export np=${NP} ; \
 	 export success=1 ; \
@@ -430,13 +482,13 @@ run_bucketblock :  bucketblock
 	    success=0; \
 	  fi ; \
 	 done ; \
-	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
+	make --no-print-directory regress_success SUCCESS=$$success PROGRAM=$${program} ; \
 	echo
 
 .PHONY: run_ibarrierupdate
 REGRESSIONRUNS += run_ibarrierupdate
 run_ibarrierupdate :  ibarrierupdate
-	@make run_start PROGRAM=$@ NP=${NP}
+	@make --no-print-directory run_start PROGRAM=$@ NP=${NP}
 	@export atgram=$@ ; export program=$${atgram##run_} ; \
 	 export np=${NP} ; \
 	 export success=1 ; \
@@ -446,6 +498,6 @@ run_ibarrierupdate :  ibarrierupdate
 	    success=0; \
 	  fi ; \
 	 done ; \
-	make regress_success SUCCESS=$$success PROGRAM=$${program} ; \
+	make --no-print-directory regress_success SUCCESS=$$success PROGRAM=$${program} ; \
 	echo
 

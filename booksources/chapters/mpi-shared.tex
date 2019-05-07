@@ -73,8 +73,8 @@ contiguous between the processes. This makes it possible to do address
 calculation. However, if a cluster node has a \ac{NUMA} structure, for
 instance if two sockets have memory directly attached to each, this
 would increase latency for some processes. To prevent this, the key
-\indextermtt{alloc_shared_noncontig} can be set to \n{true} in the
-\indextermtt{MPI_Info} object.
+\indexmpishow{alloc_shared_noncontig} can be set to \n{true} in the
+\indexmpishow{MPI_Info} object.
 
 \Level 1 {Querying the shared structure}
 
@@ -92,3 +92,26 @@ As an example, which consider the 1D heat equation. On each process we
 create a local area of three point:
 %
 \cverbatimsnippet{allocateshared3pt}
+
+\Level 1 {Shared bulk data}
+
+In applications such as \indexterm{ray tracing}, there is a read-only
+large data object (the objects in the scene to be rendered) that is
+needed by all processes. In traditional MPI, this would need to be
+stored redundantly on each process, which leads to large memory
+demands. With MPI shared memory we can store the data object once per
+node. Using as above \indexmpishow{MPI_Comm_split_type} to find a
+communicator per \ac{NUMA} domain, we store the object on process zero
+of this node communicator.
+
+\begin{exercise}
+  \label{ex:shareddata}
+  Let the `shared' data originate on process zero in
+  \indexmpishow{MPI_COMM_WORLD}. Then:
+  \begin{itemize}
+  \item create a communicator per shared memory domain;
+  \item create a communicator for all the processes with number zero on their
+    node;
+  \item broadcast the shared data to the processes zero on each node.
+  \end{itemize}
+\end{exercise}

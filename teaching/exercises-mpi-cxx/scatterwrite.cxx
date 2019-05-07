@@ -3,7 +3,7 @@
    %%%%
    %%%% This program file is part of the book and course
    %%%% "Parallel Computing"
-   %%%% by Victor Eijkhout, copyright 2013-7
+   %%%% by Victor Eijkhout, copyright 2013-9
    %%%%
    %%%% scatterwrite.c : MPI IO example
    %%%%
@@ -78,20 +78,20 @@ int main(int argc,char **argv) {
 	success = fread(&fromfile,sizeof(int),1,f);
 	if (success==EOF) {
 	  proctext << "Premature end of file" << endl;
-	  cout << proctext.str();
+	  cerr << proctext.str(); proctext.clear();
 	  break;
 	}
 	int itest = iw+1 + nwords*ip;
 	if (fromfile!=itest) {
 	  proctext << "Error " << location << ":" << itest << ":" << fromfile << endl;
-	  cout << proctext.str();
+	  cerr << proctext.str(); proctext.clear();
 	} // else printf("Correct %d:%d:%d\n",location,itest,fromfile);
 	location++;
       }
     }
     fclose(f);
     proctext << "Finished" << endl;
-    cout << proctext.str();
+    cerr << proctext.str(); proctext.clear();
   }
 
   MPI_Finalize();

@@ -24,7 +24,7 @@ Program RandomMax
   integer :: randomint,sender
   integer :: randsize
   integer,allocatable,dimension(:) :: randseed
-  real :: my_random,global_random, scaled_random,sum_random,sum_scaled_random
+  real :: my_random,scaled_random,sum_random,sum_scaled_random
 
   call MPI_Init(); 
   call MPI_Comm_rank(comm,procno); 
@@ -46,8 +46,7 @@ Program RandomMax
   print '(("Process",i4,x,"has random value",x,f9.7))', procno,my_random
 
   !!
-  !! Exercise part 1:
-  !! (re-enable this part of the code by removing #if and #endif lines)
+  !! Exercise:
   !! -- compute the sum of the values, everywhere
   !! -- scale your number by that sum
   !! -- check that the sum of scaled values is 1
@@ -76,19 +75,6 @@ Program RandomMax
      end if
   end if
 
-#if 0
-  !!
-  !! Exercise part 2:
-  !! - compute the maximum random value on process zero
-  !!
-  call MPI_Reduce( &
-!!!! your code here !!!!
-       comm)
-  if (procno==0) then
-     print *,"The maximum number is",global_random
-  end if
-#endif
-  
   if (procno==0) then
      print *,"Success: all tests pass"
   end if

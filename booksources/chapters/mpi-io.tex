@@ -31,6 +31,15 @@ Wouldn't it be nice if there was a way to open one file in parallel,
 and have every process read from and write to its own location? That's
 where \emph{MPI/O} comes in.
 
+There are dedicated libraries for file I/O, such as \indexterm{hdf5},
+\indexterm{netcdf}, or \indexterm{silo}. However, these often add
+header inforation to a file that may not be understandable to
+post-processing applications. With MPI I/O you are in complete control
+of what goes to the file. (A~useful tool for viewing your file is the
+unix utility~\indextermtt{od}.)
+
+\Level 0 {File handling}
+
 MPI has its own file handle:
 \mpiRoutineRef{MPI_File}
 
@@ -64,6 +73,10 @@ File access modes:
   of file.
 \end{itemize}
 These modes can be added or bitwise-or'ed.
+
+You can delete a file with \indexmpishow{MPI_File_delete}.
+
+\Level 0 {File access}
 
 Writing to and reading from a parallel file is rather similar to
 sending a receiving:
@@ -101,7 +114,7 @@ File accesses:
 \begin{exercise}
   \label{ex:blockwrite}
   Create a buffer of length \n{nwords=3} on each process, and write
-  these buffers as a sequence to one file with \lstinline$MPI_File_write_at$.
+  these buffers as a sequence to one file with \indexmpishow{MPI_File_write_at}.
 \end{exercise}
 
 These modes are enough for writing simple contiguous blocks. However,
@@ -128,10 +141,12 @@ This call is collective, even if not all processes access the file.
   \includegraphics[scale=.4]{write-at-view}
 \end{figure}
 
+\mpiRoutineRef{MPI_File_write_at}
+
 \begin{exercise}
   \label{ex:viewwrite}
   Write a file in the same way as in exercise~\ref{ex:blockwrite},
-  but now use \lstinline$MPI_File_write$ and use \lstinline$MPI_File_set_view$ to set
+  but now use \indexmpishow{MPI_File_write} and use \indexmpishow{MPI_File_set_view} to set
   a view that determines where the data is written.
 \end{exercise}
 
@@ -152,13 +167,10 @@ datatype.
 \end{fortrannote}
 
 More:
-\indexmpishow{MPI_File_delete}
 \indexmpishow{MPI_File_set_size}
 \indexmpishow{MPI_File_get_size}
 \indexmpishow{MPI_File_preallocate}
 \indexmpishow{MPI_File_get_view}
-
-\mpiRoutineRef{MPI_File_write_at}
 
 \Level 0 {Constants}
 

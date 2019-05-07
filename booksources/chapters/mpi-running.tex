@@ -32,7 +32,8 @@ copies. There is nothing in the source that says `and now you become parallel'.
 
 %pyinput ex.txt
 
-The following exercise shows you that 
+The following exercise demonstrates this point.
+
 \begin{exercise}
   \label{ex:hello1}
   Write a `hello world' program, without any MPI in it,
@@ -94,7 +95,7 @@ int main(int argc,char **argv) {
 \end{lstlisting}
 (It is allowed to pass \n{NULL} for these arguments.)
 
-Note that the \lstinline$MPI_Init$ call is one of the few that differs between C and Fortran:
+Note that the \indexmpishow{MPI_Init} call is one of the few that differs between C and Fortran:
 the C~routine takes the commandline arguments, which Fortran lacks.
 
 This may look a bit like declaring `this is the parallel part of a
@@ -116,7 +117,7 @@ The regular way to conclude an MPI program is:
 
 Apart from \indexmpishow{MPI_Finalize}, which signals a successful
 conclusion of the MPI run, an abnormal end to a run can be forced by
-\lstinline$MPI_Abort$:
+\indexmpishow{MPI_Abort}:
 %
 \mpiRoutineRef{MPI_Abort}
 %
@@ -135,19 +136,19 @@ There are a few commands, such as
 \indexmpishow{MPI_Init}.
 
 If MPI is used in a library, MPI can have already been initialized in a main program.
-For this reason, one can test where \lstinline$MPI_Init$ has been called with
+For this reason, one can test where \indexmpishow{MPI_Init} has been called with
 %
 \mpiRoutineRef{MPI_Initialized}
 %
 
-You can test whether \lstinline$MPI_Finalize$ has been called with
+You can test whether \indexmpishow{MPI_Finalize} has been called with
 %
 \mpiRoutineRef{MPI_Finalized}
 
 \Level 2 {Commandline arguments}
 
 The \indexmpishow{MPI_Init} routines takes a reference to \indextermtt{argc}
-and \indextermtt{argv} for the following reason: the \lstinline$MPI_Init$ calls
+and \indextermtt{argv} for the following reason: the \indexmpishow{MPI_Init} calls
 filters out the arguments to \indexterm{mpirun} or \indexterm{mpiexec},
 thereby lowering the value of \n{argc} and elimitating some of the \n{argv}
 arguments.

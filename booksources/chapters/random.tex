@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2016
+%%%% by Victor Eijkhout, copyright 2016-9
 %%%%
 %%%% random.tex : appendix about random numbers
 %%%%
@@ -31,9 +31,7 @@ Fortran:
 
   call random_seed(size=randsize)
   allocate(randseed(randsize))
-  do i=1,randsize
-     randseed(i) = 1023*mytid
-  end do
+  randseed(:) = 1023*mytid
   call random_seed(put=randseed)
 \end{verbatim}
 }

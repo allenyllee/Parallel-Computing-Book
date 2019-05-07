@@ -4,7 +4,7 @@
  **** `Parallel programming with MPI and OpenMP'
  **** by Victor Eijkhout, eijkhout@tacc.utexas.edu
  ****
- **** copyright Victor Eijkhout 2012-7
+ **** copyright Victor Eijkhout 2012-9
  ****
  **** MPI Exercise
  ****
@@ -34,7 +34,7 @@ int main() {
   {
     stringstream proctext;
     proctext << "Process " << setw(3) << procno << " has random value " << myrandom << endl;
-    cout << proctext.str();
+    cerr << proctext.str(); proctext.clear();
   }
 
   /*
@@ -43,7 +43,7 @@ int main() {
    * -- scale your number by the sum
    * -- check that the sum of scales values is 1
    */
-  float sumrandom, scaled_random;
+  float sumrandom, scaled_random, sum_scaled_random;
   MPI_Allreduce(
 /**** your code here ****/
 		);
@@ -55,10 +55,10 @@ int main() {
    * Correctness test
    */
   int error=nprocs, errors;
-  if ( abs(sumrandom-1.)>1.e-5 ) {
+  if ( abs(sum_scaled_random-1.)>1.e-5 ) {
     stringstream proctext;
     proctext << "Suspicious sum " << sumrandom << " on process " << procno << endl;
-    cout << proctext.str();
+    cerr << proctext.str(); proctext.clear();
     error = procno;
   }
   MPI_Allreduce(&error,&errors,1,MPI_INT,MPI_MIN,comm);
@@ -68,7 +68,7 @@ int main() {
       proctext << "Part 1 finished; all results correct" << endl;
     else
       proctext << "Part 1: first error occurred on rank " << errors << endl;
-    cout << proctext.str();
+    cerr << proctext.str(); proctext.clear();
   }
 
 #if 0
@@ -80,7 +80,7 @@ int main() {
   if (procno==0) {
     stringstream proctext;
     proctext << "Part 2: The maximum number is " << globalrandom << endl;
-    cout << proctext.str();
+    cerr << proctext.str(); proctext.clear();
   }
 #endif
 

@@ -2,23 +2,73 @@
 ################################################################
 ####
 #### This makefile is part of `Parallel Programming in MPI and OpenMP'
-#### by Victor Eijkhout, copyright 2013-8
+#### by Victor Eijkhout, copyright 2013-9
 #### eijkhout@tacc.utexas.edu
 ####
-#### Make include file for course programs
+#### include Makefile for course slides MPI/OpenMP/hybrid
+####
+#### also for lab sessions; maybe to be split?
+#### this is invoked from the slides-{mpi,omp,ddt,hybrid} directories
 ####
 ################################################################
 
-.PHONY: sources
+##
+## formatting
+##
+
+ENGINE = pdflatex
+info::
+	@echo "make course onepass pdf [FILE=... (default: ${FILE})]"
+	@if [ ! -z "${FILES}" ] ; then \
+	   echo "     available files: ${FILES}" ; \
+	 fi
+
+.PHONY: course onepass pdf inex
+onepass :
+	TEXINPUTS=.:..:../..:../taccstyle:../taccstyle/figures:../../chapters:../../exercises:../../graphics//:../../macros:../../hwloc:../../mpireference:../../snippets:../../../hpc-book-private/teaching:../../../hpc-book-private/graphics:../../../hpc-book-private/snippets:${TEXINPUTS}${EXTRATEXINPUTS} ${ENGINE} ${FILE}
+
+course pdf : inex
+	make onepass FILE=${FILE}
+	-bibtex      ${FILE}
+	-makeindex   ${FILE}
+	make onepass FILE=${FILE}
+	make onepass FILE=${FILE}
+	make upload  FILE=${FILE}
+inex :
+	@cp ${INEX}.inex inex.tex
+
 info ::
-	@echo "make sources: list all exercises"
-sources :
-	@echo ${EXERCISES}
+	@echo "make preview"
+.PHONY: preview
+preview:
+	xpdf -g 770x477 ${FILE}.pdf &
+
+##
+## Victor only: uploading
+##
+
+info ::
+	@echo "make upload"
+.PHONY: upload
+upload ::
+	@echo "uploading ${FILE} course" ; \
+	  if [ ${FILE} != ${COURSE} ] ; then \
+	    cp ${FILE}.pdf ${COURSE}_course.pdf ; \
+	  fi ; \
+	  if [ -d "${HOME}/Dropbox" ] ; then \
+	    cp ${FILE}.pdf ${HOME}/Dropbox/Scicomp/Courses/ ; \
+	  fi
+
+##
+## Cleaning
+##
 
 info ::
 	@echo "make clean"
 .PHONY: clean
 clean ::
-	@/bin/rm -rf ${EXERCISES} ${OTHERPROGRAMS} \
+	@/bin/rm -f *~ *.{aux,bbl,blg,idx,ilg,ind,log,nav,out,snm,toc,vrb} *.cut
+	@/bin/rm -rf ${EXERCISES} ${OTHERPROGRAMS} acronyms.tex \
 	    *~ *.o *.pyc *.dSYM ddt.o* *.o[0-9]* *.dat *.log *.out *.out[0-9]* *.out_total \
 	    tautrace_* dcvserver.out
+

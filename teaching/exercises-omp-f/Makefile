@@ -15,9 +15,9 @@ COURSE = omp
 info ::
 	@echo "make EXERCISE (where EXERCISE=${EXERCISES})"
 EXERCISES = parallel pi piadapt taskfactor
-include ../course-support/Make.template
-include ../course-support/Make.course
+
 include ../course-support/Make.inc
+include ../course-support/Make.omp_regress
 
 .SECONDEXPANSION:
 ${EXERCISES} : $$@.F90

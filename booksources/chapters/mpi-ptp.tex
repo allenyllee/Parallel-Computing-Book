@@ -21,7 +21,8 @@ of the whole data structure and only works on that.
 So let's say we have a large array, and we want to
 distribute the data over the processors.
 That means that, with \n{p} processes and \n{n}~elements
-per processor, we have a total of $\n{n}\cdot\n{p}$ elements.
+per processor, we have a total of $\mathtt{n}\cdot\mathtt{p}$
+elements.
 
 \begin{figure}[ht]
   \includegraphics[scale=.1]{mpi-array}
@@ -31,7 +32,8 @@ per processor, we have a total of $\n{n}\cdot\n{p}$ elements.
 
 We sometimes say that \n{data} is the local part
 of a \indexterm{distributed array} with a total size of
-$\n{n}\cdot\n{p}$ elements.
+$\mathtt{n}\cdot\mathtt{p}$
+elements.
 However, this array only exists
 conceptually: each processor has an array with lowest index zero,
 and you have to translate that yourself to an index in the global
@@ -189,8 +191,8 @@ open, and inspect the message for them after it was received.
 To do this, the receive call has a \indexmpishow{MPI_Status}
 parameter. This was discussed in section~\ref{sec:mpi-status}.
 
-This status is a property of the actually received messsage, so \lstinline$MPI_Irecv$
-does not have a status parameter, but \lstinline$MPI_Wait$ does.
+This status is a property of the actually received messsage, so \indexmpishow{MPI_Irecv}
+does not have a status parameter, but \indexmpishow{MPI_Wait} does.
 
 The \indexmpishow{MPI_Status} object
 is a structure with the following
@@ -205,7 +207,7 @@ one of a number of processes. In this case, it is possible to specify
 To find out the \emph{source}\index{message!status!source}
 where the message actually
 came from, you would use the \indexmpishow{MPI_SOURCE} field of the status object
-that is delivered by \lstinline$MPI_Recv$ or the \lstinline$MPI_Wait...$ call after an \lstinline$MPI_Irecv$.
+that is delivered by \indexmpishow{MPI_Recv} or the \indexmpishow{MPI_Wait...} call after an \indexmpishow{MPI_Irecv}.
 \begin{lstlisting}
 MPI_Recv(recv_buffer+p,1,MPI_INT, MPI_ANY_SOURCE,0,comm,
          &status);
@@ -247,7 +249,7 @@ can be found as
 \begin{lstlisting}
 MPI_Get_count(&recv_status,MPI_INT,&recv_count);
 \end{lstlisting}
-This may be necessary since the \n{count} argument to \lstinline$MPI_Recv$ is 
+This may be necessary since the \n{count} argument to \indexmpishow{MPI_Recv} is 
 the buffer size, not an indication of the actually expected number of
 data items.
 
@@ -305,20 +307,20 @@ such as \indexmpishow{MPI_Ssend}.
 \label{sec:persistent}
 \index{communication!persistent|(textbf}
 
-An \lstinline$MPI_Isend$ or \lstinline$MPI_Irecv$ call has an \indexmpishow{MPI_Request} parameter.
-This
-is an object that gets created in the send/recv call, and deleted in
-the wait call. You can imagine that this carries some overhead, and if
-the same communication is repeated many times you may want to avoid
-this overhead by reusing the request object.
+An \indexmpishow{MPI_Isend} or \indexmpishow{MPI_Irecv} call has an
+\indexmpishow{MPI_Request} parameter.  This is an object that gets
+created in the send/recv call, and deleted in the wait call. You can
+imagine that this carries some overhead, and if the same communication
+is repeated many times you may want to avoid this overhead by reusing
+the request object.
 
 To do this, MPI has \emph{persistent communication}:
 \index{persistent communication|see{communication, persistent}}
 \begin{itemize}
 \item You describe the communication with
   \indexmpishow{MPI_Send_init}, which has the same calling sequence as
-  \lstinline$MPI_Isend$, or \indexmpishow{MPI_Recv_init}, which has the same
-  calling sequence as \lstinline$MPI_Irecv$.
+  \indexmpishow{MPI_Isend}, or \indexmpishow{MPI_Recv_init}, which has the same
+  calling sequence as \indexmpishow{MPI_Irecv}.
 \item The actual communication is performed by calling
   \indexmpishow{MPI_Start}, for a single request, or
   \indexmpishow{MPI_Startall} for an array or requests.
@@ -347,11 +349,13 @@ multiple requests, given in an array.
 %
 \mpiRoutineRef{MPI_Startall}
 %
-These are equivalent to starting an \lstinline$MPI_Isend$ or \lstinline$MPI_Isend$; correspondingly, 
-it is necessary to issue an \lstinline$MPI_Wait...$ call (section~\ref{sec:nonblocking})
-to determine their completion.
+These are equivalent to starting an \indexmpishow{MPI_Isend} or
+\indexmpishow{MPI_Isend}; correspondingly, it is necessary to issue an
+\indexmpishow{MPI_Wait...} call (section~\ref{sec:nonblocking}) to
+determine their completion.
 
-After a request object has been used, possibly multiple times, it can be freed; see~\ref{ref:mpirequest}.
+After a request object has been used, possibly multiple times, it can
+be freed; see~\ref{ref:mpirequest}.
 
 In the following example a ping-pong is implemented with persistent communication.
 \cverbatimsnippet[examples/mpi/c/persist.c]{persist}
@@ -376,7 +380,8 @@ As with ordinary send commands, there are the variants
 
 By now you have probably got the notion that managing buffer
 space in MPI is important: data has to be somewhere, either in
-user-allocated arrays or in system buffers. Buffered sends are yet another
+user-allocated arrays or in system buffers. Using
+\indextermsubdef{buffered}{communication} is yet another
 way of managing buffer space.
 \begin{enumerate}
 \item You allocate your own buffer space, and you attach it to your
@@ -412,7 +417,7 @@ see section~\ref{sec:pack}.
 
 The possible error codes are
 \begin{itemize}
-\item \lstinline$MPI_SUCCESS$ the routine completed successfully.
+\item \indexmpishow{MPI_SUCCESS} the routine completed successfully.
 \item \indexmpishow{MPI_ERR_BUFFER} The buffer pointer is invalid;
   this typically means that you have supplied a null pointer.
 \item \indexmpishow{MPI_ERR_INTERN} An internal error in MPI has been detected.
@@ -442,14 +447,14 @@ sends (section~\ref{sec:persistent}).
 
 \mpiRoutineRef{MPI_Bsend_init}
 
-\Level 1 {About \texttt{MPI\_Request}}
+\Level 1 {More about requests}
 \label{ref:mpirequest}
 
 An \indexmpishow{MPI_Request} object is not actually an object,
-unlike \lstinline$MPI_STATUS$. Instead it is an (opaque) pointer.
-This meeans that when you call, for instance, \lstinline$MPI_Irecv$,
+unlike \indexmpishow{MPI_STATUS}. Instead it is an (opaque) pointer.
+This meeans that when you call, for instance, \indexmpishow{MPI_Irecv},
 MPI will allocate an actual request object, and return its
-address in the \lstinline$MPI_Request$ variable.
+address in the \indexmpishow{MPI_Request} variable.
 
 Correspondingly, calls to \indexmpishow{MPI_Wait...} or \indexmpishow{MPI_Test}
 free this object.

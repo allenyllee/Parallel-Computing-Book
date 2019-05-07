@@ -49,3 +49,6 @@ else
   F_COMPILER = ${F_COMPILER_${TACC_FAMILY_COMPILER}}
   MPI_F_COMPILER = mpif90
 endif
+
+clean ::
+	@/bin/rm -rf *~ MULTI*

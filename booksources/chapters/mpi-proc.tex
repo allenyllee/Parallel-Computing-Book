@@ -26,7 +26,7 @@ routines, even though the earlier \indexterm{PVM} project did have
 that functionality. Process management was later added with MPI-2.
 
 Unlike what you might think, newly added processes do not become part
-of \lstinline$MPI_COMM_WORLD$; rather, they get their own communicator, and an
+of \indexmpishow{MPI_COMM_WORLD}; rather, they get their own communicator, and an
 \indexterm{intercommunicator} is established between this new group
 and the existing one. The first routine is
 \indexmpishow{MPI_Comm_spawn}, which tries to fire up multiple copies
@@ -71,7 +71,7 @@ its own initialization and finalize calls.
 %
 \pverbatimsnippet{spawnworkerp}
 
-Spawned processes wind up with a value of \lstinline$MPI_COMM_WORLD$ of their
+Spawned processes wind up with a value of \indexmpishow{MPI_COMM_WORLD} of their
 own, but managers and workers can find each other regardless.
 The spawn routine returns the intercommunicator to the parent; the children
 can find it through \indexmpishow{MPI_Comm_get_parent}. The number of

@@ -4,7 +4,7 @@
  **** `Parallel programming with MPI and OpenMP'
  **** by Victor Eijkhout, eijkhout@tacc.utexas.edu
  ****
- **** copyright Victor Eijkhout 2012-7
+ **** copyright Victor Eijkhout 2012-9
  ****
  **** MPI Exercise for Isend/Irecv
  ****
@@ -63,17 +63,17 @@ int main() {
   if (procno==0 || procno==nprocs-1) {
     if (mydata!=2) {
       proctext << "Data on proc " << procno << " should be 2, not " << mydata << endl;
-      cout << proctext.str();
+      cerr << proctext.str(); proctext.clear();
     }
   } else {
     if (mydata!=3) {
       proctext << "Data on proc " << procno << " should be 3, not " << mydata << endl;
-      cout << proctext.str();
+      cerr << proctext.str(); proctext.clear();
     }
   }
   if (procno==0) {
     proctext << "Finished" << endl;
-    cout << proctext.str();
+    cerr << proctext.str(); proctext.clear();
   }
 
   MPI_Finalize();

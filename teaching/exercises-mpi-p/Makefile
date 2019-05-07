@@ -23,7 +23,6 @@ EXERCISES = \
     randomput countdown onesidedbuild \
     procgrid blockwrite viewwrite
 
-include ../course-support/Make.course
 include ../course-support/Make.inc
 
 info ::

@@ -36,7 +36,7 @@ int main() {
     if (procs_per_side*procs_per_side*procs_per_side>nprocs) {
       if (procno==0) {
 	proctext << "Number of processes needs to be a cube" << endl;
-	cout << proctext.str();
+	cerr << proctext.str(); proctext.clear();
       }
       MPI_Abort(comm,0);
     }
@@ -85,7 +85,7 @@ int main() {
     for (int p=0; p<nprocs; p++)
       proctext << " " << cubedata[p];
     proctext << endl;
-    cout << proctext.str();
+    cerr << proctext.str(); proctext.clear();
   }
   MPI_Wait(&send_request,MPI_STATUS_IGNORE);
   

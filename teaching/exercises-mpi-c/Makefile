@@ -20,13 +20,13 @@ EXERCISES = hello \
     commrank prime randommax pingpong sendrecv \
     isendirecv isendirecvarray sumsquares \
     bucketblock bucketnonblock bucketpipe bucketpipenonblock \
-    stridesend cubegather procgrid \
+    stridesend cubegather procgrid procgridnonblock \
     randomput countdown onesidedbuild \
     blockwrite viewwrite scatterwrite \
     jordan rightsend rightput rightgraph \
-    ibarrierupdate
+    ibarrierupdate shareddata
 info ::
-	@echo "    [ OPTS=... ] (for instance: OPTS=-\"DN 100\")"
+	@echo "    [ OPTS=... ] (for instance: OPTS=\"-DN 100\")"
 	@echo "    support options:"
 	@echo "      bucketblock : N"
 
@@ -37,7 +37,6 @@ ${EXERCISES} : $$@.c
 	  ${CFLAGS} ${OPTS} \
 	  -o $@ $^
 
-include ../course-support/Make.course
 include ../course-support/Make.simgrid
 ifdef TACC_TAU_DIR
 include ../course-support/Make.tau
