@@ -21,7 +21,7 @@ EXERCISES = hello \
     rightsend bucketblock \
     isendirecv isendirecvarray \
     cubegather procgrid \
-    randomput countdown onesidedbuild \
+    rightput randomput countdown onesidedbuild \
     blockwrite
 OTHERPROGRAMS = write
 

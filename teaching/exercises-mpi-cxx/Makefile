@@ -20,7 +20,7 @@ EXERCISES = hello \
     commrank prime randommax jordan pingpong sendrecv stridesend \
     rightsend bucketblock bucketpipe bucketpipenonblock \
     isendirecv isendirecvarray procgrid procgridnonblock \
-    randomput onesidedbuild countdown \
+    rightput randomput onesidedbuild countdown \
     blockwrite scatterwrite cubegather \
     ibarrierupdate
 info ::

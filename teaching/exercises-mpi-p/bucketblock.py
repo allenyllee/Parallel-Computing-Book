@@ -48,11 +48,15 @@ else: recvfrom = MPI.PROC_NULL
 
 p1 = procno+1.
 my_sum_of_squares = p1*p1*p1/3 + p1*p1/2 + p1/6
+max_of_errors = math.max \
+    ( [ math.abs( (my_sum_of_squares-myvalue[i])/myvalue[i]) for i in range(N) ] )
+
 error = np.zeros(1,dtype=np.int)
-error[0] = nprocs
+if max_of_errors>1.e-12:
+    error[0] = procno
+else:
+    error[0] = nprocs
 errors = np.zeros(1,dtype=np.int)
-if abs( (my_sum_of_squares-mydata[N-1])/mydata[N-1] ) > 1.e-12:
-    error = procno
 comm.Allreduce(error,errors,MPI.MIN)
 if procno==0:
     if errors==nprocs:

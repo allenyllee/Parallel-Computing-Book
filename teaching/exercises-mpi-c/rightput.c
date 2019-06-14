@@ -42,11 +42,12 @@ int main(int argc,char **argv) {
     ;
 
   MPI_Win the_window;
-  MPI_Win_create(&window_data,sizeof(double),sizeof(double),MPI_INFO_NULL,
-		 comm,&the_window);
+  MPI_Win_create(
+/**** your code here ****/
+		 MPI_INFO_NULL, comm,&the_window);
 
   // Exercise:
-  // -- now do the send and receive calls
+  // -- now do the Put call
   MPI_Win_fence(0,the_window);
 /**** your code here ****/
   MPI_Win_fence(0,the_window);

@@ -47,10 +47,11 @@ In particular, the \indexmpishow{MPI_Op} need not be called on these two
 processors.
 
 \begin{exercise}
-  The exclusive definition, which computes
-  $x_0\oplus x_{i-1}$ on processor~$i$, can easily be derived
-  from the inclusive operation for operations such as \indexmpishow{MPI_PLUS} or \indexmpishow{MPI_MULT}.
-  Are there operators where that is not the case?
+  The exclusive definition, which computes $x_0\oplus x_{i-1}$ on
+  processor~$i$, can easily be derived from the inclusive operation
+  for operations such as \indexmpishow{MPI_SUM} or
+  \indexmpishow{MPI_MULT}.  Are there operators where that is not the
+  case?
 \end{exercise}
 
 \Level 1 {Use of scan operations}

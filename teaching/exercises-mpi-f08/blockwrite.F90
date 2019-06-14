@@ -5,7 +5,7 @@
 !**** `Parallel programming with MPI and OpenMP'
 !**** by Victor Eijkhout, eijkhout@tacc.utexas.edu
 !****
-!**** copyright Victor Eijkhout 2012-8
+!**** copyright Victor Eijkhout 2012-9
 !****
 !**** MPI Exercise for I/O
 !**** fortran 2008 version
@@ -25,7 +25,7 @@ Program BlockWrite
   integer :: sizeofint=4, mpiunit=11
   integer,allocatable,dimension(:) :: output_data
   type(MPI_File) :: mpifile
-  integer(kind=MPI_OFFSET_KIND) offset
+  integer(kind=MPI_OFFSET_KIND) :: offset
   integer :: error,errors
 
   call MPI_Init(ierr)

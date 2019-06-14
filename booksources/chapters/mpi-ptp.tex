@@ -150,8 +150,9 @@ enough for any data sent. In case you really have no idea how much data
 is being sent, and you don't want to overallocate the receive buffer,
 you can use a `probe' call.
 
-The calls \indexmpishow{MPI_Probe}, \indexmpishow{MPI_Iprobe}, accept a message,
-but do not copy the data. Instead, when probing tells you that there is a
+The routine \indexmpishow{MPI_Probe} (and \indexmpishow{MPI_Iprobe},
+for which see section~\ref{sec:progress}), accepts a message,
+but does not copy the data. Instead, when probing tells you that there is a
 message, you can use \indexmpishow{MPI_Get_count} to determine its size,
 allocate a large enough receive buffer, and do a regular receive to
 have the data copied.

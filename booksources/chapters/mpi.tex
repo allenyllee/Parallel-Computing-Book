@@ -706,7 +706,14 @@ can determine whether a thread is the main thread:
 %
 \mpiRoutineRef{MPI_Is_thread_main}
 
-\Level 0 {Shell scripting cuteness}
+\Level 0 {Shell interaction}
+
+MPI programs are not run directly from the shell, but are started
+through an \indextermsub{ssh}{tunnel}. We briefly discuss
+ramifications of this.
+
+\Level 1 {Standard input}
+\label{sec:mpi-stdin}
 
 Letting MPI processes interact with the environment is not entirely
 straightforward.
@@ -729,7 +736,39 @@ and run this in parallel:
 mpirun -np 2 programscript someinput
 \end{verbatim}
 
-This sort of script can also be used to implement \indexac{MPMD} runs:
+\Level 1 {Standard out and error}
+
+The \indexterm{stdout} and \indexterm{stderr} streams of an MPI
+process are returned through the ssh tunnel. Thus they can be caught
+as the \indexterm{stdout/err of}{mpirun}.
+
+\verbatimsnippet{mpiouterr}
+
+\Level 1 {Process status}
+
+The return code of \indexmpishow{MPI_Abort} is returned as the
+\indexterm{processes status of}{mpirun}.
+Running
+\verbatimsnippet{mpiabort37}
+as
+\begin{verbatim}
+mpirun -np 4 ./abort ; \
+echo "Return code from ${MPIRUN} is <<$$?>>"
+\end{verbatim}
+gives
+\begin{verbatim}
+TACC:  Starting up job 3760534
+TACC:  Starting parallel tasks...
+application called MPI_Abort(MPI_COMM_WORLD, 37) - process 3
+TACC:  MPI job exited with code: 37
+TACC:  Shutdown complete. Exiting.
+Return code from ibrun is <<37>>
+\end{verbatim}
+
+\Level 1 {Multiple program start}
+
+The sort of script of section~\ref{sec:mpi-stdin}
+can also be used to implement \indexac{MPMD} runs:
 we let the script start one of a number of programs. For this, we use
 the fact that the MPI rank is known in the environment as
 \indextermtt{PMI_RANK}. Use a script \n{mpmdscript}:

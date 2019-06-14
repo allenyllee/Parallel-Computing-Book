@@ -3,7 +3,7 @@
    %%%%
    %%%% This program file is part of the book and course
    %%%% "Parallel Computing"
-   %%%% by Victor Eijkhout, copyright 2013-7
+   %%%% by Victor Eijkhout, copyright 2013-9
    %%%%
    %%%% blockwrite.c : MPI IO example
    %%%%
@@ -78,9 +78,10 @@ int main(int argc,char **argv) {
 	  error = procno;
 	  printf("Premature end of file\n"); break;
 	}
-	if (fromfile!=location+1)
+	if (fromfile!=location+1) {
 	  error = procno;
 	  printf("Error %d:%d\n",location,fromfile);
+	}
 	location++;
       }
     }

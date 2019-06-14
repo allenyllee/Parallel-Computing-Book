@@ -369,7 +369,7 @@ of the outer loop. That is, the two loops in
 for (i=0; i<N; i++) {
   y[i] = 0.;
   for (j=0; j<N; j++)
-    y[i] + A[i][j] * x[j]
+    y[i] += A[i][j] * x[j]
   }
 \end{verbatim}
 can not be collapsed.

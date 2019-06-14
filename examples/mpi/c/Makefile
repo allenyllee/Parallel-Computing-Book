@@ -3,7 +3,7 @@
 ####
 #### This makefile is part of the source of 
 #### "Parallel Computing for Science and Engineering"
-#### by Victor Eijkhout, copyright 2013-8
+#### by Victor Eijkhout, copyright 2013-9
 ####
 #### This is the makefile for the C examples
 ####     in examples/mpi/c
@@ -16,7 +16,7 @@ MAKEFLAGS += --no-builtin-rules
 info ::
 	@echo "Do: make app (where app=${APPS})"
 
-APPS = init thread env \
+APPS = init thread env outerr abort \
     recvblock sendblock ssendblock sendrecv irecv_source irecvnonblock \
     probe ibarrier backintime reductpositive \
     putfence putfencealloc getfence anysource onesidedbuild onsidedmap \
@@ -25,7 +25,7 @@ APPS = init thread env \
     reduce reduceinplace allreduce allreduceinplace gather gatherv allgatherv \
     reducescatter trueextent \
     contiguous vector interleave indexed struct pack subarray \
-    commdup_wrong commdup_right commsplit commsplittype \
+    commdup_wrong commdup_right commsplit commsplittype intercomm \
     sharedshared \
     cart graph persist \
     spawn_manager spawn_worker \
@@ -179,6 +179,11 @@ run_backintime : backintime
 	for i in `seq 1 150` ; do \
 	  mpirun -np 3 ./backintime ; \
 	done | grep back
+
+.PHONY: run_abort
+run_abort : abort
+	-@${MPIRUN} -np ${NP} ./abort ; \
+	  echo "Return code from ${MPIRUN} is <<$$?>>"
 
 include ../../Make.inc
 clean ::

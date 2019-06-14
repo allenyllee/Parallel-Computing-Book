@@ -19,7 +19,7 @@ EXERCISES = hello \
     commrank prime randommax jordan \
     pingpong sendrecv sumsquares \
     rightsend rightput rightgraph \
-    bucketblock \
+    bucketblock bucketpipenonblock \
     isendirecv isendirecvarray status \
     stridesend cubegather procgrid \
     randomput onesidedbuild countdown \
