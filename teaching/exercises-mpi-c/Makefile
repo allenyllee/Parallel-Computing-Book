@@ -17,7 +17,8 @@ MODE = mpi
 info ::
 	@echo "make EXERCISE (where EXERCISE=${EXERCISES})"
 EXERCISES = hello \
-    commrank prime randommax pingpong sendrecv \
+    commrank prime randommax onenorm \
+    pingpong sendrecv \
     isendirecv isendirecvarray sumsquares \
     bucketblock bucketnonblock bucketpipe bucketpipenonblock \
     stridesend cubegather procgrid procgridnonblock \
