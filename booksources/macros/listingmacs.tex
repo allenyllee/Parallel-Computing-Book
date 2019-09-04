@@ -12,42 +12,42 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \usepackage{listings,xcolor}
+
 \lstdefinestyle{reviewcode}{
-  belowcaptionskip=1\baselineskip,
-  breaklines=true,
-  frame=L,
-  xleftmargin=\unitindent,
-  showstringspaces=false,
+  belowcaptionskip=1\baselineskip, breaklines=true, frame=L,
+  xleftmargin=\unitindent, showstringspaces=false,
   basicstyle=\footnotesize\ttfamily,
   keywordstyle=\bfseries\color{blue},
   commentstyle=\color{red!60!black},
   identifierstyle=\slshape\color{black},
-  stringstyle=\color{green!60!black},
-  columns=fullflexible,
-  keepspaces=true,
-}
+  stringstyle=\color{green!60!black}, columns=fullflexible,
+  keepspaces=true, }
+
 \lstset{style=reviewcode}
-\lstset{emph={ %% commands
-    MPI_Init,MPI_Finalize,MPI_Abort,MPI_Get_processor_name,
+
+\lstset{emph={ %%
+    commands MPI_Init,MPI_Finalize,MPI_Abort,MPI_Get_processor_name,
     MPI_Init_thread,MPI_Query_thread,MPI_Is_thread_main,
+    % comm stuff
     MPI_Comm_size,MPI_Comm_rank,
     MPI_Comm_dup,MPI_Comm_dup_with_info,MPI_Comm_split,MPI_Comm_split_type,
-    MPI_Comm_spawn,MPI_Comm_spawn_multiple,MPI_Comm_remote_size,MPI_Comm_get_parent,
-    MPI_Intercomm_create,
+    MPI_Comm_remote_size,MPI_Comm_get_parent,
     MPI_Comm_connect,MPI_Comm_disconnect,MPI_Comm_accept,
     MPI_Comm_group,MPI_Comm_create,MPI_Comm_create_group,
     MPI_Comm_join,MPI_Comm_free,MPI_Comm_set_name,
+    MPI_Comm_compare,MPI_Comm_get_info,MPI_Comm_set_info,
+    MPI_Intercomm_create,MPI_Intercomm_merge,
+    MPI_Comm_create_errhandler,MPI_Comm_set_errhandler,MPI_Comm_get_errhandler,
     MPI_Group_size,MPI_Group_rank,MPI_Group_incl,MPI_Group_excl,
     MPI_Group_union,MPI_Group_intersection,MPI_Group_difference,
-    MPI_Comm_create_errhandler,MPI_Comm_set_errhandler,MPI_Comm_get_errhandler,
-    MPI_Comm_get_info,MPI_Comm_set_info,
+    % collectives
     MPI_Allreduce,MPI_Reduce,MPI_Reduce_local,MPI_Bcast,
     MPI_Gather,MPI_Scatter,MPI_Scatterv,MPI_Gatherv,MPI_All...,MPI_...v,
     MPI_Allgather,MPI_Allgatherv,MPI_Alltoall,MPI_Alltoallv,MPI_Reduce_scatter,
     MPI_Scan,MPI_Exscan,
     MPI_Iallreduce,MPI_Ibcast,MPI_Ibarrier,MPI_Isomething,
     MPI_Barrier,
-    MPI_Op_create,MPI_Op_free,MPI_Op_commutative,
+    % p2p
     MPI_Send,MPI_Isend,MPI_Rsend,MPI_Irsend,MPI_Ssend,MPI_Issend,MPI_Bsend,MPI_Ibsend,
     MPI_Recv,MPI_Irecv,MPI_Sendrecv,MPI_Mrecv,
     MPI_Send_init,MPI_Recv_init,MPI_Start_all,
@@ -56,15 +56,20 @@
     MPI_Request_free,MPI_Request_get_status,
     MPI_Get_count,MPI_Get_elements_x,
     MPI_Buffer_attach,MPI_Buffer_detach,
+    % operator
+    MPI_Op_create,MPI_Op_free,MPI_Op_commutative,
+    % type
     MPI_Type_commit,MPI_Type_free,MPI_Type_contiguous,MPI_Type_vector,MPI_Type_xxx,
     MPI_Type_indexed,MPI_Type_hindexed,MPI_Type_create_hindexed,MPI_Type_create_subarray,
     MPI_Type_struct,MPI_Type_create_struct,
     MPI_Type_create_f90_integer,MPI_Type_create_f90_real,MPI_Type_create_f90_complex,
     MPI_Type_size,MPI_Type_extent,MPI_Type_get_extent,MPI_Type_get_true_extent,
     MPI_Pack,MPI_Unpack,
+    % I/O
     MPI_File_open,MPI_File_close,MPI_File_set_view,MPI_File_get_view,
     MPI_File_write,MPI_File_write_all,MPI_File_write_ordered,MPI_File_write_shared,MPI_File_write_at,
     MPI_File_delete,MPI_File_set_size,MPI_File_get_size,
+    % one-sided
     MPI_Win_create,MPI_Win_create_dynamic,MPI_Win_allocate,MPI_Win_allocate_shared,
     MPI_Win_set_info,MPI_Win_get_info,MPI_Win_get_attr,
     MPI_Free_mem,MPI_Win_shared_query,MPI_Win_get_group,
@@ -73,25 +78,32 @@
     MPI_Win_flush,MPI_Win_flush_all,MPI_Win_flush_local,MPI_Win_flush_local_all,MPI_Win_sync,
     MPI_Win_post,MPI_Win_start,MPI_Win_wait,MPI_Win_complete,
     MPI_Put,MPI_Get,MPI_Accumulate,MPI_Get_accumulate,MPI_Fetch_and_op,MPI_Compare_and_swap,
+    % topology
     MPI_Topo_test,MPI_Cart_create,MPI_Cart_coords,MPI_Cart_rank,MPI_Cart_shift,
     MPI_Dist_graph_create_adjacent,MPI_Dist_graph_create,
     MPI_Dist_graph_neighbors,MPI_Dist_graph_neighbors_count,
     MPI_Neighbor_...,MPI_Neighbor_allgather,MPI_Neighbor_allgatherv,
     MPI_Neighbor_alltoall,MPI_Neighbor_alltoallv,MPI_Neighbor_alltoallw,
+    % process
+    MPI_Comm_spawn,MPI_Comm_spawn_multiple,
     MPI_Open_port,MPI_Close_port,MPI_Publish_name,MPI_Unpublish_name,
     MPI_Get_version,MPI_Wtime,MPI_Wtick,
     MPI_Attr_get,MPI_Error_string,MPI_Sizeof,
-  },emphstyle={\color{red!70!black}\bfseries},
-  emph={[2] %% constants
+    MPI_T_init_thread,MPI_T_pvar_get_num,
+    %% OMP
+    omp_set_num_threads,omp_get_num_threads,omp_get_max_threads,omp_get_thread_num,
+    omp_get_num_procs,omp_in_parallel,omp_set_dynamic,omp_get_dynamic,omp_set_nested,
+    omp_get_nested,omp_get_wtime,omp_get_wtick,omp_set_schedule,omp_get_schedule,
+    omp_set_max_active_levels,omp_get_max_active_levels,omp_get_thread_limit,
+    omp_get_level,omp_get_active_level,omp_get_ancestor_thread_num,omp_get_team_size,
+  },emphstyle={\color{red!70!black}\bfseries}, emph={[2] %% constants
     MPI_VERSION,MPI_SUBVERSION,
     MPI_THREAD_SINGLE,MPI_THREAD_FUNNELED,MPI_THREAD_SERIALIZED,MPI_THREAD_MULTIPLE,
     MPI_ARGV_NULL,MPI_COMM_NULL,MPI_DATATYPE_NULL,MPI_INFO_NULL,MPI_INFO_ENV,
     MPI_OP_NULL,MPI_PROC_NULL,MPI_REQUEST_NULL,
     MPI_ERROR,MPI_ERRORS_ARE_FATAL,MPI_ERRORS_RETURN,MPI_SUCCESS,
-    MPI_MAX_PROCESSOR_NAME,MPI_MAX_PORT_NAME,
-    MPI_MAX_ERROR_STRING,
-    MPI_WTIME_IS_GLOBAL,
-    MPI_IN_PLACE,MPI_REPLACE,
+    MPI_MAX_PROCESSOR_NAME,MPI_MAX_PORT_NAME, MPI_MAX_ERROR_STRING,
+    MPI_WTIME_IS_GLOBAL, MPI_IN_PLACE,MPI_REPLACE,
     MPI_STATUS_IGNORE,MPI_STATUSES_IGNORE,MPI_ERRCODES_IGNORE,
     MPI_ERR_ARG,MPI_ERR_BUFFER,MPI_ERR_INTERN,MPI_ERR_INFO,MPI_ERR_OTHER,
     MPI_ERR_PORT,MPI_ERR_SERVICE,MPI_ERR_COMM,
@@ -102,24 +114,28 @@
     MPI_LAND,MPI_LOR,MPI_LXOR,MPI_BAND,MPI_BOR,MPI_BXOR,
     MPI_SHORT,MPI_UNSIGNED_SHORT,MPI_UNSIGNED,MPI_LONG,MPI_UNSIGNED_LONG,
     MPI_INT,MPI_INTEGER,MPI_FLOAT,MPI_DOUBLE,MPI_LONG_DOUBLE,
-    MPI_REAL,MPI_DOUBLE_PRECISION, MPI_REAL2,MPI_REAL4,MPI_REAL8,MPI_REAL16,
+    MPI_REAL,MPI_DOUBLE_PRECISION,
+    MPI_REAL2,MPI_REAL4,MPI_REAL8,MPI_REAL16,
     MPI_COMPLEX,MPI_DOUBLE_COMPLEX,MPI_LOGICAL,
     MPI_ADDRESS_KIND,MPI_CHAR,MPI_CHARACTER,MPI_SIGNED_CHAR,MPI_UNSIGNED_CHAR,
-    MPI_BYTE,MPI_PACKED,
-    MPI_MODE_CREATE,MPI_MODE_WRONLY,
+    MPI_BYTE,MPI_PACKED, MPI_MODE_CREATE,MPI_MODE_WRONLY,
     MPI_MODE_NOPUT,MPI_MODE_NOPRECEDE,MPI_MODE_NOSUCCEED,MPI_MODE_NOSTORE,
-    MPI_MODE_NOCHECK,
-    MPI_LOCK_EXCLUSIVE,MPI_LOCK_SHARED,
+    MPI_MODE_NOCHECK, MPI_LOCK_EXCLUSIVE,MPI_LOCK_SHARED,
     MPI_UB,MPI_BOTTOM,MPI_BSEND_OVERHEAD,MPI_DISPLACEMENT_CURRENT,
     MPI_UNDEFINED,MPI_CART,MPI_GRAPH,MPI_DIST_GRAPH,
     MPI_UNWEIGHTED,MPI_ORDER_C,MPI_ORDER_FORTRAN,
     MPI_WIN_BASE,MPI_WIN_SIZE,MPI_WIN_DISP_UNIT,
     MPI_WIN_CREATE_FLAVOR,MPI_WIN_FLAVOR_CREATE,MPI_WIN_FLAVOR_ALLOCATE,MPI_WIN_FLAVOR_DYNAMIC,MPI_WIN_FLAVOR_SHARED,
     MPI_WIN_MODEL,MPI_WIN_SEPARATE,MPI_WIN_UNIFIED,
-  },emphstyle={[2]\color{green!40!black}},
-  emph={[3] %% types
+    %% OMP environment variables
+    OMP_CANCELLATION,OMP_DISPLAY_ENV,OMP_DEFAULT_DEVICE,OMP_DYNAMIC,OMP_MAX_ACTIVE_LEVELS,
+    OMP_MAX_TASK_PRIORITY,OMP_NESTED,OMP_NUM_THREADS,OMP_PROC_BIND,OMP_PLACES,OMP_STACKSIZE,
+    OMP_SCHEDULE,OMP_THREAD_LIMIT,OMP_WAIT_POLICY,
+  },emphstyle={[2]\color{green!40!black}}, emph={[3] %% types
     MPI_Aint,MPI_Comm,MPI_Count,MPI_Datatype,MPI_Errhandler,MPI_File,MPI_Group,
     MPI_Info,MPI_Message,MPI_Offset,MPI_Op,MPI_Request,MPI_Status,
     MPI_User_function,MPI_Win,
+    %% OMP directives
+    for,sections,single,task,workshare,
   },emphstyle={[3]\color{brown}\bfseries}
 }

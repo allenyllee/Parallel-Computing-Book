@@ -17,9 +17,9 @@ MODE = mpi
 info ::
 	@echo "make EXERCISE (where EXERCISE=${EXERCISES})"
 EXERCISES = hello \
-    commrank prime randommax onenorm \
+    commrank prime randommax onenorm sumsquares \
     pingpong sendrecv \
-    isendirecv isendirecvarray sumsquares \
+    isendirecv isendirecvarray \
     bucketblock bucketnonblock bucketpipe bucketpipenonblock \
     stridesend cubegather procgrid procgridnonblock \
     randomput countdown onesidedbuild \
@@ -31,6 +31,7 @@ info ::
 	@echo "    support options:"
 	@echo "      bucketblock : N"
 
+include ../course-support/Make.inc
 .SECONDEXPANSION:
 OPTS = 
 ${EXERCISES} : $$@.c
@@ -42,10 +43,10 @@ include ../course-support/Make.simgrid
 ifdef TACC_TAU_DIR
 include ../course-support/Make.tau
 endif
-include ../course-support/Make.inc
 
 ####
 #### Regression tests
 ####
 
+include ../course-support/Make.mpi_run
 include ../course-support/Make.mpi_regress

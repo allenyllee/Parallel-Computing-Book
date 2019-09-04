@@ -507,21 +507,18 @@ send-receive call\footnote {There is an \n{MPI\_Compare\_and\_swap}
 \end{exercise}
 
 \Level 1 {Message status}
-\label{sec:mpi-status}
 \index{message!status|(}
 
 In section~\ref{sec:mpi-send-recv}
-you saw that \indexmpishow{MPI_Receive} has a `status' argument
-of type \indexmpishow{MPI_STATUS} that \indexmpishow{MPI_Send} lacks.
-%
-\mpiRoutineRef{MPI_Status}
-%
+you saw that \indexmpishow{MPI_Recv} has a `status' argument
+of type \indexmpishow{MPI_Status} that \indexmpishow{MPI_Send} lacks.
 (The various \indexmpishow{MPI_Wait...}  routines also have a status
-argument; see section~\ref{sec:nonblocking}.) The reason for this
-argument is
-as follows.
+argument; see section~\ref{sec:nonblocking}.)
+Often you specify \indexmpishow{MPI_STATUS_IGNORE}
+for this argument: commonly you know
+what data is coming in and where it is coming from.
 
-In some circumstances the recipient may not know all details of a
+However, in some circumstances the recipient may not know all details of a
 message when you make the receive call, so MPI has a way of querying
 the \emph{status}\index{status!of received message} of the message:
 \begin{itemize}
@@ -538,15 +535,6 @@ the \emph{status}\index{status!of received message} of the message:
   `probe' an incoming message and allocate enough data when you find
   out how much data is being sent.
 \end{itemize}
-
-If you 
-precisely know what is going to be sent, the status argument tells you 
-nothing new. Therefore, there is a special value \indexmpishow{MPI_STATUS_IGNORE}
-that you can supply instead of a status object, which tells MPI that the 
-status does not have to be reported. For routines such as \indexmpishow{MPI_Waitany}
-where an array of statuses is needed, you can supply \indexmpishow{MPI_STATUSES_IGNORE}.
-
-This subject is further discussed in section~\ref{sec:mpi-wildcard}.
 
 \index{message!status|)}
 

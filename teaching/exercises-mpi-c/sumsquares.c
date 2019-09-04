@@ -33,7 +33,7 @@ int main(int argc,char **argv) {
   if (procno==0) {
     if (argc>1)
       nlocal = atoi(argv[1]);
-    else nlocal = 10000;
+    else nlocal = 1000;
   }
   MPI_Bcast(&nlocal,1,MPI_INTEGER,0,comm);
   nglobal = nprocs*nlocal;
@@ -63,9 +63,11 @@ int main(int argc,char **argv) {
 	     /* operator: */
 /**** your code here ****/
 	     0,comm);
-  if (procno==0)
+  if (procno==0) {
+    double fglobal = nglobal;
     printf("Global sum: %e, should be %e\n",
-	   global_sum,(2.*nglobal*nglobal*nglobal + 3.*nglobal*nglobal + nglobal)/6.);
+	   global_sum,fglobal*fglobal*fglobal/3. + fglobal*fglobal/2. + fglobal/6.);
+  }
 
   MPI_Finalize();
   return 0;

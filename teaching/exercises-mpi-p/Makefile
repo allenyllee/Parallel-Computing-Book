@@ -51,6 +51,7 @@ PROGRAM_EXTENSION = .py
 ####
 .PHONY: ${EXERCISES} 
 
+include ../course-support/Make.mpi_run
 include ../course-support/Make.mpi_regress
 CATCHER = ../course-support/catchout -p ${PYTHON}
 

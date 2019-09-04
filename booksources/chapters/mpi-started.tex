@@ -189,16 +189,18 @@ effort at idiomatic C++ support is \indexterm{MPL}
 \index{Fortran2008!MPI bindings|see{MPI, Fortran2008 bindings}}
 \index{MPI!Fortran bindings|(}
 
-The \emph{Fortran bindings} for MPI look very much like the C~ones, except that
-each routine has a final \indexterm{error return} parameter.
-
 \begin{fortrannote}
   Fortran-specific notes will be indicated with a note like this.
 \end{fortrannote}
 
+Traditionally, \emph{Fortran bindings} for MPI look very much like the C~ones,
+except that each routine has a final \indexterm{error return}
+parameter.
+You will find that a lot of MPI code in Fortran conforms to this.
+
 \index{MPI!Fortran2008 bindings|(}
 %
-In the \emph{MPI~3}%
+However, in the \emph{MPI~3}%
 \index{MPI!3!Fortran2008 interface} standard it is recommended that
 an MPI implementation providing a Fortran interface provide a
 module named \indextermttdef{mpi_f08} that can be used in a Fortran program.
@@ -243,7 +245,7 @@ subroutine for this generic subroutine call [MPI_Send]
 \index{Python!MPI bindigs|see{MPI, Python bindings}}
 \index{MPI!Python bindings|(}
 
-The \indextermtt{mpi4py} package of \emph{python bindings}
+The \indextermtt{mpi4py} package~\cite{mpi4py:homepage} of \emph{python bindings}
 is not defined by the MPI
 standards committee. Instead, it is the work of an individual,
 \indextermsub{Lisandro}{Dalcin}.

@@ -20,13 +20,16 @@ OpenMP uses the concept of a \indexterm{work sharing
 construct}: a way of dividing parallelizable work over a team of threads.
 The work sharing constructs are:
 \begin{itemize}
-\item \texttt{for/do} The threads divide up the loop iterations among
+\item \texttt{for} (for~C) or
+  \texttt{do} (for Fortran). The threads divide up the loop iterations among
   themselves; see~\ref{sec:omp-for}.
 \item \texttt{sections} The threads divide a fixed number of sections
   between themselves; see section~\ref{sec:omp-sections}.
-\item \texttt{single} The section is executed by a single thread; section~\ref{sec:omp-single}.
+\item \texttt{single} The section is executed by a single thread;
+  section~\ref{sec:omp-single}.
 \item \texttt{task} See section~\ref{sec:omp:task}.
-\item \texttt{workshare} Can parallelize Fortran array syntax; section~\ref{sec:fortran-workshare}.
+\item \texttt{workshare} Can parallelize Fortran array syntax;
+  section~\ref{sec:fortran-workshare}.
 \end{itemize}
 
 \Level 0 {Sections}

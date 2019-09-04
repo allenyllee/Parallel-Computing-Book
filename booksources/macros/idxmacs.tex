@@ -18,7 +18,9 @@
 
 \newcommand{\indextermp}[1]{\emph{#1s}\index{#1}}
 \newcommand{\indextermsub}[2]{\emph{#1 #2}\index{#2!#1}}
+\newcommand{\indextermsubh}[2]{\emph{#1-#2}\index{#2!#1}}
 \newcommand{\indextermsubdef}[2]{\emph{#1 #2}\index{#2!#1|textbf}}
+\newcommand{\indextermsubdefh}[2]{\emph{#1-#2}\index{#2!#1|textbf}}
 \newcommand{\indextermsubp}[2]{\emph{#1 #2s}\index{#2!#1}}
 \newcommand{\indextermbus}[2]{\emph{#1 #2}\index{#1!#2}}
 \newcommand{\indextermbusdef}[2]{\emph{#1 #2}\index{#1!#2|textbf}}
@@ -139,7 +141,7 @@
 
 \def\omptoindex{%\tracingmacros=2
   \edef\tmp{%
-    \noexpand\n{\indexedomp}%
+    \noexpand\lstinline+\indexedomp+%
     \noexpand\index[omp]{\indexedomp@{\catcode95=12 \noexpand\texttt{\indexedomp}}}}%
   \tmp
   \egroup

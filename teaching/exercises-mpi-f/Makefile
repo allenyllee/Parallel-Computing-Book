@@ -20,9 +20,9 @@ EXERCISES = hello \
     pingpong sendrecv sumsquares \
     rightsend bucketblock \
     isendirecv isendirecvarray \
-    cubegather procgrid \
+    cubegather onenorm procgrid \
     rightput randomput countdown onesidedbuild \
-    blockwrite
+    blockwrite shareddata
 OTHERPROGRAMS = write
 
 FFLAGS = -O1
@@ -35,5 +35,6 @@ ${EXERCISES} : $$@.F90
 ####
 
 include ../course-support/Make.inc
+include ../course-support/Make.mpi_run
 include ../course-support/Make.mpi_regress
 run_hello : hello

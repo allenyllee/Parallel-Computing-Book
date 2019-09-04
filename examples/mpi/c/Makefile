@@ -127,51 +127,6 @@ tau :
 	  tau_treemerge.pl ; \
 	  tau2slog2 tau.trc tau.edf -o $$HOME/taulog$$TAU_EXT.slog2
 
-info ::
-	@echo "make regression : do regression test on all apps"
-init_args = 5
-noap = `make listapps`
-regression : total_clean
-	@for app in `make listapps` ; do \
-	  make $$app >/dev/null 2>&1 ; \
-	  if [ ! -e $$app ] ; then \
-	    echo "Application <<$$app>> failed to build" ; \
-	  fi ; \
-	done ; echo "Finished regression building"
-aprun :
-	  else \
-	    eval appargs=\"\\\$${$${app}_args}\" ; \
-	    echo $$appargs ; \
-	    if [ ! -z "$$appargs" ] ; then \
-	      eval mpirun -np 4 $$app $$appargs ; \
-	    fi ; \
-	foo
-info ::
-	@echo "make regress_run PROGRAM=..."
-PROGRAM = onesidedbuild
-NP = 4
-regress_run :
-	@mpirun -np ${NP} ./catchout ${PROGRAM}
-	@for c in `seq 0 $$(( ${NP} - 1 ))` ; do \
-	  echo "==== p: $$c ====" ; \
-	  cat ${PROGRAM}.out$$c ; \
-	done
-
-noregression :
-	-@export haserror=0 ; \
-	for p in ${APPS} ; do \
-	  make $$p >$$p.err 2>&1 ; \
-	  if [ ! -f $$p ] ; then \
-	    if [ $$haserror == "0" ] ; then export haserror=1 ; echo ; fi ; \
-	    echo "Regression failed compilation of $$p" ; \
-	    cat $$p.err ; echo ; \
-	  fi ; \
-	  rm -f $$p.err ; \
-	done ; \
-	if [ $$haserror == "0" ] ; then \
-	  echo "Regression succesfully concluded" ; \
-	fi
-
 .PHONY: run_backintime
 info ::
 	@echo "make run_backintime"
@@ -185,6 +140,11 @@ run_abort : abort
 	-@${MPIRUN} -np ${NP} ./abort ; \
 	  echo "Return code from ${MPIRUN} is <<$$?>>"
 
+MODE = mpi
 include ../../Make.inc
+include ../../../teaching/course-support/Make.mpi_run
+include ../../../teaching/course-support/Make.mpi_regress
+CATCHER = ../../../teaching/course-support/catchout
+
 clean ::
 	@rm -f *.dat *.out[0-9]*

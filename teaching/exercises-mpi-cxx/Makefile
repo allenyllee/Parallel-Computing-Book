@@ -17,12 +17,13 @@ MODE = mpi
 info ::
 	@echo "make EXERCISE (where EXERCISE=${EXERCISES})"
 EXERCISES = hello \
-    commrank prime randommax jordan pingpong sendrecv stridesend \
+    commrank prime randommax jordan sumsquares onenorm \
+    pingpong sendrecv stridesend \
     rightsend bucketblock bucketpipe bucketpipenonblock \
     isendirecv isendirecvarray procgrid procgridnonblock \
     rightput randomput onesidedbuild countdown \
-    blockwrite scatterwrite cubegather \
-    ibarrierupdate
+    blockwrite viewwrite scatterwrite cubegather \
+    ibarrierupdate rightgraph shareddata
 info ::
 	@echo "    [ OPTS=... ] (for instance: OPTS=\"-DN 100\")"
 	@echo "    support options:"
@@ -38,11 +39,9 @@ ${EXERCISES} : $$@.cxx
 	  ${CXXFLAGS} ${OPTS} \
 	  -o $@ $^
 
-clean ::
-	@/bin/rm -f *.out[0-9]*
-
 ####
 #### Regression tests
 ####
 
+include ../course-support/Make.mpi_run
 include ../course-support/Make.mpi_regress

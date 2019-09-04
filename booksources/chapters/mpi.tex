@@ -165,11 +165,16 @@ A few examples of what can go wrong:
 The MPI library has a general mechanism for dealing with errors that
 it detects. The default behaviour, where the full run is aborted, is
 equivalent to your code having the following
-call\indexmpi{MPI_Comm_set_errhandler}\footnote{The routine
-  \n{MPI\_Errhandler\_set} is deprecated.}:
+call\indexmpi{MPI_Comm_set_errhandler}:
 \begin{lstlisting}
 MPI_Comm_set_errhandler(MPI_COMM_WORLD,MPI_ERRORS_ARE_FATAL);
 \end{lstlisting}
+
+\begin{remark}
+  The routine
+  \lstinline{MPI_Errhandler_set} is deprecated.
+\end{remark}
+
 Another simple possibility is to specify
 \begin{lstlisting}
 MPI_Comm_set_errhandler(MPI_COMM_WORLD,MPI_ERRORS_RETURN);
@@ -398,6 +403,18 @@ one way, and then we wonder which one is the most efficient. In this
 section we will explicitly address performance. We start with two
 sections on the mere act of measuring performance.
 
+\Level 1 {Tools interface}
+\index{MPI!tools interface|(}
+
+Recent versions of MPI have a standardized way of reading out
+performance variables: the \emph{tools interface}.
+However, since this is installation-dependent,
+you first need to query how much of the tools interface is provided.
+
+\cverbatimsnippet{mpit_init_q}
+
+\index{MPI!tools interface|)}
+
 \Level 1 {Timing}
 \label{sec:mpi-timing}
 \index{timing!MPI|(}
@@ -493,7 +510,7 @@ your running time, for instance by increasing the amount of data.
 \label{sec:profile}
 
 MPI allows you to write your own profiling interface. To make this possible,
-every routine \n{MPI_Something} calls a routine \n{PMPI_Something} that 
+every routine \lstinline{MPI_Something} calls a routine \lstinline{PMPI_Something} that 
 does the actual work. You can now write your \n{MPI_...} routine
 which calls \indexmpishow{PMPI_...}, and inserting your own profiling calls.
 \begin{figure}[ht]
@@ -897,7 +914,7 @@ numpy.dtype('i').itemsize
 
 \Level 2 {Arrays of objects}
 
-Objects of type \n{MPI.Status} or \n{MPI.Request} often need to be created
+Objects of type \lstinline{MPI.Status} or \lstinline{MPI.Request} often need to be created
 in an array, for instance when looping through a number of \n{Isend} calls.
 In that case the following idiom may come in handy:
 
@@ -924,6 +941,14 @@ this information to cancel their message with
 an \indexmpishow{MPI_Cancel} operation.
 %
 \cverbatimsnippet{cancel}
+
+After the cancelling operation it is still necessary to call
+\indexmpishow{MPI_Request_free}, \indexmpishow{MPI_Wait}, or
+\indexmpishow{MPI_Test} in order to free the request object.
+
+The \indexmpishow{MPI_Cancel} operation is local, so it can not be
+used for \emph{non-blocking
+  collectives}\index{collectives!non-blocking!cancelling} or one-sided transfers.
 
 \Level 1 {Constants}
 

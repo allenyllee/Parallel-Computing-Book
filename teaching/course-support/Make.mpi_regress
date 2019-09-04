@@ -7,8 +7,6 @@
 ####
 #### Make include file for course programs
 ####
-#### https://apple.stackexchange.com/questions/3271/how-to-get-rid-of-firewall-accept-incoming-connections-dialog
-####
 ################################################################
 
 ##
@@ -79,25 +77,6 @@ info ::
 	  echo "set MODE for regression test!" ; exit 1; fi
 	@if [ ${MODE} = "mpi" ] ; then \
 	  echo "  ( optional settings: NP PROGRAM )" ; fi
-ifdef TACC_SYSTEM
-  MPIRUN=ibrun
-else
-  MPIRUN=mpirun
-endif
-NP = 4
-CATCHER = ../course-support/catchout
-.PHONY: run catchrun
-info ::
-	@echo "make run/catchrun"
-	@echo "    ( catchrun gives orderly output)"
-	@echo "    [ PROGRAM=... NP=... ]"
-run :
-	@${MPIRUN} -np ${NP} ${PROGRAM}${PROGRAM_EXTENSION} ${OPTIONS}
-catchrun :
-	@${MPIRUN} -np ${NP} ${CATCHER} ${PROGRAM} >/dev/null 2>&1
-	@for i in `seq 0 $$(( NP-1 ))` ; do \
-	  echo "$$i:" ; \
-	  cat ${PROGRAM}.out$$i ; done
 regress_out : 
 	@if [ -z ${MODE} ] ; then \
 	  echo "set MODE for regression test!" ; exit 1 ; fi
@@ -260,18 +239,21 @@ only_zero_out :
 	 #    fi ; \
 	 #   done \
 
-.PHONY: run_blockwrite
-REGRESSIONRUNS += run_blockwrite
-run_blockwrite :  blockwrite
+.PHONY: run_blockwrite run_viewwrite
+REGRESSIONRUNS += run_blockwrite run_viewwrite
+run_blockwrite ::  blockwrite
+run_viewwrite :: viewwrite
+run_blockwrite run_viewwrite ::
 	@make --no-print-directory run_start PROGRAM=$@ NP=${NP}
-	@export atgram=$@ ; export program=$${atgram##run_} ; \
-	 cat blockwrite.out* > blockwrite.out ; export success=1 ; \
-	nfound=`cat blockwrite.out | grep "correctly" | wc -l` ; \
-	if [ $$nfound -eq 0 ] ; then \
-	  echo "No success reported" ; success=0; \
-	fi ; \
-	make --no-print-directory regress_success SUCCESS=$$success PROGRAM=$${program} ; \
-	echo
+	@export atgram=$@ && export program=$${atgram##run_} \
+	 && cat $${program}.out* > $${program}.out \
+	 && export success=1 \
+	 && nfound=`cat $${program}.out | grep "correctly" | wc -l` \
+	 && if [ $$nfound -eq 0 ] ; then \
+	      echo "No success reported" ; success=0; \
+	    fi \
+	 && make --no-print-directory regress_success SUCCESS=$$success PROGRAM=$${program} \
+	 && echo
 
 .PHONY: run_randommax
 REGRESSIONRUNS += run_randommax
@@ -325,6 +307,22 @@ run_jordan :  jordan
 	    done \
 	&& make --no-print-directory regress_success SUCCESS=$$success PROGRAM=$${program} \
 	&& echo
+
+.PHONY: run_onenorm
+REGRESSIONRUNS += run_onenorm
+run_onenorm :  onenorm
+	@make --no-print-directory run_start PROGRAM=$@ NP=${NP}
+	@export atgram=$@ ; export program=$${atgram##run_} ; \
+	 export np=${NP} ; \
+	 export success=1 ; \
+	 for p in `seq 1 $$(( np-1 ))` ; do \
+	  if [ `cat $$program.out$$p | wc -l` -gt 0 ] ; then \
+	    echo "I was not expecting output from proc $$p" ; \
+	    success=0; \
+	  fi ; \
+	 done ; \
+	make --no-print-directory regress_success SUCCESS=$$success PROGRAM=$${program} ; \
+	echo
 
 .PHONY: run_pingpong
 REGRESSIONRUNS += run_pingpong
@@ -501,3 +499,32 @@ run_ibarrierupdate :  ibarrierupdate
 	make --no-print-directory regress_success SUCCESS=$$success PROGRAM=$${program} ; \
 	echo
 
+.PHONY: run_shareddata 
+REGRESSIONRUNS += run_shareddata
+run_shareddata :  shareddata
+run_shareddata :
+	@export atgram=$@ ; export program=$${atgram##run_} ; \
+	 export success=1 ; \
+	 for row in 2 3 5 ; do \
+	   for col in 2 3 4 ; do \
+	     export np=$$(( row * col )) ; \
+	     make --no-print-directory run_start PROGRAM=$@ NP=$${np} && \
+	     for p in `seq 1 $$(( np-1 ))` ; do \
+	     done ; \
+	   done ; \
+	 done ; \
+	make --no-print-directory regress_success SUCCESS=$$success PROGRAM=$${program} ; \
+	echo
+
+.PHONY: run_intercomm
+REGRESSIONRUNS += run_intercomm
+run_intercomm : intercomm
+	@make --no-print-directory run_start PROGRAM=$@ NP=${NP}
+	@export atgram=$@ ; export program=$${atgram##run_} ; \
+	 export np=${NP} ; \
+	 export success=1 ; \
+	 for p in `seq 1 $$(( np-1 ))` ; do \
+	    success=1; \
+	 done ; \
+	make --no-print-directory regress_success SUCCESS=$$success PROGRAM=$${program} ; \
+	echo

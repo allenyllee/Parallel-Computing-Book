@@ -22,7 +22,7 @@ include ../course-support/Make.inc
 
 .SECONDEXPANSION:
 ${EXERCISES} : $$@.c
-	${C_COMPILER} ${CFLAGS} -o $@ $^
+	${C_COMPILER} ${CFLAGS} -o $@ $^ -lm
 
 ####
 #### Regression tests

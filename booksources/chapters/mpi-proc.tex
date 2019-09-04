@@ -27,7 +27,8 @@ that functionality. Process management was later added with MPI-2.
 
 Unlike what you might think, newly added processes do not become part
 of \indexmpishow{MPI_COMM_WORLD}; rather, they get their own communicator, and an
-\indexterm{intercommunicator} is established between this new group
+\indextermsubh{inter}{communicator} (section~\ref{sec:mpi-intercomm})
+is established between this new group
 and the existing one. The first routine is
 \indexmpishow{MPI_Comm_spawn}, which tries to fire up multiple copies
 of a single named executable. You could imagine using this mechanism
@@ -39,7 +40,7 @@ to start the whole of your MPI code, but that is likely to be inefficient.
 
 Here is an example of a work manager.
 %
-\cverbatimsnippet{spawnmanager}
+\cverbatimsnippet[examples/mpi/c]{spawnmanager}
 %
 \pverbatimsnippet{spawnmanagerp}
 %
@@ -55,6 +56,7 @@ yourself how many processes you want to spawn. If you exceed the
 hardware resources, your multi-tasking operating system (which is some
 variant of Unix for almost everyone) will use
 \indexterm{time-slicing}, but you will not gain any performance.
+
 
 \begin{taccnote}
 \indextermbus{Intel}{mpi} requires you to pass an option \n{-usize} to

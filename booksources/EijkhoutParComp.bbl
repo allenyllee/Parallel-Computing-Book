@@ -12,6 +12,11 @@ Tom Cornebize, Franz~C Heinrich, Arnaud Legrand, and J{\'e}r{\^o}me Vienne.
   Scale of a Supercomputer}.
 \newblock working paper or preprint, December 2017.
 
+\bibitem{mpi4py:homepage}
+Lisandro Dalcin.
+\newblock {MPI for Python}, homepage.
+\newblock \url{mpi4py:homepage}.
+
 \bibitem{Eijkhout:MPItype-arxiv}
 Victor {Eijkhout}.
 \newblock {Performance of {MPI} sends of non-contiguous data}.

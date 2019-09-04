@@ -13,6 +13,7 @@
 
 OMPFLAGS_intel    = -g -qopenmp 
 OMPFLAGS_gcc      = -ggdb -fopenmp
+OMPFLAGS_clang    = -fopenmp
 OMPFLAGS = ${OMPFLAGS_${TACC_FAMILY_COMPILER}}
 
 info ::
@@ -33,6 +34,7 @@ ifdef TACC_TAU_DIR
 else
   C_COMPILER_intel = icc
   C_COMPILER_gcc   = gcc
+  C_COMPILER_clang   = clang
   CFLAGS = ${OMPFLAGS} -O${OPTLEVEL} -std=c99 ${EXTRA_OPTIONS}
   C_COMPILER = ${C_COMPILER_${TACC_FAMILY_COMPILER}}
   MPI_C_COMPILER = mpicc
@@ -51,4 +53,6 @@ else
 endif
 
 clean ::
-	@/bin/rm -rf *~ MULTI*
+	@/bin/rm -rf *~ MULTI* *dSYM/
+	@/bin/rm -f *.out[0-9]* *.out_total *.log
+

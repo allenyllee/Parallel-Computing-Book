@@ -21,7 +21,7 @@ EXERCISES = hello \
     rightsend rightput rightgraph \
     bucketblock bucketpipenonblock \
     isendirecv isendirecvarray status \
-    stridesend cubegather procgrid \
+    stridesend cubegather onenorm procgrid \
     randomput onesidedbuild countdown \
     blockwrite ibarrierupdate
 OTHERPROGRAMS = write
@@ -37,5 +37,6 @@ ${EXERCISES} : $$@.F90
 #### Regression tests
 ####
 
+include ../course-support/Make.mpi_run
 include ../course-support/Make.mpi_regress
 run_hello : hello

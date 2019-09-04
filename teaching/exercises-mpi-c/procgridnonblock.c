@@ -44,11 +44,11 @@ int main(int argc,char **argv) {
   ncols = nprocs/nrows;
 
   //
-  // Exercise:
-  // - compute the coordinates of this process
+  // Compute the coordinates of this process
   //
   int row_no,col_no;
-/**** your code here ****/
+  row_no = procno/ncols;
+  col_no = procno - ncols*row_no;
 
   //
   // Make a `col_comm' communicator with all processes in this column
@@ -77,12 +77,14 @@ int main(int argc,char **argv) {
     MPI_Comm_size(row_comm,&row_length);
   if (col_rank==0)
     MPI_Comm_size(col_comm,&col_length);
+
   //
   // Exercise:
   // the left column and top row tell everyone else
   // what these lengths are.
   //
 #if 0
+  // replace these blocking calls by non-blocking
   MPI_Bcast(&row_length,1,MPI_INT,0,row_comm);
   MPI_Bcast(&col_length,1,MPI_INT,0,col_comm);
 #endif

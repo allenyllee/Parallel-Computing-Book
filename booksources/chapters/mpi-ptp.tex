@@ -184,13 +184,16 @@ that message through an object of type \indexmpidef{MPI_Message}.
 
 \Level 1 {The Status object and wildcards}
 \label{sec:mpi-wildcard}
+\label{sec:mpi-status}
 \index{message!status|(textbf}
 
 With some receive calls you know everything about the message in advance:
 its source, tag, and size. In other cases you want to leave some options
 open, and inspect the message for them after it was received.
 To do this, the receive call has a \indexmpishow{MPI_Status}
-parameter. This was discussed in section~\ref{sec:mpi-status}.
+parameter.
+
+\mpiRoutineRef{MPI_Status}
 
 This status is a property of the actually received messsage, so \indexmpishow{MPI_Irecv}
 does not have a status parameter, but \indexmpishow{MPI_Wait} does.

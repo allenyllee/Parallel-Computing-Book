@@ -143,7 +143,7 @@ ways you can associate data with a window:
   \end{itemize}
 \item Finally, you can create a window with
   \indexmpishow{MPI_Win_create_dynamic} which postpones the allocation;
-  see section~\ref{sec:mpi-alloc}.
+  see section~\ref{sec:win-model}.
 \end{enumerate}
 
 First of all, the create call from a pointer to memory:
@@ -580,7 +580,7 @@ the put and get calls are not enough for certain scenarios with shared
 data. Consider the scenario where:
 \begin{itemize}
 \item One process stores a table of work descriptors, and a pointer to
-  the firt unprocessed descriptor;
+  the first unprocessed descriptor;
 \item Each process reads the pointer, reads the corresponding
   descriptor, and increments the pointer; and
 \item A process that has read a descriptor then executes the

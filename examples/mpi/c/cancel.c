@@ -26,36 +26,31 @@ int main(int argc,char **argv) {
   MPI_Comm_rank(comm,&procno);
   MPI_Comm_size(comm,&nprocs);
 
-  MPI_Comm_set_errhandler(comm,MPI_ERRORS_RETURN);
-#define CHK(x) if (x) {						 \
-    char errtxt[200]; int len=200;				 \
-  MPI_Error_string(x,errtxt,&len);				 \
-  printf("p=%d, line=%d, err=%d, %s\n",procno,__LINE__,x,errtxt); \
-  return x;}
-
   // Initialize the random number generator
   srand((int)(procno*(double)RAND_MAX/nprocs));
 
+  fprintf(stderr,"get set, go!\n");
   if (procno==nprocs-1) {
     MPI_Status status;
-    ierr = MPI_Recv(dummy,0,MPI_INT, MPI_ANY_SOURCE,0,comm,
-                    &status); CHK(ierr);
+    MPI_Recv(dummy,0,MPI_INT, MPI_ANY_SOURCE,0,comm,
+                    &status); 
     first_tid = status.MPI_SOURCE;
-    ierr = MPI_Bcast(&first_tid,1,MPI_INT, nprocs-1,comm); CHK(ierr);
-    printf("first msg came from %d\n",first_tid);
+    MPI_Bcast(&first_tid,1,MPI_INT, nprocs-1,comm); 
+    fprintf(stderr,"[%d] first msg came from %d\n",procno,first_tid);
   } else {
     float randomfraction = (rand() / (double)RAND_MAX);
     int randomwait = (int) ( nprocs * randomfraction );
     MPI_Request request;
-    printf("process %d waits for %e/%d=%d\n",
+    fprintf(stderr,"[%d] waits for %e/%d=%d\n",
 	   procno,randomfraction,nprocs,randomwait);
     sleep(randomwait);
-    ierr = MPI_Isend(dummy,0,MPI_INT, nprocs-1,0,comm,
-                     &request); CHK(ierr);
-    ierr = MPI_Bcast(&first_tid,1,MPI_INT, nprocs-1,comm
-                    ); CHK(ierr);
+    MPI_Isend(dummy,0,MPI_INT, nprocs-1,0,comm,
+                     &request); 
+    MPI_Bcast(&first_tid,1,MPI_INT, nprocs-1,comm
+                    ); 
     if (procno!=first_tid) {
-      ierr = MPI_Cancel(&request); CHK(ierr);
+      MPI_Cancel(&request); 
+      fprintf(stderr,"[%d] canceled\n",procno);
     }
   }
 
