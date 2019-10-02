@@ -40,6 +40,7 @@ int main(int argc,char **argv) {
      procno,
      MPI_INFO_NULL,
      &nodecomm);
+
   /*
    * Exercise:
    * -- compute the rank on the node
@@ -78,10 +79,10 @@ int main(int argc,char **argv) {
   /*
    * Exercise:
    * -- Create window on the node communicator;
-   *    it only has nonzero size on the first process
+   *    it should only have nonzero size on the first process
    * -- What happens if you use MPI_Win_allocate ?
    */
-  MPI_Aint window_size; double *window_data; MPI_Win node_window;
+  int window_size; double *window_data; MPI_Win node_window;
   if (onnode_procno==0)
     window_size = sizeof(double);
   else window_size = 0;

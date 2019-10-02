@@ -18,7 +18,7 @@ info ::
 EXERCISES = \
     hello commrank prime randommax pingpong \
     rightsend isendirecv ibarrierupdate \
-    bucketblock \
+    onenorm bucketblock \
     stridesend cubegather \
     randomput countdown onesidedbuild \
     procgrid blockwrite viewwrite

@@ -182,14 +182,20 @@ subroutine for this generic subroutine call [MPI_Send]
 Fortran lacks a \n{sizeof} operator to query the sizes of datatypes.
 Since sometimes exact byte counts are necessary,
 for instance in one-sided communication,
-Fortran can use the \indexmpishow{MPI_Sizeof} routine,
-for instance for \indexmpishow{MPI_Win_create}:
+Fortran can use the \indexmpishow{MPI_Sizeof} routine.
+
+\mpiRoutineRef{MPI_Sizeof}
+
+Example usage in \indexmpishow{MPI_Win_create}:
 \begin{lstlisting}
 call MPI_Sizeof(windowdata,window_element_size,ierr)
 window_size = window_element_size*500
 call MPI_Win_create( windowdata,window_size,window_element_size,... );
 \end{lstlisting}
 \lstset{language=C} %pyskip
+
+This routine is deprecated in \indexterm{MPI-4}: use of
+\indextermtt{storage_size} and/or \indextermtt{c_sizeof} is recommended.
 
 \index{MPI!Fortran issues|)}
 

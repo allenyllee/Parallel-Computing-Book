@@ -15,6 +15,7 @@
 \makeindex
 \makeindex[name=mpi]
 \makeindex[name=omp]
+\makeindex[name=petsc]
 
 \newcommand{\indextermp}[1]{\emph{#1s}\index{#1}}
 \newcommand{\indextermsub}[2]{\emph{#1 #2}\index{#2!#1}}
@@ -112,7 +113,37 @@
     \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
     \ShowRoutinefalse
     \tt \afterassignment\omptoindex\edef\indexedomp}
+  %% same for PETSc
+  \gdef\indexpetscshow#{\bgroup
+    \catcode`\_=12 % 13 \def_{\char95\discretionary{}{}{}}
+    \catcode`\>=12 \catcode`\<=12
+    \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
+    \ShowRoutinetrue
+    \tt \afterassignment\petsctoindex\edef\indexedpetsc}
+  \gdef\indexpetscdef#{\bgroup
+    \catcode`\_=12 % 13 \def_{\char95\discretionary{}{}{}}
+    \catcode`\>=12 \catcode`\<=12
+    \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
+    \ShowRoutinetrue
+    \tt \afterassignment\petsctoindexbf\edef\indexedpetsc}
+  \global\let\indexpetscshowdef\indexpetscdef
+  \gdef\indexpetscex#{\bgroup
+    \catcode`\_=12 % 13 \def_{\char95\discretionary{}{}{}}
+    \catcode`\>=12 \catcode`\<=12
+    \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
+    \ShowRoutinetrue
+    \tt \afterassignment\petsctoindexit\edef\indexedpetsc}
+  \gdef\indexpetsc#{\bgroup
+    \catcode`\_=12 % 13 \def_{\char95\discretionary{}{}{}}
+    \catcode`\>=12 \catcode`\<=12
+    \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
+    \ShowRoutinefalse
+    \tt \afterassignment\petsctoindex\edef\indexedpetsc}
 }
+
+%%%%
+%%%% MPI to index
+%%%%
 \def\mpitoindex{%\tracingmacros=2
   \edef\tmp{%
     \noexpand\ifShowRoutine
@@ -139,6 +170,9 @@
   \egroup
 }
 
+%%%%
+%%%% OpenMP to index
+%%%%
 \def\omptoindex{%\tracingmacros=2
   \edef\tmp{%
     \noexpand\lstinline+\indexedomp+%
@@ -164,6 +198,26 @@
   \egroup
 }
 
+%%%%
+%%%% PETSc to index
+%%%%
+\def\petsctoindex{%\tracingmacros=2
+  \edef\tmp{%
+    \noexpand\lstinline+\indexedpetsc+%
+    \noexpand\index[petsc]{\indexedpetsc@{\catcode95=12 \noexpand\texttt{\indexedpetsc}}}}%
+  \tmp
+  \egroup
+}
+\def\petsctoindexbf{%\tracingmacros=2
+  \edef\tmp{%
+    \noexpand\lstinline+\indexedpetsc+%
+    \noexpand\index[petsc]{\indexedpetsc@{\catcode95=12 \noexpand\texttt{\indexedpetsc}}|textbf}%
+  }%
+  \tmp
+  \egroup
+}
+
+
 { \catcode`\_=13
 \gdef\indexmpishowsub#{\bgroup \catcode`\_=13 \def_{\char95\discretionary{}{}{}}
   \catcode`\>=12 \catcode`\<=12
@@ -171,14 +225,25 @@
   \tt \afterassignment\defineindexmpisubtwo \xdef\indexedmpisubone}
 \gdef\defineindexmpisubtwo{\afterassignment\mpitoindexsub \gdef\indexedmpisubtwo}
 \gdef\mpiRefDisplay{\par
-  \def_{\underscore}%\edef\plainname{\indexedmpi}
-  %\def_{\char95\discretionary{}{}{}}
+  \def_{\underscore}%
   % first write index
   \edef\tmp{%
     \noexpand\index[mpi]{\indexedmpi@{\catcode95=12 \noexpand\texttt{\indexedmpi}}|textbf}}%
   \tmp\nobreak
   % then input
   \def_{\underscore}\edef\tmp{\noexpand\verbatiminput{\indexedmpi}}\tmp
+  \nobreak
+  { \hskip\unitindent \textsl{\small How to read routine prototypes:~\ref{sec:protos}.}\par }
+  \egroup
+}
+\gdef\petscRefDisplay{\par
+  \def_{\underscore}%
+  % first write index
+  \edef\tmp{%
+    \noexpand\index[petsc]{\indexedpetsc@{\catcode95=12 \noexpand\texttt{\indexedpetsc}}|textbf}}%
+  \tmp\nobreak
+  % then input
+  \def_{\underscore}\edef\tmp{\noexpand\verbatiminput{\indexedpetsc}}\tmp
   \nobreak
   { \hskip\unitindent \textsl{\small How to read routine prototypes:~\ref{sec:protos}.}\par }
   \egroup
@@ -190,7 +255,7 @@
   \afterassignment\mpiRefDisplay\def\indexedmpi
 }
 \def\petscRoutineRef#{\bgroup \RoutineRefStyle \catcode`\_=13
-  \afterassignment\mpiRefDisplay\def\indexedmpi
+  \afterassignment\petscRefDisplay\def\indexedpetsc
 }
 \def\underscore{_}
 

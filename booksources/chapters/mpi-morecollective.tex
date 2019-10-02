@@ -71,6 +71,22 @@ FUNCTION USER_FUNCTION( INVEC(*), INOUTVEC(*), LEN, TYPE)
 INTEGER LEN, TYPE 
 \end{verbatim}
 
+{The python equivalent of such a function receives bare buffers as
+  arguments. Therefore, it is best to turn them first into NumPY array
+  using \indextermtt{np.frombuffer}:
+%% figure out why plisting environment doesn't work here
+\begin{verbatim}
+def one_norm(in_buf, inout_buf, datatype):
+    typecode = MPI._typecode(datatype)
+    assert typecode is not None # check MPI datatype is built-in
+    dtype = np.dtype(typecode)
+
+    in_array = np.frombuffer(in_buf, dtype)
+    inout_array = np.frombuffer(inout_buf, dtype)
+\end{verbatim}
+The \n{assert} statement accounts for the fact that this mapping of
+MPI datatype to NumPy dtype only works for built-in MPI datatypes.
+
 The function has an array length argument~\n{len}, to allow for
 pointwise reduction on a whole array at once. The \n{inoutvec} array
 contains partially reduced results, and is typically overwritten by

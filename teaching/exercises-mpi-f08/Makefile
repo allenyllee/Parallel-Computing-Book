@@ -23,7 +23,7 @@ EXERCISES = hello \
     isendirecv isendirecvarray status \
     stridesend cubegather onenorm procgrid \
     randomput onesidedbuild countdown \
-    blockwrite ibarrierupdate
+    blockwrite shareddata ibarrierupdate
 OTHERPROGRAMS = write
 
 include ../course-support/Make.inc

@@ -186,28 +186,6 @@
 \input idxmacs
 \input listingmacs
 
-\newcommand\commandref[1]{\label{sec:#1}
-  \begin{quotation}
-    \small\sl\noindent The reference for the commands introduced here
-    can be found in section~\ref{ref:#1}.
-  \end{quotation}\nobreak}
-\newcommand\commandreflabel[1]{\label{ref:#1}
-  \begin{quotation}
-    \small\sl\noindent This reference section gives the syntax for
-    routines introduced in section~\ref{sec:#1}.
-  \end{quotation}\nobreak}
-\newcommand\commandidiom[1]{\label{idiom:#1}
-  \begin{quotation}
-    \small\sl\noindent This section discusses idioms for
-    routines discussed in section~\ref{sec:#1}; the reference is in section~\ref{ref:#1}.
-  \end{quotation}\nobreak}
-\newcommand\commandrefexercise[1]{\label{#1-exec}
-  \begin{quotation}
-    \small\sl\noindent The exercises in this section are about the
-    routines introduced in section~\ref{#1}; 
-    for the reference information see section~\ref{#1-ref}.
-  \end{quotation}}
-
 \usepackage{xr-hyper}
 \usepackage[pdftex,colorlinks]{hyperref}
 \hypersetup{bookmarksopen=true}
@@ -371,21 +349,24 @@ Bold reference: defining passage; italic reference: illustration.
 
 \begin{multicols*}{2}
 \printindex
-%\columnbreak\null
 \end{multicols*}
 
 \Level 2 {Index of MPI commands}
 
 \begin{multicols*}{2}
 \printindex[mpi]
-%\columnbreak\null
 \end{multicols*}
 
 \Level 2 {Index of OpenMP commands}
 
 \begin{multicols*}{2}
 \printindex[omp]
-%\columnbreak\null
+\end{multicols*}
+
+\Level 2 {Index of PETSc commands}
+
+\begin{multicols*}{2}
+\printindex[petsc]
 \end{multicols*}
 
 \hbox{}\vfill

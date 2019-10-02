@@ -328,7 +328,7 @@ locations.
 \pverbatimsnippet{indexp}
 
 You can also \indexmpishow{MPI_Type_create_hindexed} which describes blocks
-of a single old type, but with indix locations in bytes, rather than
+of a single old type, but with index locations in bytes, rather than
 in multiples of the old type.
 \begin{lstlisting}
 int MPI_Type_create_hindexed
@@ -419,10 +419,6 @@ type \indexmpishow{MPI_UB} for the `upper bound' on the structure:
 displacements[3] = sizeof(myobject); types[3] = MPI_UB;
 MPI_Type_create_struct(struclen+1,.....);
 \end{lstlisting}
-
-The structure type is very similar in functionality to \indexmpishow{MPI_Type_hindexed},
-which uses byte-based indexing. The structure-based type is probably cleaner
-in use.
 
 \Level 1 {Type size}
 

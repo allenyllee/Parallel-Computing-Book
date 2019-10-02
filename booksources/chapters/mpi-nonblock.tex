@@ -14,8 +14,6 @@
 \Level 0 {Non-blocking point-to-point operations}
 \label{sec:nonblock}
 
-\Level 1 {Irregular data exchange}
-
 The structure of communication is often a reflection of the structure
 of the operation.
 With some regular applications we also get a regular communication pattern.
@@ -61,7 +59,7 @@ Imposing any sequence on the sends and receives is likely to run into the serial
 behaviour observed above, or at least be inefficient since processors will be
 waiting for messages.
 
-\Level 1 {Non-blocking communication}
+\Level 1 {Non-blocking send and receive calls}
 \label{sec:nonblocking}
 \index{communication!non-blocking|(textbf}
 
@@ -90,7 +88,7 @@ Issuing the \n{Isend/Irecv} call is sometimes referred to as
 
 \mpiRoutineRef{MPI_Irecv}
 
-\Level 2 {Request completion}
+\Level 1 {Request completion: wait calls}
 
 From the definition of \indexmpishow{MPI_Isend}~/
 \indexmpishow{MPI_Irecv}, you seen that non-blocking routinew yields
@@ -112,36 +110,6 @@ status object, you can pass \indexmpishow{MPI_STATUS_IGNORE}.
 
 Note that the request is passed by reference, so that the wait routine
 can free it.
-
-\Level 2 {Buffer issues in non-blocking communication}
-
-While the use of non-blocking routines prevents deadlock, it
-introduces two new problems:
-\begin{enumerate}
-\item When the send call returns, the actual send may not have been executed,
-  so the send buffer may not be safe to
-  overwrite. When the recv call returns, you do not know for sure that
-  the expected data is in it. Thus, you need a mechanism to make sure
-  that data was actually sent or received.
-\item With a blocking send call, you could repeatedly fill the send
-  buffer and send it off.
-\begin{lstlisting}
-double *buffer;
-for ( ... p ... ) {
-   buffer = // fill in the data
-   MPI_Send( buffer, ... /* to: */ p );
-\end{lstlisting}
-  To send multiple messages with non-blocking calls
-  you have to allocate multiple buffers.
-\begin{lstlisting}
-double **buffers;
-for ( ... p ... ) {
-   buffers[p] = // fill in the data
-   MPI_Send( buffers[p], ... /* to: */ p );
-\end{lstlisting}
-\end{enumerate}
-
-\cverbatimsnippet[examples/mpi/c/irecvloop.c]{irecvloop}
 
 \Level 2 {More wait calls}
 
@@ -228,6 +196,38 @@ hardware, firmware, and MPI implementation.
   send routines you have seen so far (but not \indexmpishow{MPI_Sendrecv}), and
   conversely a message sent with \indexmpishow{MPI_Send} can be received by \indexmpishow{MPI_Irecv}.
 \end{remark}
+
+\Level 2 {Buffer issues in non-blocking communication}
+
+While the use of non-blocking routines prevents deadlock, it
+introduces two new problems:
+\begin{enumerate}
+\item When the send call returns, the actual send may not have been executed,
+  so the send buffer may not be safe to
+  overwrite. When the recv call returns, you do not know for sure that
+  the expected data is in it. Thus, you need a mechanism to make sure
+  that data was actually sent or received.
+\item With a blocking send call, you could repeatedly fill the send
+  buffer and send it off.
+\begin{lstlisting}
+double *buffer;
+for ( ... p ... ) {
+   buffer = // fill in the data
+   MPI_Send( buffer, ... /* to: */ p );
+\end{lstlisting}
+  To send multiple messages with non-blocking calls
+  you have to allocate multiple buffers.
+\begin{lstlisting}
+double **buffers;
+for ( ... p ... ) {
+   buffers[p] = // fill in the data
+   MPI_Send( buffers[p], ... /* to: */ p );
+\end{lstlisting}
+\end{enumerate}
+
+\cverbatimsnippet[examples/mpi/c/irecvloop.c]{irecvloop}
+
+\Level 1 {More about non-blocking communication}
 
 \Level 2 {Asynchronous progress}
 \label{sec:progress}
@@ -401,25 +401,44 @@ while ( not done ) {
 \end{exercise}
 
 \Level 2 {More about requests}
+\label{ref:mpirequest}
 
 Every non-blocking call allocates an \indexmpishow{MPI_Request}
-object. One effect of the various \indexmpishow{MPI_Wait...} calls is
-to deallocate these objects. Thus, it is wise to issue wait calls even
+object.
+Unlike \indexmpishow{MPI_Status},
+an \indexmpishow{MPI_Request} variable is not actually an object,
+but instead it is an (opaque) pointer.
+This meeans that when you call, for instance, \indexmpishow{MPI_Irecv},
+MPI will allocate an actual request object, and return its
+address in the \indexmpishow{MPI_Request} variable.
+
+Correspondingly, calls to \indexmpishow{MPI_Wait...} or \indexmpishow{MPI_Test}
+free this object,
+setting the handle to \indexmpishow{MPI_REQUEST_NULL}.
+Thus, it is wise to issue wait calls even
 if you know that the operation has succeeded. For instance, if all
 receive calls are concluded, you know that the corresponding send
 calls are finished and there is no strict need to wait for their
 requests. However, omitting the wait calls would lead to a memory
 leak.
 
-Another way around this is to call \indexmpishow{MPI_Request_free},
+Another way around this is to call \indexmpidef{MPI_Request_free},
+\begin{lstlisting}
+int MPI_Request_free(MPI_Request *request)
+\end{lstlisting}
 which sets the request variable to \indexmpishow{MPI_REQUEST_NULL},
 and marks the object for deallocation after completion of the
 operation.
 
-Note that \indexmpishow{MPI_Test...} routines also deallocates the
-request object, setting the handle to \indexmpishow{MPI_REQUEST_NULL},
-but \indexmpishow{MPI_Request_get_status} does not alter the request
-handle or object.
+You can inspect the status of a request without freeing the request object
+with \indexmpishow{MPI_Request_get_status}:
+\begin{lstlisting}
+int MPI_Request_get_status(
+  MPI_Request request,
+  int *flag,
+  MPI_Status *status
+);
+\end{lstlisting}
 
 \index{communication!non-blocking|)}
 

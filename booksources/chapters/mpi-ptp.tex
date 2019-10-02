@@ -451,32 +451,4 @@ sends (section~\ref{sec:persistent}).
 
 \mpiRoutineRef{MPI_Bsend_init}
 
-\Level 1 {More about requests}
-\label{ref:mpirequest}
-
-An \indexmpishow{MPI_Request} object is not actually an object,
-unlike \indexmpishow{MPI_STATUS}. Instead it is an (opaque) pointer.
-This meeans that when you call, for instance, \indexmpishow{MPI_Irecv},
-MPI will allocate an actual request object, and return its
-address in the \indexmpishow{MPI_Request} variable.
-
-Correspondingly, calls to \indexmpishow{MPI_Wait...} or \indexmpishow{MPI_Test}
-free this object.
-If your application is such that you do not use `wait' call, you can free the
-request object explicitly
-with \indexmpishow{MPI_Request_free}.
-\begin{lstlisting}
-int MPI_Request_free(MPI_Request *request)
-\end{lstlisting}
-
-You can inspect the status of a request without freeing the request object
-with \indexmpishow{MPI_Request_get_status}:
-\begin{lstlisting}
-int MPI_Request_get_status(
-  MPI_Request request,
-  int *flag,
-  MPI_Status *status
-);
-\end{lstlisting}
-
 \index{communication!two-sided|)}

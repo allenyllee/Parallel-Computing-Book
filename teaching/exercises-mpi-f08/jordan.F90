@@ -84,7 +84,7 @@ Program GaussJordan
      if (pivot_column==procno) then
         pivot = matrix(pivot_column)
         do row=0,N-1
-           scalings(row) = matrix(row)/pivot_columnot
+           scalings(row) = matrix(row)/pivot
         end do
      end if
      !!
