@@ -1,0 +1,69 @@
+% -*- latex -*-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Parallel Programming in MPI and OpenMP'
+%%%% by Victor Eijkhout, copyright 2012-9
+%%%%
+%%%% mpi-commsplit.tex : about splitting communicators
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\Level 0 {Communicators and groups}
+
+You saw in section~\ref{sec:comm-split} that it is possible derive
+communicators that have a subset of the processes of another communicator.
+There is a more general mechanism, using \indexmpishow{MPI_Group}
+objects.
+
+\mpiRoutineRef{MPI_Group}
+
+Using groups, it takes three steps to create a new communicator:
+\begin{enumerate}
+\item Access the \indexmpishow{MPI_Group} of a communicator
+  object using \indexmpishow{MPI_Comm_group}.
+  
+  \mpiRoutineRef{MPI_Comm_group}
+\item Use various routines, discussed next, to form a new group.
+\item Make a new communicator object from the group with
+  \indexmpishow{MPI_Group}.
+
+  \mpiRoutineRef{MPI_Comm_create}
+\end{enumerate}
+
+Creating a new communicator from a group is collective on the old communicator.
+There is also a routine \indexmpishow{MPI_Comm_create_group} that only
+needs to be called on the group that constitutes the new communicator.
+
+\Level 1 {Process groups}
+\label{sec:comm-group}
+
+Groups are manipulated with
+\indexmpishow{MPI_Group_incl}, \indexmpishow{MPI_Group_excl},
+\indexmpishow{MPI_Group_difference} and a few more.
+
+You can name your communicators with \indexmpishow{MPI_Comm_set_name}, which
+could improve the quality of error messages when they arise.
+
+\begin{lstlisting}
+MPI_Comm_group (comm, group, ierr)
+MPI_Comm_create (MPI_Comm comm,MPI_Group group, MPI_Comm newcomm, ierr)
+\end{lstlisting}
+
+\begin{lstlisting}
+MPI_Group_union(group1, group2, newgroup, ierr)
+MPI_Group_intersection(group1, group2, newgroup, ierr)
+MPI_Group_difference(group1, group2, newgroup, ierr)
+\end{lstlisting}
+
+\begin{lstlisting}
+MPI_Group_incl(group, n, ranks, newgroup, ierr)
+MPI_Group_excl(group, n, ranks, newgroup, ierr)
+\end{lstlisting}
+\begin{lstlisting}
+MPI_Group_size(group, size, ierr)
+MPI_Group_rank(group, rank, ierr)
+\end{lstlisting}
+

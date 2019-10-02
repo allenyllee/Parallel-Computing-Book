@@ -1,0 +1,6 @@
+C:
+PetscErrorCode  PetscSynchronizedFlush(MPI_Comm comm,FILE *fd)
+fd : output file pointer, needs to be valid on process zero
+
+python:
+PETSc.Sys.syncFlush(type cls, comm=None)
