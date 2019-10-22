@@ -182,9 +182,7 @@ subroutine for this generic subroutine call [MPI_Send]
 Fortran lacks a \n{sizeof} operator to query the sizes of datatypes.
 Since sometimes exact byte counts are necessary,
 for instance in one-sided communication,
-Fortran can use the \indexmpishow{MPI_Sizeof} routine.
-
-\mpiRoutineRef{MPI_Sizeof}
+Fortran can use the \indexmpiref{MPI_Sizeof} routine.
 
 Example usage in \indexmpishow{MPI_Win_create}:
 \begin{lstlisting}
@@ -202,17 +200,12 @@ This routine is deprecated in \indexterm{MPI-4}: use of
 \Level 0 {Timing}
 \label{sec:ref:mpi-timing}
 
-MPI has a \indexterm{wall clock} timer: \indexmpishow{MPI_Wtime}
-%
-\mpiRoutineRef{MPI_Wtime}
-%
+MPI has a \indexterm{wall clock} timer: \indexmpiref{MPI_Wtime},
 which gives the number of seconds from a certain point in the past.
 (Note the absence of the error parameter in the fortran call.)
 \cverbatimsnippet{pingpong}
 
-The timer has a resolution of \indexmpishow{MPI_Wtick}:
-%
-\mpiRoutineRef{MPI_Wtick}
+The timer has a resolution of \indexmpiref{MPI_Wtick}.
 
 Timing in parallel is a tricky issue. For instance, most clusters do
 not have a central clock, so you can not relate start and stop times
@@ -224,7 +217,4 @@ MPI_Attr_get( comm, MPI_WTIME_IS_GLOBAL, &v, &flag );
 if (mytid==0) printf(``Time synchronized? %d->%d\n'',flag,*v);
 \end{lstlisting}
 %\indexmpi{MPI_Wtime} can be either a function or a macro.
-
-%\Level 1 {Profiling}
-%\label{sec:ref:profile}
 

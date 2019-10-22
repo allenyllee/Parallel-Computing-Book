@@ -25,8 +25,8 @@
 
 \lstset{style=reviewcode}
 
-\lstset{emph={ %%
-    commands MPI_Init,MPI_Finalize,MPI_Abort,MPI_Get_processor_name,
+\lstset{emph={ %% MPI commands
+    MPI_Init,MPI_Finalize,MPI_Abort,MPI_Get_processor_name,
     MPI_Init_thread,MPI_Query_thread,MPI_Is_thread_main,
     % comm stuff
     MPI_Comm_size,MPI_Comm_rank,
@@ -97,7 +97,8 @@
     omp_get_nested,omp_get_wtime,omp_get_wtick,omp_set_schedule,omp_get_schedule,
     omp_set_max_active_levels,omp_get_max_active_levels,omp_get_thread_limit,
     omp_get_level,omp_get_active_level,omp_get_ancestor_thread_num,omp_get_team_size,
-  },emphstyle={\color{red!70!black}\bfseries}, emph={[2] %% constants
+  },emphstyle={\color{red!70!black}\bfseries},
+  emph={[2] %% constants
     MPI_VERSION,MPI_SUBVERSION,
     MPI_THREAD_SINGLE,MPI_THREAD_FUNNELED,MPI_THREAD_SERIALIZED,MPI_THREAD_MULTIPLE,
     MPI_ARGV_NULL,MPI_COMM_NULL,MPI_DATATYPE_NULL,MPI_INFO_NULL,MPI_INFO_ENV,
@@ -132,11 +133,34 @@
     OMP_CANCELLATION,OMP_DISPLAY_ENV,OMP_DEFAULT_DEVICE,OMP_DYNAMIC,OMP_MAX_ACTIVE_LEVELS,
     OMP_MAX_TASK_PRIORITY,OMP_NESTED,OMP_NUM_THREADS,OMP_PROC_BIND,OMP_PLACES,OMP_STACKSIZE,
     OMP_SCHEDULE,OMP_THREAD_LIMIT,OMP_WAIT_POLICY,
-  },emphstyle={[2]\color{green!40!black}}, emph={[3] %% types
+  },emphstyle={[2]\color{green!40!black}},
+  emph={[3] %% types
     MPI_Aint,MPI_Comm,MPI_Count,MPI_Datatype,MPI_Errhandler,MPI_File,MPI_Group,
     MPI_Info,MPI_Message,MPI_Offset,MPI_Op,MPI_Request,MPI_Status,
     MPI_User_function,MPI_Win,
     %% OMP directives
     for,sections,single,task,workshare,
-  },emphstyle={[3]\color{brown}\bfseries}
+  },emphstyle={[3]\color{brown}\bfseries},
+  emph={[4] %% PETSc functions
+    PetscInitialize,PetscFinalize,
+    VecCreate,VecDestroy,VecSetType,VecSetSize,VecGetSize,
+    VecGetLocalSize,VecGetOwnershipRange,
+    VecNorm,VecView,
+    VecSetValue,VecSetValues,VecAssemblyBegin,VecAssemblyEnd,
+    VecGetArray,VecRestoreArray,VecGetArrayRead,VecRestoreArrayRead,
+    MatCreate,MatSetSizes,MatSizes,MatSetType,MatSetPreallocation,MatSetValue,
+    MatAssemblyBegin,MatCreateShell,MatShellSetOperation,
+    MatShellSetContext,MatShellGetContext,
+    MatGetSize,MatGetLocalSize,MatGetOwnershipRange,
+    KSPCreate,KSPSetTolerances,KSPGetConvergedReason,KSPSetType,KSPSolve,
+    DMDACreate2d,
+  },emphstyle={[4]\color{red!40!black}\bfseries},
+  emph={[5] %% PETSc keywords
+    PETSC_DIR,PETSC_ARCH,PETSC_COMM_WORLD,
+    VECSEQ,VECMPI,
+    KSPCG,KSPGMRES,KSPBCGS,PCILU,PCSPAI,PCASM,PCLU,KSPPREONLY,
+  },emphstyle={[5]\color{green!60!black}},
+  emph={[6] %% PETSc types
+    PetscScalar,PetscReal,Vec,Mat,KSP,PC,
+  },emphstyle={[6]\bfseries\color{blue}},
 }

@@ -83,6 +83,9 @@ to strange deadlocks.
 
 In one-sided communication, each processor can make an area of memory,
 called a \indexterm{window}, available to one-sided transfers.
+%
+This is stored in a variable of type \indexmpiref{MPI_Win}.
+%
 A~process can put an arbitrary item from its own memory to the
 window of another process, or get something from the other process'
 window in its own memory.
@@ -102,8 +105,6 @@ A window can be characteristized as follows:
 \item There can be memory associated with a window, so it needs to be
   freed explicitly.
 \end{itemize}
-
-\mpiRoutineRef{MPI_Win}
 
 The typical calls involved are:
 \lstset{style=reviewcode,language=C}
@@ -146,10 +147,8 @@ ways you can associate data with a window:
   see section~\ref{sec:win-model}.
 \end{enumerate}
 
-First of all, the create call from a pointer to memory:
-%
-\mpiRoutineRef{MPI_Win_create}
-%
+First of all, \indexmpiref{MPI_Win_create}
+creates a window from a pointer to memory.
 The data array must not be \n{PARAMETER} or \n{static const}.
 
 The size parameter is measured in bytes. In~C this is easily done
@@ -157,9 +156,7 @@ with the \indextermtt{sizeof} operator;
 for doing this calculation in Fortran, see section~\ref{sec:f-sizeof}.
 
 Next, one can obtain the memory from MPI by using
-%
-\mpiRoutineRef{MPI_Win_allocate}
-%
+\indexmpiref{MPI_Win_allocate},
 which has the data pointer as output. Note the \n{void*} in the
 C~prototype; it is still necessary to pass a pointer to a pointer:
 \lstset{style=reviewcode,language=C}
@@ -167,11 +164,9 @@ C~prototype; it is still necessary to pass a pointer to a pointer:
 double *window_data;
 MPI_Win_allocate( ... &window_data ... );
 \end{lstlisting}
-The routine \indexmpishow{MPI_Alloc_mem} performs only the allocation
+The routine \indexmpiref{MPI_Alloc_mem} performs only the allocation
 part of \indexmpishow{MPI_Win_allocate}, after which you need to
 \indexmpishow{MPI_Win_create}:
-%
-\mpiRoutineRef{MPI_Alloc_mem}
 
 This memory is freed with
 \begin{lstlisting}
@@ -197,10 +192,7 @@ may happen (the \indextermsub{communication}{epoch}), but does not do
 any data-related calls.
 
 In this section we look at the first mechanism,
-which is to use a \indexterm{fence} operation:\indexmpi{MPI_Win_fence}
-\begin{lstlisting}
-MPI_Win_fence (int assert, MPI_Win win)
-\end{lstlisting}
+which is to use a \indexterm{fence} operation: \indexmpiref{MPI_Win_fence}.
 This operation is collective on the communicator of the window.
 It is comparable to \indexmpishow{MPI_Wait} calls for non-blocking communication.
 
@@ -283,7 +275,7 @@ a target rank.
 
 \Level 1 {Put}
 
-The \indexmpishow{MPI_Put} call can be considered as a one-sided
+The \indexmpiref{MPI_Put} call can be considered as a one-sided
 send. As such, it needs to specify
 \begin{itemize}
 \item the target rank
@@ -305,8 +297,6 @@ Specifically, data is written starting at
 \[ \mathtt{window\_base} + \mathtt{target\_disp}\times \mathtt{disp\_unit}. \]
 
 \includegraphics[scale=.4]{windowdisp}
-
-\mpiRoutineRef{MPI_Put}
 
 \begin{fortrannote}
   The \n{disp_unit} variable is declared as 
@@ -338,10 +328,8 @@ of the communicator that was used in the create call.
 
 \Level 1 {Get}
 
-The \indexmpishow{MPI_Get} call is very similar.
-%
-\mpiRoutineRef{MPI_Get}
-%
+The \indexmpiref{MPI_Get} call is very similar.
+
 Example:
 %
 \cverbatimsnippet[examples/mpi/c/getfence.c]{getfence}
@@ -399,10 +387,8 @@ second fence, we use \n{NOPUT} in the first.
 \Level 1 {Accumulate}
 
 A~third one-sided routine
-is \indexmpishow{MPI_Accumulate} which does a reduction operation on the results
-that are being put:
-
-\mpiRoutineRef{MPI_Accumulate}
+is \indexmpiref{MPI_Accumulate} which does a reduction operation on the results
+that are being put.
 
 Accumulate is a reduction with remote result. As with \indexmpishow{MPI_Reduce}, the 
 order in which the operands are accumulated is undefined. 
@@ -457,7 +443,7 @@ The following operations are well-defined inside one epoch:
 
 Analogous to \indexmpishow{MPI_Isend} there are request based one-sided operations:
 %
-\mpiRoutineRef{MPI_Rput}
+\indexmpiref{MPI_Rput}
 %
 and similarly \indexmpishow{MPI_Rget} and \indexmpishow{MPI_Raccumulate}.
 
@@ -594,14 +580,10 @@ descriptors being skipped. These inconsistent views of the data are
 called a \indexterm{race condition}.
 
 In \indextermbus{MPI}{3} some atomic routines have been added.
-Both \indexmpi{MPI_Fetch_and_op} and \indexmpi{MPI_Get_accumulate}
+Both \indexmpiref{MPI_Fetch_and_op} and \indexmpiref{MPI_Get_accumulate}
 atomically retrieve data from the window indicated,
 and apply an operator, combining the data on the target
 with the data on the origin.
-%
-\mpiRoutineRef{MPI_Fetch_and_op}
-%
-\mpiRoutineRef{MPI_Get_accumulate}
 
 Both routines perform the same operations: return data before the
 operation, then atomically update data on the target, but
@@ -631,10 +613,8 @@ allows for faster implementations, in particular through hardware support.
   \pverbatimsnippet{fetchopp}
 \end{example}
 
-Finally, \indexmpishow{MPI_Compare_and_swap} swaps the origin and
+Finally, \indexmpiref{MPI_Compare_and_swap} swaps the origin and
 target data if the target data equals some comparison value.
-%
-\mpiRoutineRef{MPI_Compare_and_swap}
 
 \Level 0 {Passive target synchronization}
 \label{sec:passive-sync}
@@ -648,7 +628,9 @@ by unlocking it again.
 During access epoch, also called an
 \indextermsubdef{passive target}{epoch} in this case,
 a~process can initiate and finish a one-sided
-transfer.
+transfer. Typically it will lock the window with
+\indexmpiref{MPI_Win_lock}:
+
 \begin{lstlisting}
 If (rank == 0) {
   MPI_Win_lock (MPI_LOCK_EXCLUSIVE, 1, 0, win);
@@ -669,18 +651,15 @@ The two lock types are:
 These routines make MPI behave like a shared memory system; the
 instructions between locking and unlocking the window effectively
 become \indexterm{atomic operations}.
-%
-\mpiRoutineRef{MPI_Win_lock}
 
 To lock the windows of all processes in the group of the windows, use
-\indexmpishow{MPI_Win_lock_all}:
-%
-\mpiRoutineRef{MPI_Win_lock_all}
+\indexmpiref{MPI_Win_lock_all}.
 
-To unlock a window, use \indexmpishow{MPI_Win_unlock} and
+To unlock a window, use
+\indexmpiref{MPI_Win_unlock} % includes unlock_all
+and
 \indexmpishow{MPI_Win_unlock_all}.
 
-\mpiRoutineRef{MPI_Win_unlock} % includes unlock_all
 
 \Level 1 {Completion and consistency}
 
@@ -705,18 +684,15 @@ with
 epoch.
 
 There is also
-\indexmpishow{MPI_Win_flush} or
+\indexmpiref{MPI_Win_flush} or
 \indexmpishow{MPI_Win_flush_all}, which has to come inside the
 \indextermsub{passive target}{epoch}.
-%
-\mpiRoutineRef{MPI_Win_flush}
 
 Local completion, again: during the epoch, is done with
-with \indexmpishow{MPI_Win_flush_local} or
+with \indexmpiref{MPI_Win_flush_local} or
 \indexmpishow{MPI_Win_flush_local_all}.
 After these, buffers involved in the call can be reused.
-%
-\mpiRoutineRef{MPI_Win_flush_local}
+
 
 Finally, there is \indexmpidef{MPI_Win_sync} which synchronizes
 private and public copies of the window.
@@ -767,16 +743,16 @@ In section~\ref{sec:win-alloc} we looked at simple ways to create a
 window and its memory.
 
 It is also possible to have windows where the size is dynamically set.
+Create a dynamic window with
+\indexmpiref{MPI_Win_create_dynamic}
+and attach
+memory to the window with
 %
-\mpiRoutineRef{MPI_Win_create_dynamic}
+\indexmpiref{MPI_Win_attach}.
 %
-Memory is attached to the window:
+The memory is released with
 %
-\mpiRoutineRef{MPI_Win_attach}
-%
-and its inverse:
-%
-\mpiRoutineRef{MPI_Win_detach}
+\indexmpiref{MPI_Win_detach}.
 
 You may now think that the window memory is the same as the buffer you
 pass to \indexmpishow{MPI_Win_create} or that you get from

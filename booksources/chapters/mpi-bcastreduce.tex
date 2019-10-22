@@ -17,9 +17,9 @@
 \label{sec:allreduce}
 
 Above we saw a couple of scenarios where a quantity is reduced, with
-all proceses getting the result. The MPI call for this is:
-
-\mpiRoutineRef{MPI_Allreduce}
+all proceses getting the result. The MPI call for this is
+%
+\indexmpiref{MPI_Allreduce}.
 
 Example: we give each process a random number, and sum these numbers together.
 The result should be approximately $1/2$ times the number of processes.
@@ -72,7 +72,7 @@ using the \indexmpishow{MPI_IN_PLACE} specifier:
 This has the advantage of saving half the memory.
 
 \Level 1 {Reduction operations}
-\label{sec:mpi:op-create}
+\label{sec:mpi:op-reduct}
 
 Several \indexmpishow{MPI_Op} values are pre-defined. For the list,
 see section~\ref{sec:operator-list}.
@@ -104,7 +104,11 @@ consider routines that have a root.
 \label{sec:reduce-root}
 
 In the broadcast operation a single data item was communicated to all
-processes. Reduction operations go the other way: each process has a
+processes. A~reduction operation with
+%
+\indexmpiref{MPI_Reduce}
+%
+goes the other way: each process has a
 data item, and these are all brought together into a single item.
 
 Here are the essential elements of a reduction operation:
@@ -129,8 +133,6 @@ MPI_Reduce( senddata, recvdata..., operator,
 \end{itemize}
 
 \cverbatimsnippet[examples/mpi/c/reduce.c]{reduce}
-
-\mpiRoutineRef{MPI_Reduce}
 
 \begin{exercise}
   \label{ex:randommax}
@@ -190,7 +192,12 @@ Unlike with send/receive there is no message tag,
 because collectives are blocking, so you can have only one collective active at a
 time. 
 
-The data in a broadcast (or any other MPI operation for that matter)
+The data in a broadcast
+%
+with
+\indexmpiref{MPI_Bcast}
+%
+(or any other MPI operation for that matter)
 is specified as
 \begin{itemize}
 \item A buffer. In~C this is the address in memory of the data. This means
@@ -212,8 +219,6 @@ Example: in general we can not assume that all processes get the
 commandline arguments, so we broadcast them from process~0.
 
 \cverbatimsnippet[examples/mpi/c/usage.c]{usage}
-
-\mpiRoutineRef{MPI_Bcast}
 
 \begin{exercise}
   \label{ex:argv-bcast}

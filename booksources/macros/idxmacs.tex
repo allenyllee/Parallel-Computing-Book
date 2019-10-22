@@ -113,32 +113,6 @@
     \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
     \ShowRoutinefalse
     \tt \afterassignment\omptoindex\edef\indexedomp}
-  %% same for PETSc
-  \gdef\indexpetscshow#{\bgroup
-    \catcode`\_=12 % 13 \def_{\char95\discretionary{}{}{}}
-    \catcode`\>=12 \catcode`\<=12
-    \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
-    \ShowRoutinetrue
-    \tt \afterassignment\petsctoindex\edef\indexedpetsc}
-  \gdef\indexpetscdef#{\bgroup
-    \catcode`\_=12 % 13 \def_{\char95\discretionary{}{}{}}
-    \catcode`\>=12 \catcode`\<=12
-    \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
-    \ShowRoutinetrue
-    \tt \afterassignment\petsctoindexbf\edef\indexedpetsc}
-  \global\let\indexpetscshowdef\indexpetscdef
-  \gdef\indexpetscex#{\bgroup
-    \catcode`\_=12 % 13 \def_{\char95\discretionary{}{}{}}
-    \catcode`\>=12 \catcode`\<=12
-    \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
-    \ShowRoutinetrue
-    \tt \afterassignment\petsctoindexit\edef\indexedpetsc}
-  \gdef\indexpetsc#{\bgroup
-    \catcode`\_=12 % 13 \def_{\char95\discretionary{}{}{}}
-    \catcode`\>=12 \catcode`\<=12
-    \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
-    \ShowRoutinefalse
-    \tt \afterassignment\petsctoindex\edef\indexedpetsc}
 }
 
 %%%%
@@ -199,8 +173,69 @@
 }
 
 %%%%
-%%%% PETSc to index
+%%%% MPI Routine Ref
 %%%%
+\def\RoutineRefStyle{ \small }
+{ \catcode`\_=13
+\gdef\indexmpishowsub#{\bgroup \catcode`\_=13 \def_{\char95\discretionary{}{}{}}
+  \catcode`\>=12 \catcode`\<=12
+  \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
+  \tt \afterassignment\defineindexmpisubtwo \xdef\indexedmpisubone}
+\gdef\defineindexmpisubtwo{\afterassignment\mpitoindexsub \gdef\indexedmpisubtwo}
+}
+
+\def\mpiRoutineRef#{\bgroup \RoutineRefStyle \catcode`\_=13
+  \afterassignment\mpiRefDisplay\def\indexedmpi
+}
+{ \catcode`\_=13
+\gdef\mpiRefDisplay{\par
+  \def_{\underscore}%
+  \begin{figure}[p]
+    % first write index
+    \edef\tmp{%
+      \noexpand\index[mpi]{\indexedmpi@{\catcode95=12 \noexpand\texttt{\indexedmpi}}|textbf}}%
+    \tmp\nobreak
+    % then input
+    \def_{\underscore}\edef\tmp{\noexpand\verbatiminput{\indexedmpi}}\tmp
+    \nobreak
+        { \hskip\unitindent \textsl{\small How to read routine prototypes:~\ref{sec:protos}.}\par }
+        \caption{Routine prototype for \texttt{\indexedmpi}}
+        \label{ref:\indexedmpi}
+  \end{figure}
+  \egroup
+}
+} % end of catcode`\_=13
+
+%%%%
+%%%% PETSc Routine Ref
+%%%%
+{ \catcode`\_=13
+  \gdef\indexpetscshow#{\bgroup
+    \catcode`\_=12 % 13 \def_{\char95\discretionary{}{}{}}
+    \catcode`\>=12 \catcode`\<=12
+    \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
+    \ShowRoutinetrue
+    \tt \afterassignment\petsctoindex\edef\indexedpetsc}
+  \gdef\indexpetscdef#{\bgroup
+    \catcode`\_=12 % 13 \def_{\char95\discretionary{}{}{}}
+    \catcode`\>=12 \catcode`\<=12
+    \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
+    \ShowRoutinetrue
+    \tt \afterassignment\petsctoindexbf\edef\indexedpetsc}
+  \global\let\indexpetscshowdef\indexpetscdef
+  \gdef\indexpetscex#{\bgroup
+    \catcode`\_=12 % 13 \def_{\char95\discretionary{}{}{}}
+    \catcode`\>=12 \catcode`\<=12
+    \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
+    \ShowRoutinetrue
+    \tt \afterassignment\petsctoindexit\edef\indexedpetsc}
+  \gdef\indexpetsc#{\bgroup
+    \catcode`\_=12 % 13 \def_{\char95\discretionary{}{}{}}
+    \catcode`\>=12 \catcode`\<=12
+    \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
+    \ShowRoutinefalse
+    \tt \afterassignment\petsctoindex\edef\indexedpetsc}
+}
 \def\petsctoindex{%\tracingmacros=2
   \edef\tmp{%
     \noexpand\lstinline+\indexedpetsc+%
@@ -218,46 +253,72 @@
 }
 
 
-{ \catcode`\_=13
-\gdef\indexmpishowsub#{\bgroup \catcode`\_=13 \def_{\char95\discretionary{}{}{}}
+%%%%
+%%%% routine ref
+%%%%
+\def\RoutineRefStyle{
+  \catcode`\_=12 % 13 \def_{\char95\discretionary{}{}{}}
   \catcode`\>=12 \catcode`\<=12
   \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
-  \tt \afterassignment\defineindexmpisubtwo \xdef\indexedmpisubone}
-\gdef\defineindexmpisubtwo{\afterassignment\mpitoindexsub \gdef\indexedmpisubtwo}
-\gdef\mpiRefDisplay{\par
-  \def_{\underscore}%
-  % first write index
-  \edef\tmp{%
-    \noexpand\index[mpi]{\indexedmpi@{\catcode95=12 \noexpand\texttt{\indexedmpi}}|textbf}}%
-  \tmp\nobreak
-  % then input
-  \def_{\underscore}\edef\tmp{\noexpand\verbatiminput{\indexedmpi}}\tmp
-  \nobreak
-  { \hskip\unitindent \textsl{\small How to read routine prototypes:~\ref{sec:protos}.}\par }
-  \egroup
 }
-\gdef\petscRefDisplay{\par
-  \def_{\underscore}%
-  % first write index
-  \edef\tmp{%
-    \noexpand\index[petsc]{\indexedpetsc@{\catcode95=12 \noexpand\texttt{\indexedpetsc}}|textbf}}%
-  \tmp\nobreak
-  % then input
-  \def_{\underscore}\edef\tmp{\noexpand\verbatiminput{\indexedpetsc}}\tmp
-  \nobreak
-  { \hskip\unitindent \textsl{\small How to read routine prototypes:~\ref{sec:protos}.}\par }
-  \egroup
+\def\RoutineIndexStyle{
+  \catcode`\_=12 % 13 \def_{\char95\discretionary{}{}{}}
+  \catcode`\>=12 \catcode`\<=12
+  \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
 }
-} % end of catcode`\_=13
+{ \catcode`\_=12
+\gdef\underscore{_}
+}
+\def\indexpetscref#{\bgroup \ShowRoutinetrue \RoutineIndexStyle
+  \afterassignment\petscIndexAndRef
+  \edef\indexedroutine
+}
+\def\indexpetscxref#1#2{\def\indexedroutine{#1}\def\displayedroutine{#2}%
+  %\petscIndexBF -> \RoutineIndexBF{petsc}
+  \edef\tmp{%
+    \noexpand\lstinline+\indexedroutine+ (figure\noexpand~\noexpand\ref{ref:\displayedroutine})%
+    \noexpand\index[petsc]{%
+      \indexedroutine@{\catcode95=12 \noexpand\texttt{\indexedroutine}}|textbf}%
+  }%
+  \tmp
+}  
 
-\def\RoutineRefStyle{ \small }
-\def\mpiRoutineRef#{\bgroup \RoutineRefStyle \catcode`\_=13
-  \afterassignment\mpiRefDisplay\def\indexedmpi
+\def\petscIndexAndRef{\petscIndexBF\RoutineRefDisplay}
+\def\petscIndexBF{\RoutineIndexBF{petsc}}
+
+\def\indexmpiref#{\bgroup \ShowRoutinetrue \RoutineIndexStyle
+  \afterassignment\mpiIndexAndRef
+  \edef\indexedroutine
+}
+\def\mpiIndexAndRef{\mpiIndexBF\RoutineRefDisplay}
+\def\mpiIndexBF{\RoutineIndexBF{mpi}}
+
+{ \catcode`\_=13
+  \gdef\RoutineRefDisplay{%
+    \begin{figure}[p]
+      {\Large \textbf{\texttt{\indexedroutine}}}
+      \RoutineRefStyle \catcode`\_=13 \tt
+      \def_{\underscore}%
+      \edef\tmp{\noexpand\verbatiminput{\indexedroutine}}\tmp
+      \hskip\unitindent \textsl{\small How to read routine prototypes:~\ref{sec:protos}.}\par
+      \caption{Routine prototype for \indexedroutine}
+      \label{ref:\indexedroutine}
+    \end{figure}
+    \egroup
+  }
+}
+\def\RoutineIndexBF#1{%
+  \edef\tmp{%
+    \noexpand\lstinline+\indexedroutine+ (figure\noexpand~\noexpand\ref{ref:\indexedroutine})%
+    \noexpand\index[#1]{%
+      \indexedroutine@{\catcode95=12 \noexpand\texttt{\indexedroutine}}|textbf}%
+  }%
+  \tmp
 }
 \def\petscRoutineRef#{\bgroup \RoutineRefStyle \catcode`\_=13
-  \afterassignment\petscRefDisplay\def\indexedpetsc
+  \afterassignment\RoutineRefDisplay
+  \def\indexedroutine
 }
-\def\underscore{_}
 
 \def\mpitoindexsub{%\tracingmacros=2
   \edef\tmp{\noexpand\n{\indexedmpisubone} {\indexedmpisubtwo}%

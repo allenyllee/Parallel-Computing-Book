@@ -150,7 +150,7 @@ enough for any data sent. In case you really have no idea how much data
 is being sent, and you don't want to overallocate the receive buffer,
 you can use a `probe' call.
 
-The routine \indexmpishow{MPI_Probe} (and \indexmpishow{MPI_Iprobe},
+The routine \indexmpiref{MPI_Probe} (and \indexmpishow{MPI_Iprobe},
 for which see section~\ref{sec:progress}), accepts a message,
 but does not copy the data. Instead, when probing tells you that there is a
 message, you can use \indexmpishow{MPI_Get_count} to determine its size,
@@ -158,8 +158,6 @@ allocate a large enough receive buffer, and do a regular receive to
 have the data copied.
 
 \cverbatimsnippet[examples/mpi/c/probe.c]{probe}
-
-\mpiRoutineRef{MPI_Probe}
 
 There is a problem with the \indexmpishow{MPI_Probe} call in a
 multithreaded environment: the following scenario can happen.
@@ -172,15 +170,11 @@ multithreaded environment: the following scenario can happen.
 \item \dots~Leaving the first thread in a blocked state with not
   message to receive.
 \end{enumerate}
-This is solved by \indexmpishow{MPI_Mprobe}, which after a successful
+This is solved by \indexmpiref{MPI_Mprobe}, which after a successful
 probe removes the message from the \indexterm{matching queue}: the
 list of messages that can be matched by a receive call. The thread
-that matched the probe now issues an \indexmpishow{MPI_Mrecv} call on
+that matched the probe now issues an \indexmpiref{MPI_Mrecv} call on
 that message through an object of type \indexmpidef{MPI_Message}.
-
-\mpiRoutineRef{MPI_Mprobe}
-
-\mpiRoutineRef{MPI_Mrecv}
 
 \Level 1 {The Status object and wildcards}
 \label{sec:mpi-wildcard}
@@ -190,10 +184,8 @@ that message through an object of type \indexmpidef{MPI_Message}.
 With some receive calls you know everything about the message in advance:
 its source, tag, and size. In other cases you want to leave some options
 open, and inspect the message for them after it was received.
-To do this, the receive call has a \indexmpishow{MPI_Status}
+To do this, the receive call has a \indexmpiref{MPI_Status}
 parameter.
-
-\mpiRoutineRef{MPI_Status}
 
 This status is a property of the actually received messsage, so \indexmpishow{MPI_Irecv}
 does not have a status parameter, but \indexmpishow{MPI_Wait} does.
@@ -218,9 +210,10 @@ MPI_Recv(recv_buffer+p,1,MPI_INT, MPI_ANY_SOURCE,0,comm,
 sender = status.MPI_SOURCE;
 \end{lstlisting}
 
-The source of a message is a member of the status structure.
+The source of a message can be obttained as the
+\indexmpiref{MPI_SOURCE}
+member of the status structure.
 
-\mpiRoutineRef{MPI_SOURCE}
 
 There are various scenarios where receiving from `any source' makes sense.
 One is that of the \indexterm{master-worker model}. The master task would first send
@@ -233,23 +226,28 @@ If a processor is expecting more than one messsage from a single other processor
 message tags are used to distinguish between them. In that case,
 a value of \indexmpishow{MPI_ANY_TAG} can be used, and the actual
 \emph{tag}\index{message!status!tag}
-of a message can be retrieved from the status structure.
+of a message can be retrieved as the
+%
+\indexmpiref{MPI_TAG}
+%
+member in the status structure.
 
-\mpiRoutineRef{MPI_TAG}
 
 \Level 2 {Error}
 
 Any \emph{errors}\index{message!status!error}
-during the receive operation can be found in the status
-structurel
+during the receive operation can be found as the
+\indexmpiref{MPI_ERROR}
+member of the status structure.
 
-\mpiRoutineRef{MPI_ERROR}
 
 \Level 2 {Count}
 
 If the amount of data received is not known a~priori, the
 \emph{count}\index{message!count} of elements received
-can be found as
+can be found by 
+\indexmpiref{MPI_Get_count}:
+
 \begin{lstlisting}
 MPI_Get_count(&recv_status,MPI_INT,&recv_count);
 \end{lstlisting}
@@ -259,8 +257,6 @@ data items.
 
 Note that unlike the above this is not directly a member of the status
 structure.
-
-\mpiRoutineRef{MPI_Get_count}
 
 \Level 2 {Example: receiving from any source}
 
@@ -335,23 +331,23 @@ To do this, MPI has \emph{persistent communication}:
   with \indexmpishow{MPI_Request_free}.
 \end{itemize}
 
-The calls \indexmpishow{MPI_Send_init} and \indexmpishow{MPI_Recv_init}
+The calls \indexmpiref{MPI_Send_init} and \indexmpiref{MPI_Recv_init}
 for creating a persistent communication have the same syntax as 
 those for non-blocking sends and receives. The difference is that they do not start
 an actual communication, they only create the request object.
 %
-\mpiRoutineRef{MPI_Send_init}
+%\mpiRoutineRef{MPI_Send_init}
 %
-\mpiRoutineRef{MPI_Recv_init}
+%\mpiRoutineRef{MPI_Recv_init}
 %
 
 Given these request object, a communication (both send and receive) is then started
-with \indexmpishow{MPI_Start} for a single request or \indexmpishow{MPI_Start_all} for 
+with \indexmpiref{MPI_Start} for a single request or \indexmpiref{MPI_Start_all} for 
 multiple requests, given in an array.
 %
-\mpiRoutineRef{MPI_Start}
+%\mpiRoutineRef{MPI_Start}
 %
-\mpiRoutineRef{MPI_Startall}
+%\mpiRoutineRef{MPI_Startall}
 %
 These are equivalent to starting an \indexmpishow{MPI_Isend} or
 \indexmpishow{MPI_Isend}; correspondingly, it is necessary to issue an
@@ -407,17 +403,17 @@ reused. It would be possible to reuse the send buffers if MPI had
 enough internal buffer space. For this, there is the
 \indextermsub{buffered}{send} mode, where you first give MPI internal buffer
 space; subsequently only a single send buffer is needed. The
-\indexmpishow{MPI_Bsend} call is non-blocking.
+\indexmpiref{MPI_Bsend} call is non-blocking.
 
-\mpiRoutineRef{MPI_Bsend}
 
-There can be only one buffer per process; its size should be enough
+There can be only one buffer per process, attached with
+\indexmpiref{MPI_Buffer_attach}.
+%
+Its size should be enough
 for all outstanding \indexmpishow{MPI_Bsend} calls that are simultaneously
 outstanding, plus \indexmpidef{MPI_BSEND_OVERHEAD}.
 You can compute the needed size of the buffer with \indexmpishow{MPI_Pack_size};
 see section~\ref{sec:pack}.
-
-\mpiRoutineRef{MPI_Buffer_attach}
 
 The possible error codes are
 \begin{itemize}
@@ -446,9 +442,9 @@ The asynchronous version is \indexmpishow{MPI_Ibsend}, the persistent
 
 \Level 2 {Persistent buffered communication}
 
-There is a persistent variant of buffered sends, as with regular
+There is a persistent variant 
+\indexmpiref{MPI_Bsend_init}
+of buffered sends, as with regular
 sends (section~\ref{sec:persistent}).
-
-\mpiRoutineRef{MPI_Bsend_init}
 
 \index{communication!two-sided|)}

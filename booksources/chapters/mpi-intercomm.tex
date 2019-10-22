@@ -39,9 +39,9 @@ terms of those communicators, and this is what happens in an
   \label{fig:intercomm}
 \end{figure}
 
-\mpiRoutineRef{MPI_Intercomm_create}
-
-This involves the following communicators:
+A call to
+\indexmpiref{MPI_Intercomm_create}
+involves the following communicators:
 \begin{itemize}
 \item Two local communicators, which in this context are known as
   \indextermsubh{intra}{communicator}s: one process in each will act as
@@ -107,16 +107,15 @@ Some of the operations you have seen before for
 \end{itemize}
 
 Test whether a communicator is intra or inter:
-\mpiRoutineRef{MPI_Comm_test_inter}
+\indexmpiref{MPI_Comm_test_inter}.
 
 \indexmpishow{MPI_Comm_compare} works for inter-communicators.
 
-\mpiRoutineRef{MPI_Comm_remote_size}
-\mpiRoutineRef{MPI_Comm_remote_group}
+\indexmpiref{MPI_Comm_remote_size}
+\indexmpiref{MPI_Comm_remote_group}
 
 Virtual topologies cannot be created with an intercommunicator. To set
 up virtual topologies, first transform the intercommunicator to an
 intracommunicator with the function
-\indexmpishow{MPI_Intercomm_merge}:
-%
-\mpiRoutineRef{MPI_Intercomm_merge}
+\indexmpiref{MPI_Intercomm_merge}.
+

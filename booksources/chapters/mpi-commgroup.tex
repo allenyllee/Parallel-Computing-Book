@@ -15,22 +15,17 @@
 
 You saw in section~\ref{sec:comm-split} that it is possible derive
 communicators that have a subset of the processes of another communicator.
-There is a more general mechanism, using \indexmpishow{MPI_Group}
+There is a more general mechanism, using \indexmpiref{MPI_Group}
 objects.
-
-\mpiRoutineRef{MPI_Group}
 
 Using groups, it takes three steps to create a new communicator:
 \begin{enumerate}
 \item Access the \indexmpishow{MPI_Group} of a communicator
-  object using \indexmpishow{MPI_Comm_group}.
-  
-  \mpiRoutineRef{MPI_Comm_group}
+  object using \indexmpiref{MPI_Comm_group}.
 \item Use various routines, discussed next, to form a new group.
 \item Make a new communicator object from the group with
-  \indexmpishow{MPI_Group}.
-
-  \mpiRoutineRef{MPI_Comm_create}
+  \indexmpishow{MPI_Group}, using
+  \indexmpiref{MPI_Comm_create}
 \end{enumerate}
 
 Creating a new communicator from a group is collective on the old communicator.

@@ -30,14 +30,18 @@ evenly, the excess is spread over the processes.
 
 The way the distribution is done is by contiguous blocks: with 10
 processes and 1000 components in a vector, process 0 gets the range
-$0--99$, process 1 gets $1--199$, et cetera. This simple scheme suffices for
+$0\cdots99$, process 1 gets $1\cdots199$, et cetera. This simple scheme suffices for
 many cases, but PETSc has facilities for more sophisticated load
 balancing.
 
 Once an object has been created and distributed, you do not need to
 remember the size or the distribution yourself: you can query these
 with calls such as \lstinline{VecGetSize},
-\lstinline{VecGetLocalSize}, and \lstinline{VecGetOwnershipRange}. The
+\lstinline{VecGetLocalSize}, and \lstinline{VecGetOwnershipRange}.
+
+\includegraphics[scale=.1]{veclayout}
+
+The
 corresponding matrix routines \lstinline{MatGetSize},
 \lstinline{MatGetLocalSize} give both information for the
 distributions in $i$ and~$j$ direction, which can be
@@ -66,30 +70,32 @@ to be created on a communicator:
   member of \n{PETSc.Vec.Type}.
 \end{pythonnote}
 
-There is a destroy call that deallocates data:
+The corresponding \indexpetscref{VecDestroy} destroy call deallocates data and zeros
+the pointer.
 %
-\petscRoutineRef{VecDestroy}
+%\petscRoutineRef{VecDestroy}
 
-The vector type needs to be set:
+The vector type needs to be set with \indexpetscref{VecSetType}.
 %
-\petscRoutineRef{VecSetType}
+%\petscRoutineRef{VecSetType}
 
 The most common vector types are:
 \begin{itemize}
-\item \n{VECSEQ} for sequential vectors, that is, living on a single process;
-\item \n{VECMPI} for a vector distributed over the communicator.
+\item \indexpetscshow{VECSEQ} for sequential vectors, that is, living on a single process;
+\item \indexpetscshow{VECMPI} for a vector distributed over the communicator.
 \end{itemize}
 
-Next in the creation process the vector size is determined. Since a
+Next in the creation process the vector size is set with \indexpetscref{VecSetSize}.
+Since a
 vector is typically distributed, this involves the global size and the
 sizes on the processors. Setting both is redundant, so it is possible
 to specify one and let the other be computed by the library.
 %
-\petscRoutineRef{VecSetSize}
+%\petscRoutineRef{VecSetSize}
 
-To query the sizes:
+The size is queried with \indexpetscref{VecGetSize}.
 %
-\petscRoutineRef{VecGetSize}
+%\petscRoutineRef{VecGetSize}
 
 \Level 1 {Vector operations}
 
@@ -99,10 +105,10 @@ use to write scientific applications. For instance:
 \petscRoutineRef{VecNorm}
 
 For debugging purpoases,
-the \n{VecView} routine can be used to display vectors on screen as
-ascii output
+the \indexpetscref{VecView} routine can be used to display vectors on screen as
+ascii output,
 %
-\petscRoutineRef{VecView}
+%\petscRoutineRef{VecView}
 %
 but the routine call also use more general \n{Viewer} objects, for
 instance to dump a vector to file.
@@ -111,21 +117,20 @@ instance to dump a vector to file.
 
 Setting elements of a traditional array is simple. Setting elements of
 a distributed array is harder. In PETSc this is solved by having a
-function for setting elements that uses global numbering; any
+function \indexpetscref{VecSetValue} for setting elements that uses global numbering; any
 process can set any elements in the vector:
 %
-\petscRoutineRef{VecSetValue}
+%\petscRoutineRef{VecSetValue}
 
-There is also a routine for setting multiple elements:
-\n{VecSetValues}. This is mostly useful for setting dense subblocks of
-a block matrix.
+There is also a routine \indexpetscref{VecSetValues} for setting
+multiple elements. This is mostly useful for setting dense subblocks
+of a block matrix.
 
-Using \n{VecSetValue} for specifying a local vector element
+Using \lstinline{VecSetValue} for specifying a local vector element
 corresponds to simple insertion in the local array. However,
 an element that belongs to another process needs to be
-transferred. This done in two calls:
-%
-\petscRoutineRef{VecAssemblyBegin}
+transferred. This done in two calls: \indexpetscref{VecAssemblyBegin}
+and \indexpetscshow{VecAssemblyEnd}.
 
 (If you know the MPI library, you'll recognize that the first call corresponds to
 posting non-blocking send and receive calls; the second then contains
@@ -133,17 +138,27 @@ the wait calls.)
 
 Since the vector routines cover a large repertoire of operations, you
 hardly ever need to access the actual elements. Should you still need
-those elements, you can use:
-%
-\petscRoutineRef{VecGetArray}
+those elements, you can use \indexpetscref{VecGetArray} for general
+access or \indexpetscxref{VecGetArrayRead}{VecGetArray} for read-only.
 
-PETSc insists that you properly release this pointer again:
-
-\petscRoutineRef{VecRestoreArray}
+PETSc insists that you properly release this pointer again with
+\indexpetscref{VecRestoreArray} or
+\indexpetscxref{VecRestoreArrayRead}{VecRestoreArray}.
 
 Note that in a distributed running context you can only get the array
 of local elements. Accessing the elements from another process
 requires explicit communication.
+
+\begin{lstlisting}
+PetscScalar *in_array,*out_array;
+VecGetArrayRead(in,&in_array);
+VecGetArray(out,&out_array);
+VecGetLocalSize(in,&localsize);
+for (int i=0; i<localsize; i++)
+  out_array[i] = 2*in_array[i];
+VecRestoreArrayRead(in,&in_array);
+VecRestoreArray(out,&out_array);
+\end{lstlisting}
 
 \Level 0 {Matrices}
 
@@ -171,7 +186,7 @@ sequential versus distributed and dense versus sparse:
 
 Those four types are: \n{MATMPIDENSE} \n{MATMPIAIJ} \n{MATSEQDENSE} \n{MATSEQAIJ}.
 
-\Level 1 {Matrix elements}
+\Level 1 {Nonzero structure}
 
 In case of a dense matrix, once you have specified the size and the
 number of MPI ranks, it is simple to determine how much space PETSc
@@ -183,8 +198,8 @@ repeated allocations and re-allocations are inefficient. For this
 reason PETSc puts a small burden on the programmer: you need to
 specify a bound on how many elements the matrix will contain.
 
-In its simplest form, you would indicate an upper bound on the number
-non-zeros in the matrix. For a single-processor matrix:
+We explain this by  looking at some cases. In the case of a
+tridiagonal matrix you would specify that each row has three elements:
 
 \begin{verbatim}
 MatSeqAIJSetPreallocation(A,3, NULL);
@@ -204,6 +219,10 @@ if many rows have fewer nonzeros than these bounds, a lot of space is
 wasted. In that case you can replace the NULL arguments by an array
 that lists for each row the number of nonzeros in that row.
 
+\petscRoutineRef{MatSetPreallocation}
+
+\Level 1 {Matrix elements}
+
 You can set a single matrix element, or a block of them, where you
 supply a set of $i$~and~$j$ indices:
 %
@@ -221,7 +240,6 @@ execution since the \ac{OS} needs to reallocate the matrix every time
 it grows a little. Therefore, PETSc has calls for the user to indicate
 how many elements the matrix will ultimately contain.
 %
-\petscRoutineRef{MatSetPreallocation}
 
 \begin{verbatim}
 MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE)
@@ -256,9 +274,9 @@ handled this way. The reason is that PETSc's iterative solvers
 (section~\ref{sec:petsc-ksp}) only need the matrix-times-vector (and perhaps
 the matrix-transpose-times-vector) product.
 
-PETSc supports this mode of working. The routine \indexpetscdef{MatCreateShell}
+PETSc supports this mode of working. The routine \indexpetscref{MatCreateShell}
 %
-\petscRoutineRef{MatCreateShell}
+%\petscRoutineRef{MatCreateShell}
 %
 declares the argument to be a matrix given in operator form.
 The next step is then to add the custom multiplication routine, which
@@ -269,11 +287,28 @@ will be invoked by \indexpetscshow{MatMult}:
 The routine that implements the actual product should have the same
 prototype as \indexpetscshow{MatMult}, accepting a matrix and two
 vectors. The key to realizing your own product routine lies in the
-`context' argument to the create routine: here you pass a pointer to a
-\lstinline{struct} that contains all contextual information you
-need. In your multiplication routine you retrieve this with:
-%
-\petscRoutineRef{MatShellGetContext}
+`context' argument to the create routine. With
+\indexpetscref{MatShellSetContext} you pass a pointer to some
+structure that contains all contextual information you need. In your
+multiplication routine you then retrieve this with \indexpetscref{MatShellGetContext}.
+
+Setting the context means passing a pointer (really: an address) to
+some allocated structure
+\begin{lstlisting}
+struct matrix_data mystruct;
+MatShellSetContext( A, &mystruct );
+\end{lstlisting}
+
+The routine prototype
+has this argument as a \lstinline{void*} but it's not necessary to
+cast it to that. Getting the context means that a pointer to your
+structure needs to be set
+\begin{lstlisting}
+struct matrix_data *mystruct;
+MatShellGetContext( A, &mystruct );
+\end{lstlisting}
+Somewhat confusingly, the Get routine also has a \lstinline{void*}
+argument, even though it's really a pointer variable.
 
 \Level 0 {KSP: iterative solvers}
 \label{sec:petsc-ksp}
@@ -402,7 +437,8 @@ want to experiment with different solvers, does that mean that you
 have to edit a whole bunch of code? Fortunately, there is an easier
 way to do things. If you call the routine
 %
-\indexpetscdef{KSPSetFromOptions}\n{(solver)}
+\indexpetscref{KSPSetFromOptions}
+with the \lstinline{solver} as argument,
 %
 PETSc will look at your command line options and take those into
 account in defining the solver. Thus, you can either omit setting

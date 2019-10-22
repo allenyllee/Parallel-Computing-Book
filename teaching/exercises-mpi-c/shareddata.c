@@ -28,18 +28,18 @@ int main(int argc,char **argv) {
 
   /*
    * Exercise:
-   * -- construct `nodecomm': the communicator that contains all processes on this node.
+   * -- construct `node_comm': the communicator that contains all processes on this node.
    *    the correct type is in the book / slides
    * Find the subcommunicator on the node,
    * and get the procno on the node.
    */
-  MPI_Comm nodecomm; int onnode_procno;
+  MPI_Comm node_comm; int onnode_procno;
   MPI_Comm_split_type
     (comm,
 /**** your code here ****/
      procno,
      MPI_INFO_NULL,
-     &nodecomm);
+     &node_comm);
 
   /*
    * Exercise:

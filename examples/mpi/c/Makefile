@@ -127,18 +127,25 @@ tau :
 	  tau_treemerge.pl ; \
 	  tau2slog2 tau.trc tau.edf -o $$HOME/taulog$$TAU_EXT.slog2
 
-.PHONY: run_backintime
+RUNS =
 info ::
-	@echo "make run_backintime"
+	@echo "make run_XXX (in ${RUNS})"
+RUNS += run_abort
+.PHONY: run_abort
+run_abort : abort
+	-@${MPIRUN} -np ${NP} ./abort ; \
+	  echo "Return code from ${MPIRUN} is <<$$?>>"
+
+RUNS += run_backintime
+.PHONY: run_backintime
 run_backintime : backintime
 	for i in `seq 1 150` ; do \
 	  mpirun -np 3 ./backintime ; \
 	done | grep back
 
-.PHONY: run_abort
-run_abort : abort
-	-@${MPIRUN} -np ${NP} ./abort ; \
-	  echo "Return code from ${MPIRUN} is <<$$?>>"
+RUNS += run_struct
+run_struct : struct
+	${MPIRUN} -np ${NP} ./struct
 
 MODE = mpi
 include ../../Make.inc

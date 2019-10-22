@@ -28,9 +28,7 @@ Of course, in practice there will be a difference in performance
 depending on whether the origin and target are actually
 on the same shared memory, or whether they can only communicate through the network.
 For this reason MPI makes it easy to group processes by shared memory domains
-using \indexmpishow{MPI_Comm_split_type}.
-
-\mpiRoutineRef{MPI_Comm_split_type}
+using \indexmpiref{MPI_Comm_split_type}.
 
 Here the \n{split_type} parameter has to be from the following (short) list:
 \begin{itemize}
@@ -60,13 +58,11 @@ In order to do such user-level copying:
 
 The first step is to create a window (in the sense of one-sided MPI;
 section~\ref{sec:windows}) on the processes on one node.
-Using the \indexmpishow{MPI_Win_allocate_shared} call presumably will
+Using the \indexmpiref{MPI_Win_allocate_shared} call presumably will
 put the memory close to the 
 \indexterm{socket} on which the process runs.
 
 \cverbatimsnippet[code/mpi/shared.c]{mpisharedwindow}
-
-\mpiRoutineRef{MPI_Win_allocate_shared}
 
 The memory allocated by \indexmpishow{MPI_Win_allocate_shared} is
 contiguous between the processes. This makes it possible to do address
@@ -80,11 +76,10 @@ would increase latency for some processes. To prevent this, the key
 
 Even though the window created above is shared, that doesn't mean it's
 contiguous. Hence it is necessary to retrieve the pointer to the area
-of each process that you want to communicate with.
+of each process that you want to communicate with:
+\indexmpiref{MPI_Win_shared_query}.
 
 \cverbatimsnippet[code/mpi/shared.c]{mpisharedpointer}
-
-\mpiRoutineRef{MPI_Win_shared_query}
 
 \Level 1 {Heat equation example}
 

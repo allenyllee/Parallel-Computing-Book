@@ -22,10 +22,7 @@ then the scan operation leaves $x_0\oplus\cdots\oplus x_i$ on processor~$i$.
 This type of operation is often called a \indexterm{prefix operation};
 see \HPSCref{app:prefix}.
 
-The \indexmpishow{MPI_Scan} routine is an \indextermsub{inclusive}{scan} operation.
-%
-\mpiRoutineRef{MPI_Scan}
-%
+The \indexmpiref{MPI_Scan} routine is an \indextermsub{inclusive}{scan} operation.
 The \indexmpishow{MPI_Op} operations do not return an error code.
 
 In python native mode the result is a function return value.
@@ -36,7 +33,7 @@ In python native mode the result is a function return value.
 
 Often, the more useful variant is the \indextermsub{exclusive}{scan}
 %
-\mpiRoutineRef{MPI_Exscan}
+\indexmpiref{MPI_Exscan}
 %
 with the same prototype. 
 

@@ -1,6 +1,7 @@
 C:
 #include "petscvec.h"
 PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
+PetscErrorCode VecGetArrayRead(Vec x,const PetscScalar **a)
 
 Input Parameter
 x : the vector
@@ -9,6 +10,7 @@ Output Parameter
 a : location to put pointer to the array
 
 PetscErrorCode VecRestoreArray(Vec x,PetscScalar **a)
+PetscErrorCode VecRestoreArrayRead(Vec x,const PetscScalar **a)
 
 Input Parameters
 x : the vector

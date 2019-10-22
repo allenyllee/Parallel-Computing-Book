@@ -43,9 +43,7 @@ topology are defined:
   graph that touch itself; see section~\ref{sec:mpi-dist-graph}.
 \end{itemize}
 These values can be discovered with the routine
-\indexmpishow{MPI_Topo_test}.
-%
-\mpiRoutineRef{MPI_Topo_test}
+\indexmpiref{MPI_Topo_test}.
 
 \Level 0 {Cartesian grid topology}
 \label{sec:cartesian}
@@ -203,7 +201,7 @@ that every edge in the communication graph is represented twice, so
 the memory footprint is double of what is strictly necessary. However,
 no communication is needed to build the graph.
 
-The second creation routine, \indexmpishow{MPI_Dist_graph_create}, is
+The second creation routine, \indexmpiref{MPI_Dist_graph_create}, is
 probably easier to use, especially in cases where the communication
 structure of your program is symmetric, meaning that a process sends
 to the same neighbours that it receives from.  Now you specify on each
@@ -213,8 +211,6 @@ be sending to.\footnote{I disagree with this design
   your destinations.}. Consequently, some amount of processing
 --~including communication~-- is needed to build the converse
 information, the ranks that will be sending to a process.
-
-\mpiRoutineRef{MPI_Dist_graph_create}
 
 Figure~\ref{fig:graphcollective} describes the common five-point
 stencil structure. If we let each process only describe itself, we get
@@ -244,10 +240,9 @@ so-called `neighbour collectives'.
 \Level 1 {Neighbour collectives}
 
 We can now use the graph topology to perform a gather or allgather
+\indexmpiref{MPI_Neighbor_allgather}
 that combines only the processes directly connected to the calling
 process.
-
-\mpiRoutineRef{MPI_Neighbor_allgather}
 
 The neighbour collectives have the same argument list as the regular
 collectives, but they apply to a graph communicator.
@@ -289,9 +284,9 @@ Statistics query:
 \label{sec:mpi-1-graph}
 
 The original \indextermbus{MPI}{1} had a graph topology interface
+\mpiRoutineRef{MPI_Graph_create}
 which required each process to specify the full process graph. Since
 this is not scalable, it should be considered deprecated. Use the
 distributed graph topology (section~\ref{sec:mpi-dist-graph}) instead.
 
-\mpiRoutineRef{MPI_Graph_create}
 

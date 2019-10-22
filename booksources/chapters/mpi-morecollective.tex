@@ -57,9 +57,9 @@ In addition to predefined operators, MPI has the possibility of
 \emph{user-defined operators}\index{operator!user-defined}
 to use in a reduction or scan operation.
 
-\mpiRoutineRef{MPI_Op_create}
-
-The function needs to have the following prototype:
+The routine for this is \indexmpiref{MPI_Op_create},
+where
+the user function needs to have the following prototype:
 
 \begin{verbatim}
 typedef void MPI_User_function
@@ -112,9 +112,9 @@ number in an array of nonnegative integers:
   \[ \|x\|_1 \equiv \sum_i |x_i|. \]
 \end{exercise}
 
-You can query the commutativity of an operator:
+You can query the commutativity of an operator with
 %
-\mpiRoutineRef{MPI_Op_commutative}
+\indexmpiref{MPI_Op_commutative}.
 
 A created \indexmpishow{MPI_Op} can be freed again:
 %
@@ -127,11 +127,9 @@ This sets the operator to \indexmpishow{MPI_OP_NULL}.
 \Level 1 {Local reduction}
 
 The application of an \indexmpishow{MPI_Op} can be performed with the routine
-\indexmpishow{MPI_Reduce_local}. Using this routine and some
+\indexmpiref{MPI_Reduce_local}. Using this routine and some
 send/receive scheme you can build your own global reductions. Note
 that this routine does not take a communicator because it is purely local.
-
-\mpiRoutineRef{MPI_Reduce_local}
 
 \index{operator|)}
 
@@ -166,13 +164,7 @@ such as the \indexmpishow{MPI_Ibarrier} in~\cite{Hoefler:2010:SCP}.
 
 The same calling sequence as the blocking counterpart, except for the addition
 of an \indexmpishow{MPI_Request} parameter. For instance 
-\indexmpishow{MPI_Ibcast}:
-\begin{lstlisting}
-int MPI_Ibcast(
-  void *buffer, int count, MPI_Datatype datatype,
-  int root, MPI_Comm comm, 
-  MPI_Request *request)
-\end{lstlisting}
+\indexmpiref{MPI_Ibcast}.
 
 Non-blocking collectives offer a number of performance advantages:
 \begin{itemize}
@@ -194,11 +186,9 @@ Non-blocking collectives offer a number of performance advantages:
   non-blocking solution.
 \end{exercise}
 
-\mpiRoutineRef{MPI_Ibcast}
+\indexmpiref{MPI_Iallreduce}
 
-\mpiRoutineRef{MPI_Iallreduce}
-
-\mpiRoutineRef{MPI_Iallgather}
+\indexmpiref{MPI_Iallgather}
 
 \Level 1 {Non-blocking barrier}
 \label{sec:ibarrier}

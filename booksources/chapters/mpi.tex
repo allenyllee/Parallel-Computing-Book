@@ -235,16 +235,16 @@ handler with \indexmpishow{MPI_Comm_get_errhandler}.
 \Level 0 {Machine-specific information}
 \label{sec:mpi-info}
 
-You can create information objects, for instance for use in a library
+You can create information objects, variables of type
+\indexmpiref{MPI_Info}
+for instance for use in a library
 that you write based on MPI.
 
-\indexmpi{MPI_Info_create}
-\indexmpi{MPI_Info_set}
-\indexmpi{MPI_Info_get}
-\indexmpi{MPI_Info_free}
-\indexmpi{MPI_Info_nkeys}
-
-\mpiRoutineRef{MPI_Info}
+\indexmpidef{MPI_Info_create}
+\indexmpidef{MPI_Info_set}
+\indexmpidef{MPI_Info_get}
+\indexmpidef{MPI_Info_free}
+\indexmpidef{MPI_Info_nkeys}
 
 \Level 1 {Environment information}
 \label{sec:mpi-info-env}
@@ -346,11 +346,10 @@ See also section~\ref{sec:mpi_attr}.
 
 \Level 1 {Processor name}
 
-You can query the \indexterm{hostname} of a processor.
+You can query the \indexterm{hostname} of a processor with
+\indexmpiref{MPI_Get_processor_name}.
 This name need not be unique between different processor ranks.
-%
-\mpiRoutineRef{MPI_Get_processor_name}
-%
+
 You have to pass in the character storage:
 the character array must be at least \indexmpidef{MPI_MAX_PROCESSOR_NAME} characters long.
 The actual length of the name is returned in the \n{resultlen} parameter.
@@ -360,14 +359,14 @@ The actual length of the name is returned in the \n{resultlen} parameter.
 For runtime determination,
 The \indextermbus{MPI}{version} is available through two parameters
 \indexmpishow{MPI_VERSION} and \indexmpishow{MPI_SUBVERSION}
-or the function \indexmpishow{MPI_Get_version}:
-%
-\mpiRoutineRef{MPI_Get_version}
+or the function \indexmpiref{MPI_Get_version}.
 
 \Level 1 {Attributes}
 \label{sec:mpi_attr}
 
-\mpiRoutineRef{MPI_Attr_get}
+Some runtime (or installation dependendent) values are available as
+attributes through
+\indexmpiref{MPI_Attr_get}.
 
 Attributes are:
 \begin{itemize}
@@ -419,18 +418,13 @@ you first need to query how much of the tools interface is provided.
 \label{sec:mpi-timing}
 \index{timing!MPI|(}
 
-MPI has a \indexterm{wall clock} timer: \indexmpishow{MPI_Wtime}
-%
-\mpiRoutineRef{MPI_Wtime}
-%
+MPI has a \indexterm{wall clock} timer: \indexmpiref{MPI_Wtime}
 which gives the number of seconds from a certain point in the past.
 (Note the absence of the error parameter in the fortran call.)
 %
 \cverbatimsnippet{pingpong}
 
-The timer has a resolution of \indexmpishow{MPI_Wtick}:
-%
-\mpiRoutineRef{MPI_Wtick}
+The timer has a resolution of \indexmpiref{MPI_Wtick}.
 
 Timing in parallel is a tricky issue. For instance, most clusters do
 not have a central clock, so you can not relate start and stop times
@@ -690,10 +684,7 @@ Instead you would just synchronize the two processes involved.
 \label{sec:ref:mpi-thread}
 
 Hybrid MPI/threaded codes need to replace \indexmpishow{MPI_Init}
-by \indexmpishow{MPI_Init_thread}:
-%
-\mpiRoutineRef{MPI_Init_thread}
-%
+by \indexmpiref{MPI_Init_thread}.
 With the \n{required} parameter the user requests a certain level of support,
 and MPI reports the actual capabilities in the \n{provided} parameter.
 
@@ -714,14 +705,12 @@ The following constants are defined:
 These values are monotonically increasing.
 
 After the initialization call, you can query the support level
-with \indexmpishow{MPI_Query_thread}:
-%
-\mpiRoutineRef{MPI_Query_thread}
+with \indexmpiref{MPI_Query_thread}.
 
-In case more than one thread performs communication, the following routine
+
+In case more than one thread performs communication, 
+\indexmpiref{MPI_Is_thread_main}
 can determine whether a thread is the main thread:
-%
-\mpiRoutineRef{MPI_Is_thread_main}
 
 \Level 0 {Shell interaction}
 

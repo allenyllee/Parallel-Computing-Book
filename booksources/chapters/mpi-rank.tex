@@ -23,8 +23,13 @@ useful work.
 
 \Level 1 {Processor name}
 
-In the following exercise you will print out the hostname
-of each MPI process as a first way of distinguishing between processes.
+In the following exercise you will print out the hostname 
+of each MPI process
+%
+with
+\indexmpiref{MPI_Get_processor_name}
+%
+as a first way of distinguishing between processes.
 
 \begin{exercise}
   \label{ex:procname}
@@ -44,8 +49,6 @@ of each MPI process as a first way of distinguishing between processes.
 \end{tacc}
 \end{exercise}
 
-\mpiRoutineRef{MPI_Get_processor_name}
-%
 The character storage is provided by the user:
 the character array must be at least \indexmpidef{MPI_MAX_PROCESSOR_NAME} characters long.
 The actual length of the name is returned in the \n{resultlen} parameter.
@@ -62,15 +65,13 @@ learn much more about communicators in chapter~\ref{ch:mpi-comm}.
 
 To distinguish between processes in a communicator, MPI provides two calls
 \begin{enumerate}
-\item \indexmpishow{MPI_Comm_size} reports how many processes there are in all; and
-\item \indexmpishow{MPI_Comm_rank} states what the number of the
+\item \indexmpiref{MPI_Comm_size} reports how many processes there are in all; and
+\item \indexmpiref{MPI_Comm_rank} states what the number of the
   process is that calls this routine.
 \end{enumerate}
 
 If every process executes the \indexmpishow{MPI_Comm_size} call, they all get the
 same result, namely the total number of processes in your run.
-%
-\mpiRoutineRef{MPI_Comm_size}
 %
 On the
 other hand, if every process executes \indexmpishow{MPI_Comm_rank}, they all get
@@ -78,11 +79,9 @@ a different result, namely their own unique number, an integer in the
 range from zero to the the number of processes minus~1.
 See figure~\ref{fig:rank-parallel}.
 %
-\mpiRoutineRef{MPI_Comm_rank}
-%
 \begin{figure}[ht]
-  \includegraphics[scale=.5]{hello-parallel}
-  \caption{Running a hello world program in parallel}
+  \includegraphics[scale=.5]{rank-parallel}
+  \caption{Parallel program that prints process rank}
   \label{fig:rank-parallel}
 \end{figure}
 %

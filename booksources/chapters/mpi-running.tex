@@ -80,11 +80,10 @@ your code.
   performs the initialization.
 \end{pythonnote}
 
-Every MPI program has to start with \indextermbus{MPI}{initialization}:
+Every MPI program has to start with \indextermbus{MPI}{initialization}
+through \indexmpiref{MPI_Init},
 %
-\mpiRoutineRef{MPI_Init}
-%
-where \indextermtt{argc} and \indextermtt{argv} are the arguments
+passing \indextermtt{argc} and \indextermtt{argv}, the arguments
 of a C language main program:
 \lstset{style=reviewcode,language=C}
  \begin{lstlisting}
@@ -102,9 +101,8 @@ This may look a bit like declaring `this is the parallel part of a
 program', but that's not true: again, the whole code is executed
 multiple times in parallel.
 
-The regular way to conclude an MPI program is:
-%
-\mpiRoutineRef{MPI_Finalize}
+The regular way to conclude an MPI program is through 
+\indexmpiref{MPI_Finalize}.
 
 \begin{exercise}
   \label{ex:hello2}
@@ -117,9 +115,7 @@ The regular way to conclude an MPI program is:
 
 Apart from \indexmpishow{MPI_Finalize}, which signals a successful
 conclusion of the MPI run, an abnormal end to a run can be forced by
-\indexmpishow{MPI_Abort}:
-%
-\mpiRoutineRef{MPI_Abort}
+\indexmpiref{MPI_Abort}.
 %
 This aborts execution on all processes associated with the communicator,
 but many implementations simply abort all processes. The \n{value} parameter
@@ -138,12 +134,11 @@ There are a few commands, such as
 If MPI is used in a library, MPI can have already been initialized in a main program.
 For this reason, one can test where \indexmpishow{MPI_Init} has been called with
 %
-\mpiRoutineRef{MPI_Initialized}
-%
+\indexmpiref{MPI_Initialized}.
 
 You can test whether \indexmpishow{MPI_Finalize} has been called with
 %
-\mpiRoutineRef{MPI_Finalized}
+\indexmpiref{MPI_Finalized}
 
 \Level 2 {Commandline arguments}
 

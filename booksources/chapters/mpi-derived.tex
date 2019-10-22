@@ -68,9 +68,7 @@ MPI_Type_free( &newtype );
 \label{sec:mpi-datatype}
 
 MPI derived data types are stored in variables of type
-\indexmpishow{MPI_Datatype}.
-%
-\mpiRoutineRef{MPI_Datatype}
+\indexmpiref{MPI_Datatype}.
 
 \Level 2 {Create calls}
 
@@ -94,16 +92,12 @@ and produce a new type.
 
 \Level 2 {Commit and free}
 
-It is necessary to call \indexmpishow{MPI_Type_commit} on a new data
+It is necessary to call \indexmpiref{MPI_Type_commit} on a new data
 type, which makes MPI do the indexing calculations for the data type.
-%
-\mpiRoutineRef{MPI_Type_commit}
 
 When you no longer
-need the data type, you call \indexmpishow{MPI_Type_free}.
-\begin{lstlisting}
-int MPI_Type_free (MPI_Datatype *datatype)
-\end{lstlisting}
+need the data type, you call \indexmpiref{MPI_Type_free}.
+
 \begin{itemize}
 \item The definition of the datatype identifier will be changed to
   \indexmpidef{MPI_DATATYPE_NULL}.
@@ -117,10 +111,8 @@ int MPI_Type_free (MPI_Datatype *datatype)
 \label{sec:data:contiguous}
 
 The simplest derived type is the `contiguous' type,
-constructed with \indexmpishow{MPI_Type_contiguous}.
-%
-\mpiRoutineRef{MPI_Type_contiguous}
-%
+constructed with \indexmpiref{MPI_Type_contiguous}.
+
 A~contigous type describes an array of items
 of an elementary or earlier defined type. There is no difference between sending
 one item of a contiguous type and multiple items of the constituent type.
@@ -139,10 +131,8 @@ This is illustrated in figure~\ref{fig:data-contiguous}.
 \label{sec:data:vector}
 
 The simplest non-contiguous datatype is the `vector' type, constructed with
-\indexmpishow{MPI_Type_vector}.
-%
-\mpiRoutineRef{MPI_Type_vector}
-%
+\indexmpiref{MPI_Type_vector}.
+
 A~vector type describes a series of blocks, all 
 of equal size, spaced with a constant stride.
 \begin{figure}[ht]
@@ -273,7 +263,7 @@ The vector datatype can be used for blocks in an array of dimension
 more than~2 by using it recursively. However, this gets
 tedious. Instead, there is an explicit subarray type
 %
-\mpiRoutineRef{MPI_Type_create_subarray}
+\indexmpiref{MPI_Type_create_subarray}
 %
 This describes the dimensionality and extent of the array, and
 the starting point (the `upper left corner') and extent of the
@@ -304,14 +294,11 @@ Normally you use \n{ibrun} without process count argument.
 \Level 1 {Indexed type}
 \label{sec:data:indexed}
 
-The indexed datatype, constructed with \indexmpishow{MPI_Type_indexed}
+The indexed datatype, constructed with \indexmpiref{MPI_Type_indexed}
 can send arbitrarily located elements from an array of a single datatype.
 You need to supply an array of index locations, plus an array of blocklengths
 with a separate blocklength for each index. The total number of elements sent
 is the sum of the blocklengths.
-%
-\mpiRoutineRef{MPI_Type_indexed}
-%
 
 \begin{figure}[ht]
   \includegraphics[scale=.11]{data-indexed}
@@ -335,18 +322,16 @@ int MPI_Type_create_hindexed
  (int count, int blocklens[], MPI_Aint indices[],
   MPI_Datatype old_type,MPI_Datatype *newtype)
 \end{lstlisting}
-A slightly simpler version assumes constant block length:
-%
-\mpiRoutineRef{MPI_Type_create_hindexed_block}
+A slightly simpler version,
+\indexmpiref{MPI_Type_create_hindexed_block}
+assumes constant block length.
 
-There is an important difference with the above \indexmpishow{MPI_Type_indexed}:
-that one described offsets from a base location; these routines
-describes absolute memory addresses.
-You can use this to send for instance the elements of a
-linked list. You would traverse the list, recording the addresses of
-the elements with \indexmpishow{MPI_Get_address}.
-
-\mpiRoutineRef{MPI_Get_address}
+There is an important difference between the \n{hindexed} and the
+above \indexmpishow{MPI_Type_indexed}: that one described offsets from
+a base location; these routines describes absolute memory addresses.
+You can use this to send for instance the elements of a linked
+list. You would traverse the list, recording the addresses of the
+elements with \indexmpiref{MPI_Get_address}.
 
 In C++ you can use this to
 send an \n{stl<vector>}\index{C++!standard library!vector}, that
@@ -423,35 +408,33 @@ MPI_Type_create_struct(struclen+1,.....);
 \Level 1 {Type size}
 
 The space that MPI takes for a structure type can be queried in a
-variety of ways. First of all \indexmpishow{MPI_Type_size} counts the
+variety of ways. First of all \indexmpiref{MPI_Type_size} counts the
 \emph{datatype size}\index{MPI!datatype!size} as the 
 number of bytes occupied by the data in a type. That means that in an
 \emph{MPI vector datatype}\index{MPI!datatype!vector} it does not
 count the gaps.
 %
 \cverbatimsnippet[examples/mpi/c/vectortypesize.c]{vectortypesize}
-%
-\mpiRoutineRef{MPI_Type_size}
+
 
 On the other hand, the \emph{datatype
-  extent}\index{MPI!datatype!extent} is strictly the distance from the
+  extent}\index{MPI!datatype!extent}, measured with
+\indexmpiref{MPI_Type_get_extent}
+is strictly the distance from the
 first to the last data item of the type, that is, with counting the
 gaps in the type.
 %
 \cverbatimsnippet[examples/mpi/c/vectortypeextent.c]{vectortypeextent}
 %
-\mpiRoutineRef{MPI_Type_get_extent}
-%
-(There is a deprecated function \indexmpishow{MPI_Type_extent} with the same
+
+(There is a deprecated function \indexmpidef{MPI_Type_extent} with the same
 functionality.)
 
 The \emph{subarray datatype}\index{MPI!datatype!subarray} need not
 start at the first element of the buffer, so the extent is an
 overstatement of how much data is involved. The routine
-\indexmpishow{MPI_Type_get_true_extent} returns the lower bound,
+\indexmpiref{MPI_Type_get_true_extent} returns the lower bound,
 indicating where the data starts, and the extent from that point.
-%
-\mpiRoutineRef{MPI_Type_get_true_extent}
 
 \begin{comment}
   Suppose we implement gather (see also Section Gather ) as a spanning

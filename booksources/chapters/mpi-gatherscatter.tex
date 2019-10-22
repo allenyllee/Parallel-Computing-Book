@@ -63,7 +63,7 @@ is the number of processors. The gather call collects all this data from the
 processors to the root; the scatter call assumes that the information is 
 initially on the root and it is spread to the individual processors.
 
-The prototype for \indexmpishow{MPI_Gather} has two `count' parameters, one
+The prototype for \indexmpiref{MPI_Gather} has two `count' parameters, one
 for the length of the individual send buffers, and one for the receive buffer.
 However, confusingly, the second parameter (which is only relevant on the root)
 does not indicate the total amount of information coming in, but
@@ -71,8 +71,6 @@ rather the size of \emph{each} contribution. Thus, the two count parameters
 will usually be the same (at least on the root); they can differ if you 
 use different \indexmpishow{MPI_Datatype} values for the sending and receiving
 processors.
-
-\mpiRoutineRef{MPI_Gather}
 
 Here is a small example:
 \cverbatimsnippet[examples/mpi/c/gather.c]{gather}
@@ -121,11 +119,9 @@ elegantly with the `subarray' datatype; section~\ref{sec:type_subarray}.
   \label{fig:allgather}
 \end{figure}
 
-The \indexmpishow{MPI_Allgather} routine does the same gather onto
+The \indexmpiref{MPI_Allgather} routine does the same gather onto
 every process: each process winds up with the totality of all data;
 figure~\ref{fig:allgather}.
-%
-\mpiRoutineRef{MPI_Allgather}
 
 This routine can be used in the simplest implementation of the 
 %

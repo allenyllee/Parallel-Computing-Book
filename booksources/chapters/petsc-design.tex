@@ -77,11 +77,38 @@ MatSetValues(ni,is,nj,js,v,mode)
 
 \Level 1 {Language support}
 
+\Level 2 {C/C++}
+
 PETSc is implemented in C, so there is a natural interface
-to~C. A~\emph{Fortran90}\index{Fortran90!PETSc interface}
+to~C. There is no separate C++ interface.
+
+\Level 2 {Fortran}
+
+A~\emph{Fortran90}\index{Fortran90!PETSc interface}
 interface exists. The \emph{Fortran77}\index{Fortran77!PETSc interface}
 interface is only of
 interest for historical reasons.
+
+To use Fortran, include both a module and a cpp header file:
+\begin{verbatim}
+#include "petsc/finclude/petscXXX.h"
+use petscXXX
+\end{verbatim}
+(here \n{XXX} stands for one of the PETSc types, but ommision gives
+inclusion of the whole library.)
+
+Variables can be declared with their type (\n{Vec}, \n{Mat}, \n{KSP}
+et cetera), but internally they are Fortran \lstinline{Type} objects
+so they can be declared as such.
+
+Example:
+\begin{verbatim}
+#include "petsc/finclude/petscvec.h"
+use petscvec
+Vec b
+type(tVec) x
+\end{verbatim}
+\Level 2 {Python}
 
 A \emph{python}\index{Python!PETSc interface} interface was written by
 Lisandro Dalcin, and requires separate installation, based on already
@@ -175,15 +202,15 @@ mpirun -np 5 -machinefile mf your_petsc_program option1 option2 option3
 \Level 1 {Startup}
 \label{sec:petscinit}
 
-PETSc has an call that initializes both PETSc and MPI,
-so normally you would replace \indexmpishow{MPI_Init} by \indexpetscdef{PetscInitialize}.
-Unlike with MPI, you do not want to use a \n{NULL} value for the
-\n{argc,argv} arguments, since PETSc makes extensive use of
-commandline options; see section~\ref{sec:petsc-options}.
+PETSc has an call that initializes both PETSc and MPI, so normally you
+would replace \indexmpishow{MPI_Init} by
+\indexpetscref{PetscInitialize}.
+Unlike with MPI, you do not want to
+use a \n{NULL} value for the \n{argc,argv} arguments, since PETSc
+makes extensive use of commandline options; see
+section~\ref{sec:petsc-options}.
 
-\begin{verbatim}
-ierr = PetscInitialize(&Argc,&Args,PETSC_NULL,PETSC_NULL);
-\end{verbatim}
+\petscRoutineRef{PetscInitialize}
 
 \begin{pythonnote}
   The following works if you don't need commandline options.
@@ -227,17 +254,19 @@ wind up on the screen interleaved.
 
 PETSc has two routines that fix this problem. First of all, often the
 information printed is the same on all processes, so it is enough if
-only one process, for instance process~0, prints it.
+only one process, for instance process~0, prints it. This is done with
+\indexpetscdef{PetscPrintf}.
 %
 \petscRoutineRef{PetscPrintf}
 
-If all processes need to print, there is a routine that forces the
+If all processes need to print, you can use
+\indexpetscdef{PetscSynchronizedPrintf} that forces the
 output to appear in process order.
 %
 \petscRoutineRef{PetscSynchronizedPrintf}
 
 To make sure that output is properly flushed from all system buffers
-use a flush routine:
+use \indexpetscdef{PetscSynchronizedFlush}
 %
 \petscRoutineRef{PetscSynchronizedFlush}
 %

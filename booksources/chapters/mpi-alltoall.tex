@@ -14,7 +14,11 @@
 \Level 0 {All-to-all}
 \label{sec:alltoall}
 
-The all-to-all operation can be seen as a collection of simultaneous
+The all-to-all operation
+%
+\indexmpiref{MPI_Alltoall}
+%
+can be seen as a collection of simultaneous
 broadcasts or simultaneous gathers. The parameter specification is much
 like an allgather, with a separate send and receive buffer, and no
 root specified. As with the gather call, the receive count corresponds
@@ -23,8 +27,6 @@ to an individual receive, not the total amount.
 Unlike the gather call, the send buffer now obeys the same principle:
 with a send count of~1, the buffer has a length of the number of
 processes.
-
-\mpiRoutineRef{MPI_Alltoall}
 
 \Level 1 {All-to-all as data transpose}
 \label{sec:alltoall-transpose}
@@ -101,7 +103,7 @@ the process can decide what other processes it needs data from.
 The problem is for a process to find out what other processes 
 it needs to send data to. 
 
-Using \indexmpishow{MPI_Reduce_scatter} the process goes as follows:
+Using \indexmpiref{MPI_Reduce_scatter} the process goes as follows:
 \begin{itemize}
 \item Each process creates an array of ones and zeros, describing who
   it needs data from.
@@ -126,9 +128,7 @@ of the \n{recvcounts[i]} values, followed by a scatter where process~\n{i}
 receives \n{recvcounts[i]} values. (Since the amount of data to be scattered
 depends on the process, this is in fact equivalent to \indexmpishow{MPI_Scatterv}
 rather than a regular scatter.)
-%
-\mpiRoutineRef{MPI_Reduce_scatter}
-%
+
 For instance, if all \n{recvcounts[i]} values are~1, the sendbuffer has one element
 for each process, and the receive buffer has length~1.
 
@@ -154,12 +154,14 @@ local products.
 \Level 0 {Barrier}
 \label{sec:barrier}
 
-A~barrier is a
+A~barrier call,
+%
+\indexmpiref{MPI_Barrier}
+%
+is a
 routine that blocks all processes until they have all reached the barrier
 call. Thus it achieves time synchronization of the processes.
-%
-\mpiRoutineRef{MPI_Barrier}
-%
+
 This call's simplicity is contrasted with its usefulness, which
 is very limited. It is almost never necessary to synchronize processes
 through a barrier: for most purposes it does not matter if processors

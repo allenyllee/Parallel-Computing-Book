@@ -41,11 +41,11 @@ unix utility~\indextermtt{od}.)
 \Level 0 {File handling}
 
 MPI has its own file handle:
-\mpiRoutineRef{MPI_File}
+\indexmpiref{MPI_File}.
 
-File open:
+You open a file with
 %
-\mpiRoutineRef{MPI_File_open}
+\indexmpiref{MPI_File_open}.
 %
 This routine is collective, even if only certain processes will access
 the file with a read or write call.
@@ -120,7 +120,7 @@ File accesses:
 These modes are enough for writing simple contiguous blocks. However,
 you can also access non-contiguous areas in the file. For this you use
 %
-\mpiRoutineRef{MPI_File_set_view}
+\indexmpiref{MPI_File_set_view}.
 %
 This call is collective, even if not all processes access the file.
 \begin{itemize}
@@ -141,7 +141,9 @@ This call is collective, even if not all processes access the file.
   \includegraphics[scale=.4]{write-at-view}
 \end{figure}
 
-\mpiRoutineRef{MPI_File_write_at}
+There are a number of write calls; writing directly at a location is
+done with
+\indexmpiref{MPI_File_write_at}.
 
 \begin{exercise}
   \label{ex:viewwrite}

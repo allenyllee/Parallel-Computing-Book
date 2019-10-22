@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-8
+%%%% by Victor Eijkhout, copyright 2012-9
 %%%%
 %%%% mpi-moredata.tex : more about data
 %%%%
@@ -116,9 +116,9 @@ does not know this value a~priori, so has to specify an upper bound.
 
 \cverbatimsnippet[examples/mpi/pack/pack.c]{packunpack}
 
-You can precompute the size of the required buffer as follows:
+You can precompute the size of the required buffer with
 %
-\mpiRoutineRef{MPI_Pack_size}
+\indexmpiref{MPI_Pack_size}
 %
 Add one time \indexmpishow{MPI_BSEND_OVERHEAD}.
 

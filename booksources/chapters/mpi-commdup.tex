@@ -52,11 +52,13 @@ Here
   you intended.
 \end{itemize}
 
-To prevent this confusion, the library should duplicate the outer communicator,
+To prevent this confusion, the library should duplicate the outer
+communicator with
+%
+\indexmpiref{MPI_Comm_dup}
+%
 and send all messages with respect to its duplicate. Now messages from the user
 code can never reach the library software, since they are on different communicators.
-
-\mpiRoutineRef{MPI_Comm_dup}
 
 \cverbatimsnippet[examples/mpi/c/rightcatchlib.c]{rightcatchlib}
 

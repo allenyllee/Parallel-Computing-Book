@@ -49,7 +49,7 @@ outbuffer, array-of-outcounts, array-of-displacements, outtype
 \end{verbatim}
 and you have just seen how to construct that information.
 
-For example, in an \indexmpishow{MPI_Gatherv} call each process has an individual
+For example, in an \indexmpiref{MPI_Gatherv} call each process has an individual
 number of items to contribute. To gather this, the root process needs
 to find these individual amounts with an \indexmpishow{MPI_Gather} call, and
 locally construct the offsets array. Note how the offsets array has
@@ -74,8 +74,6 @@ int MPI_Scatterv
    void* recvbuf, int recvcount, MPI_Datatype recvtype, 
    int root, MPI_Comm comm)
 \end{lstlisting}
-
-\mpiRoutineRef{MPI_Gatherv}
 
 \begin{lstlisting}
 int MPI_Allgatherv
@@ -107,5 +105,5 @@ displacements arrays.
 
 \Level 1 {Variable all-to-all}
 
-\mpiRoutineRef{MPI_Alltoallv}
+\indexmpiref{MPI_Alltoallv}
 
