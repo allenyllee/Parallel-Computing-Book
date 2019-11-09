@@ -18,5 +18,5 @@ comm = MPI.COMM_WORLD
 nprocs = comm.Get_size()
 procno = comm.Get_rank()
 
-print "Starting processes %d out of %d" % (procno,nprocs)
+print("Starting processes %d out of %d" % (procno,nprocs))
 

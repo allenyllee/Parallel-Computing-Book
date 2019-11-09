@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-8
+%%%% by Victor Eijkhout, copyright 2012-9
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -65,6 +65,12 @@ The popular quicksort algorithm works by splitting the data
 into two subsets that each can be sorted individually.
 If you want to sort in parallel, you could implement this by making two subcommunicators,
 and sorting the data on these, creating recursively more subcommunicators.
+
+\Level 1 {Shared memory}
+
+There is an important application of communicator splitting in the
+context of one-sided communication, grouping processes by whether they
+access the same shared memory area; see section~\ref{mpi-comm-split-type}.
 
 %% \Level 0 {Creating new communicators}
 

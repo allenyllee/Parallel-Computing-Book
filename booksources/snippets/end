@@ -5,8 +5,8 @@ for i in range(stride*count):
 #snippet vectorp
 
 if procid==sender:
-    print "finished"
+    print("finished")
 if procid==receiver:
     for i in range(count):
         if target[i]!=source[stride*i]:
-            print "error in location %d: %e s/b %e" % (i,target[i],source[stride*i])
+            print("error in location %d: %e s/b %e" % (i,target[i],source[stride*i]))

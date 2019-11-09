@@ -92,17 +92,17 @@ if ( /* I am process A */ ) {
 }
 \end{lstlisting}
 
-The blocking send command:
+The blocking send command is
 %
-\mpiRoutineRef{MPI_Send}
+\indexmpiref{MPI_Send}.
 %
 This routine may not blocking for small messages; to force blocking
 behaviour use \indexmpishow{MPI_Ssend} with the same argument list.
 \url{http://www.mcs.anl.gov/research/projects/mpi/www/www3/MPI_Ssend.html}
 
-The basic blocking receive command:
+The basic blocking receive command is
 %
-\mpiRoutineRef{MPI_Recv}
+\indexmpiref{MPI_Recv}
 %
 The \n{count} argument indicates the maximum length of a message; the
 actual length of the received message can be determined 
@@ -352,9 +352,7 @@ Above you saw that with blocking sends the precise ordering of the
 send and receive calls is crucial. Use the wrong ordering and you get
 either deadlock, or something that is not efficient at all in
 parallel. MPI has a way out of this problem that is sufficient for
-many purposes: the combined send/recv call \indexmpishow{MPI_Sendrecv}:
-
-\mpiRoutineRef{MPI_Sendrecv}  
+many purposes: the combined send/recv call \indexmpiref{MPI_Sendrecv}.
 
 The sendrecv call works great if every process is paired up.
 You would then write
@@ -389,12 +387,9 @@ sendrecv(from=predecessor,to=successor);
 where the sendrecv call is executed by all processors.
 
 All processors but the last one send to their neighbour; the target
-value of \indexmpishow{MPI_PROC_NULL} for
+value of \indexmpiref{MPI_PROC_NULL} for
 the last processor means a `send to the null processor': no actual
 send is done. 
-%
-\mpiRoutineRef{MPI_PROC_NULL}
-%
 The null processor value is also of use with the
 \indexmpishow{MPI_Sendrecv} call; section~\ref{sec:send-recv}
 
@@ -456,9 +451,7 @@ see figure~\ref{fig:sendrecv-steps}.
 \end{itemize}
 
 If the send and receive buffer have the same size, the routine
-\indexmpishow{MPI_Sendrecv_replace} will do an in-place replacement.
-
-\mpiRoutineRef{MPI_Sendrecv_replace}
+\indexmpiref{MPI_Sendrecv_replace} will do an in-place replacement.
 
 The following exercise lets you implement a sorting algorithm with the
 send-receive call\footnote {There is an \n{MPI\_Compare\_and\_swap}

@@ -15,7 +15,7 @@ Tom Cornebize, Franz~C Heinrich, Arnaud Legrand, and J{\'e}r{\^o}me Vienne.
 \bibitem{mpi4py:homepage}
 Lisandro Dalcin.
 \newblock {MPI for Python}, homepage.
-\newblock \url{mpi4py:homepage}.
+\newblock \url{https://mpi4py.bitbucket.io/}.
 
 \bibitem{Eijkhout:MPItype-arxiv}
 Victor {Eijkhout}.

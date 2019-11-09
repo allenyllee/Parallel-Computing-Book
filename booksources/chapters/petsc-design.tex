@@ -55,13 +55,13 @@ divided in these classes:
 \Level 1 {Design philosophy}
 
 PETSc has an object-oriented design, even though it is written
-in~C. There are classes of objects, such Mat for matrices and Vec for
-Vectors, but there is also the KSP (for “Krylov SPace solver”) class
-of linear system solvers, and PetscViewer for outputting matrices and
-vectors to screen or file.
+in~C. There are classes of objects, such \lstinline{Mat} for
+matrices and \lstinline{Vec} for Vectors, but there is also the
+\lstinline{KSP} (for "Krylov SPace solver") class of linear system solvers, and
+\lstinline{PetscViewer} for outputting matrices and vectors to screen or file.
 
 Part of the object-oriented design is the polymorphism of objects:
-after you have created a Mat matrix as sparse or dense, all methods
+after you have created a \lstinline{Mat} matrix as sparse or dense, all methods
 such as MatMult (for the matrix-vector product) take the same
 arguments: the matrix, and an input and output vector.
 
@@ -94,20 +94,22 @@ To use Fortran, include both a module and a cpp header file:
 #include "petsc/finclude/petscXXX.h"
 use petscXXX
 \end{verbatim}
-(here \n{XXX} stands for one of the PETSc types, but ommision gives
-inclusion of the whole library.)
+(here \n{XXX} stands for one of the PETSc types, but including
+\lstinline{petsc.h} and using \lstinline{use petsc}
+gives inclusion of the whole library.)
 
-Variables can be declared with their type (\n{Vec}, \n{Mat}, \n{KSP}
-et cetera), but internally they are Fortran \lstinline{Type} objects
-so they can be declared as such.
+Variables can be declared with their type (\lstinline{Vec},
+\lstinline{Mat}, \lstinline{KSP} et cetera), but internally they are
+Fortran \lstinline{Type} objects so they can be declared as such.
 
 Example:
-\begin{verbatim}
+\begin{lstlisting}
 #include "petsc/finclude/petscvec.h"
 use petscvec
 Vec b
 type(tVec) x
-\end{verbatim}
+\end{lstlisting}
+
 \Level 2 {Python}
 
 A \emph{python}\index{Python!PETSc interface} interface was written by
@@ -140,23 +142,26 @@ A PETSc compilation needs a number of include and library paths,
 probably too many to specify interactively. The easiest solution is to
 create a makefile:
 \begin{verbatim}
-include ${PETSC_DIR}/variables
-include ${PETSC_DIR}/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 program : program.o
         ${CLINKER} -o $@ $^ ${PETSC_LIB}
 \end{verbatim}
 The two include lines provide the compilation rule and the library
 variable. If you want to write your own compiler rule, use
 \begin{verbatim}
-include ${PETSC_DIR}/variables
+include ${PETSC_DIR}/lib/petsc/conf/variables
 %.o : %.c
         ${CC} -c $^ ${PETSC_CC_INCLUDES}
 program : program.o
         ${CLINKER} -o $@ $^ ${PETSC_LIB}
 \end{verbatim}
+(The \indexpetscshow{PETSC_CC_INCLUDES} variable contains all paths for
+compilation of C~programs; correspondingly there is
+\indexpetscshow{PETSC_CC_INCLUDES} for Fortran source.)
 
-The build process assumes that variables \indextermtt{PETSC_DIR} and
-\indextermtt{PETSC_ARCH} have been set. These depend on your local
+The build process assumes that variables \indexpetscshow{PETSC_DIR} and
+\indexpetscshow{PETSC_ARCH} have been set. These depend on your local
 installation. Usually there will be one installation with debug
 settings and one with production settings. Develop your code with the
 former: it will do memory and bound checking. Then recompile and run
@@ -191,7 +196,8 @@ integers.
 
 \Level 1 {Running}
 
-PETSc programs use MPI for parallelism, so they are run with 
+PETSc programs use MPI for parallelism, so they are started like any other
+MPI program:
 \begin{verbatim}
 mpirun -np 5 -machinefile mf your_petsc_program option1 option2 option3
 \end{verbatim}
@@ -209,8 +215,6 @@ Unlike with MPI, you do not want to
 use a \n{NULL} value for the \n{argc,argv} arguments, since PETSc
 makes extensive use of commandline options; see
 section~\ref{sec:petsc-options}.
-
-\petscRoutineRef{PetscInitialize}
 
 \begin{pythonnote}
   The following works if you don't need commandline options.
@@ -243,6 +247,32 @@ procno = comm.getRank(self)
 \end{verbatim}
 \end{pythonnote}
 
+\Level 1 {Error checking}
+
+PETSc performs a good amount of runtime error checking. Some of this
+is for internal consistency, but it can also detect certain
+mathematical errors. To facilitate error reporting, the following
+scheme is used.
+\begin{enumerate}
+\item Every PETSc routine is a function returning a parameter of type
+  \indexpetscdef{PetscErrorCode}.
+\item Calling the macro \indexpetscdef{CHKERRQ} on the error code will
+  cause an error to be printed and the current routine to be
+  terminated. Recursively this gives a traceback of where the error
+  occurred.
+\item You can effect your own error return by using \indexpetscdef{SETERRQ}.
+\end{enumerate}
+\begin{lstlisting}
+PetscErrorCode ierr;
+ierr = AnyPetscRoutine( arguments ); CHKERRQ(ierr);
+\end{lstlisting}
+\begin{fortrannote}
+  In the main program, use \indexpetscdef{CHKERRA} and
+  \indexpetscdef{SETERRA}. Also beware that these error `commands' are
+  macros, and after expansion may interfere with
+  \indextermbus{Fortran}{line length}.
+\end{fortrannote}
+
 \Level 1 {Printing}
 
 Printing screen output in parallel is tricky. If two processes execute
@@ -255,21 +285,15 @@ wind up on the screen interleaved.
 PETSc has two routines that fix this problem. First of all, often the
 information printed is the same on all processes, so it is enough if
 only one process, for instance process~0, prints it. This is done with
-\indexpetscdef{PetscPrintf}.
-%
-\petscRoutineRef{PetscPrintf}
+\indexpetscref{PetscPrintf}.
+
 
 If all processes need to print, you can use
-\indexpetscdef{PetscSynchronizedPrintf} that forces the
+\indexpetscref{PetscSynchronizedPrintf} that forces the
 output to appear in process order.
-%
-\petscRoutineRef{PetscSynchronizedPrintf}
 
 To make sure that output is properly flushed from all system buffers
-use \indexpetscdef{PetscSynchronizedFlush}
-%
-\petscRoutineRef{PetscSynchronizedFlush}
-%
+use \indexpetscref{PetscSynchronizedFlush}
 where for ordinary screen output you would use \n{stdout} for the file.
 
 \begin{pythonnote}

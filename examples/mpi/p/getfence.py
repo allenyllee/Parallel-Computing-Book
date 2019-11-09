@@ -20,7 +20,7 @@ comm = MPI.COMM_WORLD
 procid = comm.Get_rank()
 nprocs = comm.Get_size()
 if nprocs<2:
-    print "C'mon, get real...."
+    print("C'mon, get real....")
     sys.exit(1)
 
 other = nprocs-1-procid
@@ -37,13 +37,13 @@ win.Fence()
 if procid==0 or procid==nprocs-1:
     putdata = np.empty( 1,dtype=np.float64 )
     putdata[0] = mydata
-    print "[%d] putting %e" % (procid,mydata)
+    print("[%d] putting %e" % (procid,mydata))
     win.Put( putdata,other )
 win.Fence()
 
 # see what you got
 if procid==0 or procid==nprocs-1:
-    print "[%d] getting %e" % (procid,win_mem[0])
+    print("[%d] getting %e" % (procid,win_mem[0]))
 
 win.Free()
 

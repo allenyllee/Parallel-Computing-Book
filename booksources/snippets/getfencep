@@ -10,6 +10,6 @@ win.Fence()
 if procid==0 or procid==nprocs-1:
     putdata = np.empty( 1,dtype=np.float64 )
     putdata[0] = mydata
-    print "[%d] putting %e" % (procid,mydata)
+    print("[%d] putting %e" % (procid,mydata))
     win.Put( putdata,other )
 win.Fence()

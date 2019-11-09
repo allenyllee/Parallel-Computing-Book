@@ -18,7 +18,7 @@ Let's do a \indexterm{producer-consumer} model\footnote{This example
 implemented with sections, where one section, the producer, sets a
 flag when data is available, and the other, the consumer, waits until
 the flag is set.
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp parallel sections
 {
   // the producer
@@ -34,42 +34,42 @@ the flag is set.
     ... do some consuming work ...
   }
 }
-\end{verbatim}
+\end{lstlisting}
 One reason this doesn't work, is that the compiler will see that the flag is never used
 in the producing section, and that is never changed in the consuming section, so
 it may optimize these statements, to the point of optimizing them away.
 
 The producer then needs to do:
-\begin{verbatim}
+\begin{lstlisting}
 ... do some producing work ...
 #pragma omp flush
 #pragma atomic write
   flag = 1;
 #pragma omp flush(flag)
-\end{verbatim}
+\end{lstlisting}
 and the consumer does:
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp flush(flag)
 while (flag==0) {
   #pragma omp flush(flag)
 }
 #pragma omp flush
-\end{verbatim}
+\end{lstlisting}
 This code strictly speaking has a \indexterm{race condition} on the \n{flag} variable.
 It is better to use an \indexpragma{atomic} pragma here: the producer has
-\begin{verbatim}
+\begin{lstlisting}
 #pragma atomic write
   flag = 1;
-\end{verbatim}
+\end{lstlisting}
 and the consumer:
-\begin{verbatim}
+\begin{lstlisting}
 while (1) {
   #pragma omp flush(flag)
   #pragma omp atomic read
     flag_read = flag
   if (flag_read==1) break;
 }
-\end{verbatim}
+\end{lstlisting}
 
 \Level 0 {Data races}
 \index{data race|see{race condition}}
@@ -92,7 +92,7 @@ To start with that last clause: any workshare construct ends with an
 can safely be read after it.
 
 As an illustration of a possible problem:
-\begin{verbatim}
+\begin{lstlisting}
 c = d = 0;
 #pragma omp sections
 {
@@ -101,7 +101,7 @@ c = d = 0;
 #pragma omp section
   { b = 1; d = a; }
 }
-\end{verbatim}
+\end{lstlisting}
 Under any reasonable interpretation of parallel execution,
 the possible values for \n{c,d} are $1,1$ $0,1$ or~$1,0$.
 This is known as \indexterm{sequential consistency}:

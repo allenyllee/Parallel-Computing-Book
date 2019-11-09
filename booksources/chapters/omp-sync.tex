@@ -38,16 +38,16 @@ A barrier defines a point in the code where all active threads will stop
 until all threads have arrived at that point. With this, you can guarantee that
 certain calculations are finished. For instance, in this code snippet, computation 
 of~\n{y} can not proceed until another thread has computed its value of~\n{x}.
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp parallel 
 {
   int mytid = omp_get_thread_num();
   x[mytid] = some_calculation();
   y[mytid] = x[mytid]+x[mytid+1];
 }
-\end{verbatim}
+\end{lstlisting}
 This can be guaranteed with a \indexpragma{barrier} pragma:
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp parallel 
 {
   int mytid = omp_get_thread_num();
@@ -55,12 +55,12 @@ This can be guaranteed with a \indexpragma{barrier} pragma:
 #pragma omp barrier
   y[mytid] = x[mytid]+x[mytid+1];
 }
-\end{verbatim}
+\end{lstlisting}
 
 Apart from the barrier directive, which inserts an explicit barrier,
 OpenMP has \emph{implicit barriers}\index{omp!barrier!implicit} after
 a load sharing construct. Thus the following code is well defined:
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp parallel 
 {
 #pragma omp for
@@ -70,7 +70,7 @@ a load sharing construct. Thus the following code is well defined:
   for (int mytid=0; mytid<number_of_threads-1; mytid++)
     y[mytid] = x[mytid]+x[mytid+1];
 }
-\end{verbatim}
+\end{lstlisting}
 
 You can also put each parallel loop in a parallel region of its own,
 but there is some overhead associated with creating and deleting the
@@ -92,7 +92,7 @@ barrier behaviour can be cancelled with the \indexclause{nowait}
 clause.
 
 You will often see the idiom
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp parallel
 {
 #pragma omp for nowait
@@ -101,7 +101,7 @@ You will often see the idiom
 #pragma omp for
   for (i=0; i<N; i++)
     b[i] = ...... a[i] ......
-\end{verbatim}
+\end{lstlisting}
 Here the \n{nowait} clause implies that threads can start on the second loop
 while other threads are still working on the first. Since the two loops use the same
 schedule here, an iteration that uses \n{a[i]} can indeed rely on it that that 
@@ -129,7 +129,7 @@ There are two pragmas for critical sections: \indexpragma{critical} and \indexpr
 The second one is more limited but has performance advantages.
 
 The typical application of a critical section is to update a variable:
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp parallel
 {
   int mytid = omp_get_thread_num();
@@ -137,16 +137,16 @@ The typical application of a critical section is to update a variable:
 #pragma omp critical
   sum += tmp;
 }
-\end{verbatim}
+\end{lstlisting}
 
 \begin{exercise}
   Consider  a loop where each iteration updates a variable.
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp parallel for shared(result)
   for ( i ) {
       result += some_function_of(i);
   }
-\end{verbatim}
+\end{lstlisting}
   Discuss qualitatively
   the difference between:
   \begin{itemize}
@@ -172,9 +172,9 @@ are not exclusive and they can be more efficient, since they assume that there i
 mechanism for making them critical.
 
 The problem with \n{critical} sections being mutually exclusive can be mitigated by naming them:
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp critical (optional_name_in_parens)
-\end{verbatim}
+\end{lstlisting}
 
 \Level 0 {Locks}
 \index{lock|(textbf}
@@ -188,7 +188,7 @@ With a lock you make sure that some data elements can only be touched by one pro
 One simple example of the use of locks is generation of a \indexterm{histogram}.
 A~histogram consists of a number of bins, that get updated depending on some data.
 Here is the basic structure of such a code:
-\begin{verbatim}
+\begin{lstlisting}
 int count[100];
 float x = some_function();
 int ix = (int)x;
@@ -196,31 +196,31 @@ if (ix>=100)
   error();
 else
   count[ix]++;
-\end{verbatim}
+\end{lstlisting}
 It would be possible to guard the last line:
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp critical
   count[ix]++;
-\end{verbatim}
+\end{lstlisting}
 but that is unnecessarily restrictive. If there are enough bins in the
 histogram, and if the \n{some_function} takes enough time, there are unlikely to be
 conflicting writes. The solution then is to create an array of locks, with
 one lock for each \n{count} location.
 
 Create/destroy:
-\begin{verbatim}
+\begin{lstlisting}
 void omp_init_lock(omp_lock_t *lock);
 void omp_destroy_lock(omp_lock_t *lock);
-\end{verbatim}
+\end{lstlisting}
 Set and release:
-\begin{verbatim}
+\begin{lstlisting}
 void omp_set_lock(omp_lock_t *lock);
 void omp_unset_lock(omp_lock_t *lock);
-\end{verbatim}
+\end{lstlisting}
 Since the set call is blocking, there is also 
-\begin{verbatim}
+\begin{lstlisting}
 omp_test_lock();
-\end{verbatim}
+\end{lstlisting}
 
 Unsetting a lock needs to be done by the thread that set it.
 
@@ -234,7 +234,7 @@ Lock operations implicitly have a \indexpragma{flush}.
   update~B; the other process sets array~B and then uses it to
   update~A.
   Argue that this code can deadlock. How could you fix this?
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp parallel shared(a, b, nthreads, locka, lockb)
   #pragma omp sections nowait
     {
@@ -265,7 +265,7 @@ Lock operations implicitly have a \indexpragma{flush}.
       }
     }  /* end of sections */
   }  /* end of parallel region */
-\end{verbatim}
+\end{lstlisting}
 \end{exercise}
 
 \Level 1 {Nested locks}
@@ -293,7 +293,7 @@ The \emph{Fibonacci sequence} is recursively defined as
 \]
 We start by sketching the basic single-threaded solution.
 The naive code looks like:
-\begin{verbatim}
+\begin{lstlisting}
 int main() {
   value = new int[nmax+1];
   value[0] = 1;
@@ -309,10 +309,10 @@ int fib(int n) {
   }
   return value[n];
 }
-\end{verbatim}
+\end{lstlisting}
 Howver, this is inefficienty, since most intermediate values will be computed
 more than once. We solve this by keeping track of which results are known:
-\begin{verbatim}
+\begin{lstlisting}
   ...
   done = new int[nmax+1];
   for (i=0; i<=nmax; i++)
@@ -328,10 +328,10 @@ int fib(int n) {
   }
   return value[n];
 }
-\end{verbatim}
+\end{lstlisting}
 The OpenMP parallel solution calls for two different ideas. First of all,
 we parallelize the recursion by using tasks (section~\ref{sec:omp:task}:
-\begin{verbatim}
+\begin{lstlisting}
 int fib(int n) {
   int i, j;
   if (n>=2) {
@@ -344,13 +344,13 @@ int fib(int n) {
   }
   return value[n];
 }
-\end{verbatim}
+\end{lstlisting}
 This computes the right solution, but, as in the naive single-threaded solution,
 it recomputes many of the intermediate values.
 
 A naive addition of the \n{done} array leads to data races, and probably an
 incorrect solution:
-\begin{verbatim}
+\begin{lstlisting}
 int fib(int n) {
   int i, j, result;
   if (!done[n]) {
@@ -364,7 +364,7 @@ int fib(int n) {
   }
   return value[n];
 }
-\end{verbatim}
+\end{lstlisting}
 For instance, there is no guarantee that the \n{done} array is updated
 later than the \n{value} array, so a thread can think that \n{done[n-1]}
 is true, but \n{value[n-1]} does not have the right value yet.
@@ -372,7 +372,7 @@ is true, but \n{value[n-1]} does not have the right value yet.
 One solution to this problem is to use a lock, and make sure that,
 for a given index~\n{n}, the values \n{done[n]} and \n{value[n]}
 are never touched by more than one thread at a time:
-\begin{verbatim}
+\begin{lstlisting}
 int fib(int n)
 {
   int i, j;
@@ -389,7 +389,7 @@ int fib(int n)
   omp_unset_lock( &(dolock[n]) );
   return value[n];
 }
-\end{verbatim}
+\end{lstlisting}
 This solution is correct, optimally efficient in the sense that it
 does not recompute anything, and it uses tasks to obtain a parallel execution.
 

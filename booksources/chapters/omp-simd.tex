@@ -146,9 +146,9 @@ vmovaps   %xmm1, %xmm0                                  #25.26 c77
 ret                                                     #25.26 c79
 \end{verbatim}
 
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp declare simd uniform(op1) linear(k) notinbranch
   double SqrtMul(double *op1, double op2, int k) {
     return (sqrt(op1[k]) * sqrt(op2));
   }
-\end{verbatim}
+\end{lstlisting}

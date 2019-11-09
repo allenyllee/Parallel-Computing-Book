@@ -1,7 +1,7 @@
 sendbuf = np.ones(size,dtype=np.int)
 recvbuf = np.ones(size,dtype=np.int)
 if procid==src:
-    print "Size:",size
+    print("Size:",size)
     requests[0] = comm.Send_init(sendbuf[0:size],dest=tgt)
     requests[1] = comm.Recv_init(recvbuf[0:size],source=tgt)
     times[isize] = MPI.Wtime()

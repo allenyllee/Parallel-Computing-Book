@@ -195,7 +195,7 @@ Non-blocking collectives offer a number of performance advantages:
 
 Probably the most surprising non-blocking collective is the
 \indextermsub{non-blocking}{barrier}
-\indexmpishow{MPI_Ibarrier}. The way to understand this is to think of
+\indexmpiref{MPI_Ibarrier}. The way to understand this is to think of
 a barrier not in terms of temporal synchronization, but state
 agreement: reaching a barrier is a sign that a process has attained a
 certain state, and leaving a barrier means that all processes are in
@@ -207,8 +207,6 @@ agreement, while with a non-blocking barrier:
 \item the request being fullfilled means that all processes have
   reached the barrier.
 \end{itemize}
-
-\mpiRoutineRef{MPI_Ibarrier}
 
 We can use a non-blocking barrier to good effect, utilizing the idle
 time that would result from a blocking barrier. In the following code

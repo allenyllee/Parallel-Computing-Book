@@ -3,7 +3,7 @@
 ####
 #### This makefile is part of the source of 
 #### "Parallel Computing for Science and Engineering"
-#### by Victor Eijkhout, copyright 2013-6
+#### by Victor Eijkhout, copyright 2013-9
 ####
 #### This is the makefile for the python examples
 ####     in examples/mpi/p
@@ -24,10 +24,13 @@ TESTS = \
 TESTSWRONG = buffertoosmall.py 
 TESTSNOT = exscan.py
 TESTS_IN_PROGRESS =  interleave.py
+include ../../../teaching/course-support/Make.mpi_run
+PYTHON = python3
 regression :
 	@for p in ${TESTS} ; do \
-	    echo "Testing $$p" ; \
-	    mpirun -np 4 /opt/local/bin/python2.7 $$p ; \
+	    echo "Testing $$p" \
+	    && make run PROGRAM=$${p} \
+	    ; \
 	done
 
 info ::

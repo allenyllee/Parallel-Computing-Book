@@ -32,7 +32,7 @@ elif mytid==ntids-1:
     zdata = np.empty(dsize*2, dtype=np.float64)
     recv_status = MPI.Status()
     comm.Recv([zdata,MPI.DOUBLE],source=0,status=recv_status)
-    print "received %d elements" % recv_status.Get_count(datatype=MPI.DOUBLE)
+    print("received %d elements" % recv_status.Get_count(datatype=MPI.DOUBLE))
     
 
 

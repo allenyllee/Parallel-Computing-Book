@@ -32,6 +32,7 @@ FFLAGS = -O1
 .SECONDEXPANSION:
 ${EXERCISES} : $$@.F90
 	${MPI_F_COMPILER} ${FFLAGS} -o $@ $^
+shareddata : contents.o
 
 ####
 #### Regression tests

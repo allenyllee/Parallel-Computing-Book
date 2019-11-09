@@ -117,6 +117,16 @@ an \ac{SPMD} mode of execution: all hosts execute the same program.
 It is possible for different hosts to execute different programs,
 but we will not consider that in this book.
 
+There can be options and environment variables that are specific to
+some MPI installations, or to the network.
+\begin{itemize}
+\item \indexterm{mpich} and its derivatives such as
+  \indextermbus{Intel}{MPI} or \indextermbus{Cray}{MPI} have
+  \indextermbus{mpiexec}{options}:
+  \url{https://www.mpich.org/static/docs/v3.1/www1/mpiexec.html}
+  %\url{https://wiki.mpich.org/mpich/index.php/Proposed_MPIEXEC_Extensions}
+\end{itemize}
+
 \Level 0 {Making and running an MPI program}
 
 MPI is a library, called from programs in ordinary programming languages

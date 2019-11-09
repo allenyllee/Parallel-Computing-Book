@@ -335,20 +335,11 @@ The calls \indexmpiref{MPI_Send_init} and \indexmpiref{MPI_Recv_init}
 for creating a persistent communication have the same syntax as 
 those for non-blocking sends and receives. The difference is that they do not start
 an actual communication, they only create the request object.
-%
-%\mpiRoutineRef{MPI_Send_init}
-%
-%\mpiRoutineRef{MPI_Recv_init}
-%
 
 Given these request object, a communication (both send and receive) is then started
-with \indexmpiref{MPI_Start} for a single request or \indexmpiref{MPI_Start_all} for 
+with \indexmpiref{MPI_Start} for a single request or \indexmpiref{MPI_Startall} for 
 multiple requests, given in an array.
-%
-%\mpiRoutineRef{MPI_Start}
-%
-%\mpiRoutineRef{MPI_Startall}
-%
+
 These are equivalent to starting an \indexmpishow{MPI_Isend} or
 \indexmpishow{MPI_Isend}; correspondingly, it is necessary to issue an
 \indexmpishow{MPI_Wait...} call (section~\ref{sec:nonblocking}) to

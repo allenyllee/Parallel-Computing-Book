@@ -69,6 +69,21 @@
     \ShowRoutinetrue
     %\tt
     \afterassignment\mpitoindex\edef\indexedmpi}
+  \gdef\indexmpishowf#{\bgroup
+    \catcode`\_=12 \catcode`\>=12 \catcode`\<=12
+    \catcode`\&=12 \catcode`\^=12 \catcode`\~=12
+    \def\\{\char`\\}\relax
+    \ShowRoutinetrue
+    %\tt
+    \afterassignment\mpitoindexf\edef\indexedmpi}
+  \gdef\indexmpishowsub#{\bgroup
+    \catcode`\_=13 \def_{\char95\discretionary{}{}{}}
+    \catcode`\>=12 \catcode`\<=12
+    \catcode`\&=12 \catcode`\^=12 \catcode`\~=12
+    \def\\{\char`\\}\relax
+    %
+    \tt \afterassignment\defineindexmpisubtwo \xdef\indexedmpisubone}
+  \gdef\defineindexmpisubtwo{\afterassignment\mpitoindexsub \gdef\indexedmpisubtwo}
   \gdef\indexmpidef#{\bgroup 
     \catcode`\_=12 % 13 \def_{\char95\discretionary{}{}{}}
     \catcode`\>=12 \catcode`\<=12
@@ -128,6 +143,17 @@
   \tmp
   \egroup\nobreak
 }
+\def\mpitoindexf{%\tracingmacros=2
+  \edef\tmp{%
+    \noexpand\ifShowRoutine
+        \noexpand\lstinline+\indexedmpi+\noexpand\nobreak
+    \noexpand\fi
+    \noexpand\index[mpi]{\indexedmpi@{\catcode95=12
+        \noexpand\texttt{\indexedmpi}}!in Fortran}%
+  }%
+  \tmp
+  \egroup\nobreak
+}
 \def\mpitoindexbf{%\tracingmacros=2
   \edef\tmp{%
     \noexpand\lstinline+\indexedmpi+%
@@ -143,6 +169,14 @@
   \tmp
   \egroup
 }
+\def\mpitoindexsub{%\tracingmacros=2
+  \edef\tmp{%
+    \noexpand\lstinline+\indexedmpisubone+ {\indexedmpisubtwo}%
+    \noexpand\index[mpi]{\indexedmpisubone@{\catcode95=12 \noexpand\texttt{\indexedmpisubone}}!\indexedmpisubtwo@{\indexedmpisubtwo}}}%
+  \tmp
+  \egroup
+}
+
 
 %%%%
 %%%% OpenMP to index
@@ -175,36 +209,29 @@
 %%%%
 %%%% MPI Routine Ref
 %%%%
-\def\RoutineRefStyle{ \small }
-{ \catcode`\_=13
-\gdef\indexmpishowsub#{\bgroup \catcode`\_=13 \def_{\char95\discretionary{}{}{}}
-  \catcode`\>=12 \catcode`\<=12
-  \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
-  \tt \afterassignment\defineindexmpisubtwo \xdef\indexedmpisubone}
-\gdef\defineindexmpisubtwo{\afterassignment\mpitoindexsub \gdef\indexedmpisubtwo}
-}
-
-\def\mpiRoutineRef#{\bgroup \RoutineRefStyle \catcode`\_=13
-  \afterassignment\mpiRefDisplay\def\indexedmpi
-}
-{ \catcode`\_=13
-\gdef\mpiRefDisplay{\par
-  \def_{\underscore}%
-  \begin{figure}[p]
-    % first write index
-    \edef\tmp{%
-      \noexpand\index[mpi]{\indexedmpi@{\catcode95=12 \noexpand\texttt{\indexedmpi}}|textbf}}%
-    \tmp\nobreak
-    % then input
-    \def_{\underscore}\edef\tmp{\noexpand\verbatiminput{\indexedmpi}}\tmp
-    \nobreak
-        { \hskip\unitindent \textsl{\small How to read routine prototypes:~\ref{sec:protos}.}\par }
-        \caption{Routine prototype for \texttt{\indexedmpi}}
-        \label{ref:\indexedmpi}
-  \end{figure}
-  \egroup
-}
-} % end of catcode`\_=13
+%% \def\mpiRoutineRef#{\bgroup \RoutineRefStyle \catcode`\_=13
+%%   \afterassignment\mpiRefDisplay\def\indexedmpi
+%% }
+%% { \catcode`\_=13
+%% \gdef\mpiRefDisplay{\par
+%%   \def_{\underscore}%
+%%   \begin{figure}[p]
+%%     % first write index
+%%     \edef\tmp{%
+%%       \noexpand\index[mpi]{\indexedmpi@{\catcode95=12 \noexpand\texttt{\indexedmpi}}|textbf}}%
+%%     \tmp\nobreak
+%%     % then input
+%%     \footnotesize
+%%     \def_{\underscore}\edef\tmp{\noexpand\verbatiminput{\indexedmpi}}\tmp
+%%     \nobreak
+%%         { \hskip\unitindent
+%%           \textsl{\small How to read routine prototypes:~\ref{sec:protos}.}\par }
+%%         \caption{Routine prototype for \texttt{\indexedmpi}}
+%%         \label{ref:\indexedmpi}
+%%   \end{figure}
+%%   \egroup
+%% }
+%% } % end of catcode`\_=13
 
 %%%%
 %%%% PETSc Routine Ref
@@ -293,11 +320,13 @@
 \def\mpiIndexAndRef{\mpiIndexBF\RoutineRefDisplay}
 \def\mpiIndexBF{\RoutineIndexBF{mpi}}
 
+%\usepackage{rotating}
+\def\RoutineRefStyle{ \footnotesize }
 { \catcode`\_=13
   \gdef\RoutineRefDisplay{%
     \begin{figure}[p]
-      {\Large \textbf{\texttt{\indexedroutine}}}
-      \RoutineRefStyle \catcode`\_=13 \tt
+      {\large \textbf{\texttt{\indexedroutine}}}
+      \RoutineRefStyle \catcode`\_=13
       \def_{\underscore}%
       \edef\tmp{\noexpand\verbatiminput{\indexedroutine}}\tmp
       \hskip\unitindent \textsl{\small How to read routine prototypes:~\ref{sec:protos}.}\par
@@ -318,13 +347,6 @@
 \def\petscRoutineRef#{\bgroup \RoutineRefStyle \catcode`\_=13
   \afterassignment\RoutineRefDisplay
   \def\indexedroutine
-}
-
-\def\mpitoindexsub{%\tracingmacros=2
-  \edef\tmp{\noexpand\n{\indexedmpisubone} {\indexedmpisubtwo}%
-        \noexpand\index[mpi]{\indexedmpisubone@{\noexpand\texttt{\indexedmpisubone}}!\indexedmpisubtwo@{\indexedmpisubtwo}}}%
-  \tmp
-  \egroup
 }
 
 \def\boldtt#1{\textbf{\texttt{#1}}}

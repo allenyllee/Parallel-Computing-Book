@@ -138,7 +138,13 @@ For this reason, one can test where \indexmpishow{MPI_Init} has been called with
 
 You can test whether \indexmpishow{MPI_Finalize} has been called with
 %
-\indexmpiref{MPI_Finalized}
+\indexmpiref{MPI_Finalized}.
+
+\Level 2 {Information about the run}
+
+Once MPI has been initialized, the \indexmpishow{MPI_INFO_ENV} object
+contains a number of key/value pairs describing run-specific
+information; see section~\ref{sec:mpi-info-env}.
 
 \Level 2 {Commandline arguments}
 
@@ -150,10 +156,5 @@ arguments.
 
 On the other hand, the commandline arguments that are meant for \n{mpiexec}
 wind up in the \indexmpishow{MPI_INFO_ENV} object as a set of
-key/value pairs; see section~\ref{sec:mpi-info}
+key/value pairs; see section~\ref{sec:mpi-info}.
 
-\Level 2 {Information about the run}
-
-Once MPI has been initialized, the \indexmpishow{MPI_INFO_ENV} object
-contains a number of key/value pairs describing run-specific
-information; see section~\ref{sec:mpi-info-env}.

@@ -20,12 +20,12 @@ is called a \emph{parallel region}; it
 is executed by a newly created team of threads. 
 This is an instance of the \indexac{SPMD} model: all threads execute the same
 segment of code.
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp parallel
 {
   // this is executed by a team of threads
 }
-\end{verbatim}
+\end{lstlisting}
 It would be pointless to have the block be executed identically by
 all threads. One way to get a meaningful parallel code is to use the function
 \indexompshow{omp_get_thread_num}, to find out which thread you are,
@@ -36,11 +36,11 @@ Both these functions give a number relative to the current team;
 recall from figure~\ref{fig:forkjoin} that new teams can be created recursively.
 
 For instance, if you program computes
-\begin{verbatim}
+\begin{lstlisting}
 result = f(x)+g(x)+h(x)
-\end{verbatim}
+\end{lstlisting}
 you could parallelize this as
-\begin{verbatim}
+\begin{lstlisting}
 double result,fresult,gresult,hresult;
 #pragma omp parallel
 { int num = omp_get_thread_num();
@@ -49,7 +49,7 @@ double result,fresult,gresult,hresult;
   else if (num==2) hresult = h(x);
 }
 result = fresult + gresult + hresult;
-\end{verbatim}
+\end{lstlisting}
 
 
 The first thing we want to do is create a team of threads. This
@@ -110,9 +110,9 @@ are actually handled by the compiler, not the preprocessor.
   outside a parallel region?
 \end{exercise}
 
-\begin{verbatim}
+\begin{lstlisting}
   omp_get_thread_limit
-\end{verbatim}
+\end{lstlisting}
 
 \indexompshowdef{OMP_WAIT_POLICY} values: \n{ACTIVE,PASSIVE}
 
@@ -121,7 +121,7 @@ are actually handled by the compiler, not the preprocessor.
 
 What happens if you call a function from inside a parallel region, and
 that function itself contains a parallel region?
-\begin{verbatim}
+\begin{lstlisting}
 int main() {
   ...
 #pragma omp parallel
@@ -137,7 +137,7 @@ void func(...) {
   ...
   }
 }
-\end{verbatim}
+\end{lstlisting}
 
 By default, the nested parallel region will have only one thread. To
 allow nested thread creation, set
@@ -167,7 +167,7 @@ Writing subprograms that are called in a parallel region illustrates
 the following point: directives are evaluation with respect to the
 \emph{dynamic scope}\index{parallel region!dynamic scope} of the
 parallel region, not just the lexical scope. In the following example:
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp parallel
 {
   f();
@@ -178,7 +178,7 @@ void f() {
     ...
   }
 }
-\end{verbatim}
+\end{lstlisting}
 the body of the function~\n{f} falls in the dynamic scope of the
 parallel region, so the for loop will be parallelized.
 

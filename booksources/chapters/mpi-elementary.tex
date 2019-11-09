@@ -127,11 +127,15 @@ sending them. The \indexmpidef{MPI_Aint} type is not so much for
 sending, as it is for describing the size of objects, such as the size
 of an \indexmpishow{MPI_Win} object; section~\ref{sec:windows}.
 
-See also the \indexmpishow{MPI_Sizeof} routine.
+See also the \indexmpishow{MPI_Sizeof} and
+\indexmpishow{MPI_Get_address} routines.
 
 \Level 2 {Fortran}
 
-The equivalent of \indexmpishowsub{MPI_Aint}{in Fortran} is
+The equivalent of
+%\indexmpishowsub{MPI_Aint}{in Fortran}
+\indexmpishowf{MPI_Aint} in Fortran
+is an integer of kind \indexmpidef{MPI_ADDRESS_KIND}:
 \lstset{style=reviewcode,language=Fortran} %pyskip
 \begin{lstlisting}
 integer(kind=MPI_ADDRESS_KIND) :: winsize

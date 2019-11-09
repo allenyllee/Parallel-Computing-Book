@@ -6,5 +6,5 @@ while size<2000000000:
     comm.Send(sendbuf,dest=other)
     comm.Recv(sendbuf,source=other)
     if procid<other:
-        print "Send did not block for",size
+        print("Send did not block for",size)
     size *= 10

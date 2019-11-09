@@ -256,7 +256,7 @@ The affinity issue shows up in the \indexterm{first-touch}
 phenomemon. Memory allocated with \indextermtt{malloc} and like
 routines is not actually allocated; that only happens when data is
 written to it. In light of this, consider the following OpenMP code:
-\begin{verbatim}
+\begin{lstlisting}
 double *x = (double*) malloc(N*sizeof(double));
 
 for (i=0; i<N; i++)
@@ -265,7 +265,7 @@ for (i=0; i<N; i++)
 #pragma omp parallel for
 for (i=0; i<N; i++)
   .... something with x[i] ...
-\end{verbatim}
+\end{lstlisting}
 Since the initialization loop is not parallel it is executed by the
 master thread, making all the memory associated with the socket of
 that thread. Subsequent access by the other socket will then access
@@ -276,7 +276,7 @@ data from memory not attached to that socket.
   Finish the following fragment and run it with first all the cores of
   one socket, then all cores of both sockets. (If you know how to do
   explicit placement, you can also try fewer cores.)
-\begin{verbatim}
+\begin{lstlisting}
   for (int i=0; i<nlocal+2; i++)
     in[i] = 1.;
   for (int i=0; i<nlocal; i++)
@@ -292,7 +292,7 @@ data from memory not attached to that socket.
       in[i+1] = out[i];
     in[0] = 0; in[nlocal+1] = 1;
   }
-\end{verbatim}
+\end{lstlisting}
 \end{exercise}
 
 \begin{exercise}

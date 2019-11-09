@@ -12,4 +12,4 @@ mod4comm = mod2comm.Split(color)
 new_procid = mod4comm.Get_rank()
 
 if mydata/4!=new_procid:
-    print "Error",procid,new_procid,mydata/4
+    print("Error",procid,new_procid,mydata/4)

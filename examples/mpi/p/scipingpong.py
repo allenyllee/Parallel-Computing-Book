@@ -24,7 +24,7 @@ mytid = comm.Get_rank()
 ntests = 100
 
 if mytid==0 or mytid==ntids-1:
-    print "Node name:",MPI.Get_processor_name()
+    print("Node name:",MPI.Get_processor_name())
 
 for s in [1,10,100,1000,10000,100000,1000000]:
     if mytid==0:
@@ -37,10 +37,10 @@ for s in [1,10,100,1000,10000,100000,1000000]:
             comm.Send([data,MPI.DOUBLE],dest=ntids-1)
             comm.Recv([rdata,MPI.DOUBLE],source=ntids-1)
         elapsed = MPI.Wtime()-starttime
-        print "Size=%d, elapsed time: %e" % (s,elapsed)
+        print("Size=%d, elapsed time: %e" % (s,elapsed))
         c = data==rdata #reduce( lambda x,y:x and y, [ data[i]==rdata
         if not c.all():
-            print "oops",data,rdata
+            print("oops",data,rdata)
     elif mytid==ntids-1:
         zdata = np.empty(s, dtype=np.float64)
         for test in range(ntests):

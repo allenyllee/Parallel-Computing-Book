@@ -41,7 +41,7 @@ the \indexpragma{sections} is more appropriate. In a \n{sections} construct
 can be any number of \indexpragma{section} constructs. These need to be
 independent, and they can be execute by any available thread in the current team,
 including having multiple sections done by the same thread.
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp sections
 {
 #pragma omp section
@@ -49,16 +49,16 @@ including having multiple sections done by the same thread.
 #pragma omp section
   // another calculation
 }
-\end{verbatim}
+\end{lstlisting}
 
 This construct can be used to divide large blocks of independent work.
 Suppose that in the following line, both \n{f(x)} and \n{g(x)}
 are big calculations:
-\begin{verbatim}
+\begin{lstlisting}
   y = f(x) + g(x)
-\end{verbatim}
+\end{lstlisting}
 You could then write
-\begin{verbatim}
+\begin{lstlisting}
 double y1,y2;
 #pragma omp sections
 {
@@ -68,15 +68,15 @@ double y1,y2;
   y2 = g(x)
 }
 y = y1+y2;
-\end{verbatim}
+\end{lstlisting}
 Instead of using two temporaries, you could also use a critical
 section; see section~\ref{sec:critical}.  However, the best solution
 is have a \n{reduction} clause on the \n{sections} directive:
-\begin{verbatim}
+\begin{lstlisting}
   y = f(x) + g(x)
-\end{verbatim}
+\end{lstlisting}
 You could then write
-\begin{verbatim}
+\begin{lstlisting}
 y = 0;
 #pragma omp sections reduction(+:y)
 {
@@ -85,7 +85,7 @@ y = 0;
 #pragma omp section
   y += g(x)
 }
-\end{verbatim}
+\end{lstlisting}
 
 \Level 0 {Single/master}
 \label{sec:omp-single}
@@ -94,17 +94,17 @@ The \indexpragmadef{single} and \indexpragmadef{master} pragma
 limit the execution of a block to a single thread. 
 This can for instance be used to print tracing information
 or doing \emph{I/O}\index{I/O!in OpenMP} operations.
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp parallel
 {
 #pragma omp single
   printf("We are starting this section!\n");
   // parallel stuff
 }
-\end{verbatim}
+\end{lstlisting}
 Another use of \n{single} is to perform initializations
 in a parallel region:
-\begin{verbatim}
+\begin{lstlisting}
 int a;
 #pragma omp parallel
 {
@@ -113,7 +113,7 @@ int a;
   #pragma omp sections
     // various different computations using a
 }
-\end{verbatim}
+\end{lstlisting}
 
 The point of the single directive in this last example is that the
 computation needs to be done only once, because of the shared memory.
@@ -134,7 +134,7 @@ but it does not have the synchronization through the implicit barrier.
 
 \begin{exercise}
   Modify the above code to read:
-\begin{verbatim}
+\begin{lstlisting}
 int a;
 #pragma omp parallel
 {
@@ -143,7 +143,7 @@ int a;
   #pragma omp sections
     // various different computations using a
 }
-\end{verbatim}
+\end{lstlisting}
   This code is no longer correct. Explain.
 \end{exercise}
 

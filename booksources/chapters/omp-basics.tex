@@ -138,7 +138,7 @@ is governed by rules on the \indextermbus{scope}{of variables}:
 a~variable is declared in a block, and it is then visible to any
 statement in that block and blocks with a \indextermsub{lexical}{scope}
 contained in it, but not in surrounding blocks:
-\begin{verbatim}
+\begin{lstlisting}
 main () {
   // no variable `x' define here
   {
@@ -148,10 +148,10 @@ main () {
   }
   printf("x=%e\n",x); // syntax error: `x' undefined
 }
-\end{verbatim}
+\end{lstlisting}
 
 In C, you can redeclare a variable inside a nested scope:
-\begin{verbatim}
+\begin{lstlisting}
 {
   int x;
   if (something) {
@@ -159,7 +159,7 @@ In C, you can redeclare a variable inside a nested scope:
   }
   x = ... // this refers to the integer again
 }
-\end{verbatim}
+\end{lstlisting}
 Doing so makes the outer variable inaccessible.
 
 Fortran has simpler rules, since it does not have blocks inside blocks.
@@ -182,17 +182,17 @@ We will go into the details later.
 \index{OpenMP!compiling|(}
 
 Your file or Fortran module needs to contain
-\begin{verbatim}
+\begin{lstlisting}
 #include "omp.h"
-\end{verbatim}
+\end{lstlisting}
 in C, and 
-\begin{verbatim}
+\begin{lstlisting}
 use omp_lib
-\end{verbatim}
+\end{lstlisting}
 or
-\begin{verbatim}
+\begin{lstlisting}
 #include "omp_lib.h"
-\end{verbatim}
+\end{lstlisting}
 for Fortran.
 
 OpenMP is handled by extensions to your regular compiler, typically by
@@ -207,13 +207,13 @@ If you have separate compile and link stages, you need that option in both.
 
 When you use the openmp compiler option, a \indexterm{cpp} variable \indexompshow{_OPENMP}
 will be defined. Thus, you can have conditional compilation by writing
-\begin{verbatim}
+\begin{lstlisting}
 #ifdef _OPENMP
    ...
 #else
    ...
 #endif
-\end{verbatim}
+\end{lstlisting}
 
 \index{OpenMP!compiling|)}
 
@@ -249,7 +249,7 @@ additional specifications can be done through library calls.
 In C/C++ the \indextermdef{pragma} mechanism is used: annotations for
 the benefit of the compiler that are otherwise not part of the
 language. This looks like:
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp somedirective clause(value,othervalue)
   parallel statement;
 
@@ -258,7 +258,7 @@ language. This looks like:
   parallel statement 1;
   parallel statement 2;
  }
-\end{verbatim}
+\end{lstlisting}
 with
 \begin{itemize}
 \item the \verb+#pragma omp+ \indextermdef{sentinel} to indicate that
@@ -272,21 +272,21 @@ Directives in C/C++ are case-sensitive. Directives can be broken over
 multiple lines by escaping the line end.
 
 The sentinel in Fortran looks like a comment:
-\begin{verbatim}
+\begin{lstlisting}
 !$omp directive clause(value)
   statements
 !$omp end directive
-\end{verbatim}
+\end{lstlisting}
 The difference with the C~directive is that
 Fortran can not have a block, so there is an explicit
 \indextermsub{end-of}{directive} line.
 
 If you break a directive over more than one line, all but the last line
 need to have a continuation character, and each line needs to have the sentinel:
-\begin{verbatim}
+\begin{lstlisting}
 !$OMP parallel do &
 !%OMP   copyin(x),copyout(y)
-\end{verbatim}
+\end{lstlisting}
 The directives are case-insensitive. In
 \indextermbus{Fortran}{fixed-form source} files, \verb+c$omp+ and
 \verb+*$omp+ are allowed too.
@@ -301,12 +301,12 @@ is called a \emph{parallel region}; it
 is executed by a newly created team of threads. 
 This is an instance of the \indexac{SPMD} model: all threads execute the same
 segment of code.
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp parallel
 {
   // this is executed by a team of threads
 }
-\end{verbatim}
+\end{lstlisting}
 
 We will go into much more detail in section~\ref{sec:parallelregion}.
 
@@ -315,12 +315,12 @@ We will go into much more detail in section~\ref{sec:parallelregion}.
 \begin{exercise}
   \label{ex:omp-procthread}
   Write a program that contains the following lines:
-\begin{verbatim}
+\begin{lstlisting}
   printf("There are %d processors\n",omp_get_num_procs());
 #pragma omp parallel
   printf("There are %d threads\n",
         /* !!!! something missing here !!!! */ );
-\end{verbatim}
+\end{lstlisting}
 The first print statement tells you the number of available cores in
 the hardware. Your assignment is to
 supply the missing function that reports the number
@@ -333,12 +333,12 @@ number of lines printed?
   \label{ex:omp-procthreadn}
   Extend the program from exercise~\ref{ex:omp-procthread}. Make a
   complete program based on these lines:
-\begin{verbatim}
+\begin{lstlisting}
 int tsum=0;
 #pragma omp parallel
   tsum += /* the thread number */
 printf("Sum is %d\n",tsum);
-\end{verbatim}
+\end{lstlisting}
 Compile and run again. (In fact, run your program a number of times.)
 Do you see something unexpected? Can you think
 of an explanation?
@@ -375,7 +375,7 @@ is governed by rules on the \indextermbus{scope}{of variables}:
 a~variable is declared in a block, and it is then visible to any
 statement in that block and blocks with a \indextermsub{lexical}{scope}
 contained in it, but not in surrounding blocks:
-\begin{verbatim}
+\begin{lstlisting}
 main () {
   // no variable `x' define here
   {
@@ -385,13 +385,13 @@ main () {
   }
   printf("x=%e\n",x); // syntax error: `x' undefined
 }
-\end{verbatim}
+\end{lstlisting}
 Fortran has simpler rules, since it does not have blocks inside blocks.
 
 OpenMP has similar rules concerning data in parallel regions
 and other OpenMP constructs. First of all, data is visible
 in enclosed scopes:
-\begin{verbatim}
+\begin{lstlisting}
 main() {
   int x;
 #pragma omp parallel
@@ -401,10 +401,10 @@ main() {
   printf("x=%e\n",x); // value depends on what
                       // happened in the parallel region
 }
-\end{verbatim}
+\end{lstlisting}
 
 In C, you can redeclare a variable inside a nested scope:
-\begin{verbatim}
+\begin{lstlisting}
 {
   int x;
   if (something) {
@@ -412,11 +412,11 @@ In C, you can redeclare a variable inside a nested scope:
   }
   x = ... // this refers to the integer again
 }
-\end{verbatim}
+\end{lstlisting}
 Doing so makes the outer variable inaccessible.
 
 OpenMP has a similar mechanism:
-\begin{verbatim}
+\begin{lstlisting}
 {
   int x;
 #pragma omp parallel
@@ -424,7 +424,7 @@ OpenMP has a similar mechanism:
     double x;
   }
 }
-\end{verbatim}
+\end{lstlisting}
 There is an important difference: each thread in the team
 gets its own instance of the enclosed variable.
 

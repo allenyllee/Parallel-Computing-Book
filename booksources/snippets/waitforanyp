@@ -9,11 +9,11 @@ if procid==nprocs-1:
     for sender in range(nprocs-1):
         ind = MPI.Request.Waitany(requests,status=status)
         if ind!=status.Get_source():
-            print "sender mismatch: %d vs %d" % (ind,status.Get_source())
-        print "received from",ind
+            print("sender mismatch: %d vs %d" % (ind,status.Get_source()))
+        print("received from",ind)
 else:
     mywait = random.randint(1,2*nprocs)
-    print "[%d] wait for %d seconds" % (procid,mywait)
+    print("[%d] wait for %d seconds" % (procid,mywait))
     time.sleep(mywait)
     mydata = np.empty(1,dtype=np.int)
     mydata[0] = procid

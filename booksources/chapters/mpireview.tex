@@ -48,13 +48,13 @@ both.
 \begin{enumerate}
 \item Describe a deadlock scenario involving three processors.
 
-\item True or false: a message sent with \n{MPI_Isend} from one processor can be
-  received with an \n{MPI_Recv} call on another processor.
+\item True or false: a message sent with \lstinline{MPI_Isend} from one processor can be
+  received with an \lstinline{MPI_Recv} call on another processor.
 
-\item True or false: a message sent with \n{MPI_Send} from one processor can be
-  received with an \n{MPI_Irecv} on another processor.
+\item True or false: a message sent with \lstinline{MPI_Send} from one processor can be
+  received with an \lstinline{MPI_Irecv} on another processor.
 
-\item Why does the \n{MPI_Irecv} call not have an \n{MPI_Status} argument?
+\item Why does the \lstinline{MPI_Irecv} call not have an \lstinline{MPI_Status} argument?
 
 %% one-sided
 \item What is the relation between the concepts of `origin', `target', `fence',
@@ -110,7 +110,7 @@ both.
 buffer lengths vs variable length buffers (c) blocking vs non-blocking. Give examples of
 each type.  
 
-\item True or false: an \n{MPI_Scatter} call puts the same data on
+\item True or false: an \lstinline{MPI_Scatter} call puts the same data on
   each process.
 
 \item Given a distributed array, with every processor storing

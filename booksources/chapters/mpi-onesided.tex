@@ -222,13 +222,13 @@ and assume that all processes execute the first fence more or less at the same t
 The zero process does work before it can do the second fence call, but all other
 processes can call it immediately. However, they can not finish that second fence call
 until all one-sided communication is finished, which means they wait for the zero process.
+
 \begin{figure}[ht]
   \includegraphics[scale=.4]{graphics/lonestar-twonode-put}%putblock
   \caption{A trace of a one-sided communication epoch where process zero only originates
   a one-sided transfer}
   \label{fig:putblock}
 \end{figure}
-\cverbatimsnippet[examples/mpi/c/putblock.c]{putblock}
 
 As a further restriction, you can not mix \indexmpishow{MPI_Get} with \indexmpishow{MPI_Put}
 or \indexmpishow{MPI_Accumulate} calls in a single epoch. Hence, we can
@@ -239,21 +239,6 @@ Assertions are an integer parameter: you can combine assertions by
 adding them or using logical-or.
 The value zero is always correct. For further information, see
 section~\ref{sec:mpi-assert}.
-
-%% Local assertions are:
-%% \begin{itemize}
-%%   \item\indexmpishow{MPI_MODE_NOSTORE} The preceding epoch did not store
-%%     anything in this window.
-%%   \item\indexmpishow{MPI_MODE_NOPUT} The following epoch will not store
-%%     anything in this window.
-%% \end{itemize}
-%% Global assertions:
-%% \begin{itemize}
-%%   \item\indexmpishow{MPI_MODE_NOPRECEDE} This process made no \ac{RMA}
-%%     calls in the preceding epoch.  
-%%   \item\indexmpishow{MPI_MODE_NOSUCCEED} This process will make no
-%%     \ac{RMA} calls in the next epoch.
-%% \end{itemize}
 
 \index{window|)}
 
@@ -268,7 +253,7 @@ similar to a Send, Receive and Reduce, except that of course only one
 process makes a call.
 Since one process does all the work, its calling sequence contains
 both a description of the data on the origin (the calling process) and
-the target (the affect other process).
+the target (the affected other process).
 
 As in the two-sided case, \indexmpishow{MPI_PROC_NULL} can be used as
 a target rank.
@@ -460,7 +445,7 @@ one or more of the following, combined by bitwise OR in C/C++ or
 \n{IOR} in Fortran.
 
 \begin{itemize}
-\item[\indexmpishow{MPI_Win_start}] Supports the option:
+\item \indexmpishow{MPI_Win_start} Supports the option:
   \begin{itemize}
     \item[\indexmpishow{MPI_MODE_NOCHECK}] the matching calls to \n{MPI_WIN_POST} have already
     completed on all target processes when the call to \n{MPI_WIN_START} is
@@ -471,7 +456,7 @@ one or more of the following, combined by bitwise OR in C/C++ or
     matched by a regular receive, whereas both start and post must
     specify the nocheck option.)
   \end{itemize}
-\item[\indexmpishow{MPI_Win_post}] supports the following options:
+\item \indexmpishow{MPI_Win_post} supports the following options:
   \begin{itemize}
   \item[\indexmpishow{MPI_MODE_NOCHECK}] the matching calls to \n{MPI_WIN_START} have not
     yet occurred on any origin processes when the call to \n{MPI_WIN_POST}
@@ -486,7 +471,7 @@ one or more of the following, combined by bitwise OR in C/C++ or
     synchronization. This may avoid the need for cache synchronization
     at the wait call.
   \end{itemize}
-\item[\indexmpishow{MPI_Win_fence}] supports the following options:
+\item \indexmpishow{MPI_Win_fence} supports the following options:
   \begin{itemize}
   \item[\indexmpishow{MPI_MODE_NOSTORE}] the local window was not updated by local
     stores (or local get or receive calls) since last synchronization.
@@ -502,7 +487,7 @@ one or more of the following, combined by bitwise OR in C/C++ or
     any process in the window group, then it must be given by all
     processes in the group.
   \end{itemize}
-\item[\indexmpishow{MPI_Win_lock}] supports the following option:
+\item \indexmpishow{MPI_Win_lock} supports the following option:
   \begin{itemize}
     \item[\indexmpishow{MPI_MODE_NOCHECK}] no other process holds, or will attempt to
     acquire a conflicting lock, while the caller holds the window
@@ -564,6 +549,7 @@ that includes the possible origins.
 One-sided calls are said to emulate shared memory in MPI, but 
 the put and get calls are not enough for certain scenarios with shared
 data. Consider the scenario where:
+
 \begin{itemize}
 \item One process stores a table of work descriptors, and a pointer to
   the first unprocessed descriptor;
@@ -572,6 +558,7 @@ data. Consider the scenario where:
 \item A process that has read a descriptor then executes the
   corresponding task.
 \end{itemize}
+
 The problem is that reading and updating the pointer is not an
 \indexterm{atomic operation}, so
 it is possible that multiple processes get hold of the same value;
@@ -632,7 +619,7 @@ transfer. Typically it will lock the window with
 \indexmpiref{MPI_Win_lock}:
 
 \begin{lstlisting}
-If (rank == 0) {
+if (rank == 0) {
   MPI_Win_lock (MPI_LOCK_EXCLUSIVE, 1, 0, win);
   MPI_Put (outbuf, n, MPI_INT, 1, 0, n, MPI_INT, win);
   MPI_Win_unlock (1, win);

@@ -52,6 +52,9 @@ else
   MPI_F_COMPILER = mpif90
 endif
 
+%.o : %.c
+	${C_COMPILER} -c $^
+
 clean ::
 	@/bin/rm -rf *~ MULTI* *dSYM/
 	@/bin/rm -f *.out[0-9]* *.out_total *.log

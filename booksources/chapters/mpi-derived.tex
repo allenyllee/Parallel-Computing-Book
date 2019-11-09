@@ -81,7 +81,7 @@ one of the following routines:
   section~\ref{sec:data:vector};
 \item \indexmpishow{MPI_Type_create_subarray} for subsets out higher
   dimensional block; section~\ref{sec:type_subarray};
-\item \indexmpishow{MPI_Type_struct} for heterogeneous irregular data;
+\item \indexmpishow{MPI_Type_create_struct} for heterogeneous irregular data;
   section~\ref{sec:data:struct};
 \item \indexmpishow{MPI_Type_indexed} and
   \indexmpishow{MPI_Type_hindexed} for irregularly strided data;
@@ -341,8 +341,9 @@ the component type is a pointer.
 \Level 1 {Struct type}
 \label{sec:data:struct}
 
-The structure type, created with \indexmpishow{MPI_Type_create_struct},
-can contain multiple data types.
+The structure type, created with \indexmpiref{MPI_Type_create_struct},
+can contain multiple data types. (The routine
+\indexmpishow{MPI_Type_struct} is deprecated with \indextermbus{MPI}{3}.)
 %
 \begin{figure}[ht]
   \includegraphics[scale=.09]{data-struct}
@@ -360,12 +361,6 @@ struct {
 \end{lstlisting}
 has two blocks, one of a single integer, and one of two floats.
 This is illustrated in figure~\ref{fig:data-struct}.
-
-\begin{lstlisting}
-int MPI_Type_create_struct(
-  int count, int blocklengths[], MPI_Aint displacements[],
-  MPI_Datatype types[], MPI_Datatype *newtype);
-\end{lstlisting}
 
 \begin{description}
 \item[\texttt{count}] The number of blocks in this
@@ -385,9 +380,13 @@ send as a derived type and receive as a array of a simple type.
 as long as they have the same \indextermbus{datatype}{signature}.)
 %
 \cverbatimsnippet[examples/mpi/c/struct.c]{structure}
+\fverbatimsnippet[examples/mpi/f/struct.F90]{fstructure}
 %
 Note the \n{displacement} calculations in this example,
 which involve some not so elegant pointer arithmetic.
+(Alternatively, you could use \indexmpishow{MPI_Get_address}, which is
+the only way address calculations can be done in Fortran.)
+
 It would have been incorrect to write
 \begin{lstlisting}
 displacement[0] = 0;
@@ -405,47 +404,3 @@ displacements[3] = sizeof(myobject); types[3] = MPI_UB;
 MPI_Type_create_struct(struclen+1,.....);
 \end{lstlisting}
 
-\Level 1 {Type size}
-
-The space that MPI takes for a structure type can be queried in a
-variety of ways. First of all \indexmpiref{MPI_Type_size} counts the
-\emph{datatype size}\index{MPI!datatype!size} as the 
-number of bytes occupied by the data in a type. That means that in an
-\emph{MPI vector datatype}\index{MPI!datatype!vector} it does not
-count the gaps.
-%
-\cverbatimsnippet[examples/mpi/c/vectortypesize.c]{vectortypesize}
-
-
-On the other hand, the \emph{datatype
-  extent}\index{MPI!datatype!extent}, measured with
-\indexmpiref{MPI_Type_get_extent}
-is strictly the distance from the
-first to the last data item of the type, that is, with counting the
-gaps in the type.
-%
-\cverbatimsnippet[examples/mpi/c/vectortypeextent.c]{vectortypeextent}
-%
-
-(There is a deprecated function \indexmpidef{MPI_Type_extent} with the same
-functionality.)
-
-The \emph{subarray datatype}\index{MPI!datatype!subarray} need not
-start at the first element of the buffer, so the extent is an
-overstatement of how much data is involved. The routine
-\indexmpiref{MPI_Type_get_true_extent} returns the lower bound,
-indicating where the data starts, and the extent from that point.
-
-\begin{comment}
-  Suppose we implement gather (see also Section Gather ) as a spanning
-  tree implemented on top of point-to-point routines. Since the receive
-  buffer is only valid on the root process, one will need to allocate
-  some temporary space for receiving data on intermediate
-  nodes. However, the datatype extent cannot be used as an estimate of
-  the amount of space that needs to be allocated, if the user has
-  modified the extent, for example by using MPI_TYPE_CREATE_RESIZED. The
-  functions MPI_TYPE_GET_TRUE_EXTENT and MPI_TYPE_GET_TRUE_EXTENT_X are
-  provided which return the true extent of the datatype.
-\end{comment}
-
-\cverbatimsnippet[examples/mpi/c/trueextent.c]{trueextent}

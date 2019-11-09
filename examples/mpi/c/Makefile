@@ -23,7 +23,7 @@ APPS = init thread env outerr abort \
     cancel exscan \
     postwaitwin passive \
     reduce reduceinplace allreduce allreduceinplace gather gatherv allgatherv \
-    reducescatter trueextent \
+    reducescatter trueextent typematch \
     contiguous vector interleave indexed struct pack subarray \
     commdup_wrong commdup_right commsplit commsplittype intercomm \
     sharedshared \

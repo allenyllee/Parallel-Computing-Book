@@ -114,22 +114,15 @@ and assume that every process stores just one~$x_i$ value.
 For instance, if $x,y$ are distributed vector objects, and you want to compute
 \[ y- (x^ty)x \]
 which is part of the Gramm-Schmidt algorithm; see~\HPSCref{app:gram-schmidt}.
-Now you need the inner product value on all processors. You could do this
-by writing a reduction followed by a broadcast:
-\lstset{style=reviewcode,language=C}
+Now you need to use an \n{Allreduce} to reduce the inner product value on all processors. 
 \begin{lstlisting}
 // compute local value
 localvalue = innerproduct( x[ localpart], y[ localpart ] );
-// compute inner product on the root
-Reduce( localvalue, reducedvalue, root );
+// compute inner product on the every process
+AllReduce( localvalue, reducedvalue );
 // send root value to all other from the root
 Broadcast( reducedvalue, root );
 \end{lstlisting}
-or combine the last two steps in an allreduce,
-
-Surprisingly, an allreduce operation takes as
-long as a rooted reduction (see~\HPSCref{sec:collective} for details),
-and therefore half the time of a reduction followed by a broadcast.
 
 \Level 1 {Synchronization}
 

@@ -25,14 +25,14 @@ any thread using a variable~\n{x} will access the same memory location
 associated with that variable.
 
 Example:
-\begin{verbatim}
+\begin{lstlisting}
   int x = 5;
 #pragma omp parallel
   {
     x = x+1;
     printf("shared: x is %d\n",x);
   }
-\end{verbatim}
+\end{lstlisting}
 All threads increment the same variable, so after the loop it will
 have a value of five plus the number of threads; or maybe less because of the data races
 involved. See \HPSCref{sec:shared-lock} for an explanation of the issues involved;
@@ -54,23 +54,23 @@ any variable declared in a block following an OpenMP directive
 will be local to the executing thread.
 
 Example:
-\begin{verbatim}
+\begin{lstlisting}
   int x = 5;
 #pragma omp parallel
   {
     int x; x = 3;
     printf("local: x is %d\n",x);
   }
-\end{verbatim}
+\end{lstlisting}
 After the parallel region the outer variable~\n{x} will still have the
 value~\n{5}: there is no \indexterm{storage association} between the
 private variable and global one.
 
 The Fortran language does not have this concept of scope, so you have to use a
 \indexclause{private} clause:
-\begin{verbatim}
+\begin{lstlisting}
 !$OMP parallel private(x)
-\end{verbatim}
+\end{lstlisting}
 
 The \indexpragma{private} directive declares data to have a separate copy 
 in the memory of each thread. 
@@ -80,7 +80,7 @@ of the parallel region. (However, see below.)
 Thus, you should not rely on any initial value, or on the value of the outer variable
 after the region.
 
-\begin{verbatim}
+\begin{lstlisting}
   int x = 5;
 #pragma omp parallel private(x)
   {
@@ -88,7 +88,7 @@ after the region.
     printf("private: x is %d\n",x);
   }
   printf("after: x is %d\n",x); // also dangerous
-\end{verbatim}
+\end{lstlisting}
 
 Data that is declared private with the \indexpragma{private} directive is
 put on a separate \indextermbus{stack}{per thread}. The OpenMP standard
@@ -130,7 +130,7 @@ parallel region. The rules for variables in that function are as follows:
 
 It is common to have a variable that is set and used in each loop
 iteration:
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp parallel for
 for ( ... i ... ) {
   x = i*h;
@@ -138,7 +138,7 @@ for ( ... i ... ) {
   a[i] = s+c;
   b[i] = s-c;
 }
-\end{verbatim}
+\end{lstlisting}
 By the above rules, the variables \n{x,s,c} are all shared
 variables. However, the values they receive in one iteration are not
 used in a next iteration, so they behave in fact like private
@@ -161,17 +161,17 @@ values are not otherwise used.
 \item Local variables in the parallel region are private.
 \end{itemize}
 You can alter this default behaviour with the \indexclause{default} clause:
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp parallel default(shared) private(x)
 { ... }
 #pragma omp parallel default(private) shared(matrix)
 { ... }
-\end{verbatim}
+\end{lstlisting}
 and if you want to play it safe:
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp parallel default(none) private(x) shared(matrix)
 { ... }
-\end{verbatim}
+\end{lstlisting}
 
 \begin{itemize}
 \item The \indexclauseoption{default}{shared} clause means that all
@@ -201,10 +201,10 @@ debug this.
 The rules for arrays are slightly different from those for scalar data:
 \begin{enumerate}
 \item Statically allocated data, that is with a syntax like
-\begin{verbatim}
+\begin{lstlisting}
 int array[100];
 integer,dimension(:) :: array(100}
-\end{verbatim}
+\end{lstlisting}
 can be shared or private, depending on the clause you use.
 \item Dynamically allocated data, that is, created with
   \n{malloc}\index{malloc!and private/shared data} or
@@ -232,14 +232,14 @@ between a private variable and a global counterpart.
 
 First of all, private variables are created with an undefined value.
 You can force their initialization with \indexclause{firstprivate}.
-\begin{verbatim}
+\begin{lstlisting}
   int t=2;
 #pragma omp parallel firstprivate(t)
   {
     t += f( omp_get_thread_num() );
     g(t);
   }
-\end{verbatim}
+\end{lstlisting}
 The variable \n{t} behaves like a private variable, except that it is
 initialized to the outside value.
 
@@ -249,7 +249,7 @@ in one case, where you
 preserve a private variable
 from the last iteration of a parallel loop, or the last section in an
 \indexpragma{sections} construct. This is done with \indexclause{lastprivate}:
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp parallel for \
         lastprivate(tmp)
 for (i=0; i<N; i+) {
@@ -257,7 +257,7 @@ for (i=0; i<N; i+) {
   x[i] = .... tmp ....
 }
 ..... tmp ....
-\end{verbatim}
+\end{lstlisting}
 
 \Level 0 {Persistent data through \texttt{threadprivate}}
 \label{sec:threadprivate}
@@ -270,9 +270,9 @@ There is also a mechanism for \emph{thread-private
 which is not limited in lifetime to one parallel region.
 The \indexpragma{threadprivate} pragma is used to declare that each thread
 is to have a private copy of a variable:
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp threadprivate(var)
-\end{verbatim}
+\end{lstlisting}
 The variable needs be:
 \begin{itemize}
 \item a file or static variable in~C,
@@ -294,17 +294,17 @@ though often simply zero:
 
 On the other hand, if the thread private data starts out identical in
 all threads, the \indexclause{copyin} clause can be used:
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp threadprivate(private_var)
 
 private_var = 1;
 #pragma omp parallel copyin(private_var)
   private_var += omp_get_thread_num()
-\end{verbatim}
+\end{lstlisting}
 
 If one thread needs to set all thread private data to its value, the
 \indexclause{copyprivate} clause can be used:
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp parallel
 {
   ...
@@ -312,7 +312,7 @@ If one thread needs to set all thread private data to its value, the
   private_var = read_data();
   ...
 }
-\end{verbatim}
+\end{lstlisting}
 
 \Level 1 {Thread private example}
 
@@ -334,9 +334,9 @@ in a parallel region.
 
 \begin{fortrannote}
   Named common blocks can be made thread-private with the syntax
-\begin{verbatim}
+\begin{lstlisting}
 $!OMP threadprivate( /blockname/ )
-\end{verbatim}
+\end{lstlisting}
 \end{fortrannote}
 
 Threadprivate variables require \indexompshow{OMP_DYNAMIC} to be

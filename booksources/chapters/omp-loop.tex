@@ -24,7 +24,7 @@ available threads in a parallel region.
 The parallel execution of a loop can be handled a number of different ways.
 For instance, you can create a parallel region around the loop, and
 adjust the loop bounds:
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp parallel
 {
   int threadnum = omp_get_thread_num(),
@@ -34,23 +34,23 @@ adjust the loop bounds:
   for (i=low; i<high; i++)
     // do something with i
 }
-\end{verbatim}
+\end{lstlisting}
 
 A more natural option is to use the
 \indexpragma{parallel for} pragma:
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp parallel
 #pragma omp for
 for (i=0; i<N; i++) {
   // do something with i
 }
-\end{verbatim}
+\end{lstlisting}
 This has several advantages. For one, you don't have to calculate the loop bounds
 for the threads yourself, but you can also tell OpenMP to assign the loop
 iterations according to different schedules (section~\ref{sec:schedule}).
 
 Figure~\ref{fig:omp-par-do} shows the execution on four threads of
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp parallel
 {
   code1();
@@ -60,7 +60,7 @@ Figure~\ref{fig:omp-par-do} shows the execution on four threads of
   }
   code3();
 }
-\end{verbatim}
+\end{lstlisting}
 The code before and after the loop is executed identically
 in each thread; the loop iterations are spread over the four threads.
 \begin{figure}[ht]
@@ -80,10 +80,10 @@ inside a parallel region. It is also possible to have a combined
 
 If your parallel region only contains a loop, you can combine the
 pragmas for the parallel region and distribution of the loop iterations:
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp parallel for
   for (i=0; .....
-\end{verbatim}
+\end{lstlisting}
 
 \begin{exercise}
   \label{ex:omp-pi}
@@ -140,9 +140,9 @@ able to determine in advance how many iterations there will be.
 Usually you will have many more iterations in a loop than there are threads.
 Thus, there are several ways you can assign your loop iterations to the threads.
 OpenMP lets you specify this with the \indexompshow{schedule} clause.
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp for schedule(....)
-\end{verbatim}
+\end{lstlisting}
 
 The first distinction we now have to make is between static and dynamic schedules.
 With static schedules, the iterations are assigned purely based on the number
@@ -176,9 +176,9 @@ is a perfect load balancing.
 The default static schedule is to assign one consecutive block of
 iterations to each thread. If you want different sized blocks you can
 defined a \indexclauseoption{schedule}{chunk} size:
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp for schedule(static[,chunk])
-\end{verbatim}
+\end{lstlisting}
 (where the square brackets indicate an optional argument).
 With static scheduling, the compiler will split up the loop iterations at compile time,
 so, provided the iterations take roughly the same amount of time, this is the most efficient at runtime.
@@ -193,9 +193,9 @@ only a few chunks, versus the load balancing effect of having smaller chunks.
 In dynamic scheduling OpenMP will put blocks of iterations
 (the default chunk size is~1) in a task queue, and the threads take one of these
 tasks whenever they are finished with the previous.
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp for schedule(static[,chunk])
-\end{verbatim}
+\end{lstlisting}
 While this schedule may give good load balancing if the iterations
 take very differing amounts of time to execute, it does carry runtime
 overhead for managing the queue of iteration tasks.
@@ -224,7 +224,7 @@ leave it to the runtime library by specifying
   predictable amount of time.
 
 \begin{minipage}{.3\linewidth}\small
-\begin{verbatim}
+\begin{lstlisting}
 for (i=0; i<nsteps; i++) {
  double
    x = i*h,x2 = (i+1)*h,
@@ -243,7 +243,7 @@ for (i=0; i<nsteps; i++) {
  }
 }
 pi = 4*quarterpi;
-\end{verbatim}
+\end{lstlisting}
 \end{minipage}
 
 \begin{enumerate}
@@ -268,14 +268,14 @@ pi = 4*quarterpi;
 
 \begin{exercise}
   Program the \indexterm{LU factorization} algorithm without pivoting.
-\begin{verbatim}
+\begin{lstlisting}
 for k=1,n:
   A[k,k] = 1./A[k,k]
   for i=k+1,n:
     A[i,k] = A[i,k]/A[k,k]
     for j=k+1,n:
       A[i,j] = A[i,j] - A[i,k]*A[k,j]
-\end{verbatim}
+\end{lstlisting}
 \begin{enumerate}
 \item Argue that it is not possible to parallelize the outer loop.
 \item Argue that it is possible to parallelize both the $i$ and $j$ loops.
@@ -292,17 +292,17 @@ through the \indexompshow{OMP_SCHEDULE} environment variable, or left up to the 
 by specifying \n{auto}. Especially in the last two cases  you may want to enquire
 what schedule is currently being used with
 \indexompshow{omp_get_schedule}.
-\begin{verbatim}
+\begin{lstlisting}
 int omp_get_schedule(omp_sched_t * kind, int * modifier );
-\end{verbatim}
+\end{lstlisting}
 
 Its mirror call is \indexompshow{omp_set_schedule}, which sets the
 value that is used when schedule value \n{runtime} is used. It is in
 effect equivalent to setting the environment variable
 \n{OMP_SCHEDULE}.
-\begin{verbatim}
+\begin{lstlisting}
 void omp_set_schedule (omp_sched_t kind, int modifier);
-\end{verbatim}
+\end{lstlisting}
 
 \begin{tabular}{|l|lll|}
   \hline
@@ -347,31 +347,31 @@ parallel loops, it is possible to increase the amount of work by
 parallelizing all levels of loops instead of just the outer one.
 
 Example: in
-\begin{verbatim}
+\begin{lstlisting}
 for ( i=0; i<N; i++ )
   for ( j=0; j<N; j++ )
     A[i][j] = B[i][j] + C[i][j] 
-\end{verbatim}
+\end{lstlisting}
 all $N^2$ iterations are independent, but a regular \n{omp for}
 directive will only parallelize one level. The \indexclause{collapse}
 clause will parallelize more than one level:
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp for collapse(2)
 for ( i=0; i<N; i++ )
   for ( j=0; j<N; j++ )
     A[i][j] = B[i][j] + C[i][j] 
-\end{verbatim}
+\end{lstlisting}
 It is only possible to collapse perfectly nested loops, that is, the
 loop body of the outer loop can consist only of the inner loop; there
 can be no statements before or after the inner loop in the loop body
 of the outer loop. That is, the two loops in
-\begin{verbatim}
+\begin{lstlisting}
 for (i=0; i<N; i++) {
   y[i] = 0.;
   for (j=0; j<N; j++)
     y[i] += A[i][j] * x[j]
   }
-\end{verbatim}
+\end{lstlisting}
 can not be collapsed.
 
 \begin{exercise}
@@ -385,28 +385,28 @@ can not be collapsed.
 
 Iterations in a parallel loop that are execution in parallel do not
 execute in lockstep. That means that in
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp parallel for
 for ( ... i ... ) {
   ... f(i) ...
   printf("something with %d\n",i);
 }
-\end{verbatim}
+\end{lstlisting}
 it is not true that all function evaluations happen more or less at
 the same time, followed by all print statements. The print statements
 can really happen in any order. The \indexclause{ordered} clause
 coupled with the \indexpragma{ordered} directive can
 force execution in the right order:
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp parallel for ordered
 for ( ... i ... ) {
   ... f(i) ...
 #pragma omp ordered
   printf("something with %d\n",i);
 }
-\end{verbatim}
+\end{lstlisting}
 Example code structure:
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp parallel for shared(y) ordered
 for ( ... i ... ) {
   int x = f(i)
@@ -414,7 +414,7 @@ for ( ... i ... ) {
   y[i] += f(x)
   z[i] = g(y[i])
 }
-\end{verbatim}
+\end{lstlisting}
 There is a limitation:
 each iteration can encounter only one \n{ordered} directive.
 
@@ -425,20 +425,20 @@ The implicit barrier at the end of a work sharing construct
 can be cancelled with a \indexclause{nowait} clause.
 This has the effect that threads that are finished can continue
 with the next code in the parallel region:
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp parallel
 {
 #pragma omp for nowait
   for (i=0; i<N; i++) { ... }
   // more parallel code
 }
-\end{verbatim}
+\end{lstlisting}
 
 In the following example, threads that are finished with the first loop
 can start on the second. Note that this requires both loops to have
 the same schedule. We specify the static schedule here to have an
 identical scheduling of iterations over threads:
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp parallel
 {
   x = local_computation()
@@ -451,26 +451,26 @@ identical scheduling of iterations over threads:
     y[i] = ... x[i] ...
   }
 }
-\end{verbatim}
+\end{lstlisting}
 
 \Level 0 {While loops}
 
 OpenMP can only handle `for' loops: \indexterm{while loops} can not
 be parallelized. So you have to find a way around that. While loops
 are for instance used to search through data:
-\begin{verbatim}
+\begin{lstlisting}
 while ( a[i]!=0 && i<imax ) {
  i++; }
 // now i is the first index for which \n{a[i]} is zero.
-\end{verbatim}
+\end{lstlisting}
 We replace the while loop by a for loop that examines all locations:
-\begin{verbatim}
+\begin{lstlisting}
 result = -1;
 #pragma omp parallel for
 for (i=0; i<imax; i++) {
   if (a[i]!=0 && result<0) result = i;
 }
-\end{verbatim}
+\end{lstlisting}
 \begin{exercise}
   Show that this code has a race condition.
 \end{exercise}
@@ -479,13 +479,13 @@ section~\ref{sec:critical}. In this particular example, with a very small amount
 of work per iteration, that is likely to be inefficient 
 in this case (why?).
 A~more efficient solution uses the \indexpragma{lastprivate} pragma:
-\begin{verbatim}
+\begin{lstlisting}
 result = -1;
 #pragma omp parallel for lastprivate(result)
 for (i=0; i<imax; i++) {
   if (a[i]!=0) result = i;
 }
-\end{verbatim}
+\end{lstlisting}
 You have now solved a slightly different problem: the result variable
 contains the \emph{last} location where \n{a[i]} is zero.
 

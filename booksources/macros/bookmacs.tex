@@ -103,9 +103,12 @@
   \addchaptersource{{#1}}
   % typeset as nice C code
   \lstset{style=reviewcode,language=C++}\lstinputlisting{#2}}
-\def\fverbatimsnippet#1{
-  \lstset{style=reviewcode,language=Fortran}\lstinputlisting{#1}
-  \lstset{style=reviewcode,language=C}
+\newcommand{\fverbatimsnippet}[2][XX]{
+  % record this file as bracketed name
+  \addchaptersource{{#1}}
+  % typeset as nice Fortran code
+  \lstset{style=reviewcode,language=Fortran}
+  \lstinputlisting{#2}
 }
 \def\pverbatimsnippet#1{
   \lstset{style=reviewcode,language=Python}\lstinputlisting{#1}

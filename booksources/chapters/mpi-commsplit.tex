@@ -14,13 +14,11 @@
 \Level 0 {Splitting a communicator}
 \label{sec:comm-split}
 
-Splitting a communicator into multiple disjoint communicators
-can be done with \indexmpishow{MPI_Comm_split}.
-This uses a `colour':
-%
-\mpiRoutineRef{MPI_Comm_split}
-%
-and all processes in the old communicator with the same colour
+Above we saw several scenarios where it makes sense to divide
+\lstinline{MPI_COMM_WORLD} into disjoint subcommunicators.
+The command \indexmpiref{MPI_Comm_split} uses a `colour' to define
+these subcommunicators:
+all processes in the old communicator with the same colour
 wind up in a new communicator together. The old communicator still exists,
 so processes now have two different contexts in which to communicate.
 
@@ -89,7 +87,7 @@ Global ranks:  Ranks in row:  Ranks in colum:
 \end{tacc}
 \end{exercise}
 
-As an example of communicator splitting, consider the recursive
+As another example of communicator splitting, consider the recursive
 algorithm for \indextermbus{matrix}{transposition}.
 Processors are organized in a square grid. The matrix is divided
 on $2\times 2$ block form.
@@ -107,8 +105,4 @@ on $2\times 2$ block form.
   \item If the communicator has only one process, transpose the matrix in place.
   \end{itemize}
 \end{exercise}
-
-There is an important application of communicator splitting in the
-context of one-sided communication, grouping processes by whether they
-access the same shared memory area; see section~\ref{mpi-comm-split-type}.
 

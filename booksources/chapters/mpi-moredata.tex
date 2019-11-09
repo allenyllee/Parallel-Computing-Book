@@ -11,6 +11,64 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\Level 0 {Type size}
+
+The space that MPI takes for a structure type can be queried in a
+variety of ways. First of all \indexmpiref{MPI_Type_size} counts the
+\emph{datatype size}\index{MPI!datatype!size} as the 
+number of bytes occupied by the data in a type. That means that in an
+\emph{MPI vector datatype}\index{MPI!datatype!vector} it does not
+count the gaps.
+%
+\cverbatimsnippet[examples/mpi/c/vectortypesize.c]{vectortypesize}
+
+
+On the other hand, the \emph{datatype
+  extent}\index{MPI!datatype!extent}, measured with
+\indexmpiref{MPI_Type_get_extent}
+is strictly the distance from the
+first to the last data item of the type, that is, with counting the
+gaps in the type.
+%
+\cverbatimsnippet[examples/mpi/c/vectortypeextent.c]{vectortypeextent}
+%
+
+(There is a deprecated function \indexmpidef{MPI_Type_extent} with the same
+functionality.)
+
+The \emph{subarray datatype}\index{MPI!datatype!subarray} need not
+start at the first element of the buffer, so the extent is an
+overstatement of how much data is involved. The routine
+\indexmpiref{MPI_Type_get_true_extent} returns the lower bound,
+indicating where the data starts, and the extent from that point.
+
+\begin{comment}
+  Suppose we implement gather (see also Section Gather ) as a spanning
+  tree implemented on top of point-to-point routines. Since the receive
+  buffer is only valid on the root process, one will need to allocate
+  some temporary space for receiving data on intermediate
+  nodes. However, the datatype extent cannot be used as an estimate of
+  the amount of space that needs to be allocated, if the user has
+  modified the extent, for example by using MPI_TYPE_CREATE_RESIZED. The
+  functions MPI_TYPE_GET_TRUE_EXTENT and MPI_TYPE_GET_TRUE_EXTENT_X are
+  provided which return the true extent of the datatype.
+\end{comment}
+
+\cverbatimsnippet[examples/mpi/c/trueextent.c]{trueextent}
+
+The size of a datatype is not always statically known, for instance if
+the Fortran \indextermtt{KIND} keyword is used. The translation of
+datatypes in the source language can be translated to MPI types with
+%
+\indexmpiref{MPI_Type_match_size}
+%
+where the \lstinline{typeclass} argument is one of
+\indexmpishow{MPI_TYPECLASS_REAL}
+\indexmpishow{MPI_TYPECLASS_INTEGER}
+\indexmpishow{MPI_TYPECLASS_COMPLEX}.
+
+\cverbatimsnippet[examples/mpi/c/typematch.c]{typematchc}
+
 \Level 0 {More about data}
 
 \Level 1 {Datatype signatures}

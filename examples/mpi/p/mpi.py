@@ -19,7 +19,7 @@ comm = MPI.COMM_WORLD
 procid = comm.Get_rank()
 nprocs = comm.Get_size()
 if nprocs<2:
-    print "C'mon, get real...."
+    print("C'mon, get real....")
     sys.exit(1)
 
-print "Comm size:",comm.Get_size()
+print("Comm size:",comm.Get_size())

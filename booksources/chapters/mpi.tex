@@ -309,7 +309,10 @@ in MPI3.
 \begin{itemize}
 \item Fortran routines have the same prototype as C~routines except for the addition
   of an integer error parameter.
-\item The call for \indexmpishowsub{MPI_Init}{in Fortran} does not have the commandline arguments;
+\item The call for
+  %\indexmpishowsub{MPI_Init}{in Fortran}
+  \indexmpishowf{MPI_Init} in Fortran
+  does not have the commandline arguments;
   they need to be handled separately.
 \item The routine \indexmpishow{MPI_Sizeof} is only available in Fortran, it provides the 
   functionality of the C/C++ operator \indextermtt{sizeof}.
@@ -433,7 +436,7 @@ follows\indexmpi{MPI_WTIME_IS_GLOBAL}:
 \begin{lstlisting}
 int *v,flag;
 MPI_Attr_get( comm, MPI_WTIME_IS_GLOBAL, &v, &flag );
-if (mytid==0) printf(``Time synchronized? %d->%d\n'',flag,*v);
+if (mytid==0) printf("Time synchronized? %d->%d\n",flag,*v);
 \end{lstlisting}
 
 Normally you don't worry about the starting point for this timer: 

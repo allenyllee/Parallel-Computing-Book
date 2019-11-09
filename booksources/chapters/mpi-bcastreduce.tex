@@ -126,7 +126,7 @@ MPI_Reduce( senddata, recvdata..., operator,
   \indexmpishow{MPI_SUM}, \indexmpishow{MPI_PROD} and
   \indexmpishow{MPI_MAX}, but complicated operators such as finding
   the location of the maximum value exist. You can also define your
-  own operators; section~\ref{sec:mpi:op-create}.
+  own operators; section~\ref{sec:mpi-op-create}.
 \item There is a root process that receives the result of the
   reduction. Since the non-root processes do not receive the reduced
   data, they can actually leave the receive buffer undefined.

@@ -181,9 +181,7 @@ described. Therefore, there are two routines:
   ultimately the most efficient.
 \item \indexmpishow{MPI_Dist_graph_create} specifies on each process
   only what it is the source for; that is, who this process will be sending
-  to.\footnote{I disagree with this design decision. Specifying your
-    sources is usually easier than specifying your
-    destinations.}. Consequently, some amount of processing
+  to. Consequently, some amount of processing
   --~including communication~-- is needed to build the converse
   information, the ranks that will be sending to a process.
 \end{itemize}
@@ -284,7 +282,7 @@ Statistics query:
 \label{sec:mpi-1-graph}
 
 The original \indextermbus{MPI}{1} had a graph topology interface
-\mpiRoutineRef{MPI_Graph_create}
+\indexmpidef{MPI_Graph_create}
 which required each process to specify the full process graph. Since
 this is not scalable, it should be considered deprecated. Use the
 distributed graph topology (section~\ref{sec:mpi-dist-graph}) instead.

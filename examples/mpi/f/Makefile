@@ -3,7 +3,7 @@
 ####
 #### This makefile is part of the source of 
 #### "Parallel Computing for Science and Engineering"
-#### by Victor Eijkhout, copyright 2013/4
+#### by Victor Eijkhout, copyright 2013-9
 ####
 #### This is the makefile for the examples/mpi/f
 ####
@@ -16,8 +16,8 @@ info ::
 APPS = init local sendblock ssendblock sendrecv anysource \
     putfence getfence exscan \
     irecv_source reduce reduceinplace allreduce gather gatherv \
-    contiguous vector indexed pack \
-    persist
+    contiguous vector struct indexed pack \
+    persist typematch
 
 listapps :
 	@echo ${APPS}
