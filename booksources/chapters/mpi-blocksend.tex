@@ -92,21 +92,120 @@ if ( /* I am process A */ ) {
 }
 \end{lstlisting}
 
+\Level 2 {Send call}
+
 The blocking send command is
 %
 \indexmpiref{MPI_Send}.
 %
-This routine may not blocking for small messages; to force blocking
-behaviour use \indexmpishow{MPI_Ssend} with the same argument list.
-\url{http://www.mcs.anl.gov/research/projects/mpi/www/www3/MPI_Ssend.html}
+The features of this call are:
+
+\Level 3 {Data description}
+
+The data to be sent is described by a trio of buffer/count/datatype.
+This is common to just about any MPI routine that involves data
+transfer.
+
+In~C the buffer is a memory address, so it is treated slightly
+differently between variables and arrays:
+\lstset{language=C}
+\begin{lstlisting}
+int counter;
+MPI_Send( &counter,1,MPI_INT, /* ... */ );
+float point[2];
+MPI_Send( point,2,MPI_FLOAT, /* ... */ );
+\end{lstlisting}
+
+Since Fortran uses a parameter
+\emph{passing by reference}\index{pass-by-reference!in Fortran}
+mechanism, variables and arrays are treated the same:
+\lstset{language=Fortran}
+\begin{lstlisting}
+integer :: counter
+real(4) :: point[2]
+call MPI_Send( counter,1,MPI_INTEGER, ... )
+call MPI_Send( point,2,MPI_REAL4, ... )
+\end{lstlisting}
+
+Python sends objects, which document their own size and type, so the
+send call has only a single parameter describing the data:
+\lstset{language=Python}
+\begin{lstlisting}
+comm.send( python_object, ... )
+comm.Send( numpy_object, ... )
+\end{lstlisting}
+
+\Level 3 {Target}
+
+Send calls have a \indextermbusdef{messsage}{target}: they require an
+explicit process rank to send to.  This rank is a number from zero up
+to the result of \indexmpishow{MPI_Comm_size}.
+
+This aspect of the send call shows the symmetric nature of MPI: every
+target process is reached with the same send call, no matter whether it's
+running on the same multicore chip as the sender, or on a
+computational node halfway across the machine room. Of course, any
+self-respecting MPI implementation optimizes for the case where sender
+and receiver have access to the same shared memory. However, even
+then, there will be a copy operation from the sender buffer to the
+receiver buffer, so there is no actual memory sharing going on.
+
+\Level 3 {Tag}
+
+Many applications have each sender send only one message to a given
+receiver.
+For the case where there are
+multiple messages between the same sender~/ receiver pair,
+the \indextermbus{message}{tag} can be used to disambiguate between
+the messages.
+
+Unless otherwise needed, a tag value of zero is safe to use. If you do
+use tag values, you can use the key \indexmpishow{MPI_TAG_UB} to query
+what the maximum value is that can be used; see
+section~\ref{sec:mpi_attr}.
+
+\Level 2 {Receive call}
 
 The basic blocking receive command is
 %
 \indexmpiref{MPI_Recv}
-%
-The \n{count} argument indicates the maximum length of a message; the
+
+\Level 3 {Data description}
+
+The receive call has the same buffer/count/data parameters as the send
+call.
+However, 
+the \n{count} argument here indicates the maximum length of a message; the
 actual length of the received message can be determined 
-from the status object. See section~\ref{sec:mpi-status}
+from the status object, which is described below.
+
+\Level 3 {Source}
+
+Mirroring the target argument of the \indexmpishow{MPI_Send} call,
+\indexmpishow{MPI_Recv} has a \indextermbusdef{message}{source}
+argument.
+This can be either a specific process rank, or it can be the
+\indexmpidef{MPI_ANY_SOURCE} wildcard. In the latter case, the actual
+source can be determined after the message has been received; see below.
+
+\Level 3 {Tag}
+
+Similar to the messsage source, the message tag of a receive call can
+be a specific value or a wildcard, in this case
+\indexmpidef{MPI_ANY_TAG}.
+Again, see below.
+
+\Level 3 {Status}
+
+In the syntax of the \indexmpishow{MPI_Recv} command you saw one parameter that
+the send call lacks: the \indexmpishow{MPI_Status} object. This serves the following
+purpose: the receive call can have a `wildcard' behaviour, for instance specifying
+that the message can come from any source rather than a specific
+one. Similarly, the tag value can be wildcarded. The status
+object then allows you to find out the actual message source and tag,
+and the message size.
+
+See section~\ref{sec:mpi-status}
 for more about the status object.
 
 \begin{exercise}
@@ -132,12 +231,6 @@ for more about the status object.
   to let half the processors
   be source and the other half the targets. Does the pingpong time increase?
 \end{exercise}
-
-In the syntax of the \indexmpishow{MPI_Recv} command you saw one parameter that
-the send call lacks: the \indexmpishow{MPI_Status} object. This serves the following
-purpose: the receive call can have a `wildcard' behaviour, for instance specifying
-that the message can come from any source rather than a specific one. The status
-object then allows you to find out where the message actually came from.
 
 \Level 1 {Problems with blocking communication}
 \label{sec:blocking}
@@ -200,7 +293,8 @@ On the other hand, if we put the send call before the receive,
 code may not block for small messages
 that fall under the eager limit.
 
-In this example we send
+To illustrate eager and blocking behavior in \indexmpishow{MPI_Send},
+consider an example where we send
 gradually larger messages. From the screen output you can see what
 the largest message was that fell under the eager limit; after that the code
 hangs because of a deadlock.
@@ -212,8 +306,9 @@ hangs because of a deadlock.
 \pverbatimsnippet{sendblockp}
 
 
-If you want a code to behave the same for all message sizes,
-you force the send call to be blocking by using \indexmpishow{MPI_Ssend}:
+If you want a code to exhibit the same blocking behavior for  all message sizes,
+you force the send call to be blocking by using
+\indexmpidef{MPI_Ssend}, which has the same calling sequence as \indexmpishow{MPI_Send}.
 %
 \cverbatimsnippet[examples/mpi/c/ssendblock.c]{ssendblock}
 %
@@ -423,7 +518,7 @@ in that ordering; see figure~\ref{fig:sendrecv}.
 \end{figure}
 
 \begin{figure}[ht]
-  \includegraphics[scale=.5]{sendrecv-steps}
+  \includegraphics[scale=.4]{sendrecv-steps}
   \caption{Two steps of send/recv to do a three-point combination}
   \label{fig:sendrecv-steps}.
 \end{figure}

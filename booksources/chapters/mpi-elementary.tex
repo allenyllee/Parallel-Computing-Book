@@ -37,18 +37,25 @@ MPI_Send( &x,1,MPI_DOUBLE, ..... )
 
 \begin{tabular}{|ll|}
   \hline
-\n{MPI_CHAR}&only for text data, do not use for small integers\\
-\n{MPI_UNSIGNED_CHAR}&\\
-\n{MPI_SIGNED_CHAR}&\\
-\n{MPI_SHORT}&\\
-\n{MPI_UNSIGNED_SHORT}&\\
-\n{MPI_INT}&\\
-\n{MPI_UNSIGNED}&\\
-\n{MPI_LONG}&\\
-\n{MPI_UNSIGNED_LONG}&\\
-\n{MPI_FLOAT}&\\
-\n{MPI_DOUBLE}&\\
-\n{MPI_LONG_DOUBLE}&\\
+% char
+\indexmpishow{MPI_CHAR}&only for text data, do not use for small integers\\
+\indexmpishow{MPI_UNSIGNED_CHAR}&\\
+\indexmpishow{MPI_SIGNED_CHAR}&\\
+% int
+\indexmpishow{MPI_SHORT}&\\
+\indexmpishow{MPI_UNSIGNED_SHORT}&\\
+\indexmpishow{MPI_INT}&\\
+\indexmpishow{MPI_UNSIGNED}&\\
+\indexmpishow{MPI_LONG}&\\
+\indexmpishow{MPI_UNSIGNED_LONG}&\\
+\indexmpishow{MPI_LONG_LONG_INT}&\\
+% real
+\indexmpishow{MPI_FLOAT}&\\
+\indexmpishow{MPI_DOUBLE}&\\
+\indexmpishow{MPI_LONG_DOUBLE}&\\
+% other
+\indexmpishow{MPI_BYTE}&\\
+\indexmpishow{MPI_PACKED}&\\
   \hline
 \end{tabular}
 
@@ -56,22 +63,48 @@ There is some, but not complete, support for \indexterm{C99} types.
 
 \Level 1 {Fortran}
 \index{datatype!elementary!in Fortran}
+\lstset{style=reviewcode,language=Fortran} %pyskip
 
 \begin{tabular}{|ll|}
   \hline
-\n{MPI_CHARACTER}&Character(Len=1)\\
-\n{MPI_LOGICAL}&\\
-\n{MPI_INTEGER}&\\
-\n{MPI_REAL}&\\
-\n{MPI_DOUBLE_PRECISION}&\\
-\n{MPI_COMPLEX}&\\
-\n{MPI_DOUBLE_COMPLEX}&Complex(Kind=Kind(0.d0))\\
+\indexmpishow{MPI_CHARACTER}&Character(Len=1)\\
+% int
+\indexmpishow{MPI_INTEGER}&\\
+\indexmpishow{MPI_INTEGER1}&\\
+\indexmpishow{MPI_INTEGER2}&\\
+\indexmpishow{MPI_INTEGER4}&\\
+\indexmpishow{MPI_INTEGER8}&\\
+\indexmpishow{MPI_INTEGER16}&\\
+% real
+\indexmpishow{MPI_REAL}&\\
+\indexmpishow{MPI_DOUBLE_PRECISION}&\\
+\indexmpishow{MPI_REAL2}&\\
+\indexmpishow{MPI_REAL4}&\\
+\indexmpishow{MPI_REAL8}&\\
+% complex
+\indexmpishow{MPI_COMPLEX}&\\
+\indexmpishow{MPI_DOUBLE_COMPLEX}&Complex(Kind=Kind(0.d0))\\
+% other
+\indexmpishow{MPI_LOGICAL}&\\
+\indexmpishow{MPI_PACKED}&\\
   \hline
 \end{tabular}
 
-Addresses have type \indexmpishow{MPI_Aint} or \n{INTEGER
-(KIND=MPI_ADDRESS_KIND)} in Fortran. The start of the address range is
+Not all these types need be supported, for instance
+\indexmpishow{MPI_INTEGER16} may not exist, in which case it will be
+equivalent to \indexmpishow{MPI_DATATYPE_NULL}.
+
+The default integer type \indexmpishow{MPI_INTEGER} is equivalent to
+\lstinline{INTEGER(KIND=MPI_INTEGER_KIND)}.
+
+Addresses have type \indexmpishow{MPI_Aint} or
+\lstinline{INTEGER(KIND=MPI_ADDRESS_KIND)}%
+in Fortran. The start of the address range is
 given in \indexmpishow{MPI_BOTTOM}.
+
+There is also
+\indexmpidef{MPI_COUNT_KIND},
+\indexmpidef{MPI_OFFSET_KIND}.
 
 \Level 2 {Fortran90 kind-defined types}
 \label{sec:f90-types}
@@ -86,7 +119,6 @@ predefined MPI datatypes. Hence the following routines exist to make
 \indexmpiref{MPI_Type_create_f90_complex}.
 
 Examples:
-\lstset{style=reviewcode,language=Fortran} %pyskip
 \begin{lstlisting}
 INTEGER ( KIND = SELECTED_INTEGER_KIND(15) ) , &
  DIMENSION(100) :: array INTEGER :: root , integertype , error 
@@ -141,6 +173,22 @@ is an integer of kind \indexmpidef{MPI_ADDRESS_KIND}:
 integer(kind=MPI_ADDRESS_KIND) :: winsize
 \end{lstlisting}
 \lstset{style=reviewcode,language=C} %pyskip
+
+Fortran lacks a \n{sizeof} operator to query the sizes of datatypes.
+Since sometimes exact byte counts are necessary,
+for instance in one-sided communication,
+Fortran can use the \indexmpiref{MPI_Sizeof} routine.
+
+Example usage in \indexmpishow{MPI_Win_create}:
+\begin{lstlisting}
+call MPI_Sizeof(windowdata,window_element_size,ierr)
+window_size = window_element_size*500
+call MPI_Win_create( windowdata,window_size,window_element_size,... );
+\end{lstlisting}
+\lstset{language=C} %pyskip
+
+This routine is deprecated in \indexterm{MPI-4}: use of
+\indextermtt{storage_size} and/or \indextermtt{c_sizeof} is recommended.
 
 \Level 2 {Python}
 

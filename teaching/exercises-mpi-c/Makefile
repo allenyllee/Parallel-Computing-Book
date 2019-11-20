@@ -31,13 +31,12 @@ info ::
 	@echo "    support options:"
 	@echo "      bucketblock : N"
 
-include ../course-support/Make.inc
+include ../course-support/Make.compile
+
 .SECONDEXPANSION:
-OPTS = 
-${EXERCISES} : $$@.c
-	${MPI_C_COMPILER} \
-	  ${CFLAGS} ${OPTS} \
-	  -o $@ $^
+${EXERCISES} : $$@.o
+	${C_LINKER} -o $@ $^
+
 
 include ../course-support/Make.simgrid
 ifdef TACC_TAU_DIR
@@ -48,5 +47,9 @@ endif
 #### Regression tests
 ####
 
-include ../course-support/Make.mpi_run
 include ../course-support/Make.mpi_regress
+CATCHER = ../course-support/catchout
+MPIRUN = mpiexec
+NP = 4
+
+include ../../Make.clean

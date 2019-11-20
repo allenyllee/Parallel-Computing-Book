@@ -14,6 +14,29 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%%%%
+%%%% Outlining
+%%%%
+\OutlineLevelStart0{\chapter{#1}
+  \maillink{arabic{chapter} "#1"}{#1}{chapter}
+}
+\OutlineLevelStart1{\section{#1}
+\maillink{\arabic{chapter}.\arabic{section}}{#1}{section}
+}
+\OutlineLevelCont1{\section{#1}
+\maillink{\arabic{chapter}.\arabic{section}}{#1}{section}
+}
+\OutlineLevelStart2{\subsection{#1}
+  \maillink
+    {\arabic{chapter}.\arabic{section}.\arabic{subsection}}{#1}{subsection}
+}
+\OutlineLevelStart3{\subsubsection{#1}}
+\setcounter{secnumdepth}{4}
+\OutlineLevelStart4{\paragraph{\textit{#1}}}
+
+%%%%
+%%%% stuff
+%%%%
 \newcommand\furtherreading{\Level 0 {Further Reading}\label{sec:furtherreading-\chapshortname}}
 \newcommand\heading[1]{\paragraph*{\textbf{#1}}}
 

@@ -216,7 +216,14 @@ an MPI implementation providing a Fortran interface provide a
 module named \indextermttdef{mpi_f08} that can be used in a Fortran program.
 This defines MPI functions that return an integer result, rather than
 having a final parameter. It also defines proper interfaces, making
-type checking possible.
+type checking possible:
+there are separate routines for each datatype, and an \n{Interface} block
+in the MPI module. If you manage to request a version that does not exist,
+the compiler will display a message like
+\begin{verbatim}
+There is no matching specific 
+subroutine for this generic subroutine call [MPI_Send]
+\end{verbatim}
 %
 For details see
 \url{http://mpi-forum.org/docs/mpi-3.1/mpi31-report/node409.htm}.

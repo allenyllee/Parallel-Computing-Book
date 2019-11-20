@@ -447,8 +447,8 @@ one or more of the following, combined by bitwise OR in C/C++ or
 \begin{itemize}
 \item \indexmpishow{MPI_Win_start} Supports the option:
   \begin{itemize}
-    \item[\indexmpishow{MPI_MODE_NOCHECK}] the matching calls to \n{MPI_WIN_POST} have already
-    completed on all target processes when the call to \n{MPI_WIN_START} is
+    \item \indexmpishow{MPI_MODE_NOCHECK} the matching calls to \indexmpishow{MPI_Win_post} have already
+    completed on all target processes when the call to \indexmpishow{MPI_Win_start} is
     made. The nocheck option can be specified in a start call if and
     only if it is specified in each matching post call. This is similar
     to the optimization of ``ready-send'' that may save a handshake when
@@ -458,38 +458,38 @@ one or more of the following, combined by bitwise OR in C/C++ or
   \end{itemize}
 \item \indexmpishow{MPI_Win_post} supports the following options:
   \begin{itemize}
-  \item[\indexmpishow{MPI_MODE_NOCHECK}] the matching calls to \n{MPI_WIN_START} have not
-    yet occurred on any origin processes when the call to \n{MPI_WIN_POST}
+  \item \indexmpishow{MPI_MODE_NOCHECK} the matching calls to \indexmpishow{MPI_Win_start} have not
+    yet occurred on any origin processes when the call to \indexmpishow{MPI_Win_post}
     is made. The nocheck option can be specified by a post call if and
     only if it is specified by each matching start call.
-  \item[\indexmpishow{MPI_MODE_NOSTORE}] the local window was not updated by local
+  \item \indexmpishow{MPI_MODE_NOSTORE} the local window was not updated by local
     stores (or local get or receive calls) since last
     synchronization. This may avoid the need for cache synchronization
     at the post call.
-  \item[\indexmpishow{MPI_MODE_NOPUT}] the local window will not be updated by put or
+  \item \indexmpishow{MPI_MODE_NOPUT} the local window will not be updated by put or
     accumulate calls after the post call, until the ensuing (wait)
     synchronization. This may avoid the need for cache synchronization
     at the wait call.
   \end{itemize}
 \item \indexmpishow{MPI_Win_fence} supports the following options:
   \begin{itemize}
-  \item[\indexmpishow{MPI_MODE_NOSTORE}] the local window was not updated by local
+  \item \indexmpishow{MPI_MODE_NOSTORE} the local window was not updated by local
     stores (or local get or receive calls) since last synchronization.
-  \item[\indexmpishow{MPI_MODE_NOPUT}] the local window will not be updated by put or
+  \item \indexmpishow{MPI_MODE_NOPUT} the local window will not be updated by put or
     accumulate calls after the fence call, until the ensuing (fence)
     synchronization.
-  \item[\indexmpishow{MPI_MODE_NOPRECEDE}] the fence does not complete any sequence of
+  \item \indexmpishow{MPI_MODE_NOPRECEDE} the fence does not complete any sequence of
     locally issued RMA calls. If this assertion is given by any
     process in the window group, then it must be given by all
     processes in the group.
-  \item[\indexmpishow{MPI_MODE_NOSUCCEED}] the fence does not start any
+  \item \indexmpishow{MPI_MODE_NOSUCCEED} the fence does not start any
     sequence of locally issued RMA calls. If the assertion is given by
     any process in the window group, then it must be given by all
     processes in the group.
   \end{itemize}
 \item \indexmpishow{MPI_Win_lock} supports the following option:
   \begin{itemize}
-    \item[\indexmpishow{MPI_MODE_NOCHECK}] no other process holds, or will attempt to
+    \item \indexmpishow{MPI_MODE_NOCHECK} no other process holds, or will attempt to
     acquire a conflicting lock, while the caller holds the window
     lock. This is useful when mutual exclusion is achieved by other
     means, but the coherence operations that may be attached to the

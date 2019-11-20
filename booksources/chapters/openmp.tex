@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-8
+%%%% by Victor Eijkhout, copyright 2012-9
 %%%%
 %%%% openmp.tex : topics that have not been rolled into their
 %%%%              own chapter yet.
@@ -99,7 +99,7 @@ Other settings:
 \begin{itemize}
 \item\indexompshow{omp_get_num_threads}: query the number of threads
   active at the current place in the code; this can be lower than what
-  was set with \n{omp_set_num_threads}. For a meaningful answer, this
+  was set with \indexompshow{omp_set_num_threads}. For a meaningful answer, this
   should be done in a parallel region.
 \item\indexompshow{omp_get_thread_num}
 \item\indexompshow{omp_in_parallel}: test if you are in a parallel
@@ -140,9 +140,9 @@ Other environment variables:
 \label{sec:omp-timing}
 
 OpenMP has a wall clock timer routine \indexcommand{omp_get_wtime}
-\begin{verbatim}
+\begin{lstlisting}
 double omp_get_wtime(void);
-\end{verbatim}
+\end{lstlisting}
 The starting point is arbitrary and is different for each program run;
 however, in one run it is identical for all threads.
 This timer has a resolution given by \indexcommand{omp_get_wtick}.
@@ -154,7 +154,7 @@ This timer has a resolution given by \indexcommand{omp_get_wtick}.
   \item Write a code segment that takes a measurable amount of time, that is,
     it should take a multiple of the tick time.
   \item Write a parallel loop and measure the speedup. You can for instance do this
-\begin{verbatim}
+\begin{lstlisting}
 for (int use_threads=1; use_threads<=nthreads; use_threads++) {
 #pragma omp parallel for num_threads(use_threads)
     for (int i=0; i<nthreads; i++) {
@@ -163,7 +163,7 @@ for (int use_threads=1; use_threads<=nthreads; use_threads++) {
     if (use_threads==1)
       time1 = tend-tstart;
     else // compute speedup
-\end{verbatim}
+\end{lstlisting}
 \item In order to prevent the compiler from optimizing your loop away, let
   the body compute a result and use a reduction to preserve these results.
   \end{itemize}
@@ -180,7 +180,7 @@ calls to library routines that include a \indexterm{race condition};
 such code is said not to be \emph{thread-safe}.
 
 For example a routine
-\begin{verbatim}
+\begin{lstlisting}
 static int isave;
 int next_one() {
  int i = isave;
@@ -192,7 +192,7 @@ int next_one() {
 for ( .... ) {
   int ivalue = next_one();
 }
-\end{verbatim}
+\end{lstlisting}
 has a clear race condition, as the iterations of the loop
 may get different \n{next_one} values, as they are supposed to,
 or not. This can be solved by using an \indexpragma{critical}
@@ -274,9 +274,9 @@ In OpenMP 4.0 there is support for offloading work to an
 \emph{accelerator}\index{OpenMP!accelerator support in}
 or
 \emph{co-processor}\index{OpenMP!co-processor support in}:
-\begin{verbatim}
+\begin{lstlisting}
 #pragma omp target [clauses]
-\end{verbatim}
+\end{lstlisting}
 with clauses such as
 \begin{itemize}
 \item \n{data}: place data

@@ -26,8 +26,6 @@ EXERCISES = hello \
     blockwrite shareddata ibarrierupdate
 OTHERPROGRAMS = write
 
-include ../course-support/Make.inc
-
 FFLAGS = -O1
 .SECONDEXPANSION:
 ${EXERCISES} : $$@.F90
@@ -41,3 +39,5 @@ shareddata : contents.o
 include ../course-support/Make.mpi_run
 include ../course-support/Make.mpi_regress
 run_hello : hello
+
+include ../../Make.clean

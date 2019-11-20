@@ -16,7 +16,7 @@ info ::
 APPS = init local sendblock ssendblock sendrecv anysource \
     putfence getfence exscan \
     irecv_source reduce reduceinplace allreduce gather gatherv \
-    contiguous vector struct indexed pack \
+    contiguous vector struct indexed pack matchkind \
     persist typematch
 
 listapps :
@@ -131,4 +131,4 @@ noregression :
 	  echo "Regression succesfully concluded" ; \
 	fi
 
-include ../../Make.inc
+include ../../../Make.clean

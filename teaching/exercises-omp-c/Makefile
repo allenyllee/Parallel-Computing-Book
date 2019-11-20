@@ -18,7 +18,7 @@ info ::
 	@echo "make EXERCISE (where EXERCISE=${EXERCISES})"
 EXERCISES = parallel pi piadapt taskfactor
 
-include ../course-support/Make.inc
+include ../../Make.clean
 
 .SECONDEXPANSION:
 ${EXERCISES} : $$@.c

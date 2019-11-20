@@ -25,16 +25,18 @@ EXERCISES = hello \
     blockwrite shareddata
 OTHERPROGRAMS = write
 
-FFLAGS = -O1
+include ../course-support/Make.compile
+
 .SECONDEXPANSION:
-${EXERCISES} : $$@.F90
-	${MPI_F_COMPILER} ${FFLAGS} -o $@ $^
+${EXERCISES} : $$@.o
+	${F_LINKER} -o $@ $^
 
 ####
 #### Regression tests
 ####
 
-include ../course-support/Make.inc
 include ../course-support/Make.mpi_run
 include ../course-support/Make.mpi_regress
 run_hello : hello
+
+include ../../Make.clean

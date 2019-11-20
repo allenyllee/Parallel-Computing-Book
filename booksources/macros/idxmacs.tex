@@ -59,47 +59,40 @@
     @\acl{#1} (#1)|)}}\tmp}
 \makeatother
 
+\newcommand\InnocentChars{%
+  \catcode`\_=12 \catcode`\>=12 \catcode`\<=12
+  \catcode`\&=12 \catcode`\^=12 \catcode`\~=12
+  \def\\{\char`\\}\relax
+}
 \newif\ifShowRoutine
 { \catcode`\_=13
   %% MPI index routines
   \gdef\indexmpishow#{\bgroup
-    \catcode`\_=12 \catcode`\>=12 \catcode`\<=12
-    \catcode`\&=12 \catcode`\^=12 \catcode`\~=12
-    \def\\{\char`\\}\relax
-    \ShowRoutinetrue
+    \InnocentChars \ShowRoutinetrue
     %\tt
     \afterassignment\mpitoindex\edef\indexedmpi}
   \gdef\indexmpishowf#{\bgroup
-    \catcode`\_=12 \catcode`\>=12 \catcode`\<=12
-    \catcode`\&=12 \catcode`\^=12 \catcode`\~=12
-    \def\\{\char`\\}\relax
+    \InnocentChars \def\\{\char`\\}\relax
     \ShowRoutinetrue
     %\tt
     \afterassignment\mpitoindexf\edef\indexedmpi}
   \gdef\indexmpishowsub#{\bgroup
+    \InnocentChars
     \catcode`\_=13 \def_{\char95\discretionary{}{}{}}
-    \catcode`\>=12 \catcode`\<=12
-    \catcode`\&=12 \catcode`\^=12 \catcode`\~=12
     \def\\{\char`\\}\relax
     %
     \tt \afterassignment\defineindexmpisubtwo \xdef\indexedmpisubone}
   \gdef\defineindexmpisubtwo{\afterassignment\mpitoindexsub \gdef\indexedmpisubtwo}
   \gdef\indexmpidef#{\bgroup 
-    \catcode`\_=12 % 13 \def_{\char95\discretionary{}{}{}}
-    \catcode`\>=12 \catcode`\<=12
-    \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
+    \InnocentChars \def\\{\char`\\}\relax
     \ShowRoutinetrue
     \tt \afterassignment\mpitoindexbf\edef\indexedmpi}
   \gdef\indexmpiex#{\bgroup
-    \catcode`\_=12 % 13 \def_{\char95\discretionary{}{}{}}
-    \catcode`\>=12 \catcode`\<=12
-    \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
+    \InnocentChars \def\\{\char`\\}\relax
     \ShowRoutinetrue
     \tt \afterassignment\mpitoindexit\edef\indexedmpi}
   \gdef\indexmpi#{\bgroup
-    \catcode`\_=12 % 13 \def_{\char95\discretionary{}{}{}}
-    \catcode`\>=12 \catcode`\<=12
-    \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
+    \InnocentChars \def\\{\char`\\}\relax
     \ShowRoutinefalse
     \tt \afterassignment\mpitoindex\edef\indexedmpi}
   %% same for OpenMP
@@ -262,11 +255,24 @@
     \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
     \ShowRoutinefalse
     \tt \afterassignment\petsctoindex\edef\indexedpetsc}
+  \gdef\indexpetscoption#{\bgroup
+    \catcode`\_=12 % 13 \def_{\char95\discretionary{}{}{}}
+    \catcode`\>=12 \catcode`\<=12
+    \catcode`\&=12 \catcode`\^=12 \catcode`\~=12 \def\\{\char`\\}\relax
+    \ShowRoutinetrue
+    \tt \afterassignment\petscoptiontoindex\edef\indexedpetsc}
 }
 \def\petsctoindex{%\tracingmacros=2
   \edef\tmp{%
     \noexpand\lstinline+\indexedpetsc+%
     \noexpand\index[petsc]{\indexedpetsc@{\catcode95=12 \noexpand\texttt{\indexedpetsc}}}}%
+  \tmp
+  \egroup
+}
+\def\petscoptiontoindex{%\tracingmacros=2
+  \edef\tmp{%
+    \noexpand\lstinline+-\indexedpetsc+%
+    \noexpand\index[petsc]{-\indexedpetsc@{\catcode95=12 \noexpand\texttt{-\indexedpetsc}}}}%
   \tmp
   \egroup
 }
@@ -321,10 +327,12 @@
 \def\mpiIndexBF{\RoutineIndexBF{mpi}}
 
 %\usepackage{rotating}
+\usepackage{float}
+\newfloat{manpage}{p}{trc}
 \def\RoutineRefStyle{ \footnotesize }
 { \catcode`\_=13
   \gdef\RoutineRefDisplay{%
-    \begin{figure}[p]
+    \begin{manpage}
       {\large \textbf{\texttt{\indexedroutine}}}
       \RoutineRefStyle \catcode`\_=13
       \def_{\underscore}%
@@ -332,7 +340,7 @@
       \hskip\unitindent \textsl{\small How to read routine prototypes:~\ref{sec:protos}.}\par
       \caption{Routine prototype for \indexedroutine}
       \label{ref:\indexedroutine}
-    \end{figure}
+    \end{manpage}
     \egroup
   }
 }

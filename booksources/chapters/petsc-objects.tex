@@ -30,18 +30,20 @@ rows, and you have $P$ processes, each process will receive $N/P$
 components or rows if $P$ divides evenly in~$N$. If $P$ does not divide
 evenly, the excess is spread over the processes.
 
+\includegraphics[scale=.1]{veclayout}
+
 The way the distribution is done is by contiguous blocks: with 10
 processes and 1000 components in a vector, process 0 gets the range
 $0\cdots99$, process 1 gets $1\cdots199$, et cetera. This simple scheme suffices for
 many cases, but PETSc has facilities for more sophisticated load
 balancing.
 
+\Level 1 {Support for distributions}
+
 Once an object has been created and distributed, you do not need to
 remember the size or the distribution yourself: you can query these
 with calls such as \lstinline{VecGetSize},
-\lstinline{VecGetLocalSize}, and \lstinline{VecGetOwnershipRange}.
-
-\includegraphics[scale=.1]{veclayout}
+\lstinline{VecGetLocalSize}.
 
 The
 corresponding matrix routines \lstinline{MatGetSize},
@@ -49,6 +51,24 @@ corresponding matrix routines \lstinline{MatGetSize},
 distributions in $i$ and~$j$ direction, which can be
 independent. Since a matrix is distributed by rows,
 \lstinline{MatGetOwnershipRange} only gives a row range.
+
+\verbatimsnippet{splitownersnip}
+
+While PETSc objects are implemented using local memory on each
+process, conceptually they act like global objects, with a global
+indexing scheme. Thus, each process can query which elements out of
+the global object are stored locally.
+For vectors, the relevant routine is \lstinline{VecGetOwnershipRange},
+which returns two parameters, \lstinline{low} and~\lstinline{high},
+respectively the first element index stored, and
+one-more-than-the-last index stored.
+
+This gives the idiom:
+\begin{lstlisting}
+VecGetOwnershipRange(myvector,&low,&high);
+for (int myidx=low; myidx<high; myidx++)
+  // do something at index myidx
+\end{lstlisting}
 
 These conversions between local and global size can also be done
 explicitly, using the \indexpetscref{PetscSplitOwnership} routine.
@@ -69,12 +89,30 @@ complex.
 Even in applications that use complex numbers there can be quantities
 that are real: for instance, the norm of a complex vector is a real
 number. For that reason, PETSc also has the type
-\indexpetscdef{PetscReal}.
+\indexpetscdef{PetscReal}. There is also an explicit \indexpetscdef{PetscComplex}.
 
 Integers in PETSc are likewise of a size determined at installation
 time: \indexpetscdef{PetscInt} can be 32 or 64 bits. Furthermore,
 there is a \indexpetscdef{PetscErrorCode} type for catching the return
 code of PETSc routines.
+
+\Level 1 {Complex}
+
+Numbers of type \indexpetscshow{PetscComplex} have a precision
+matching \indexpetscshow{PetscReal}.
+
+Form a complex number as
+\begin{lstlisting}
+PetscComplex x = 1.0 + 2.0 * PETSC_i;
+\end{lstlisting}
+
+\Level 1 {MPI Scalars}
+
+For MPI calls, \indexpetscdef{MPIU_SCALAR} is the MPI type
+corresponding to the current \indexpetscshow{PetscScalar}.
+
+For MPI calls, \indexpetscdef{MPIU_COMPLEX} is the MPI type
+corresponding to the current \indexpetscshow{PetscComplex}.
 
 \Level 0 {Vectors}
 
@@ -204,6 +242,18 @@ posting non-blocking send and receive calls; the second then contains
 the wait calls. Thus, the existence of these separate calls make
 \indextermbus{latency}{hiding} possible.)
 
+\begin{lstlisting}
+VecAssemblyBegin(myvec);
+// do work that does not need the vector myvec
+VecAssemblyEnd(myvec);
+\end{lstlisting}
+
+Elements can either be inserted
+(\indexpetscshow{INSERT_VALUES}) or added
+(\indexpetscshow{ADD_VALUES}).
+You can not immediately mix these modes; to do so you need to call
+\indexpetscshow{VecAssemblyBegin}~/ \indexpetscshow{VecAssemblyEnd}.
+
 \Level 2 {Explicit element access}
 
 Since the vector routines cover a large repertoire of operations, you
@@ -252,8 +302,8 @@ and subsequently query them with
 
 Set the matrix type with \indexpetscref{MatSetType}.  The main choices
 are between sequential versus distributed and dense versus sparse,
-giving types: \indexpetscshow{MATMPIDENSE} \indexpetscshow{MATMPIAIJ}
-\indexpetscshow{MATSEQDENSE} \indexpetscshow{MATSEQAIJ}.
+giving types: \indexpetscshow{MATMPIDENSE}, \indexpetscshow{MATMPIAIJ},
+\indexpetscshow{MATSEQDENSE}, \indexpetscshow{MATSEQAIJ}.
 
 \Level 1 {Nonzero structure}
 
@@ -304,16 +354,31 @@ that lists for each row the number of nonzeros in that row.
 
 \Level 1 {Matrix elements}
 
-You can set a single matrix element, or a block of them, where you
-supply a set of $i$~and~$j$ indices:
+You can set a single matrix element with
 %
 \indexpetscref{MatSetValue}
+%
+or a block of them, where you
+supply a set of $i$~and~$j$ indices, using
+%
+\indexpetscshow{MatSetValues}. 
 
 After setting matrix elements, the matrix needs to be assembled. This
 is where PETSc moves matrix elements to the right processor, if they
-were specified elsewhere.
+were specified elsewhere. As with vectors this takes two calls:
 %
 \indexpetscref{MatAssemblyBegin}
+and
+\indexpetscxref{MatAssemblyBegin}{MatAssemblyEnd}
+%
+which can be used to achieve \indexterm{latency hiding}.
+
+Elements can either be inserted
+(\indexpetscshow{INSERT_VALUES}) or added
+(\indexpetscshow{ADD_VALUES}).
+You can not immediately mix these modes; to do so you need to call
+\indexpetscshow{MatAssemblyBegin}~/ \indexpetscshow{MatAssemblyEnd}
+with a value of \indexpetscdef{MAT_FLUSH_ASSEMBLY}.
 
 PETSc sparse matrices are very flexible: you can create them empty and
 then start adding elements. However, this is very inefficient in
@@ -326,21 +391,49 @@ how many elements the matrix will ultimately contain.
 MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE)
 \end{lstlisting}
 
-If you absolutely need access to the matrix elements, there are routines
+\Level 2 {Element access}
+
+If you absolutely need access to the matrix elements, there are
+routines such as 
+\indexpetscref{MatGetRow}. Since PETSc is geared towards
+\emph{sparse matrices}\index{matrix!sparse},
+this returns not only the element values, but also the column numbers,
+as well as the mere number of stored columns.
+
+If any of these three return values are not needed, they can be
+unrequested by setting the parameter passed to \lstinline{NULL}.
+
+PETSc insists that you properly release the row again with
+\indexpetscxref{MatRestoreRow}{MatGetRow}.
 
 \begin{lstlisting}
-MatGetRow
 MatGetArray
-\end{lstlisting}
-
-PETSc insists that you properly release this pointer again:
-
-\begin{lstlisting}
-MatRestoreRow
 MatRestoreArray
 \end{lstlisting}
 
-Note that in a distributed running context you can only get the array of local elements.
+Note that in a distributed running context you can only get local
+elements this way. For a distributed version you need to take submatrices.
+
+\Level 0 {Matrix operations}
+
+\Level 1 {Matrix-vector operations}
+
+In the typical application of PETSc, solving large sparse linear
+systems of equations with iterative methods, matrix-vector operations
+are most important. Foremost there is the matrix-vector product
+\indexpetscref{MatMult} and the transpose product
+\indexpetscxref{MatMultTranspose}{MatMult}.
+(In the complex case, the transpose product is not the Hermitian
+matrix product; for that use \indexpetscshow{MatMultHermitianTranspose}.)
+
+For the \ac{BLAS} \indextermtt{gemv} semantics
+$y\leftarrow \alpha Ax + beta y$,
+\indexpetscdef{MatMultAdd} computes
+$y\leftarrow z\leftarrow Ax +y $.
+
+\Level 1 {Matrix-matrix operations}
+
+\Level 0 {Submatrices}
 
 \Level 0 {Shell matrices}
 

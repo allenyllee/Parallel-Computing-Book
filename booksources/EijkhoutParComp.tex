@@ -162,23 +162,6 @@
 }
 \renewcommand\maillink[3]{}
 
-\OutlineLevelStart0{\chapter{#1}
-  \maillink{arabic{chapter} "#1"}{#1}{chapter}
-}
-\OutlineLevelStart1{\section{#1}
-\maillink{\arabic{chapter}.\arabic{section}}{#1}{section}
-}
-\OutlineLevelCont1{\section{#1}
-\maillink{\arabic{chapter}.\arabic{section}}{#1}{section}
-}
-\OutlineLevelStart2{\subsection{#1}
-  \maillink
-    {\arabic{chapter}.\arabic{section}.\arabic{subsection}}{#1}{subsection}
-}
-\OutlineLevelStart3{\subsubsection{#1}}
-\setcounter{secnumdepth}{4}
-\OutlineLevelStart4{\paragraph{\bf #1}}
-
 \input acromacs
 \input bookmacs
 \input exmacs
@@ -268,6 +251,7 @@
 \CHAPTER{PETSc basics}{petsc-design}
 \CHAPTER{PETSc objects}{petsc-objects}
 \CHAPTER{PETSc solvers}{petsc-solver}
+\CHAPTER{PETSc solvers}{petsc-tools}
 \CHAPTER{PETSc topics}{petsc}
 
 \part{The Rest}

@@ -22,6 +22,9 @@ sources :
 clean ::
 	@/bin/rm -f ${EXERCISES}
 
+clean ::
+	@rm -f *.out_total *.out[0-9]*
+
 ##
 ## regression
 ##
@@ -83,7 +86,11 @@ regress_out :
 	@if [ -z "${PROGRAM}" ] ; then \
 	  echo "no PROGRAM value specified in regress_out" ; exit 1 ; fi
 	@if [ ${MODE} = "mpi" ] ; then \
-	  ${MPIRUN} -np ${NP} ${CATCHER} ${PROGRAM} >/dev/null 2>&1 ; \
+	  if [ -z "${CATCHER}" ] ; then \
+	    echo "CATCHER variable not set" ; exit 1 ; fi ; \
+	  cmd="${MPIRUN} -np ${NP} ${CATCHER} ${PROGRAM} >/dev/null 2>&1" ; \
+	  echo "Executing: $${cmd}" ; \
+	  eval $${cmd} ; \
 	  cat ${PROGRAM}.out[0-9]* > ${PROGRAM}.out_total ; \
 	else \
 	  echo "unsupported regression mode: ${MODE}" ; exit 1 ; \
@@ -118,7 +125,8 @@ run_start :
 	  echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" ; \
 	  exit 1 ; \
 	else \
-	  make --no-print-directory regress_out NP=${NP} PROGRAM=$${program} ; \
+	  rm -f ./$${program}.log \
+	  && make --no-print-directory regress_out NP=${NP} PROGRAM=$${program} ; \
 	fi
 REGRESSIONRUNS += run_hello
 run_hello : hello

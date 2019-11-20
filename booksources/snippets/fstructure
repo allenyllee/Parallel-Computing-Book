@@ -15,19 +15,23 @@ if (procno==sender) then
    myobject%c = 'x'
    myobject%x(0) = 2.7; myobject%x(1) = 1.5
    myobject%i = 37
+
 !! component 1: one character
 blocklengths(1) = 1; types(1) = MPI_CHAR
 call MPI_Get_address(myobject,base_displacement)
 call MPI_Get_address(myobject%c,next_displacement)
 displacements(1) = next_displacement-base_displacement
+
 !! component 2: two doubles
 blocklengths(2) = 2; types(2) = MPI_DOUBLE
 call MPI_Get_address(myobject%x,next_displacement)
 displacements(2) = next_displacement-base_displacement
+
 !! component 3: one int
 blocklengths(3) = 1; types(3) = MPI_INT
 call MPI_Get_address(myobject%i,next_displacement)
 displacements(3) = next_displacement-base_displacement
+
 if (procno==sender) then
    call MPI_Send(myobject,1,newstructuretype,receiver,0,comm)
 else if (procno==receiver) then

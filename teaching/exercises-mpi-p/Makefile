@@ -20,10 +20,8 @@ EXERCISES = \
     rightsend isendirecv ibarrierupdate \
     onenorm bucketblock \
     stridesend cubegather \
-    randomput countdown onesidedbuild \
+    randomput rightput countdown onesidedbuild \
     procgrid blockwrite viewwrite
-
-include ../course-support/Make.inc
 
 info ::
 	@echo "make run [PROGRAM=prog (default=${PROGRAM})]"
@@ -51,17 +49,7 @@ PROGRAM_EXTENSION = .py
 ####
 .PHONY: ${EXERCISES} 
 
-include ../course-support/Make.mpi_run
 include ../course-support/Make.mpi_regress
 CATCHER = ../course-support/catchout -p ${PYTHON}
 
-####
-#### Cleaning
-####
-
-info ::
-	@echo "make clean"
-.PHONY: clean
-clean ::
-	@/bin/rm -rf *~ *.o *.pyc *.dSYM ddt.o* *.o[0-9]* *.dat
-
+include ../../Make.clean

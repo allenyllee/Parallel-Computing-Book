@@ -29,15 +29,12 @@ info ::
 	@echo "    support options:"
 	@echo "      bucketblock : N"
 
-include ../course-support/Make.template
-include ../course-support/Make.inc
+include ../course-support/Make.compile
 
 .SECONDEXPANSION:
 OPTS =
-${EXERCISES} : $$@.cxx
-	${MPI_CXX_COMPILER} \
-	  ${CXXFLAGS} ${OPTS} \
-	  -o $@ $^
+${EXERCISES} : $$@.o
+	${CXX_LINKER} -o $@ $^
 
 ####
 #### Regression tests
@@ -45,3 +42,5 @@ ${EXERCISES} : $$@.cxx
 
 include ../course-support/Make.mpi_run
 include ../course-support/Make.mpi_regress
+
+include ../../Make.clean

@@ -63,11 +63,16 @@ datatypes in the source language can be translated to MPI types with
 \indexmpiref{MPI_Type_match_size}
 %
 where the \lstinline{typeclass} argument is one of
-\indexmpishow{MPI_TYPECLASS_REAL}
-\indexmpishow{MPI_TYPECLASS_INTEGER}
+\indexmpishow{MPI_TYPECLASS_REAL},
+\indexmpishow{MPI_TYPECLASS_INTEGER},
 \indexmpishow{MPI_TYPECLASS_COMPLEX}.
 
 \cverbatimsnippet[examples/mpi/c/typematch.c]{typematchc}
+
+In Fortran, the size of the datatype in the language can be obtained with
+\indexmpishow{MPI_Sizeof} (note the non-optional error parameter!).
+
+\fverbatimsnippet[examples/mpi/c/typematch.c]{typematchf}
 
 \Level 0 {More about data}
 
