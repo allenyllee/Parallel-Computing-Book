@@ -1,0 +1,125 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Introduction to High-Performance Scientific Computing'
+%%%% by Victor Eijkhout, copyright 2012-9
+%%%%
+%%%% This book is distributed under a Creative Commons Attribution 3.0
+%%%% Unported (CC BY 3.0) license and made possible by funding from
+%%%% The Saylor Foundation \url{http://www.saylor.org}.
+%%%%
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\def\verbatimsnippet#1{\verbatiminput{#1}} % snippets/
+\newcommand{\cverbatimsnippet}[2][XX]{
+  % record this file as bracketed name
+  \addchaptersource{{#1}}
+  % typeset as nice C code
+  \lstset{style=reviewcode,language=C}
+  \lstinputlisting{#2}
+}
+\newcommand{\cxxverbatimsnippet}[2][XX]{
+  % record this file as bracketed name
+  \addchaptersource{{#1}}
+  % typeset as nice C code
+  \lstset{style=reviewcode,language=C++}\lstinputlisting{#2}}
+\newcommand{\fverbatimsnippet}[2][XX]{
+  % record this file as bracketed name
+  \addchaptersource{{#1}}
+  % typeset as nice Fortran code
+  \lstset{style=reviewcode,language=Fortran}
+  \lstinputlisting{#2}
+}
+\def\pverbatimsnippet#1{
+  \lstset{style=reviewcode,language=Python}\lstinputlisting{#1}
+  \lstset{style=reviewcode,language=C}
+}
+\newenvironment{clisting}
+    {\lstset{style=reviewcode,language=C}\begin{lstlisting}}
+    {\end{lstlisting}}
+\newenvironment{cxxlisting}
+    {\lstset{style=reviewcode,language=C++}\begin{lstlisting}}
+    {\end{lstlisting}}
+\newenvironment{flisting}
+    {\lstset{style=reviewcode,language=Fortran}\begin{lstlisting}}
+    {\end{lstlisting}}
+\newenvironment{plisting}
+    {\lstset{style=reviewcode,language=Python}\begin{lstlisting}}
+    {\end{lstlisting}}
+
+\makeatletter
+\newcommand{\csnippetwithoutput}[2]{
+  \message{Code snippet <#1> with output file <#2>}
+  % go into vertical mode
+  \par
+  % make nice two-column layout
+  \hbox{%
+    \begin{minipage}[t]{.6\hsize}
+      \footnotesize\textbf{Code:}
+      \lstset{language=C,xleftmargin=0pt}
+      \lstinputlisting{#1}
+      \lstset{xleftmargin=\unitindent}
+    \end{minipage}
+    \begin{minipage}[t]{.3\hsize}
+      { \footnotesize \raggedright \textbf{Output:}\par
+      }
+      \footnotesize
+      \def\verbatim@startline{\verbatim@line{\leavevmode\relax}}
+      \verbatiminput{#2.out}
+    \end{minipage}
+  }
+}
+\endinput
+
+\def\verbatimsnippet#1{\verbatiminput{snippets/#1}}
+\def\cverbatimsnippet#1{\verbatiminput{snippets/#1}}
+\usepackage{listings,xcolor}
+\lstset{language=C}
+\lstdefinestyle{reviewcode}{
+  belowcaptionskip=1\baselineskip, breaklines=true, frame=L,
+  xleftmargin=\unitindent, showstringspaces=false,
+  basicstyle=\footnotesize\ttfamily,
+  keywordstyle=\bfseries\color{blue},
+  commentstyle=\color{red!60!black},
+  identifierstyle=\slshape\color{black},
+  stringstyle=\color{green!60!black}, columns=fullflexible,
+  keepspaces=true, }
+\lstset{style=reviewcode}
+\newcommand\pyinline[1]{\lstset{language=Python}\lstinline{#1}\lstset{language=C}}
+
+\def\codedir{./code}
+
+\newcommand\snippetwithoutput[4][]{
+  %\message{snippet <<#1>> <<#2>> <<#3>> <<#4>>}
+  %\tracingmacros=2 \tracingcommands=2
+  \answerwithoutput{#2}{#3}{#4}
+  %% \ifthenelse{\isempty{#1}}
+  %%            {\def\snippetfilename{#4}}
+  %%            {\def\snippetfilename{#1}}
+  % record this file as bracketed name
+  %% \ifInBook
+  %% \nobreak
+  %% \textsl{For the source of this example, see section~\ref{lst:#3/\snippetfilename}}\par
+  %% \addchaptersource{{#3/\snippetfilename}}
+  %% \fi
+}
+\newcommand{\snippetoutput}[2]{
+  \message{In directory <#1> running program <#2>}
+  % go into vertical mode
+  \par
+  % make nice two-column layout
+  \begin{minipage}[t]{.3\hsize}{%
+      \footnotesize \raggedright \textbf{Output\\\relax [#1] #2:}\par }
+  \immediate\write18{
+    cd \codedir /#1
+    && make run_#2 > #2.out 2>&1
+  }
+  \footnotesize
+  \def\verbatim@startline{\verbatim@line{\leavevmode\relax}}
+  \verbatiminput{\codedir /#1/#2.out}
+  \end{minipage}
+}
+\makeatother

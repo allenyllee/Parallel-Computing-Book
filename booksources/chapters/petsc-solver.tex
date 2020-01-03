@@ -1,0 +1,179 @@
+% -*- latex -*-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Parallel Programming in MPI and OpenMP'
+%%%% by Victor Eijkhout, copyright 2012-9
+%%%%
+%%%% petsc-solver.tex : linear system solvers
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Probably the most important activity in PETSc is solving a linear
+system. This is done through a solver object: an object of the class
+\indexpetscdef{KSP}. (This stands for Krylov SPace solver.) The solution routine
+\lstinline{KSPSolve} takes a matrix and a right-hand-side and gives a
+solution; however, before you can call this some amount of setup is needed.
+
+There two very different ways of solving a
+linear system: through a direct method, essentially a variant of
+Gaussian elimination; or through an iterative method that makes
+successive approximations to the solution. In PETSc there are only
+iterative methods. We will show how to achieve direct methods later.
+The default linear system solver in PETSc is fully parallel, and will
+work on many linear systems, but there are many settings and
+customizations to tailor the solver to your specific problem.
+
+\Level 0 {KSP: linear system solvers}
+\label{sec:petsc-ksp}
+
+\Level 1 {Math background}
+
+The main solution method for linear systems
+\[ ?_x\colon Ax=b \]
+in PETSc is through
+so-called iterative solution methods. Instead of directly computing
+the solution to the system, they compute a sequence of approximations
+that, with luck, converges to the true solution. Ideally, the sequence
+would stop when the distance to the true solution is small enough, but
+computing this is clearly not feasible. Instead, in each step the
+\indextermdef{residual}
+\[ r_i=Ax_i-b \]
+is computed, and the iteration is stopped if this is small enough.
+
+\Level 1 {Solver objects}
+
+Create a KSP object:
+%
+\petscRoutineRef{KSPCreate}
+
+After this, the basic scenario is:
+\begin{lstlisting}
+KSP solver;
+KSPSetOperators(solver,A,A);
+KSPSolve(solver,rhs,sol);
+\end{lstlisting}
+
+Since neither
+solution nor solution speed is guaranteed, an iterative solver is
+subject to some tolerances:
+\begin{itemize}
+\item a relative tolerance for when the residual has been reduced
+  enough;
+\item an absolute tolerance for when the residual is objectively
+  small;
+\item a divergence tolerance that stops the iteration if the residual
+  grows by too much; and
+\item a bound on the number of iterations, regardless any progress the
+  process may still be making.
+\end{itemize}
+
+\petscRoutineRef{KSPSetTolerances}
+
+\Level 1 {Why did my solver stop? Did it work?}
+\label{sec:ksp-reason}
+
+On return of the \indexmpishow{KSPSolve} routine there is no guarantee
+that the system was successfully solved.
+Therefore, you need to invoke
+\indexpetscref{KSPGetConvergedReason}
+to get a \indexpetscshow{KSPConvergedReason} parameter that indicates
+what state the solver stopped in:
+\begin{itemize}
+\item The iteration can have successfully converged; this corresponds
+  to \lstinline{reason}$>0$;
+\item the iteration can have diverged, or otherwise failed: \lstinline{reason}$<0$;
+\item or the iteration may have stopped at the maximum number of
+  iterations while still making progress; \lstinline{reason}$=0$.
+\end{itemize}
+For more detail, \indexpetscshow{KSPReasonView} can print out the
+reason in readable form; for instance
+\begin{lstlisting}
+KSPReasonView(solver,PETSC_VIEWER_STDOUT_WORLD);
+\end{lstlisting}
+(This can also be activated with the \n{-ksp_converged_reason}
+commandline option.)
+
+In case of successful convergence, you can use \indexpetscshow{KSPGetIterationNumber}
+to report how many
+iterations were taken.
+
+\Level 1 {Choice of iterator}
+
+There are many iterative methods, and it takes a few function calls to fully specify them:
+
+\petscRoutineRef{KSPSetType}
+
+Here are some values:
+\begin{itemize}
+\item \lstinline{KSPCG}: only for symmetric positive definite systems.
+\item \lstinline{KSPGMRES}: a minimization method that works fairly
+  generally; has high memory demands.
+\item \lstinline{KSPBCGS}: a quasi-minimization method; uses less memory than GMRES.
+\end{itemize}
+
+\Level 1 {Preconditioners}
+
+Another part of an iterative solver is the
+\indextermdef{preconditioner}; think of it as an approximation to the inverse.
+
+\begin{lstlisting}
+PC prec;
+KSPGetPC(solver,&prec);
+PCSetType(prec,PCILU);
+\end{lstlisting}
+
+Some popular types:
+\begin{itemize}
+\item \lstinline{PCILU}: an approximate factorization
+\item \lstinline{PCSPAI}: an approximate inverse
+\item \lstinline{PCASM}: additive Schwarz method
+\end{itemize}
+
+\Level 0 {Direct solvers}
+
+PETSc has some support for direct solvers, that is, variants of LU
+decomposition. In a sequential context, the \lstinline{PCLU}
+preconditioner can be use for this: a direct solver is equivalent to
+an iterative method that stops after one preconditioner
+application. This can be forced by specifying a KSP type of
+\lstinline{KSPPREONLY}.
+
+Distributed direct solvers are more complicated. PETSc does not have
+this implemented in its basic code, but it becomes available by
+configuring PETSc with the
+\indexterm{scalapack} library.
+
+You need to specify which package provides the LU factorization:
+
+\begin{lstlisting}
+PCFactorSetMatSolverType(pc, <solvertype> )
+\end{lstlisting}
+
+where solvertype can be mumps, superlu, umfpack, or a number of
+others. Note that availability of these packages depends on how PETSc
+was installed on your system.
+
+\Level 0 {Control through command line options}
+
+From the above you may get the impression that there are lots of calls
+to be made to set up a PETSc linear system and solver. And what if you
+want to experiment with different solvers, does that mean that you
+have to edit a whole bunch of code? Fortunately, there is an easier
+way to do things. If you call the routine
+%
+\indexpetscref{KSPSetFromOptions}
+with the \lstinline{solver} as argument,
+%
+PETSc will look at your command line options and take those into
+account in defining the solver. Thus, you can either omit setting
+options in your source code, or use this as a way of quickly
+experimenting with different possibilities. Example:
+
+\begin{verbatim}
+myprogram -ksp_type gmres -ksp_type_gmres_restart 20 -ksp_max_it 200 \
+  -pc_type ilu -pc_type_ilu_levels 3
+\end{verbatim}
+

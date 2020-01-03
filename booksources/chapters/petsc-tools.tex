@@ -1,0 +1,86 @@
+% -*- latex -*-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the source of 
+%%%% `Parallel Programming in MPI and OpenMP'
+%%%% by Victor Eijkhout, copyright 2012-9
+%%%%
+%%%% petsc-tools.tex : guess.
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\Level 0 {Error checking}
+
+PETSc performs a good amount of runtime error checking. Some of this
+is for internal consistency, but it can also detect certain
+mathematical errors. To facilitate error reporting, the following
+scheme is used.
+\begin{enumerate}
+\item Every PETSc routine is a function returning a parameter of type
+  \indexpetscdef{PetscErrorCode}.
+\item Calling the macro \indexpetscdef{CHKERRQ} on the error code will
+  cause an error to be printed and the current routine to be
+  terminated. Recursively this gives a traceback of where the error
+  occurred.
+\item You can effect your own error return by using \indexpetscdef{SETERRQ}.
+\end{enumerate}
+\begin{lstlisting}
+PetscErrorCode ierr;
+ierr = AnyPetscRoutine( arguments ); CHKERRQ(ierr);
+\end{lstlisting}
+\begin{fortrannote}
+  In the main program, use \indexpetscdef{CHKERRA} and
+  \indexpetscdef{SETERRA}. Also beware that these error `commands' are
+  macros, and after expansion may interfere with
+  \indextermbus{Fortran}{line length}.
+\end{fortrannote}
+
+\Level 0 {Printing}
+
+Printing screen output in parallel is tricky. If two processes execute
+a print statement at more or less the same time there is no guarantee
+as to in what order they may appear on screen. (Even attempts to have
+them print one after the other may not result in the right ordering.)
+Furthermore, lines from multi-line print actions on two processes may
+wind up on the screen interleaved.
+
+PETSc has two routines that fix this problem. First of all, often the
+information printed is the same on all processes, so it is enough if
+only one process, for instance process~0, prints it. This is done with
+\indexpetscref{PetscPrintf}.
+
+
+If all processes need to print, you can use
+\indexpetscref{PetscSynchronizedPrintf} that forces the
+output to appear in process order.
+
+To make sure that output is properly flushed from all system buffers
+use \indexpetscref{PetscSynchronizedFlush}
+where for ordinary screen output you would use \n{stdout} for the file.
+
+\begin{pythonnote}
+  Since the print routines use the python \n{print} call, they
+  automatically include the trailing newline. You don't have to
+  specify it as in the C~calls.
+\end{pythonnote}
+
+\Level 0 {Commandline options}
+
+PETSc has as large number of commandline options, most of which we
+will discuss later. For now we only mention \n{-log_summary} which
+will print out profile of the time taken in various routines.
+For these options to be parsed, it is necessary to pass \n{argc,argv}
+to the \indexpetscshow{PetscInitialize} call.
+
+\Level 0 {Memory management}
+
+\indexpetscdef{PetscNew} to allocate, and \indexpetscdef{PetscFree} to
+free. Allocated memory is aligned to \indexpetscdef{PETSC_MEMALIGN}.
+The state of memory allocation can be written to file or standard out
+with \indexpetscdef{PetscMallocDump}. The commandline option
+\n{-malloc_dump} outputs all not-freed memory during
+\indexpetscshow{PetscFinalize}.
+
+\indexpetscdef{PetscMalloc} is deprecated.
