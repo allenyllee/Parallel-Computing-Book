@@ -62,7 +62,7 @@ Using the \indexmpiref{MPI_Win_allocate_shared} call presumably will
 put the memory close to the 
 \indexterm{socket} on which the process runs.
 
-\cverbatimsnippet[code/mpi/c/shared.c]{mpisharedwindow}
+\cverbatimsnippet[examples/mpi/c/sharedbulk.c]{mpisharedwindow}
 
 The memory allocated by \indexmpishow{MPI_Win_allocate_shared} is
 contiguous between the processes. This makes it possible to do address

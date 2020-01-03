@@ -14,7 +14,7 @@ info ::
 	@echo "to format the book"
 
 onepass :
-	TEXINPUTS=${TEXINPUTS}:graphics:mpireference:snippets:graphics:hwloc \
+	TEXINPUTS=${TEXINPUTS}:graphics:mpireference:snippets:macros:graphics:hwloc \
 	    pdflatex EijkhoutParComp
 pdf :
 	make onepass
