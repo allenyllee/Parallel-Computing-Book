@@ -57,7 +57,8 @@ int main(int argc,char **argv) {
       ;
     MPI_File_write_at
       (mpifile,offset,output_data,nwords,MPI_INT,MPI_STATUS_IGNORE);
-  }
+  } else
+    printf("Process %d does not write to file\n",procno);
 
   MPI_File_close(&mpifile);
 

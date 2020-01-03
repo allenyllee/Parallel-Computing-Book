@@ -39,4 +39,4 @@ include ../course-support/Make.mpi_run
 include ../course-support/Make.mpi_regress
 run_hello : hello
 
-include ../../Make.clean
+include ../course-support/Make.clean

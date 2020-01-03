@@ -16,6 +16,8 @@
 #include <cmath>
 #include <mpi.h>
 
+// headers just for this exercise
+#include <algorithm>
 #include <vector>
 
 using namespace std;

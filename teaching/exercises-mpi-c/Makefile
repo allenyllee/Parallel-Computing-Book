@@ -20,10 +20,10 @@ EXERCISES = hello \
     commrank prime randommax onenorm sumsquares \
     pingpong sendrecv \
     isendirecv isendirecvarray \
-    bucketblock bucketnonblock bucketpipe bucketpipenonblock \
+    bucketblock bucketpipenonblock \
     stridesend cubegather procgrid procgridnonblock \
     randomput countdown onesidedbuild \
-    blockwrite viewwrite scatterwrite \
+    blockwrite blockseek viewwrite scatterwrite \
     jordan rightsend rightput rightgraph \
     ibarrierupdate shareddata
 info ::
@@ -52,4 +52,7 @@ CATCHER = ../course-support/catchout
 MPIRUN = mpiexec
 NP = 4
 
-include ../../Make.clean
+include ../course-support/Make.clean
+# simgrid junk
+clean ::
+	@/bin/rm -f *.err

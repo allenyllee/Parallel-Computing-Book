@@ -19,7 +19,7 @@ info ::
 EXERCISES = hello \
     commrank prime randommax jordan sumsquares onenorm \
     pingpong sendrecv stridesend \
-    rightsend bucketblock bucketpipe bucketpipenonblock \
+    rightsend bucketblock bucketpipenonblock \
     isendirecv isendirecvarray procgrid procgridnonblock \
     rightput randomput onesidedbuild countdown \
     blockwrite viewwrite scatterwrite cubegather \
@@ -43,4 +43,4 @@ ${EXERCISES} : $$@.o
 include ../course-support/Make.mpi_run
 include ../course-support/Make.mpi_regress
 
-include ../../Make.clean
+include ../course-support/Make.clean

@@ -52,4 +52,4 @@ PROGRAM_EXTENSION = .py
 include ../course-support/Make.mpi_regress
 CATCHER = ../course-support/catchout -p ${PYTHON}
 
-include ../../Make.clean
+include ../course-support/Make.clean
