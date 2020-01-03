@@ -301,9 +301,9 @@ for (p=0; p<nrequests; p++) {
 Note that this routine takes a single status argument, passed by
 reference, and not an array of statuses!
 
-Finally, \indexmpishow{MPI_Waitsome} is very much like \n{Waitany},
+Finally, \indexmpishow{MPI_Waitsome} is very much like \indexmpishow{MPI_Waitany},
 except that it returns multiple numbers, if multiple requests are
-satisfied. Now the status argument is an array of \indexmpishow{MPI_STATUS}
+satisfied. Now the status argument is an array of \indexmpishow{MPI_Status}
 objects.
 
 Figure~\ref{fig:jump-nonblock} shows the trace of a non-blocking execution
@@ -350,10 +350,10 @@ Contrast this with the example in section~\ref{sec:mpi-source}.
 \Level 2 {Test: non-blocking request wait}
 \label{sec:mpi-test}
 
-The \n{MPI_Wait...} routines are blocking. Thus, they are a good solution if 
+The \lstinline{MPI_Wait...} routines are blocking. Thus, they are a good solution if 
 the receiving process can not do anything until the data 
 (or at least \emph{some} data) is actually received.
-The \indexmpishow{MPI_Test....} calls are themselves non-blocking: they
+The \lstinline{MPI_Test...} calls are themselves non-blocking: they
 test for whether one or more requests have been
 fullfilled, but otherwise immediately return.
 This can be used in the
@@ -383,7 +383,7 @@ while ( not done ) {
 \begin{exercise}
   Read section~\HPSCref{sec:pspmvp} and give pseudo-code for the
     distributed sparse matrix-vector product using the above idiom for
-    using \n{MPI_Test...} calls. Discuss the advantages and
+    using \lstinline{MPI_Test...} calls. Discuss the advantages and
     disadvantages of this approach. The answer is not going to be
     black and white: discuss when you expect which approach to be
     preferable.
@@ -401,7 +401,7 @@ This meeans that when you call, for instance, \indexmpishow{MPI_Irecv},
 MPI will allocate an actual request object, and return its
 address in the \indexmpishow{MPI_Request} variable.
 
-Correspondingly, calls to \indexmpishow{MPI_Wait...} or \indexmpishow{MPI_Test}
+Correspondingly, calls to \lstinline{MPI_Wait...} or \indexmpishow{MPI_Test}
 free this object,
 setting the handle to \indexmpishow{MPI_REQUEST_NULL}.
 Thus, it is wise to issue wait calls even

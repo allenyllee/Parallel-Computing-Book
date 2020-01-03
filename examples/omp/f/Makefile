@@ -47,4 +47,4 @@ testrun:
 	make clean; rm -f ${EXEC}; make ${EXEC}
 	OMP_NUM_THREADS=${NP} ./${EXEC}
 
-include ../../Make.inc
+include  ../../../makefiles/Make.clean

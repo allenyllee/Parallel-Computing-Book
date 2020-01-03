@@ -126,7 +126,7 @@ MPI_Win_free( &window );
 \label{sec:win-alloc}
 \index{window!memory allocation|(}
 
-The memory for a window is ordinary data in user space. There are multiple
+The memory for a window is at first sight ordinary data in user space. There are multiple
 ways you can associate data with a window:
 \begin{enumerate}
 \item You can pass a user buffer to
@@ -137,7 +137,7 @@ ways you can associate data with a window:
   receives the pointer to the data from MPI. This can again be done in two ways:
   \begin{itemize}
   \item Use \indexmpishow{MPI_Win_allocate} to create the data and the
-    window in one call, and its variant
+    window in one call.
   \item If a communicator is on a shared memory (see
     section~\ref{mpi-comm-split-type}) you can create a window in that
     shared memory with \indexmpishow{MPI_Win_allocate_shared}.
@@ -153,7 +153,7 @@ The data array must not be \n{PARAMETER} or \n{static const}.
 
 The size parameter is measured in bytes. In~C this is easily done
 with the \indextermtt{sizeof} operator;
-for doing this calculation in Fortran, see section~\ref{sec:f-sizeof}.
+for doing this calculation in Fortran, see section~\ref{sec:mpif-shape}.
 
 Next, one can obtain the memory from MPI by using
 \indexmpiref{MPI_Win_allocate},
@@ -172,7 +172,7 @@ This memory is freed with
 \begin{lstlisting}
 MPI_Free_mem()
 \end{lstlisting}
-These calls reduce to \n{malloc} and \n{free} if there is no special
+These calls reduce to \lstinline{malloc} and \lstinline{free} if there is no special
 memory area; SGI is an example where such memory does exist.
 
 There will be more discussion of window memory in section~\ref{sec:win-model}.
@@ -430,7 +430,9 @@ Analogous to \indexmpishow{MPI_Isend} there are request based one-sided operatio
 %
 \indexmpiref{MPI_Rput}
 %
-and similarly \indexmpishow{MPI_Rget} and \indexmpishow{MPI_Raccumulate}.
+and similarly \indexmpishow{MPI_Rget} and
+\indexmpishow{MPI_Raccumulate}
+and \indexmpishow{MPI_Rget_accumulate}.
 
 These only apply to passive target synchronization.
 Any \indexmpishow{MPI_Win_flush...} call also terminates these transfers.
@@ -612,8 +614,9 @@ This means that the origin process remotely locks the window
 on the target, performs a one-sided transfer, and releases the window
 by unlocking it again.
 
-During access epoch, also called an
-\indextermsubdef{passive target}{epoch} in this case,
+During an access epoch, also called an
+\indextermsubdef{passive target}{epoch} in this case
+(the concept of `exposure epoch' makes no sense with passive target synchronization),
 a~process can initiate and finish a one-sided
 transfer. Typically it will lock the window with
 \indexmpiref{MPI_Win_lock}:
@@ -724,7 +727,35 @@ operations, such as \indexmpishow{MPI_Fetch_and_op}.
 \Level 0 {Details}
 
 \Level 1 {More about window memory}
+
+\Level 1 {Memory models}
 \label{sec:win-model}
+
+You may think that the window memory is the same as the buffer you
+pass to \indexmpishow{MPI_Win_create} or that you get from
+\indexmpishow{MPI_Win_allocate}. This is not necessarily true, and the
+actual state of affairs is called the
+\emph{memory model}\index{window!memory!model}. There are two memory models:
+\index{window!memory|seealso{memory model}}%pyskip
+\begin{itemize}
+\item Under the \emph{unified}\index{window!memory!unified} memory
+  model, the buffer in process space is indeed the window memory,
+  or at least they are kept \emph{coherent}\index{memory!coherent}.
+  This
+  means that after \emph{completion}\index{epoch!completion} of an
+  epoch you can read the window contents from the buffer.
+  To get this, the window needs to be created with
+  \indexmpishow{MPI_Win_allocate_shared}.
+\item Under the \emph{separate}\index{window!memory!separate} memory
+  model, the buffer in process space is the
+  \indextermsub{private}{window} and the target of put/get operations
+  is the \indextermsub{public}{window} and the two are not the same
+  and are not kept coherent. Under this model, you need to do an
+  explicit get to read the window contents.
+\end{itemize}
+See also section~\ref{sec:win-attr}.
+
+\Level 1 {Dynamically attached memory}
 
 In section~\ref{sec:win-alloc} we looked at simple ways to create a
 window and its memory.
@@ -740,25 +771,6 @@ memory to the window with
 The memory is released with
 %
 \indexmpiref{MPI_Win_detach}.
-
-You may now think that the window memory is the same as the buffer you
-pass to \indexmpishow{MPI_Win_create} or that you get from
-\indexmpishow{MPI_Win_allocate}. This is not necessarily true, and the
-actual state of affairs is called the \emph{memory
-  model}\index{window!memory!model}. There are two memory models:
-\begin{itemize}
-\item Under the \emph{unified}\index{window!memory!unified} memory
-  model, the buffer in process space is indeed the window memory. This
-  means that after \emph{completion}\index{epoch!completion} of an
-  epoch you can read the window contents from the buffer.
-\item Under the \emph{separate}\index{window!memory!separate} memory
-  model, the buffer in process space is the
-  \indextermsub{private}{window} and the target of put/get operations
-  is the \indextermsub{public}{window} and the two are not the same
-  and are not kept coherent. Under this model, you need to do an
-  explicit get to read the window contents.
-\end{itemize}
-See also section~\ref{sec:win-attr}.
 
 \Level 1 {Window usage hints}
 \label{sec:window-info}

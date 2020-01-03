@@ -133,6 +133,22 @@ to describe them?
 \item Give a practical example where the sender uses a different type to send
   than the receiver uses in the corresponding receive call. Name the types involved.
 
+\item Fortran only. True or false?
+  \begin{enumerate}
+  \item Array indices can be different between the send and receive buffer arrays.
+  \item It is allowed to send an array section.
+  \item You need to \lstinline{Reshapce} a multi-dimensional array
+    to linear shape before you can send it.
+  \item An allocatable array, when dimensioned and allocated, is
+    treated by MPI as if it were a normal static array, when used as
+    send buffer.
+  \item An allocatable array is allocated if you use it as the receive
+    buffer: it is filled with the incoming data.
+  \end{enumerate}
+\item Fortran only: how do you handle the case where you want to use
+  an allocatable array as receive buffer, but it has not been
+  allocated yet, and you do not know the size of the incoming data?
+
 \end{enumerate}
 
 \Level 0 {Theory}

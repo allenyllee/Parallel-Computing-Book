@@ -21,15 +21,44 @@ TESTS = \
     hello.py irecvloop.py persist.py putfence.py \
     pingpong.py scan.py scipingpong.py \
     commdup.py commsplit.py
+APPS = \
+    allreduce anysource bcast buffertoolarge \
+    gatherv getfence irecvnonblock irecv_source \
+    hello irecvloop persist putfence \
+    pingpong scan scipingpong \
+    commdup commsplit spawn_manager spawn_worker
+
+info ::
+	@echo "make listapps : list all application targets"
+.PHONY: listapps
+listapps :
+	@echo ${APPS}
+	@for a in ${APPS} ; do \
+	    if [ ! -f $${a}.py ] ; then \
+	        echo "Warning: no source file for <<$${a}>>" \
+	        ; \
+	    fi \
+	    ; \
+	done
+
+info ::
+	@echo "make run_spawn : process spawning example"
+.PHONY: run_spawn
+run_spawn :
+	@make regression APPS=spawn_manager
+
 TESTSWRONG = buffertoosmall.py 
 TESTSNOT = exscan.py
 TESTS_IN_PROGRESS =  interleave.py
 include ../../../teaching/course-support/Make.mpi_run
 PYTHON = python3
 regression :
-	@for p in ${TESTS} ; do \
+	@for p in ${APPS} ; do \
 	    echo "Testing $$p" \
-	    && make run PROGRAM=$${p} \
+	    && if [ $${p} = "spawn_manager" ] ; then \
+	        export ENVOPTIONS="MY_MPIRUN_OPTIONS=\"-usize 8\"" ; \
+	       fi \
+	    && make run PROGRAM=$${p}.py ENVOPTIONS="$${ENVOPTIONS}" \
 	    ; \
 	done
 
@@ -40,4 +69,4 @@ SOURCES = mpi.py hello.py pingpong.py scipingpong.py bcast.py buffertoosmall.py 
 listsources :
 	@echo ${SOURCES}
 
-include ../../Make.inc
+include  ../../../makefiles/Make.clean

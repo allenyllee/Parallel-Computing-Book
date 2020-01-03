@@ -135,4 +135,4 @@ noregression :
 	  echo "Regression succesfully concluded" ; \
 	fi
 
-include ../../Make.inc
+include  ../../../makefiles/Make.clean

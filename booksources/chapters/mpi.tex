@@ -13,102 +13,73 @@
 
 \lstset{style=reviewcode,language=C}
 \Level 0 {Info objects}
-\label{sec:mpi:info}
+\label{sec:mpi-info}
 
-\indexmpidef{MPI_Info_create}
-\begin{verbatim}
-MPI_INFO_CREATE(info)
-OUT info        info object created (handle)
+Certain MPI routines can accept \indexmpiref{MPI_Info} objects.
+These contain key-value pairs that can offer system or implementation
+dependent information.
 
-C:
-int MPI_Info_create(MPI_Info *info)
+Create an info object with \indexmpiref{MPI_Info_create}
+and delete it with \indexmpiref{MPI_Info_free}.
 
-Fortran legacy:
-MPI_INFO_CREATE(INFO, IERROR)
-INTEGER INFO, IERROR 
-\end{verbatim}
+Keys are then set with \indexmpiref{MPI_Info_set},
+and they can be queried with \indexmpiref{MPI_Info_get}.
+Note that the output of the `get' routine is not allocated:
+it is a buffer that is passed. 
+The maximum length of a key is given by the parameter
+\indexmpidef{MPI_MAX_INFO_KEY}.
+You can delete a key with \indexmpiref{MPI_Info_delete}.
 
-\indexmpidef{MPI_Info_delete}
-\begin{verbatim}
-  MPI_INFO_DELETE(info, key)
-  INOUT infoinfo object (handle)
-  IN keykey (string)
-  int MPI_Info_delete(MPI_Info info, char *key)
-  MPI_INFO_DELETE(INFO, KEY, IERROR)
-  INTEGER INFO, IERROR
-  CHARACTER*(*) KEY
-\end{verbatim}
+There is a straightforward duplication of info objects:
+\indexmpiref{MPI_Info_dup}
 
-\indexmpidef{MPI_Info_set}
-\begin{verbatim}
-  MPI_INFO_SET(info, key, value)
-  INOUT infoinfo object (handle)
-  IN keykey (string)
-  IN valuevalue (string)
-  int MPI_Info_set(MPI_Info info, char *key, char *value)
-  MPI_INFO_SET(INFO, KEY, VALUE, IERROR)
-  INTEGER INFO, IERROR
-  CHARACTER*(*) KEY, VALUE
-\end{verbatim}
-
-\indexmpidef{MPI_Info_get}
-\begin{verbatim}
-  MPI_INFO_GET(info, key, valuelen, value, flag)
-  IN infoinfo object (handle)
-  IN keykey (string)
-  IN valuelenlength of value arg (integer)
-  OUT valuevalue (string)
-  OUT flagtrue if key defined, false if not (boolean)
-int MPI_Info_get(MPI_Info info, char *key, int valuelen, char *value,
-int *flag)
-MPI_INFO_GET(INFO, KEY, VALUELEN, VALUE, FLAG, IERROR)
-INTEGER INFO, VALUELEN, IERROR
-CHARACTER*(*) KEY, VALUE
-LOGICAL FLAG
-\end{verbatim}
-
-Maximum length of a key: \indexmpidef{MPI_MAX_INFO_KEY}.
-
-\indexmpidef{MPI_Info_get_nkeys}
-\begin{verbatim}
-  MPI_INFO_GET_NKEYS(info, nkeys)
-  IN infoinfo object (handle)
-  OUT nkeysnumber of defined keys (integer)
-  int MPI_Info_get_nkeys(MPI_Info info, int *nkeys)
-  MPI_INFO_GET_NKEYS(INFO, NKEYS, IERROR)
-  INTEGER INFO, NKEYS, IERROR
-\end{verbatim}
-
-\indexmpidef{MPI_Info_free}
-\begin{verbatim}
-  MPI_INFO_FREE(info)
-  INOUT infoinfo object (handle)
-  int MPI_Info_free(MPI_Info *info)
-  MPI_INFO_FREE(INFO, IERROR)
-  INTEGER INFO, IERROR
-\end{verbatim}
-
-\indexmpidef{MPI_Info_dup}
-\begin{verbatim}
-  MPI_INFO_DUP(info, newinfo)
-  IN infoinfo object (handle)
-  OUT newinfoinfo object (handle)
-  int MPI_Info_dup(MPI_Info info, MPI_Info *newinfo)
-  MPI_INFO_DUP(INFO, NEWINFO, IERROR)
-  INTEGER INFO, NEWINFO, IERROR
-\end{verbatim}
-
+You can also query the number of keys in an info object with
+\indexmpiref{MPI_Info_get_nkeys},
+after which the keys can be queried in succession with
 \indexmpidef{MPI_Info_get_nthkey}
-\begin{verbatim}
-  MPI_INFO_GET_NTHKEY(info, n, key)
-  IN infoinfo object (handle)
-  IN nkey number (integer)
-  OUT keykey (string)
-  int MPI_Info_get_nthkey(MPI_Info info, int n, char *key)
-  MPI_INFO_GET_NTHKEY(INFO, N, KEY, IERROR)
-  INTEGER INFO, N, IERROR
-  CHARACTER*(*) KEY
-\end{verbatim}
+
+\Level 1 {Environment information}
+\label{sec:mpi-info-env}
+
+The object \indexmpidef{MPI_INFO_ENV} is predefined, containing:
+\begin{itemize}
+\item \n{command}
+  Name of program executed.
+\item  \n{argv}
+  Space separated arguments to command.
+\item  \n{maxprocs}
+  Maximum number of MPI processes to start.
+\item   \n{soft}
+  Allowed values for number of processors.
+\item   \n{host}
+  Hostname.
+\item   \n{arch}
+  Architecture name.
+\item   \n{wdir}
+  Working directory of the MPI process.
+\item   \n{file}
+  Value is the name of a file in which additional information is specified.
+\item   \n{thread_level}
+  Requested level of thread support, if requested before the program started execution.
+\end{itemize}
+Note that these are the requested values; the running program can for instance
+have lower thread support.
+
+\Level 1 {Communicator and window information}
+
+MPI has a built-in possibility of attaching information to
+\emph{communicators}\index{communicator!info object}
+and
+\emph{windows}\index{window!info object}
+using the calls
+\indexmpishow{MPI_Comm_get_info}
+\indexmpishow{MPI_Comm_set_info},
+\indexmpishow{MPI_Win_get_info},
+\indexmpishow{MPI_Win_set_info}.
+
+Copying a communicator with \indexmpishow{MPI_Comm_dup} would cause
+the info to be copied; to attach new information to the copy there is
+\indexmpidef{MPI_Comm_dup_with_info}.
 
 \Level 0 {Error handling}
 \label{sec:mpi:error}
@@ -232,63 +203,6 @@ You can create your own error handler with
 \indexmpishow{MPI_Comm_set_errhandler}. You can retrieve the error
 handler with \indexmpishow{MPI_Comm_get_errhandler}.
 
-\Level 0 {Machine-specific information}
-\label{sec:mpi-info}
-
-You can create information objects, variables of type
-\indexmpiref{MPI_Info}
-for instance for use in a library
-that you write based on MPI.
-
-\indexmpidef{MPI_Info_create}
-\indexmpidef{MPI_Info_set}
-\indexmpidef{MPI_Info_get}
-\indexmpidef{MPI_Info_free}
-\indexmpidef{MPI_Info_nkeys}
-
-\Level 1 {Environment information}
-\label{sec:mpi-info-env}
-
-The object \indexmpidef{MPI_INFO_ENV} is predefined, containing:
-\begin{itemize}
-\item \n{command}
-  Name of program executed.
-\item  \n{argv}
-  Space separated arguments to command.
-\item  \n{maxprocs}
-  Maximum number of MPI processes to start.
-\item   \n{soft}
-  Allowed values for number of processors.
-\item   \n{host}
-  Hostname.
-\item   \n{arch}
-  Architecture name.
-\item   \n{wdir}
-  Working directory of the MPI process.
-\item   \n{file}
-  Value is the name of a file in which additional information is specified.
-\item   \n{thread_level}
-  Requested level of thread support, if requested before the program started execution.
-\end{itemize}
-Note that these are the requested values; the running program can for instance
-have lower thread support.
-
-\Level 1 {Communicator and window information}
-
-MPI has a built-in possibility of attaching information to
-\emph{communicators}\index{communicator!info object}
-and
-\emph{windows}\index{window!info object}
-using the calls
-\indexmpishow{MPI_Comm_get_info}
-\indexmpishow{MPI_Comm_set_info},
-\indexmpishow{MPI_Win_get_info},
-\indexmpishow{MPI_Win_set_info}.
-
-Copying a communicator with \indexmpishow{MPI_Comm_dup} would cause
-the info to be copied; to attach new information to the copy there is
-\indexmpidef{MPI_Comm_dup_with_info}.
-
 \Level 0 {Fortran issues}
 \label{sec:mpi-fortran}
 \index{MPI!Fortran issues|see{Fortran, MPI issues}}
@@ -300,6 +214,7 @@ See section~\ref{sec:f90-types} for MPI types corresponding to
 \emph{Fortran90 types}\index{Fortran90 types!in MPI}.
 
 \Level 1 {Assumed-shape arrays}\index{Fortran!assumed-shape arrays in MPI}
+\label{sec:mpif-shape}
 
 Use of other than contiguous data, for instance \n{A(1:N:2)}, was a
 problem in MPI calls, especially non-blocking ones. In that case it
@@ -314,8 +229,9 @@ in MPI3.
   \indexmpishowf{MPI_Init} in Fortran
   does not have the commandline arguments;
   they need to be handled separately.
-\item The routine \indexmpishow{MPI_Sizeof} is only available in Fortran, it provides the 
-  functionality of the C/C++ operator \indextermtt{sizeof}.
+\item The routine \indexmpishow{MPI_Sizeof} is only available in
+  Fortran, it provides the functionality of the C/C++ operator
+  \indextermtt{sizeof}.
 \end{itemize}
 
 \index{Fortran!MPI issues|)}
@@ -388,10 +304,12 @@ Boolean variable that indicates whether clocks are synchronized.
 
 Also:
 \begin{itemize}
-\item \indexmpidef{MPI_UNIVERSE_SIZE}: the total number of processes
+\item \indexmpishow{MPI_UNIVERSE_SIZE}: the total number of processes
   that can be created. This can be more than the size of
   \indexmpishow{MPI_COMM_WORLD} if the host list is larger than the number of
   initially started processes. See section~\ref{sec:mpi-dynamic}.
+
+  Python: \lstinline{mpi4py.MPI.UNIVERSE_SIZE}.
 \item \indexmpidef{MPI_APPNUM}: if MPI is used in \ac{MPMD} mode, or
   if \indexmpishow{MPI_Comm_spawn_multiple} is used, this attribute
   reports the how-manieth program we are in.
@@ -605,6 +523,7 @@ supercomputer cluster, \indextermbus{network}{contention} or
 different user jobs is hard to avoid.
 
 \heading{Offloading and onloading}
+\index{offloading!vs onloading}\index{onloading|see{offloading, vs onloading}}
 
 There are different philosophies of \indextermbus{network}{card}
 \emph{design}: \indexterm{Mellanox}, being a network card manufacturer,

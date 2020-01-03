@@ -113,43 +113,6 @@
   \fi
 }
 
-\def\verbatimsnippet#1{\verbatiminput{#1}} % snippets/
-\newcommand{\cverbatimsnippet}[2][XX]{
-  % record this file as bracketed name
-  \addchaptersource{{#1}}
-  % typeset as nice C code
-  \lstset{style=reviewcode,language=C}
-  \lstinputlisting{#2}
-}
-\newcommand{\cxxverbatimsnippet}[2][XX]{
-  % record this file as bracketed name
-  \addchaptersource{{#1}}
-  % typeset as nice C code
-  \lstset{style=reviewcode,language=C++}\lstinputlisting{#2}}
-\newcommand{\fverbatimsnippet}[2][XX]{
-  % record this file as bracketed name
-  \addchaptersource{{#1}}
-  % typeset as nice Fortran code
-  \lstset{style=reviewcode,language=Fortran}
-  \lstinputlisting{#2}
-}
-\def\pverbatimsnippet#1{
-  \lstset{style=reviewcode,language=Python}\lstinputlisting{#1}
-  \lstset{style=reviewcode,language=C}
-}
-\newenvironment{clisting}
-    {\lstset{style=reviewcode,language=C}\begin{lstlisting}}
-    {\end{lstlisting}}
-\newenvironment{cxxlisting}
-    {\lstset{style=reviewcode,language=C++}\begin{lstlisting}}
-    {\end{lstlisting}}
-\newenvironment{flisting}
-    {\lstset{style=reviewcode,language=Fortran}\begin{lstlisting}}
-    {\end{lstlisting}}
-\newenvironment{plisting}
-    {\lstset{style=reviewcode,language=Python}\begin{lstlisting}}
-    {\end{lstlisting}}
-
 \newenvironment{question}{\begin{quotation}\textbf{Question.\ }}{\end{quotation}}
 \newenvironment{example}{\begin{quotation}\textbf{Example.\ }}{\end{quotation}}
 \newenvironment{fortrannote}

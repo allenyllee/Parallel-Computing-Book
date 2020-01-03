@@ -81,12 +81,16 @@ item. The problem with race conditions is that programmer convenience
 runs counter to efficient execution. For this reason, OpenMP simply
 does not allow some things that would be desirable.
 
+For a simple example:
+\csnippetwithoutput{racecounter}{racecounter}
+
 The basic rule about multiple-thread access of a single data item is:
 \begin{quote}
   Any memory location that is \emph{written} by one thread, can not be
   \emph{read} by another thread in the same parallel region, if no
   synchronization is done.
 \end{quote}
+
 To start with that last clause: any workshare construct ends with an
 \indextermsub{implicit}{barrier}, so data written before that barrier
 can safely be read after it.

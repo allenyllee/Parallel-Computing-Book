@@ -214,3 +214,15 @@ omp_get_team_size(level)
 \index{nested parallelism|)}
 \index{parallel region|)}
 
+\Level 0 {Cancel parallel construct}
+
+\begin{lstlisting}
+!$omp cancel construct [if (expr)]
+\end{lstlisting}
+where construct is
+\lstinline{parallel},
+\lstinline{sections},
+\lstinline{do}
+or
+\lstinline{taskgroup}
+

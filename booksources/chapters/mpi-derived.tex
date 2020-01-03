@@ -167,6 +167,26 @@ a strided subset of an array; the receiver receives the data as a contiguous blo
 %
 \pverbatimsnippet{vectorp}
 
+Figure~\ref{fig:blasmatrix} indicates one source of irregular
+data:
+%
+\begin{figure}[ht]
+  \includegraphics[scale=.1]{blasmatrix}
+  \caption{Memory layout of a row and column of a matrix in column-major storage}
+  \label{fig:blasmatrix}
+\end{figure}
+%
+with a matrix on \indexterm{column-major storage}, a column is
+stored in contiguous memory. However, a row of such a matrix
+is not contiguous; its elements being separated by a \indexterm{stride}
+equal to the column length.
+
+\begin{exercise}
+  \label{ex:submatrix}
+  How would you describe the memory layout of a submatrix,
+  if the whole matrix has size $M\times N$ and the submatrix $m\times n$?
+\end{exercise}
+
 As an example of this datatype, consider the example of transposing
 a matrix, for instance to convert between
 C and Fortran arrays (see section~\HPSCref{sec:CFarrays}). Suppose that 
@@ -234,29 +254,7 @@ by replacing the index expression by \n{mat+1}.
   large arrays.
 \end{exercise}
 
-\Level 2 {Subarrays as vector data}
-
-Figure~\ref{fig:blasmatrix} indicates one source of irregular
-data:
-%
-\begin{figure}[ht]
-  \includegraphics[scale=.1]{blasmatrix}
-  \caption{Memory layout of a row and column of a matrix in column-major storage}
-  \label{fig:blasmatrix}
-\end{figure}
-%
-with a matrix on \indexterm{column-major storage}, a column is
-stored in contiguous memory. However, a row of such a matrix
-is not contiguous; its elements being separated by a \indexterm{stride}
-equal to the column length.
-
-\begin{exercise}
-  \label{ex:submatrix}
-  How would you describe the memory layout of a submatrix,
-  if the whole matrix has size $M\times N$ and the submatrix $m\times n$?
-\end{exercise}
-
-\Level 2 {Subarray type}
+\Level 1 {Subarray type}
 \label{sec:type_subarray}
 
 The vector datatype can be used for blocks in an array of dimension
@@ -290,6 +288,11 @@ Normally you use \n{ibrun} without process count argument.
 \end{tacc}
 
 \end{exercise}
+
+\begin{fortrannote}
+  Subarrays are naturally supported in Fortran through array sections:
+  \fverbatimsnippet{fsectionsend}
+\end{fortrannote}
 
 \Level 1 {Indexed type}
 \label{sec:data:indexed}
@@ -378,10 +381,11 @@ create the structure type. With structures it is no longer possible to
 send as a derived type and receive as a array of a simple type.
 (It would be possible to send as one structure type and receive as another, 
 as long as they have the same \indextermbus{datatype}{signature}.)
-%
+
 \cverbatimsnippet[examples/mpi/c/struct.c]{structure}
+
 \fverbatimsnippet[examples/mpi/f/struct.F90]{fstructure}
-%
+
 Note the \n{displacement} calculations in this example,
 which involve some not so elegant pointer arithmetic.
 (Alternatively, you could use \indexmpishow{MPI_Get_address}, which is

@@ -188,8 +188,8 @@ but the routine call also use more general \lstinline{PetscViewer} objects, for
 instance to dump a vector to file.
 
 \begin{exercise}
-Use the routines \indexpetscshow{VecDot}, \indexpetscshow{VecScale}
-and \indexpetscshow{VecNorm} to compute the inner product of vectors
+Use the routines \indexpetscref{VecDot}, \indexpetscref{VecScale}
+and \indexpetscref{VecNorm} to compute the inner product of vectors
 \n{x,y}, scale the vector~\n{x}, and check its norm:
 \[
 \begin{array}{l}
@@ -293,17 +293,39 @@ the matrix lives collectively:
 %
 \indexpetscref{MatCreate}
 
+Set the matrix type with \indexpetscref{MatSetType}.  The main choices
+are between sequential versus distributed and dense versus sparse,
+giving types: \indexpetscshow{MATMPIDENSE}, \indexpetscshow{MATMPIAIJ},
+\indexpetscshow{MATSEQDENSE}, \indexpetscshow{MATSEQAIJ}.
+
+Distributed matrices are partitioned by block rows: each process
+stores a \indexterm{block row}, that is, a contiguous set of matrix
+rows. It stores all elements in that block row.
+%
+\begin{figure}[ht]
+  \includegraphics[scale=.2]{parallel-matrix}
+  \caption{Matrix partitioning by block rows}
+  \label{fig:parallel-matrix}
+\end{figure}
+%
+In order for a matrix-vector product to be executable, both the input
+and output vector need to be partitioned conforming to the matrix.
+
+While for dense matrices the block row scheme is not scalable, for
+matrices from \acp{PDE} it makes sense. There, a subdivision by matrix
+blocks would lead to many empty blocks.
+
 Just as with vectors, there is a local and global size; except that
 that now applies to rows and columns.
 Set sizes with
 \indexpetscref{MatSetSizes}
 and subsequently query them with
 \indexpetscref{MatSizes}.
-
-Set the matrix type with \indexpetscref{MatSetType}.  The main choices
-are between sequential versus distributed and dense versus sparse,
-giving types: \indexpetscshow{MATMPIDENSE}, \indexpetscshow{MATMPIAIJ},
-\indexpetscshow{MATSEQDENSE}, \indexpetscshow{MATSEQAIJ}.
+The concept of local column size is tricky:
+since a process stores a full block row you may expect the local column size
+to be the full matrix size, but that is not true.
+The exact definition will be discussed later, but for square matrices it is a safe
+strategy to let the local row and column size to be equal.
 
 \Level 1 {Nonzero structure}
 
@@ -319,7 +341,7 @@ specify a bound on how many elements the matrix will contain.
 
 We explain this by looking at some cases. First we consider a matrix
 that only lives on a single process. You would then use
-\indexpetscxref{MatSeqAIJSetPreallocation}{MatSetPreallocation}.  In
+\indexpetscref{MatSeqAIJSetPreallocation}.  In
 the case of a tridiagonal matrix you would specify that each row has
 three elements:
 %
@@ -338,16 +360,37 @@ MatSeqAIJSetPreallocation(A,NULL,rowlengths);
 \end{lstlisting}
 
 In case of a distributed matrix you need to specify this bound with
-respect to the block structure of the matrix: how many non-zeros
-couple between variables on the process, vs how many couple to
-variables on a different process:
-\indexpetscxref{MatMPIAIJSetPreallocation}{MatSetPreallocation}.
+respect to the block structure of the matrix. As illustrated in figure~\ref{fig:petscmat},
+a~matrix has a diagonal part and an off-diagonal part.
+%
+\begin{figure}[ht]
+  \includegraphics[scale=.5]{petscmat}
+  \caption{The diagonal and off-diagonal parts of a matrix}
+  \label{fig:petscmat}
+\end{figure}
+%
+The diagonal part describes the matrix elements that couple elements of the
+input and output vector that live on this process. The off-diagonal part contains the
+matrix elements that are multiplied with elements not on this process, in order to compute
+elements that do live on this process.
 
+The preallocation specification now has separate parameters for
+these diagonal and off-diagonal parts:
+with 
+\indexpetscxref{MatMPIAIJSetPreallocation}{MatSeqAIJSetPreallocation}.
+you specify for both either a global upper bound on the number of nonzeros,
+or a detailed listing of row lengths.
+For the matrix of the \indexterm{Laplace equation}, this specification
+would seem to be:
 \begin{lstlisting}
 MatMPIAIJSetPreallocation(A, 3, NULL, 2, NULL);
 \end{lstlisting}
+However, this is only correct if the block structure from the parallel division
+equals that from the lines in the domain.
+In general it may be necessary to use values that are an overestimate.
+It is then possible to contract the storage by copying the matrix.
 
-Specifying such bounds is often enough, and not too wasteful. However,
+Specifying bounds on the number of nonzeros is often enough, and not too wasteful. However,
 if many rows have fewer nonzeros than these bounds, a lot of space is
 wasted. In that case you can replace the NULL arguments by an array
 that lists for each row the number of nonzeros in that row.
@@ -369,7 +412,7 @@ were specified elsewhere. As with vectors this takes two calls:
 %
 \indexpetscref{MatAssemblyBegin}
 and
-\indexpetscxref{MatAssemblyBegin}{MatAssemblyEnd}
+\indexpetscxref{MatAssemblyEnd}{MatAssemblyBegin}
 %
 which can be used to achieve \indexterm{latency hiding}.
 
@@ -395,24 +438,28 @@ MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE)
 
 If you absolutely need access to the matrix elements, there are
 routines such as 
-\indexpetscref{MatGetRow}. Since PETSc is geared towards
+\indexpetscref{MatGetRow}.
+With this, any rank can request, using global row numbering,
+the contents of a row that it owns.
+(Requesting elements that are not local requires the
+different mechanism of taking submatrices; section~\ref{sec:petsc-submat}.)
+
+Since PETSc is geared towards
 \emph{sparse matrices}\index{matrix!sparse},
 this returns not only the element values, but also the column numbers,
 as well as the mere number of stored columns.
-
 If any of these three return values are not needed, they can be
 unrequested by setting the parameter passed to \lstinline{NULL}.
 
 PETSc insists that you properly release the row again with
 \indexpetscxref{MatRestoreRow}{MatGetRow}.
 
+It is also possible to retrieve the full \ac{CRS} contents
+of the local matrix with
 \begin{lstlisting}
 MatGetArray
 MatRestoreArray
 \end{lstlisting}
-
-Note that in a distributed running context you can only get local
-elements this way. For a distributed version you need to take submatrices.
 
 \Level 0 {Matrix operations}
 
@@ -433,7 +480,19 @@ $y\leftarrow z\leftarrow Ax +y $.
 
 \Level 1 {Matrix-matrix operations}
 
+There is a number of matrix-matrix routines such as
+\indexpetscdef{MatMatMult}.
+
 \Level 0 {Submatrices}
+\label{sec:petsc-submat}
+
+Given a parallel matrix, there are two routines for extracting submatrices:
+\begin{itemize}
+\item \indexpetscdef{MatCreateSubMatrix} creates a single parallel
+  submatrix.
+\item \indexpetscdef{MatCreateSubMatrices} creates a sequential
+  submatrix on each rank.
+\end{itemize}
 
 \Level 0 {Shell matrices}
 

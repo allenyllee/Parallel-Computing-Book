@@ -98,7 +98,7 @@ The default integer type \indexmpishow{MPI_INTEGER} is equivalent to
 \lstinline{INTEGER(KIND=MPI_INTEGER_KIND)}.
 
 Addresses have type \indexmpishow{MPI_Aint} or
-\lstinline{INTEGER(KIND=MPI_ADDRESS_KIND)}%
+\lstinline{INTEGER(KIND=MPI_ADDRESS_KIND)}
 in Fortran. The start of the address range is
 given in \indexmpishow{MPI_BOTTOM}.
 
@@ -109,7 +109,7 @@ There is also
 \Level 2 {Fortran90 kind-defined types}
 \label{sec:f90-types}
 
-If your Fortran code uses \n{KIND} to define scalar types with
+If your Fortran code uses \lstinline{KIND} to define scalar types with
 specified precision, these do not in general correspond to any
 predefined MPI datatypes. Hence the following routines exist to make
 \emph{MPI equivalences of Fortran scalar types}%

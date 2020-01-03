@@ -19,7 +19,7 @@ info ::
 	@echo
 	@echo "make app (where app=${APPS})"
 APPS = hello hellocount \
-    alloc1 alloc2 sharing \
+    alloc1 alloc2 sharing race \
     threadprivate ireduct ireductinit ureduct reductpositive \
     taskgroup0 taskgroup1 taskgroup2 taskgroup3
 listapps :
@@ -31,30 +31,42 @@ listsources :
 	  done ; \
 	done | awk 'BEGIN { v="" } {v = v " " $$0} END {print v}'
 
-ifdef TACC_TAU_DIR
-  CC = tau_cc.sh
-  CXX = tau_cxx.sh
-else
-  CC  = ${C_COMPILER}
-  CXX = ${CXX_COMPILER}
-endif
-
-info ::
-	@echo "    [OPTLEVEL=0/1/2/3 (default=${OPTLEVEL})]"
-	@echo "    [EXTRAFLAGS=whatever]"
-EXTRAFLAGS =
-% : %.c
-	${CC}  ${CFLAGS}   ${EXTRAFLAGS} $*.c -o $@
-% : %.cxx
-	${CXX} ${CXXFLAGS} ${EXTRAFLAGS} $*.cxx -o $@
+MODE = omp
+include ../../../makefiles/Make.compile
+.SECONDEXPANSION:
+${APPS} : $$@.o
+	${C_LINKER} -o $@ $^
 
 EXEC = hello
 NP = 4
 info ::
 	@echo
-	@echo "make testrun [EXEC=app (where app in ${APPS})] [NP=nnn (default: ${NP})]"
+	@echo "make testrun [EXEC=app (where app in ${APPS})]"
 testrun:
 	make clean; rm -f ${EXEC}; make ${EXEC}
 	OMP_NUM_THREADS=${NP} ./${EXEC}
 
-include ../../Make.inc
+info ::
+	@echo "make run_xyz (in: ${RUNS})"
+	@echo "    [NP=nnn (default: ${NP})]"
+RUNS =
+.PHONY: run_race
+RUNS += run_race
+run_race : race
+	( \
+	for t in 1 2 4 8 ; do \
+	    echo "On $${t} threads:" \
+	    && OMP_NUM_THREADS=$${t} ./race \
+	    ; \
+	done \
+	) 2>&1 | tee ../../../output/racecounter.out
+info ::
+	@echo "make output : regenerate all output"
+.PHONY: output
+output :
+	@for r in ${RUNS} ; do \
+	  make $${r} \
+	  ; \
+	done
+
+include  ../../../makefiles/Make.clean

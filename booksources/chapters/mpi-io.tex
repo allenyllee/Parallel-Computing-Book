@@ -30,6 +30,12 @@ sequentially.
 Wouldn't it be nice if there was a way to open one file in parallel,
 and have every process read from and write to its own location? That's
 where \emph{MPI/O} comes in.
+In fact, MPI-IO is more flexible than that, since it uses MPI
+\indextermsub{derived}{datatype}s for both the source data (that is, in memory)
+and target data (that is, on disk).
+Thus, in one call that is collective on a communicator
+each process can address data that is not contiguous in memory,
+and place it in locations that are not contiguous on disc.
 
 There are dedicated libraries for file I/O, such as \indexterm{hdf5},
 \indexterm{netcdf}, or \indexterm{silo}. However, these often add
@@ -76,7 +82,44 @@ These modes can be added or bitwise-or'ed.
 
 You can delete a file with \indexmpishow{MPI_File_delete}.
 
-\Level 0 {File access}
+Buffers can be flushed with \indexmpishow{MPI_File_sync}.
+
+\Level 0 {File reading and writing}
+
+The basic file operations, in between the open and close calls, are
+the POSIX-like calls
+\begin{itemize}
+\item \indexmpiref{MPI_File_seek}. The \lstinline{whence} parameter can be:
+  \begin{itemize}
+  \item \indexmpidef{MPI_SEEK_SET} The pointer is set to offset.
+  \item \indexmpidef{MPI_SEEK_CUR} The pointer is set to the current
+    pointer position plus offset.
+  \item \indexmpidef{MPI_SEEK_END} The pointer is set to the end of
+    the file plus offset.
+  \end{itemize}
+\item \indexmpishow{MPI_File_read}
+\item \indexmpishow{MPI_File_write}
+\end{itemize}
+
+For thread safety it is good to combine seek and read/write operations:
+\begin{itemize}
+\item \indexmpishow{MPI_File_read_at}: combine read and seek.
+\item \indexmpishow{MPI_File_write_at}: combine write and seek
+\end{itemize}
+
+Collective calls, performed by all processes in the communicator:
+\begin{itemize}
+\item \indexmpishow{MPI_File_read_all}
+\item \indexmpishow{MPI_File_write_all}
+\item \indexmpishow{MPI_File_read_at_all}
+\item \indexmpishow{MPI_File_write_at_all}
+\end{itemize}
+
+Using a shared file pointer the operations are:
+\begin{itemize}
+\item \indexmpishow{MPI_File_read_shared}
+\item \indexmpishow{MPI_File_write_shared}
+\end{itemize}
 
 Writing to and reading from a parallel file is rather similar to
 sending a receiving:
@@ -92,18 +135,23 @@ sending a receiving:
 
 File accesses:
 \begin{itemize}
-\item \indexmpishow{MPI_File_seek}
-\item \indexmpishow{MPI_File_read}
-\item \indexmpishow{MPI_File_read_all}
 \item \indexmpishow{MPI_File_read_ordered}
-\item \indexmpishow{MPI_File_read_shared}
-\item \indexmpishow{MPI_File_read_at}: combine read and seek.
-\item \indexmpishow{MPI_File_write}
-\item \indexmpishow{MPI_File_write_all}
 \item \indexmpishow{MPI_File_write_ordered}
-\item \indexmpishow{MPI_File_write_shared}
-\item \indexmpishow{MPI_File_write_at}: combine write and seek
 \end{itemize}
+
+\Level 1 {Individual file pointers, contiguous writes}
+
+After the collective open call, each rank holds an
+\emph{individual file pointer}\index{file!pointer!individual}
+each rank can individually position the pointer somewhere in the shared file.
+Let's explore this modality.
+
+The simplest way of writing a data to file is much like a send call:
+a~buffer is specified with the usual count/datatype specification,
+and a target location in the file is given.
+The routine \indexmpiref{MPI_File_write_at} gives this location
+in absolute terms with a parameter of type \indexmpidef{MPI_Offset},
+which counts bytes.
 
 \begin{figure}[ht]
   \label{fig:write-at}
@@ -117,7 +165,20 @@ File accesses:
   these buffers as a sequence to one file with \indexmpishow{MPI_File_write_at}.
 \end{exercise}
 
-These modes are enough for writing simple contiguous blocks. However,
+Instead of giving the position in the file explicitly, you can also
+use a \indexmpishow{MPI_File_seek} call to position the file pointer,
+and write with \indexmpishow{MPI_File_write} at the pointer location.
+
+\begin{exercise}
+  \label{ex:blockwriteseek}
+  Rewrite the code of exercise~\ref{ex:blockwrite} to
+  use a seek call and a write call relative to the file pointer.
+\end{exercise}
+
+\Level 1 {File views}
+
+The previous mode of writing is enough for writing simple contiguous blocks in the file.
+However,
 you can also access non-contiguous areas in the file. For this you use
 %
 \indexmpiref{MPI_File_set_view}.
@@ -140,10 +201,6 @@ This call is collective, even if not all processes access the file.
   \caption{Writing at a view}
   \includegraphics[scale=.4]{write-at-view}
 \end{figure}
-
-There are a number of write calls; writing directly at a location is
-done with
-\indexmpiref{MPI_File_write_at}.
 
 \begin{exercise}
   \label{ex:viewwrite}
@@ -173,6 +230,16 @@ More:
 \indexmpishow{MPI_File_get_size}
 \indexmpishow{MPI_File_preallocate}
 \indexmpishow{MPI_File_get_view}
+
+\Level 0 {Consistency}
+
+It is possible for one process to read data previously writte by another process.
+For this it is of course necessary to impose a temporal order,
+for instance by using \indexmpishow{MPI_Barrier},
+or using a zero-byte send from the writing to the reading process.
+
+However, the file also needs to be declared atomic:
+\indexmpishow{MPI_File_set_atomicity}.
 
 \Level 0 {Constants}
 

@@ -57,7 +57,8 @@
 %%%%
 \usepackage{outliner}
 \OutlineLevelStart 0{\part{#1}\frame{\partpage}}    %{\frame{\part{#1}\Huge\bf #1}}
-\OutlineLevelStart 1{\section{#1}} %{\frame{\section{#1}\Large\bf#1}}
+%\OutlineLevelStart 1{\section{#1}}
+\OutlineLevelStart 1{\frame{\section{#1}\Large\bf#1}}
 \def\sectionframe#{\Level 1 }
 \usepackage{framed}
 \colorlet{shadecolor}{blue!15}

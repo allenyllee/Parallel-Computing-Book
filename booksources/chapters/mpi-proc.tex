@@ -31,10 +31,24 @@ of \indexmpishow{MPI_COMM_WORLD}; rather, they get their own communicator, and a
 is established between this new group
 and the existing one. The first routine is
 \indexmpiref{MPI_Comm_spawn}, which tries to fire up multiple copies
-of a single named executable. You could imagine using this mechanism
-to start the whole of your MPI code, but that is likely to be inefficient.
+of a single named executable. Errors in starting up these codes are returned in an array of integers, or
+if you're feeling sure of yourself, specify \indexmpidef{MPI_ERRCODES_IGNORE}.
 
-(If you're feeling sure of yourself, specify \indexmpidef{MPI_ERRCODES_IGNORE}.)
+It is not immediately clear whether there is opportunity for spawning
+new executables; after all, \lstinline{MPI_COMM_WORLD} contains all
+your available processors. You can probably tell your job starter to
+reserve space for a few extra processes, but that is
+installation-dependent (see below). However, there is a standard
+mechanism for querying whether such space has been reserved.  The
+attribute \indexmpidef{MPI_UNIVERSE_SIZE}, retrieved with
+\indexmpishow{MPI_Attr_get} (section~\ref{sec:mpi_attr}), will tell
+you to the total number of hosts available.
+
+If this option is not supported, you can determine yourself how many
+processes you want to spawn. If you exceed the hardware resources,
+your multi-tasking operating system (which is some variant of Unix for
+almost everyone) will use \indexterm{time-slicing} to start the
+spawned processes, but you will not gain any performance.
 
 Here is an example of a work manager.
 %
@@ -46,15 +60,7 @@ You could start up a single copy of this program with
 \begin{verbatim}
 mpirun -np 1 spawn_manager
 \end{verbatim}
-but with a hostfile that has more than one host. In that case the
-attribute \indexmpidef{MPI_UNIVERSE_SIZE}, retrieved with
-\indexmpishow{MPI_Attr_get}, will tell you to the total number of
-hosts available. If this option is not supported, you can determine
-yourself how many processes you want to spawn. If you exceed the
-hardware resources, your multi-tasking operating system (which is some
-variant of Unix for almost everyone) will use
-\indexterm{time-slicing}, but you will not gain any performance.
-
+but with a hostfile that has more than one host.
 
 \begin{taccnote}
 \indextermbus{Intel}{mpi} requires you to pass an option \n{-usize} to

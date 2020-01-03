@@ -215,6 +215,13 @@ For instance, recreating the maximum reduction would look like this:
   zero, or entirely consists of zeros, return~\n{-1}.
 \end{exercise}
 
+Support for
+\emph{C++ iterators}\index{C++ iterators!in OMP reduction}
+\begin{lstlisting}
+#pragma omp declare reduction (merge : std::vector<int>
+  : omp_out.insert(omp_out.end(), omp_in.begin(), omp_in.end())) 
+\end{lstlisting}
+
 \index{omp!reduction!user-defined|)}
 
 \Level 0 {Reductions and floating-point math}

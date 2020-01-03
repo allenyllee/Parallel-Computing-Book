@@ -1,4 +1,4 @@
-// shared.c
+// sharedbulk.c
 MPI_Aint window_size; double *window_data; MPI_Win node_window;
 if (onnode_procid==0)
   window_size = sizeof(double);

@@ -5,26 +5,38 @@ the problem you're addressing, your strategy, your results.
 
 \paragraph*{\bf Structure of your writeup}
 
-Most of the exercises in this book test whether you are able to code the solution to a certain
-problem. That does not mean that turning in the code is sufficient, nor code plus sample output.
-Turn in a writeup in pdf form that was generated from a text processing program such as Word or (preferably)
-\LaTeX\ (for a tutorial, see~\HPSCref{tut:latex}). Your writeup should have 
+Most of the projects in this book use a scientific question to allow
+you to prove your coding skills.
+That does not mean that turning in the code is sufficient, nor code plus sample output.
+Turn in a writeup in pdf form that was generated from a text
+processing program such 
+(preferably) \LaTeX\ (for a tutorial, see~\HPSCref{tut:latex}).
+
+Your writeup should have:
 \begin{itemize}
-\item The relevant fragments of your code,
-\item an explanation of your algorithms or solution strategy,
-\item a discussion of what you observed,
-\item graphs of runtimes and TAU plots; see~\ref{tut:tau}.
+\item Foremost, a short description of the purpose of your project and your results;
+\item An explanation of your algorithms or solution strategy;
+\item Relevant fragments of your code;
+\item A scientific discussion of what you observed,
+\item Any code-related observations.
+\item If applicable: graphs, both of application quantities and
+performance issues.
+(For parallel runs possibly TAU plots; see~\ref{tut:tau}).
 \end{itemize}
 
 \paragraph*{Observe, measure, hypothesize, deduce}
+
+Your project may be a scientific investigation of some
+phenomenon. Formulate hypotheses as to what you expect to observe,
+report on your observations, and draw conclusions.
+
+Quite often your program will display unexpected behaviour. It is important to observe
+this, and hypothesize what the reason might be for your observed behaviour.
 
 In most applications of computing machinery we care about the efficiency with which
 we find the solution. Thus, make sure that you do measurements. In general, make
 observations that allow you to judge whether your program behaves the way you
 would expect it to.
-
-Quite often your program will display unexpected behaviour. It is important to observe
-this, and hypothesize what the reason might be for your observed behaviour.
 
 \paragraph*{Including code}
 
@@ -38,9 +50,9 @@ Including whole source files makes for a long and boring writeup. The code sampl
 book were generated as follows. In the source files, the relevant snippet was marked as
 \begin{verbatim}
 ... boring stuff
-#pragma samplex
+//snippet samplex
   .. interesting! ..
-#pragma end
+//snippet end
 ... more boring stuff
 \end{verbatim}
 The files were then processed with the following command line (actually, included
@@ -48,29 +60,34 @@ in a makefile, which requires doubling the dollar signs):
 \begin{verbatim}
 for f in *.{c,cxx,h} ; do
   cat $x | awk 'BEGIN {f=0}
-                   /#pragma end/ {f=0}
-                   f==1 {print $0 > file}
-                   /pragma/ {f=1; file=$2 }
-                '
+                /snippet end/ {f=0}
+                f==1 {print $0 > file}
+                /snippet/ && !/end/ {f=1; file=$2 }
+               '
 done
 \end{verbatim}
 which gives (in this example) a file \n{samplex}. Other solutions are of course possible.
 
 \paragraph*{\bf Code formatting}
 
-Code without proper indentation is very hard to read. Fortunately,
-most editors have some knowledge of the syntax of the most popular
-languages. The \indexterm{emacs} editor will, most of the time,
-automatically activate the appropriate mode based on the file
-extension. If this does not happen, you can activate a mode by \n{ESC
-  x fortran-mode} et cetera, or by putting the string
-\verb+-*- fortran -*-+ in a comment on the first line of your file.
-
-The \indexterm{vi} editor also has syntax support: use the commands
-\n{:synxtax on} to get syntax colouring, and \n{:set cindent} to get
-automatic indentation while you're entering text. Some of the more
-common questions are addressed in
-\url{http://stackoverflow.com/questions/97694/auto-indent-spaces-with-c-in-vim}.
+Included code snippets should be readable. At a minimum you could 
+indent the code correctly in an editor before you include it in
+a \indextermtt{verbatim} environment. (Screenshots of your terminal
+window are a decidedly suboptimal solution.)
+But it's better to use the \indextermtt{listing} package which formats
+your code, include syntax coloring. For instance, 
+\begin{verbatim}
+\lstset{language=C++} % or Fortran or so
+\begin{lstlisting}
+for (int i=0; i<N; i++)
+  s += 1;
+\end{lstlisting}
+\end{verbatim}
+\lstset{language=C++} % or Fortran or so
+\begin{lstlisting}
+for (int i=0; i<N; i++)
+  s += 1;
+\end{lstlisting}
 
 \paragraph*{\bf Running your code}
 

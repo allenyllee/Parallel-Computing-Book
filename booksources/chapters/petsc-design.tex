@@ -52,7 +52,25 @@ divided in these classes:
   traceback and memory tracing facilities.
 \end{itemize}
 
+\Level 1 {Programming model}
+
+PETSc, being based on MPI, uses the \ac{SPMD} programming model
+(section~\ref{sec:spmd}), where all processes execute the same
+executable. Even more than in regular MPI codes, this makes sense
+here, since most PETSc objects are collectively created on some
+communicator, often \indexmpishow{MPI_COMM_WORLD}. With the
+object-oriented design (section~\ref{sec:petsc-oop}) this means that a
+PETSc program almost looks like a sequential program.
+\begin{lstlisting}
+MatMult(A,x,y);      // y <- Ax
+VecCopy(y,res);      // r <- y
+VecAXPY(res,-1.,b);  // r <- r - b
+\end{lstlisting}
+This is
+sometimes called \indextermbus{sequential}{semantics}.
+
 \Level 1 {Design philosophy}
+\label{sec:petsc-oop}
 
 PETSc has an object-oriented design, even though it is written
 in~C. There are classes of objects, such \lstinline{Mat} for
@@ -158,7 +176,7 @@ program : program.o
 \end{verbatim}
 (The \indexpetscshow{PETSC_CC_INCLUDES} variable contains all paths for
 compilation of C~programs; correspondingly there is
-\indexpetscshow{PETSC_CC_INCLUDES} for Fortran source.)
+\indexpetscshow{PETSC_FC_INCLUDES} for Fortran source.)
 
 The build process assumes that variables \indexpetscshow{PETSC_DIR} and
 \indexpetscshow{PETSC_ARCH} have been set. These depend on your local

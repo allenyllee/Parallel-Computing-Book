@@ -65,7 +65,10 @@ Here are the OpenMP \emph{environment variables}:
 \item \indexompshowdef{OMP_STACKSIZE} Set default thread stack size
 \item \indexompshowdef{OMP_SCHEDULE} How threads are scheduled
 \item \indexompshowdef{OMP_THREAD_LIMIT} Set the maximum number of threads
-\item \indexompshowdef{OMP_WAIT_POLICY} How waiting threads are handled
+\item \indexompshowdef{OMP_WAIT_POLICY} How waiting threads are
+  handled; \ac{ICV} \indexompshowdef{wait-policy-var}. Values:
+  \n{ACTIVE} for keeping threads spinning, \n{PASSIVE} for possibly
+  yielding the processor when threads are waiting.
 \end{itemize}
 
 There are 4 \acp{ICV} that behave as if each thread has its own copy of them.

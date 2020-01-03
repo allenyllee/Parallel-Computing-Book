@@ -3,7 +3,7 @@
 ####
 #### This makefile is part of the source of 
 #### "Parallel Computing for Science and Engineering"
-#### by Victor Eijkhout, copyright 2013-9
+#### by Victor Eijkhout, copyright 2013-2020
 ####
 #### This is the makefile for the C examples
 ####     in examples/mpi/c
@@ -17,24 +17,36 @@ info ::
 	@echo "Do: make app (where app=${APPS})"
 
 APPS = init thread env outerr abort \
-    recvblock sendblock ssendblock sendrecv irecv_source irecvnonblock \
+    recvblock sendblock ssendblock irecv_source irecvnonblock \
     probe ibarrier backintime reductpositive \
-    putfence putfencealloc getfence anysource onesidedbuild onsidedmap \
-    cancel exscan \
-    postwaitwin passive \
+    putfence putfencealloc getfence anysource \
+    cancel exscan transpose \
+    postwaitwin passive numa \
     reduce reduceinplace allreduce allreduceinplace gather gatherv allgatherv \
     reducescatter trueextent typematch \
     contiguous vector interleave indexed struct pack subarray \
     commdup_wrong commdup_right commsplit commsplittype intercomm \
-    sharedshared \
+    sharedshared sharedbulk \
     cart graph persist \
     spawn_manager spawn_worker \
-    pingpong centraldiff \
-    blockwrite scatterwrite
+    centraldiff blockwrite
 # not ready for prime time: mvp2d
 
+info ::
+	@echo "make listapps : list all application targets"
+.PHONY: listapps
 listapps :
 	@echo ${APPS}
+	@for a in ${APPS} ; do \
+	    if [ ! -f $${a}.c -a ! -f $${a}.cxx ] ; then \
+	        echo "Warning: no source file for <<$${a}>>" \
+	        ; \
+	    fi \
+	    ; \
+	done
+info ::
+	@echo "make listsources : list of source files"
+.PHONY: listsources
 listsources :
 	@for a in ${APPS} ; do \
 	  if [ -e $$a.c ] ; then echo $$a.c ; fi ; \
@@ -148,7 +160,7 @@ run_struct : struct
 	${MPIRUN} -np ${NP} ./struct
 
 MODE = mpi
-include ../../Make.inc
+include  ../../../makefiles/Make.clean
 include ../../../teaching/course-support/Make.mpi_run
 include ../../../teaching/course-support/Make.mpi_regress
 CATCHER = ../../../teaching/course-support/catchout

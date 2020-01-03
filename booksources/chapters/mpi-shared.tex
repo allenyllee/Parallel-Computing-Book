@@ -72,6 +72,24 @@ would increase latency for some processes. To prevent this, the key
 \indexmpishow{alloc_shared_noncontig} can be set to \n{true} in the
 \indexmpishow{MPI_Info} object.
 
+\cverbatimsnippet[examples/mpi/c/numa.c]{winnoncontig}
+
+Let's now consider a scenario where you spawn two MPI ranks per node,
+and the node has 100G of memory.
+Using the above option to allow for non-contiguous window allocation,
+you hope that the windows of the two ranks are placed 50G apart.
+However, if you print out the addresses, you will find that that they
+are placed considerably closer together. For a small windows that distance
+may be as little as~4K, the size of a \indextermsub{small}{page}.
+
+The reason for this mismatch is that an address that you obtain with
+the ampersand operator in~C is not a
+\indextermsub{physical}{address}, but a
+\indextermsub{virtual}{address}.
+The translation of where pages are placed in physical memory
+is determined by the \indextermbus{page}{table}.
+
+
 \Level 1 {Querying the shared structure}
 
 Even though the window created above is shared, that doesn't mean it's
