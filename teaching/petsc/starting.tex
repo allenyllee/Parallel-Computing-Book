@@ -1,0 +1,217 @@
+% -*- latex
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This TeX file is part of the tutorial
+%%%% `Introduction to the PETSc library'
+%%%% by Victor Eijkhout, eijkhout@tacc.utexas.edu
+%%%%
+%%%% copyright Victor Eijkhout 2012-8
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\sectionframe{Getting started}
+
+\frame[containsverbatim]{\frametitle{Include files}
+C:
+\begin{verbatim}
+#include "petsc.h"
+int main(int argc,char **argv)
+\end{verbatim}
+Fortran:
+\begin{verbatim}
+program basic
+#include <petsc/finclude/petsc.h>
+  use petsc
+  implicit none
+\end{verbatim}
+Python:
+\begin{verbatim}
+from petsc4py import PETSc
+\end{verbatim}
+}
+
+\frame[containsverbatim]{\frametitle{Variable declarations, C}
+\begin{verbatim}
+  KSP            solver;
+  Mat            A;
+  Vec            x,y;
+  PetscInt       n = 20;
+  PetscScalar    v;
+  PetscReal      nrm;
+\end{verbatim}
+Note Scalar vs Real
+}
+\frame[containsverbatim]{\frametitle{Variable declarations, F}
+\begin{verbatim}
+  KSP            :: solver
+  Mat            :: A
+  Vec            :: x,y
+  PetscInt       :: j(3)
+  PetscScalar    :: mv
+  PetscReal      :: nrm
+\end{verbatim}
+Much like in C; uses cpp
+}
+
+\frame[containsverbatim]{\frametitle{Library setup, C}
+\begin{verbatim}
+  ierr = PetscInitialize(&argc,&argv,0,0); CHKERRQ(ierr); 
+// all the petsc work
+  ierr = PetscFinalize(); CHKERRQ(ierr);
+\end{verbatim}
+Can replace \verb+MPI_Init+
+
+General: Every routine has an error return. Catch that value!
+}
+
+\frame[containsverbatim]{\frametitle{Library setup, F}
+\begin{verbatim}
+  call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      CHKERRQ(ier)
+// all the petsc work
+  call PetscFinalize(ierr); CHKERRQ(ier)
+\end{verbatim}
+Error code is now final parameter. This holds for every PETSc routine.
+
+\begin{itemize}
+\item \n{CHKERRA} in main program
+\item \n{CKKERRQ} in subprograms
+\end{itemize}
+}
+
+\begin{exerciseframe}[hello]
+Look up the function \n{PetscPrintf} and print a message\\
+`This program runs on 27 processors'\\
+from process zero.
+
+\begin{itemize}
+\item Start with the template code \n{hello.c}/\n{hello.F}
+\item Compile with \n{make hello}
+\item Part two: use \n{PetscSynchronizedPrintf}
+\end{itemize}
+\end{exerciseframe}
+
+
+\begin{frame}[containsverbatim]{About routine prototypes: C/C++}
+  \label{sec:protos}
+Prototype:
+\begin{verbatim}
+PetscErrorCode VecCreate(MPI_Comm comm,Vec *v);
+\end{verbatim}
+Use:
+\begin{verbatim}
+PetscErrorCode ierr;
+MPI_Comm comm = MPI_COMM_WORLD;
+Vec v;
+ierr = VecCreate( comm,&vec ); CHKERRQ(ierr).
+\end{verbatim}
+(always good idea to catch that error code)
+\end{frame}
+
+\begin{frame}[containsverbatim]{About routine prototypes: Fortran}
+Prototype
+\begin{verbatim}
+MPI_Comm_size(comm, size, ierror)
+Type(MPI_Comm), INTENT(IN) :: comm
+INTEGER, INTENT(OUT) :: size
+INTEGER, OPTIONAL, INTENT(OUT) :: ierror
+\end{verbatim}
+Use:
+\begin{verbatim}
+Type(MPI_Comm) :: comm = MPI_COMM_WORLD
+integer :: size
+CALL MPI_Comm_size( comm, size, ierr )
+\end{verbatim}
+\begin{itemize}
+\item Final parameter always error parameter. Do not forget!
+\item Most \n{MPI_...} types are \n{INTEGER}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[containsverbatim]{About routine prototypes: Python}
+Prototype:
+\begin{verbatim}
+# object method
+MPI.Comm.Send(self, buf, int dest, int tag=0)
+# class method
+MPI.Request.Waitall(type cls, requests, statuses=None)
+\end{verbatim}
+Use:
+\begin{verbatim}
+from mpi4py import MPI
+comm = MPI.COMM_WORLD
+comm.Send(sendbuf,dest=other)
+MPI.Request.Waitall(requests)
+\end{verbatim}
+\end{frame}
+
+
+\begin{details}
+\frame[containsverbatim]{\frametitle{Note to self}
+\begin{verbatim}
+  PetscInitialize
+    (&argc,&args,0,"Usage: prog -o1 v1 -o2 v2\n");
+\end{verbatim}
+run as
+\begin{verbatim}
+  ./program -help
+\end{verbatim}
+This displays the usage note, plus all available petsc options.
+
+Not available in Fortran
+}
+
+\frame[containsverbatim]{\frametitle{Routine start/end, C}
+Debugging support:
+\begin{verbatim}
+PetscFunctionBeginUser;
+// all statements
+PetscFunctionReturn(0);
+\end{verbatim}
+leads to informative tracebacks.
+
+(Only in C, not in Fortran)
+}
+
+\begin{frame}[containsverbatim]{Program parameters, C}
+(I'm leaving out the \n{CHKERRQ(ierr)} in the examples,\\
+but do use this in actual code)
+\begin{verbatim}
+ierr = PetscOptionsGetInt
+    (PETSC_NULL,PETSC_NULL,"-n",&n,&flag); CHKERRQ(ierr);
+ierr = PetscPrintf
+    (comm,"Input parameter: %d\n",n); CHKERRQ(ierr);
+\end{verbatim}
+Read commandline argument, print out from processor zero\\
+flag can be \n{PETSC_NULL}
+\end{frame}
+
+\frame[containsverbatim]{\frametitle{Program parameters, F}
+\begin{verbatim}
+  character*80      msg
+  call PetscOptionsGetInt(
+    PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, &
+      "-n",n,PETSC_NULL_BOOL,ierr)
+  write(msg,10) n
+ 10 format("Input parameter:",i5)
+  call PetscPrintf(PETSC_COMM_WORLD,msg,ierr)
+\end{verbatim}
+\begin{compat}
+\n{PETSC_NULL_BOOL} will be introduced after 3.10.2
+\end{compat}
+Less elegant than \n{PetscPrintf} in C
+
+Note the \n{PETSC_NULL_XXX}: Fortran has strict type checking.
+}
+\end{details}
+
+\endinput
+
+\frame[containsverbatim]{\frametitle{, C}
+\begin{verbatim}
+\end{verbatim}
+}
+\frame[containsverbatim]{\frametitle{, F}
+\begin{verbatim}
+\end{verbatim}
+}

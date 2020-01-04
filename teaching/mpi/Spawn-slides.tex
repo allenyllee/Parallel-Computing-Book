@@ -1,0 +1,79 @@
+% -*- latex -*-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the lecture slides for
+%%%% `Parallel Computing'
+%%%% by Victor Eijkhout, copyright 2012-9
+%%%%
+%%%% Spawn-slides.tex : slides about MPI process management
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[containsverbatim]{Overview}
+  This section discusses processes management; intra communicators.
+
+  Commands learned:
+  \begin{itemize}
+  \item \indexmpishow{MPI_Comm_spawn}, \indexmpishow{MPI_UNIVERSE_SIZE}
+  \item \indexmpishow{MPI_Comm_get_parent}, \indexmpishow{MPI_Comm_remote_size}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[containsverbatim]{Process management}
+  \begin{itemize}
+  \item PVM was a precursor of MPI: could dynamically create new
+    processes.
+  \item It took MPI a while to catch up.
+  \item Use \indexmpishow{MPI_Attr_get} to retrieve
+    \indexmpishow{MPI_UNIVERSE_SIZE} attribute indicating space for
+    creating more processes outside \indexmpishow{MPI_COMM_WORLD}.
+  \item New processes have their own \indexmpishow{MPI_COMM_WORLD}.
+  \item Communication between the two communicators: `inter
+    communicator'\\ (the old type is `intra communicator')
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[containsverbatim]{Space for processes}
+  Probably a machine dependent component.\\
+  Intel MPI at TACC:
+\begin{verbatim}
+MY_MPIRUN_OPTIONS="-usize 8" ibrun -np 4 spawn_manager
+\end{verbatim}
+Discover size of the universe:
+\begin{lstlisting}
+MPI_Attr_get(MPI_COMM_WORLD, MPI_UNIVERSE_SIZE,
+  (void*)&universe_sizep, &flag);
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[containsverbatim]{Manager program}
+\begin{lstlisting}
+MPI_Attr_get(MPI_COMM_WORLD, MPI_UNIVERSE_SIZE,
+       (void*)&universe_sizep, &flag);
+MPI_Comm everyone; /* intercommunicator */
+int nworkers = universe_size-world_size;
+MPI_Comm_spawn(worker_program, /* executable */
+    MPI_ARGV_NULL, nworkers,
+    MPI_INFO_NULL, 0, MPI_COMM_WORLD, &everyone,
+    errorcodes);
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[containsverbatim]\frametitle{Worker program}
+\begin{lstlisting}
+MPI_Comm_size(MPI_COMM_WORLD,&nworkers);
+MPI_Comm parent;
+MPI_Comm_get_parent(&parent);
+MPI_Comm_remote_size(parent, &remotesize);
+\end{lstlisting}
+\end{frame}
+
+\endinput
+
+\begin{frame}[containsverbatim]\frametitle{}
+\begin{lstlisting}
+\end{lstlisting}
+\end{frame}
+

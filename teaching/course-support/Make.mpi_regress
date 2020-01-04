@@ -2,7 +2,7 @@
 ################################################################
 ####
 #### This makefile is part of `Parallel Programming in MPI and OpenMP'
-#### by Victor Eijkhout, copyright 2013-9
+#### by Victor Eijkhout, copyright 2013-2020
 #### eijkhout@tacc.utexas.edu
 ####
 #### Make include file for course programs
@@ -249,11 +249,12 @@ only_zero_out :
 #   done \
 
 .PHONY: run_blockwrite run_blockseek run_viewwrite
-REGRESSIONRUNS += run_blockwrite run_blockseek run_viewwrite
+REGRESSIONRUNS += run_blockwrite run_blockadvance run_blockseek run_viewwrite
 run_blockwrite ::  blockwrite
+run_blockadvance :: blockadvance
 run_blockseek :: blockseek
 run_viewwrite :: viewwrite
-run_blockwrite run_blockseek run_viewwrite ::
+run_blockwrite run_blockadvance run_blockseek run_viewwrite ::
 	@export atgram=$@ && export program=$${atgram##run_} \
 	&& make --no-print-directory run_start PROGRAM=$${program} NP=${NP} \
 	 && cat $${program}.out* > $${program}.out \

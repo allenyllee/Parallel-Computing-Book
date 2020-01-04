@@ -1,0 +1,127 @@
+% -*- latex -*-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This TeX file is part of the tutorial
+%%%% `Introduction to the PETSc library'
+%%%% by Victor Eijkhout, eijkhout@tacc.utexas.edu
+%%%%
+%%%% copyright Victor Eijkhout 2012-9
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[11pt]{beamer}
+
+\beamertemplatenavigationsymbolsempty
+\usepackage{beamerthemeTACC}
+\parskip=.5\baselineskip plus .5\baselineskip
+\event{STC 335/394}
+\def\hpcsemester{Fall 2019}
+\def\hpcteachers{Victor Eijkhout}
+
+\input slidemacs
+\input listingmacs
+\input coursemacs
+\usepackage{graphicx,multicol,amsmath}
+
+%%%%
+%%%% In/exclude this that and the other
+%%%%
+% \usepackage{comment} already in coursemacs
+\excludecomment{longversion}
+\excludecomment{higher}
+% not for edit
+\excludecomment{details}
+\includecomment{shortversion}
+\begin{longversion}
+\excludecomment{shortversion}
+\includecomment{details}
+\end{longversion}
+%
+
+\includecomment{compat} %% VLE what?!
+
+\def\n{\bgroup\catcode`\_=12 \catcode`\&=12 \catcode`\$=12 
+    \catcode`\<=12 \catcode`\>=12 \catcode`\~=12
+    \tt \let\next=}
+\def\inv{^{-1}}
+
+%%%%
+%%%% Layout stuff
+%%%%
+\usepackage{enumitem}
+\setlist{nosep,label=$\bullet$}
+\parskip=12pt plus 2pt
+
+%%%%
+%%%% And here we go....
+%%%%
+\begin{document}
+\title{Introduction to the PETSc library}
+\author{Victor Eijkhout\\
+\tt\normalsize eijkhout@tacc.utexas.edu}
+\date{}
+\frame{\titlepage}
+
+%% \frame{ \frametitle{Outline}
+%% \small
+%% \tableofcontents
+%% }
+
+\sectionframe{Introduction}
+\input introduction
+
+\input parallel
+
+\sectionframe{Practical matters}
+\begin{frame}[containsverbatim]{Running at TACC}
+  Get the course files:
+\begin{verbatim}
+cp ~train00/petsc-course.tgz .
+tar fxz petsc-course.tgz
+cd petsc_course_dir
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[containsverbatim]{Running at TACC}
+  First:
+\begin{verbatim}
+module load petsc/3.12-debug
+# later: module load petsc/3.12
+\end{verbatim}
+  Compute node for 2 hours, on 2 nodes with 12 cores total:
+\begin{verbatim}
+idev -t 2:0:0 -N 2 -n 12
+\end{verbatim}
+If you do this during an official TACC training,
+there will probably be a reservation in place.
+\end{frame}
+
+\begin{frame}[containsverbatim]{How to make exercises}
+  \begin{itemize}
+  \item Directory: \n{exercises-3.10-c} or \n{f} or (maybe) \n{p}
+  \item Type \n{make exercisename} to compile it
+  \item Python: setup once per session
+\begin{verbatim}
+module load python
+\end{verbatim}
+    No compilation needed. Run:\\ \n{ibrun python yourprogram}
+  \end{itemize}
+\end{frame}
+
+\input starting
+%\input spmd
+\input vector
+\input matrix
+\input iterative
+\input grid
+\input is
+
+\begin{longversion}
+  \input nonlinear
+  \input higher
+\end{longversion}
+
+\input profiling
+
+\end{document}
+

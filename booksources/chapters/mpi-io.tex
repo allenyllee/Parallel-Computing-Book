@@ -168,11 +168,30 @@ which counts bytes.
 Instead of giving the position in the file explicitly, you can also
 use a \indexmpishow{MPI_File_seek} call to position the file pointer,
 and write with \indexmpishow{MPI_File_write} at the pointer location.
+The write call itself also 
+\emph{advances the file pointer}\index{file!pointer!advance by write}
+so separate calls for writing contiguous elements 
+need no seek calls with \indexmpishow{MPI_SEEK_CUR}.
 
 \begin{exercise}
-  \label{ex:blockwriteseek}
+  \label{ex:blockadvance}
   Rewrite the code of exercise~\ref{ex:blockwrite} to
-  use a seek call and a write call relative to the file pointer.
+  use a loop where each iteration
+  writes only one item to file.
+  Note that no explicit advance of the file pointer is needed.
+\end{exercise}
+
+\begin{exercise}
+  \label{ex:blockseek}
+  Construct a file with the consecutive integers $0,\ldots,WP$ where
+  $W$~some integer, and $P$~the number of processes. Each process~$p$
+  writes the numbers $p,p+W,p+2W,\ldots$. Use a loop where each iteration
+  \begin{enumerate}
+  \item writes a single number with \lstinline{MPI_File_write}, and
+  \item advanced the file pointer with \indexmpishow{MPI_File_seek}
+    with a \lstinline{whence} parameter of
+    \indexmpishow{MPI_SEEK_CUR}.
+  \end{enumerate}
 \end{exercise}
 
 \Level 1 {File views}

@@ -1,0 +1,51 @@
+\documentclass[11pt]{artikel3}
+
+\usepackage[pdftex]{hyperref}
+\usepackage{pslatex}
+
+\begin{document}
+\title{Guide to the MPI labs}
+\author{}\date{}
+\maketitle
+
+\begin{enumerate}
+\item Log in to the designated machine: stampede2:
+\begin{verbatim}
+ssh -X -l yourname stampede2.tacc.utexas.edu
+\end{verbatim}
+\item Copy the course material to your directory:
+\begin{verbatim}
+cp ~train00/mpi_foundations2019.tgz .
+\end{verbatim}
+and unpack:
+\begin{verbatim}
+tar fxz mpi_foundations2019.tgz
+\end{verbatim}
+\item Go into the course directory:
+\begin{verbatim}
+cd mpi_course_dir
+\end{verbatim}
+You will find there the slides of the course, the textbook the course
+is based on, and exercise directories for the languages~C, C++,
+Fortran, Fortran2008, and Python. Pick your favourite.
+\item Start an interactive session, ideally on 2 nodes, for the
+  duration of this course:
+\begin{verbatim}
+idev -N 2 -n 20 -t 3:0:0
+\end{verbatim}
+(That is: two nodes with 20 processes total, for 3 hours.)\\
+For people attending in person there will be reserved nodes. You will
+get a question if you want to use them.
+\item The exercises will be named in the course. For instance, there
+  will be a `hello' exercise. The setup for this exercise will be in
+  the file \texttt{hello.c/cxx/F90/py}. To compile the exercise, do
+\begin{verbatim}
+make hello
+\end{verbatim}
+This will give you a program that you can run in parallel with \texttt{ibrun}:
+\begin{verbatim}
+ibrun hello
+\end{verbatim}
+\end{enumerate}
+
+\end{document}

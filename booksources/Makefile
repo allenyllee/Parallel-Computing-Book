@@ -4,7 +4,7 @@
 ####
 #### This is the makefile for the book
 #### `Parallel Programming in MPI and OpenMP'
-#### by Victor Eijkhout, copyright 2012-8
+#### by Victor Eijkhout, copyright 2012-2020
 ####
 ################################################################
 ################################################################
@@ -14,7 +14,7 @@ info ::
 	@echo "to format the book"
 
 onepass :
-	TEXINPUTS=${TEXINPUTS}:graphics:mpireference:snippets:macros:graphics:hwloc \
+	TEXINPUTS=.:graphics//:mpireference:snippets:macros:graphics:hwloc:../teaching//:${TEXINPUTS} \
 	    pdflatex EijkhoutParComp
 pdf :
 	make onepass

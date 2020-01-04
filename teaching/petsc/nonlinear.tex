@@ -1,0 +1,161 @@
+% -*- latex
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This TeX file is part of the tutorial
+%%%% `Introduction to the PETSc library'
+%%%% Victor Eijkhout, eijkhout@tacc.utexas.edu
+%%%% copyright Victor Eijkhout 2012-6
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\sectionframe{\texttt{SNES}: Nonlinear solvers}
+
+\frame{\frametitle{Nonlinear problems}
+
+Basic equation
+\[ f(u) = 0 \]
+where $u$ can be big, for instance nonlinear PDE.
+
+Typical solution method:
+\[ u_{n+1} = u_n- J(u_n)\inv f(u_n) \]
+Newton iteration.
+
+Needed: function and Jacobian.
+}
+
+\frame[containsverbatim]{\frametitle{Basic SNES usage}
+
+User supplies function and Jacobian:
+\begin{verbatim}
+SNES           snes;
+
+SNESCreate(PETSC_COMM_WORLD,&snes)
+SNESSetType(snes,type);
+SNESSetFromOptions(snes);
+SNESDestroy(SNES snes);
+\end{verbatim}
+
+where \n{type}: 
+\begin{itemize}
+\item \n{SNESLS} Newton with line search
+\item \n{SNESTR} Newton with trust region
+\item several specialized ones
+\end{itemize}
+}
+
+\frame[containsverbatim]{\frametitle{SNES specification}
+\begin{verbatim}
+VecCreate(PETSC_COMM_WORLD,&r)
+SNESSetFunction(snes,r,FormFunction,*ctx)
+
+MatCreate(PETSC_COMM_WORLD,&J)
+SNESSetJacobian(snes,J,J,FormJacobian,*ctx)
+
+SNESSolve(snes,/* rhs= */ PETSC_NULL,x)
+SNESGetConvergedReason(snes,&reason)
+SNESGetIterationNumber(snes,&its)
+\end{verbatim}
+}
+
+\frame[containsverbatim]{\frametitle{User functions}
+\begin{verbatim}
+PetscErrorCode FormFunction
+    (SNES snes,Vec x,Vec f,void *ctx)
+{
+// set elements of residual f
+return 0;
+}
+
+PetscErrorCode FormJacobian
+ (SNES snes,Vec x,Mat *jac,Mat *prec,MatStructure *flag,
+  void *ctx)
+{
+// compute the jacobian
+return 0;
+}
+\end{verbatim}
+}
+
+\frame[containsverbatim]{\frametitle{Example: two-variable problem}
+Define a context
+\begin{verbatim}
+typedef struct {
+  Vec xloc,rloc; VecScatter scatter; } AppCtx;
+
+/* User context */
+AppCtx         user;
+
+/* Work vectors in the user context */
+VecCreateSeq(PETSC_COMM_SELF,2,&user.xloc);
+VecDuplicate(user.xloc,&user.rloc);
+
+/* Create the scatter between the global and local x */
+ISCreateStride(MPI_COMM_SELF,2,0,1,&idx);
+VecScatterCreate(x,idx,user.xloc,idx,&user.scatter);
+\end{verbatim}
+}
+
+\frame[containsverbatim]{
+In the user function:
+\begin{verbatim}
+PetscErrorCode FormFunction
+    (SNES snes,Vec x,Vec f,void *ctx)
+{
+  VecScatterBegin(user->scatter,
+    x,user->xloc,INSERT_VALUES,SCATTER_FORWARD); // & End
+  VecGetArray(xloc,&xx);CHKERRQ(ierr);
+  VecSetValue
+    (f,0,/* something with xx[0]) & xx[1] */,
+     INSERT_VALUES);
+  VecRestoreArray(x,&xx);
+  PetscFunctionReturn(0);
+}
+\end{verbatim}
+}
+
+\frame[containsverbatim]{\frametitle{Jacobian calculation through
+    finite differences}
+Jacobian calculation is difficult. It can be approximated through
+finite differences:
+\[ J(u)v \approx \frac{f(u+hv)-f(u)}{h} \]
+\begin{verbatim}
+MatCreateSNESMF(snes,&J);
+SNESSetJacobian
+ (snes,J,J,MatMFFDComputeJacobian,(void*)&user);
+\end{verbatim}
+}
+
+\frame[containsverbatim]{\frametitle{Further possibilities}
+
+\n{SNESSetTolerances(SNES snes,double atol,double rtol,double stol,
+int its,int fcts);}
+
+convergence test and monitoring, specific options for line search and
+trust region
+
+adaptive converngence: \n{-snes_ksp_ew_conv} (Eisenstat Walker)
+}
+
+
+\frame[containsverbatim]{\frametitle{Solve customization}
+\begin{verbatim}
+SNESSetType(snes,SNESTR); /* newton with trust region */
+SNESGetKSP(snes,&ksp)
+KSPGetPC(ksp,&pc)
+PCSetType(pc,PCNONE)
+KSPSetTolerances(ksp,1.e-4,PETSC_DEFAULT,PETSC_DEFAULT,20)
+\end{verbatim}
+}
+
+\endinput
+
+PetscMPIInt    size,rank;
+PetscScalar    pfive = .5,*xx;
+PetscTruth     flg;
+AppCtx         user;         /* user-defined work context */
+IS             isglobal,islocal;
+
+/* ------------------------------------------------------------------- */
+#undef __FUNCT__
+#define __FUNCT__ "FormJacobian2"
+

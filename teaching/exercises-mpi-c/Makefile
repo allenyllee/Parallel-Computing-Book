@@ -23,7 +23,7 @@ EXERCISES = hello \
     bucketblock bucketpipenonblock \
     stridesend cubegather procgrid procgridnonblock \
     randomput countdown onesidedbuild \
-    blockwrite blockseek viewwrite scatterwrite \
+    blockwrite blockadvance blockseek viewwrite scatterwrite \
     jordan rightsend rightput rightgraph \
     ibarrierupdate shareddata
 info ::

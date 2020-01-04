@@ -1,0 +1,114 @@
+% -*- latex -*-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the lecture slides for
+%%%% `Parallel Computing'
+%%%% by Victor Eijkhout, copyright 2012-9
+%%%%
+%%%% Sharedmemory-slides.tex : slides about mpi shared memory
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[containsverbatim]\frametitle{Why shared memory?}
+  \begin{itemize}
+  \item Shared memory: two processes can access each other's
+    memory through \n{double*} (and such) pointers.
+  \item Limitation: only window memory.
+  \item Non-use case: remote update. This has all the problems of
+    traditional shared memory.
+  \item Good use case: every process needs access to large read-only
+    dataset\\ Example: ray tracing.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[containsverbatim]\frametitle{Shared memory treatment in MPI}
+  \begin{itemize}
+  \item MPI uses optimizations for shared memory: copy instead of
+    socket call
+  \item One-sided offers `fake shared memory': yes, can access another
+    process' data, but only through function calls.
+  \item MPI-3 shared memory gives you a pointer to another process'
+    memory, \emph{if that process is on shared memory}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[containsverbatim]\frametitle{Shared memory per cluster node}
+\includegraphics[scale=.15]{ranger-node}
+\begin{itemize}
+\item Cluster node has shared memory
+\item Memory is attached to specific socket
+\item beware \ac{NUMA} effects
+\end{itemize}
+\end{frame}
+
+\begin{frame}[containsverbatim]\frametitle{Shared memory interface}
+  Here is the high level overview; details next.
+  \begin{itemize}
+  \item Use \indexmpishow{MPI_Comm_split_type} to find processes on the same
+    shared memory
+  \item Use \indexmpishow{MPI_Win_allocate_shared} to create a window between
+    processes on the same shared memory
+  \item Use \indexmpishow{MPI_Win_shared_query} to get pointer to another
+    process' window data.
+  \item You can now use \n{memcpy} instead of \indexmpishow{MPI_Put}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[containsverbatim]\frametitle{Discover shared memory}
+  \begin{itemize}
+  \item
+    \indexmpishow{MPI_Comm_split_type} splits into communicators of same type.
+  \item Only supported type: \indexmpishow{MPI_COMM_TYPE_SHARED} splitting by
+    shared memory.
+  \end{itemize}
+
+  \cverbatimsnippet{commsplittype}
+\end{frame}
+
+\begin{frame}[containsverbatim]\frametitle{Allocate shared window}
+Use \indexmpishow{MPI_Win_allocate_shared} to create a window that can
+be shared;
+\begin{itemize}
+\item Has to be on a communicator on shared memory
+\item memory will be allocated contiguously\\
+  convenient for address arithmetic,\\ not for NUMA:
+  set \indextermtt{alloc_shared_noncontig} true in
+  \indextermtt{MPI_Info} object
+\end{itemize}
+\cverbatimsnippet[code/mpi/shared.c]{mpisharedwindow}
+\end{frame}
+
+\begin{frame}[containsverbatim]\frametitle{Get pointer to other windows}
+  Use \indexmpishow{MPI_Win_shared_query}:
+  \cverbatimsnippet[code/mpi/shared.c]{mpisharedpointer}
+\end{frame}
+
+\begin{frame}[containsverbatim]\frametitle{Boring example: heat equation}
+  \cverbatimsnippet{allocateshared3pt}
+\end{frame}
+
+\begin{frame}[containsverbatim]\frametitle{Exciting example: bulk data}
+  \begin{itemize}
+  \item Application: ray tracing:\\
+    large read-only data strcture describing the scene
+  \item traditional MPI would duplicate:\\
+    excessive memory demands
+  \item Better: allocate shared data on process~0 of the shared communicator
+  \item every else points to this object.
+  \end{itemize}
+\end{frame}
+
+\begin{exerciseframe}[shareddata]
+  \input ex:shareddata  
+\end{exerciseframe}
+
+\endinput
+
+\begin{frame}[containsverbatim]\frametitle{}
+\begin{lstlisting}
+  
+\end{lstlisting}
+\end{frame}
+

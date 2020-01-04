@@ -1,0 +1,265 @@
+% -*- latex -*-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%
+%%%% This text file is part of the lecture slides for
+%%%% `Parallel Computing'
+%%%% by Victor Eijkhout, copyright 2012-9
+%%%%
+%%%% Onesided-slides.tex : slides about one-sided communication
+%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[containsverbatim]{Overview}
+  This section concernes one-sided operations, which allows `shared
+  memory' type programming.
+
+  Commands learned:
+  \begin{itemize}
+  \item \indexmpishow{MPI_Put}, \indexmpishow{MPI_Get}, \indexmpishow{MPI_Accumulate}
+  \item Window commands: \indexmpishow{MPI_Win_create}, \indexmpishow{MPI_Win_allocate}
+  \item Active target synchronization \indexmpishow{MPI_Win_fence}
+  \item \indexmpishow{MPI_Win_post}\n{/wait/start/complete}
+  \item Passive target synchronization \indexmpishow{MPI_Win_lock}~/
+    \indexmpishow{MPI_Win_lock}
+  \item Atomic operations: \indexmpishow{MPI_Fetch_and_op}
+  \end{itemize}
+\end{frame}
+
+\sectionframe{Basic mechanisms}
+
+\begin{frame}[containsverbatim]\frametitle{Motivation}
+  With two-sided messaging, you can not just put data
+  on a different processor: the other has to expect it and receive it.
+
+  \begin{itemize}
+  \item Sparse matrix: it is easy to know what you are receiving, not what you need to send.
+    Usually solved with complicated preprocessing step.
+  \item Neuron simulation: spiking neuron propagates information to neighbours.
+    Uncertain when this happens.
+  \item Other irregular data structures: distributed hash tables.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[containsverbatim]\frametitle{One-sided concepts}
+  \includegraphics[scale=.1]{one-sided-getput}
+  \begin{itemize}
+  \item A process has a \indexterm{window} that other processes can access.
+  \item \indexterm{origin}: process doing a one-sided call\\
+    \indexterm{target}: process being accessed.
+  \item One-sided calls: \indexmpishow{MPI_Put}, \indexmpishow{MPI_Get}, \indexmpishow{MPI_Accumulate}.
+  \item Various synchronization mechanisms.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[containsverbatim]\frametitle{Window creation}
+  \includegraphics[scale=.08]{one-sided-window}
+\lstset{language=C}
+\begin{lstlisting}
+MPI_Win_create (void *base, MPI_Aint size, 
+  int disp_unit, MPI_Info info, MPI_Comm comm, MPI_Win *win)
+\end{lstlisting}
+\begin{itemize}
+\item \n{size}: in bytes
+\item \n{disp_unit}: \n{sizeof(type)}
+\item Also: \indexmpishow{MPI_Win_allocate}, can use dedicated fast memory.
+\end{itemize}
+Also call \indexmpishow{MPI_Win_free} when done. This is important!
+\end{frame}
+
+\begin{frame}[containsverbatim]{Window allocation}
+  Instead of passing buffer, let MPI allocate:
+\lstset{language=C}
+\begin{lstlisting}
+int MPI_Win_allocate
+   (MPI_Aint size, int disp_unit, MPI_Info info,
+    MPI_Comm comm, void *baseptr, MPI_Win *win)
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[containsverbatim]\frametitle{Active target synchronization}
+  All processes call \indexmpishow{MPI_Win_fence}. Epoch is between fences:
+\lstset{language=C}
+\begin{lstlisting}
+MPI_Win_fence(MPI_MODE_NOPRECEDE, win);
+if (procno==producer)
+  MPI_Put( /* operands */, win);
+MPI_Win_fence(MPI_MODE_NOSUCCEED, win);
+\end{lstlisting}
+Second fence indicates that one-sided communication is concluded:\\
+target knows that data has been put.
+\end{frame}
+
+\frame[containsverbatim]{\footnotesize \mpiRoutineRef{MPI_Put}}
+
+\begin{frame}{Location in the window}
+  Location to write:
+  \[ \mathtt{window\_base} + \mathtt{target\_disp}\times \mathtt{disp\_unit}. \]
+  \includegraphics[scale=.4]{windowdisp}
+\end{frame}
+
+\begin{exerciseframe}[rightput]
+  \input ex:rightput
+\end{exerciseframe}
+
+\begin{exerciseframe}[randomput]
+  \input ex:randomput
+\end{exerciseframe}
+
+\begin{optexerciseframe}[randomput]
+  Replace \indexmpishow{MPI_Win_create} by \indexmpishow{MPI_Win_allocate}.
+\end{optexerciseframe}
+
+\begin{frame}[containsverbatim]\frametitle{Remaining simple routines:
+    Get, Accumulate}
+  \begin{itemize}
+  \item \indexmpishow{MPI_Get} is converse of \indexmpishow{MPI_Put}. Like Recv, but no
+    status argument.
+  \item \indexmpishow{MPI_Accumulate} is a Put plus a reduction on the result:
+    multiple accumulate calls in one epoch well-defined.\\
+    Can use any predefined \indexmpishow{MPI_Op} (not user-defined) or \indexmpishow{MPI_REPLACE}.
+  \end{itemize}
+\end{frame}
+
+
+
+\frame[containsverbatim]{\footnotesize \mpiRoutineRef{MPI_Get}}
+\frame[containsverbatim]{\footnotesize \mpiRoutineRef{MPI_Accumulate}}
+
+\sectionframe{Ordering and synchronization}
+
+\begin{frame}[containsverbatim]\frametitle{Fence synchronization}
+  Already mentioned active target synchronization:\\
+  the target indicates the start/end of an epoch.
+
+  Simplest mechanism: \indexmpishow{MPI_Win_fence}, collective.  
+
+  After the closing fence, buffers have been sent~/ windows have been updated.
+\end{frame}
+
+\begin{frame}[containsverbatim]{Ordering of operations}
+  Ordering is often undefined:
+  \begin{itemize}
+  \item No ordering of Get and Put/Accumulate operations
+  \item No ordering of multiple Puts. Use Accumulate.
+  \end{itemize}
+  The following operations are well-defined inside one epoch:
+  \begin{itemize}
+  \item Instead of multiple Put operations, use Accumulate with
+    \indexmpishow{MPI_REPLACE}.
+  \item \indexmpishow{MPI_Get_accumulate} with
+    \indexmpishow{MPI_NO_OP} is safe.
+  \item Multiple Accumulate operations from one origin are ordered by
+    default.
+  \end{itemize} 
+\end{frame}
+
+\begin{optexerciseframe}[countdown]
+  \input ex:countdown
+\end{optexerciseframe}
+
+\begin{frame}[containsverbatim]\frametitle{A second active synchronization}
+  Use \indexmpishow{MPI_Win_post}, \indexmpishow{MPI_Win_wait},
+  \indexmpishow{MPI_Win_start}, \indexmpishow{MPI_Win_complete} calls
+
+  \includegraphics[scale=.1]{postwait}
+
+  More fine-grained than fences.
+\end{frame}
+
+\sectionframe{Passive target synchronization}
+
+\begin{frame}[containsverbatim]\frametitle{Passive target synchronization}
+  Lock a window on the target:
+\lstset{language=C}
+\begin{lstlisting}
+MPI_Win_lock
+   (int locktype, int rank, int assert, MPI_Win win)
+MPI_Win_unlock
+   (int rank, MPI_Win win)
+\end{lstlisting}
+  with types:  \indexmpishow{MPI_LOCK_SHARED} \indexmpishow{MPI_LOCK_EXCLUSIVE}
+\end{frame}
+
+\begin{exerciseframe}[onesidedbuild]
+  \input ex:onesidedbuild
+\end{exerciseframe}
+
+\sectionframe{Atomic operations}
+
+\begin{frame}{Emulating shared memory with one-sided communication}
+  \begin{itemize}
+  \item One process stores a table of work descriptors, and a pointer to
+    the firt unprocessed descriptor;
+  \item Each process reads the pointer, reads the corresponding
+    descriptor, and increments the pointer; and
+  \item A process that has read a descriptor then executes the
+    corresponding task.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[containsverbatim]\frametitle{Race condition example}
+  \scriptsize
+  \begin{tabbing}
+    process 1: \texttt{I=I+2}\\
+    process 2: \texttt{I=I+3}
+  \end{tabbing}
+  \begin{tabular}{|rr|rr|rr|}
+    \hline
+    \multicolumn{2}{|c|}{scenario 1.}& \multicolumn{2}{|c|}{scenario 2.}&
+    \multicolumn{2}{|c|}{scenario 3.}\\ \hline
+    \multicolumn{6}{|c|}{$\n{I}=0$}\\ \hline
+    read $\n{I}=0$&read $\n{I}=0$&
+    read $\n{I}=0$&read $\n{I}=0$&
+    read $\n{I}=0$& \\
+    local $\n{I}=2$&local $\n{I}=3$& 
+    local $\n{I}=2$&local $\n{I}=3$&
+    local $\n{I}=2$& \\
+    write $\n{I}=2$& & &write $\n{I}=3$&write $\n{I}=2$& \\
+    &write $\n{I}=3$&write $\n{I}=2$& & &read $\n{I}=2$\\
+    &&&&&local $\n{I}=5$\\
+    &&&&&write $\n{I}=5$\\
+    \hline
+    \multicolumn{2}{|c|}{$\n{I}=3$}& \multicolumn{2}{|c|}{$\n{I}=2$}&
+    \multicolumn{2}{|c|}{$\n{I}=5$}\\ \hline
+  \end{tabular}
+
+  (In MPI, the read/write would be \indexmpishow{MPI_Get}~/ \indexmpishow{MPI_Put} calls)
+\end{frame}
+
+\begin{frame}[containsverbatim]\frametitle{Atomic operations}
+  Race condition problem in read/write:
+  \begin{itemize}
+  \item Result of \indexmpishow{MPI_Get} is only known after the fence.
+  \item Another process may have done an \indexmpishow{MPI_Put} in that epoch.
+  \item No guarantee on the correctness of the result of the \indexmpishow{MPI_Get}
+  \end{itemize}
+
+  Atomic `get-and-set-with-no-one-coming-in-between':
+\lstset{language=C}
+\begin{lstlisting}
+int MPI_Fetch_and_op
+   (const void *origin_addr, void *result_addr,
+    MPI_Datatype datatype,
+    int target_rank, MPI_Aint target_disp,
+    MPI_Op op, MPI_Win win)
+\end{lstlisting}
+\end{frame}
+
+\frame[containsverbatim]{
+  \cverbatimsnippet{fetchop}
+}
+
+\begin{optexerciseframe}
+  \input ex:countdownop
+\end{optexerciseframe}
+
+\endinput
+
+\begin{frame}[containsverbatim]\frametitle{}
+\begin{lstlisting}
+  
+\end{lstlisting}
+\end{frame}
+
