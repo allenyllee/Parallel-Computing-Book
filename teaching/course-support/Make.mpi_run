@@ -1,0 +1,35 @@
+# -*- makefile -*-
+################################################################
+####
+#### This makefile is part of `Parallel Programming in MPI and OpenMP'
+#### by Victor Eijkhout, copyright 2013-9
+#### eijkhout@tacc.utexas.edu
+####
+#### Make include file for MPI programs
+####
+#### https://apple.stackexchange.com/questions/3271/how-to-get-rid-of-firewall-accept-incoming-connections-dialog
+####
+#### sudo codesign --force --deep --sign - /path/to/application.app
+#### (possibly without the "--deep"
+####
+################################################################
+
+ifeq "${TACC_SYSTEM}" "macbookair"
+  MPIRUN=mpirun
+else
+  MPIRUN=ibrun
+endif
+NP = 4
+CATCHER = ../course-support/catchout
+.PHONY: run catchrun
+info ::
+	@echo "make run/catchrun"
+	@echo "    ( catchrun gives orderly output)"
+	@echo "    [ PROGRAM=... NP=... ]"
+run :
+	${ENVOPTIONS} ${MPIRUN} -np ${NP} ${PYTHON} ${PROGRAM}${PROGRAM_EXTENSION} ${OPTIONS}
+catchrun :
+	@${MPIRUN} -np ${NP} ${CATCHER} ${PROGRAM} >/dev/null 2>&1
+	@for i in `seq 0 $$(( NP-1 ))` ; do \
+	  echo "$$i:" ; \
+	  cat ${PROGRAM}.out$$i ; done

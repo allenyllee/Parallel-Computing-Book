@@ -1,0 +1,43 @@
+# -*- makefile -*-
+################################################################
+################################################################
+####
+#### This makefile is part of the source of 
+#### "Parallel Computing for Science and Engineering"
+#### by Victor Eijkhout, copyright 2013-9
+####
+#### Make include file for clean rules
+####
+################################################################
+################################################################
+
+.PHONY: clean local_clean total_clean recursive_clean
+info ::
+	@echo "make clean       : cleanup but leave executables & slog2"
+	@echo "make total_clean : cleanup including executables & slog2"
+clean :: local_clean
+local_clean ::
+	@/bin/rm -rf *.o *~ *.gch a.out *.dSYM MULTI__* events.* *.mod \
+	    *.{a,aux,blg,idx,ilg,ind,log,mod,o,out,svn,toc} \
+	    idev[0-9]*.o[0-9]* ddt.o[0-9]* jobtest.o* tautrace_* \
+	    ${APPS}
+recursive_clean  :
+	@for d in * ; do \
+	  if [ -d $${d} ] ; then \
+	    echo "${INDENT}cleaning in $${d}" \
+	    && ( \
+	       cd $${d} \
+	       && if [ -f Makefile ] ; then \
+	             make --no-print-directory INDENT="${INDENT}  " \
+	                 clean ; \
+	          else \
+	             make --no-print-directory INDENT="${INDENT}  " \
+	                 -f ../Makefile \
+	                 local_clean \
+                     ; \
+	          fi \
+	       ) ; \
+	  fi ; \
+	done
+total_clean :: clean 
+	@/bin/rm -rf *.slog2 *.ppm

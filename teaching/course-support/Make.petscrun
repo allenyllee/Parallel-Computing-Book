@@ -1,0 +1,40 @@
+# -*- makefile -*-
+
+info ::
+	@echo "make listexercises, compileexercises"
+.PHONY: listexercises compileexercises
+listexercises sources :
+	@echo ${SOURCES}
+compileexercises :
+	@for e in ${SOURCES} ; do \
+	    echo ; echo "Compile $$e" ; echo ; make $$e ; \
+	done
+
+info ::
+	@echo "make run [PROGRAM=prog (default=${PROGRAM})]"
+	@echo "         [NP=nn (default=${NP})]"
+	@echo "         [OPTIONS=programoptions]"
+	@if [ "${LANGUAGE}" = "python" ] ; then \
+	   echo "         [PYTHON=... (default=${PYTHON})]" ; \
+	 fi
+.PHONY: run
+ifdef TACC_SYSTEM
+  RUNNER = ibrun -np
+else
+  RUNNER = mpirun -np
+endif
+NP = 4
+PROGRAM = hello
+OPTIONS =
+run : ${PROGRAM}
+	@if [ "${LANGUAGE}" = "python" ] ; then \
+	  ${RUNNER} ${NP} ${PROGRAM}.py ${OPTIONS} ; \
+	else \
+	  ${RUNNER} ${NP} ${PROGRAM} ${OPTIONS} ; \
+	fi
+
+info ::
+	@echo "make clean"
+.PHONY: clean
+clean ::
+	@/bin/rm -f *.o *~ ${SOURCES} matdata*
