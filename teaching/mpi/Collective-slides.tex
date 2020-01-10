@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the lecture slides for
 %%%% `Parallel Computing'
-%%%% by Victor Eijkhout, copyright 2012-8
+%%%% by Victor Eijkhout, copyright 2012-2020
 %%%%
 %%%% Collective-slides.tex : slides about collective operations
 %%%%
@@ -355,9 +355,7 @@ buffer; instead, it is the amount of data to/from each process.
   symmetrically parallel. 
 \end{frame}
 
-\begin{frame}[containsverbatim]\frametitle{Allgather}
-  \mpiRoutineRef{MPI_Allgather}
-\end{frame}
+\protoslide{MPI_Allgather}
 
 \begin{frame}{Allgather pictured}
   \includegraphics[scale=.4]{allgather}
@@ -376,7 +374,7 @@ Scan or `parallel prefix': reduction with partial results
 \end{frame}
 
 \begin{longcourse}
-  \frame[containsverbatim]{ \small \mpiRoutineRef{MPI_Scan} }
+  \protoslide{MPI_Scan}
 \end{longcourse}
 
 \begin{frame}[containsverbatim]\frametitle{V-type collectives}
@@ -386,7 +384,7 @@ Scan or `parallel prefix': reduction with partial results
   \end{itemize}
 \end{frame}
 
-\frame[containsverbatim]{ \mpiRoutineRef{MPI_Gatherv} }
+\protoslide{MPI_Gatherv}
 
 \begin{frame}[containsverbatim]\frametitle{All-to-all}
   \begin{itemize}
@@ -502,9 +500,7 @@ int MPI_Op_free(MPI_Op *op)
   \end{itemize}
 \end{frame}
 
-\begin{frame}[containsverbatim]\frametitle{}
-\mpiRoutineRef{MPI_Op_create}
-\end{frame}
+\protoslide{MPI_Op_create}
 
 \begin{frame}[containsverbatim]\frametitle{Example}
   Smallest nonzero:

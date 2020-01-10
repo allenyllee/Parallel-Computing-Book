@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-9
+%%%% by Victor Eijkhout, copyright 2012-2020
 %%%%
 %%%% petsc-tools.tex : guess.
 %%%%
@@ -67,12 +67,20 @@ where for ordinary screen output you would use \n{stdout} for the file.
 \end{pythonnote}
 
 \Level 0 {Commandline options}
+\label{sec:petsc-options}
 
 PETSc has as large number of commandline options, most of which we
 will discuss later. For now we only mention \n{-log_summary} which
 will print out profile of the time taken in various routines.
 For these options to be parsed, it is necessary to pass \n{argc,argv}
 to the \indexpetscshow{PetscInitialize} call.
+
+\begin{pythonnote}
+  In Python, do not specify the initial hyphen of an option name.
+\begin{verbatim}
+hasn = PETSc.Options().hasName("n")
+\end{verbatim}
+\end{pythonnote}
 
 \Level 0 {Memory management}
 

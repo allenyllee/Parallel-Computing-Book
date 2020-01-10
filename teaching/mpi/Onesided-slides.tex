@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the lecture slides for
 %%%% `Parallel Computing'
-%%%% by Victor Eijkhout, copyright 2012-9
+%%%% by Victor Eijkhout, copyright 2012-2020
 %%%%
 %%%% Onesided-slides.tex : slides about one-sided communication
 %%%%
@@ -91,7 +91,7 @@ Second fence indicates that one-sided communication is concluded:\\
 target knows that data has been put.
 \end{frame}
 
-\frame[containsverbatim]{\footnotesize \mpiRoutineRef{MPI_Put}}
+\protoslide{MPI_Put}
 
 \begin{frame}{Location in the window}
   Location to write:
@@ -124,8 +124,8 @@ target knows that data has been put.
 
 
 
-\frame[containsverbatim]{\footnotesize \mpiRoutineRef{MPI_Get}}
-\frame[containsverbatim]{\footnotesize \mpiRoutineRef{MPI_Accumulate}}
+\protoslide{MPI_Get}
+\protoslide{MPI_Accumulate}
 
 \sectionframe{Ordering and synchronization}
 

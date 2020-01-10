@@ -38,9 +38,19 @@ int main(int argc, char *argv[])
   MPI_Comm_get_parent(&parent);
   ASSERTm(parent!=MPI_COMM_NULL,"No parent!");
 
+  /*
+   * To investigate process placement, get host name
+   */
+  {
+    int namelen = MPI_MAX_PROCESSOR_NAME;
+    char procname[namelen];
+    MPI_Get_processor_name(procname,&namelen);
+    printf("[%d] worker process runs on <<%s>>\n",workerno,procname);
+  }
+
   MPI_Comm_remote_size(parent, &remotesize);
   if (workerno==0) {
-    printf("Deducing %d workers and %d parents\n",nworkers,remotesize);
+    printf("Worker deduces %d workers and %d parents\n",nworkers,remotesize);
   }
   //  ASSERTm(nworkers==size-1,"nworkers mismatch. probably misunderstanding");
 

@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the lecture slides for
 %%%% `Parallel Computing'
-%%%% by Victor Eijkhout, copyright 2012-9
+%%%% by Victor Eijkhout, copyright 2012-2020
 %%%%
 %%%% SPMD-slides.tex : slides about MPI's SPMD mode
 %%%%
@@ -321,8 +321,8 @@ MPI.Request.Waitall(requests)
 \end{lstlisting}
 \end{frame}
 
-\frame[containsverbatim]{\mpiRoutineRef{MPI_Comm_size}}
-\frame[containsverbatim]{\mpiRoutineRef{MPI_Comm_rank}}
+\protoslide{MPI_Comm_size}
+\protoslide{MPI_Comm_rank}
 
 \begin{exerciseframe}[commrank]
   \input ex:hello3
@@ -336,7 +336,7 @@ MPI.Request.Waitall(requests)
   \input ex:procname
 \end{optexerciseframe}
 
-\frame[containsverbatim]{\mpiRoutineRef{MPI_Get_processor_name}}
+\protoslide{MPI_Get_processor_name}
 
 \begin{frame}{In a picture}
   Four processes on two nodes (\n{idev -N 2 -n 4})

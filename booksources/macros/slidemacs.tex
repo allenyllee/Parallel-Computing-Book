@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Introduction to High-Performance Scientific Computing'
-%%%% by Victor Eijkhout, copyright 2012-8
+%%%% by Victor Eijkhout, copyright 2012-2020
 %%%%
 %%%% This book is distributed under a Creative Commons Attribution 3.0
 %%%% Unported (CC BY 3.0) license and made possible by funding from
@@ -90,6 +90,9 @@
   \fi
 }
 
+%%%%
+%%%% snippets
+%%%%
 \def\verbatimsnippet#1{\verbatiminput{#1}} % snippets/
 \newcommand{\cverbatimsnippet}[2][XX]{
   % record this file as bracketed name
@@ -111,11 +114,16 @@
 }
 \newenvironment{clisting}
     {\lstset{style=reviewcode,language=C}\begin{lstlisting}}
-    {\end{lstlisting}}
+    {\end{lstlisting}
+}
 \newenvironment{cxxlisting}
     {\lstset{style=reviewcode,language=C++}\begin{lstlisting}}
-    {\end{lstlisting}}
+    {\end{lstlisting}
+}
 
+%%%%
+%%%% Environments
+%%%%
 \newenvironment{question}{\begin{quotation}\textbf{Question.\ }}{\end{quotation}}
 \newenvironment{fortrannote}
   {\begin{quotation}\noindent\textsl{Fortran note.\kern1em}\ignorespaces}

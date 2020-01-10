@@ -3,7 +3,7 @@
  ****
  **** This program file is part of the book and course
  **** "Parallel Computing"
- **** by Victor Eijkhout, copyright 2013-6
+ **** by Victor Eijkhout, copyright 2013-2020
  ****
  **** spawn_manager.c : worker code for spawn example
  ****
@@ -28,12 +28,18 @@ int main(int argc, char *argv[])
   MPI_Comm_size(comm,&nprocs); 
   MPI_Comm_set_errhandler(comm,MPI_ERRORS_RETURN); 
 
-  // Initialize the random number generator
-  srand((int)(procno*(double)RAND_MAX/nprocs));
+  /*
+   * To investigate process placement, get host name
+   */
+  {
+    int namelen = MPI_MAX_PROCESSOR_NAME;
+    char procname[namelen];
+    MPI_Get_processor_name(procname,&namelen);
+    printf("[%d] manager process runs on <<%s>>\n",procno,procname);
+  }
 
   int world_size,manager_rank, universe_size, *universe_sizep, flag;
 
-  // this is in globalinit  MPI_Init(&argc, &argv);
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
   MPI_Comm_rank(MPI_COMM_WORLD, &manager_rank);
 

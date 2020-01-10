@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the lecture slides for
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-8
+%%%% by Victor Eijkhout, copyright 2012-2020
 %%%%
 %%%% coursemacs.tex : macros for the lecture slides
 %%%%
@@ -70,8 +70,14 @@
 
 \def\underscore{_}
 \def\mpiRoutineRef#1{\RoutineRefStyle\verbatiminput{#1}}
-
 \def\RoutineRefStyle{\scriptsize}
+\def\protoslide#{\bgroup \catcode`\_=12
+  \afterassignment\protoslideinclude \def\protoname}
+\def\protoslideinclude{\begin{frame}[containsverbatim]\frametitle{\texttt\protoname}
+    \small
+    \expandafter\mpiRoutineRef\expandafter{\protoname}
+    \end{frame}\egroup
+}
 
 \newcounter{excounter}
 

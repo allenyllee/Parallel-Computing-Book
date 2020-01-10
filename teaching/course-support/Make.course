@@ -51,13 +51,15 @@ info ::
 	@echo "make upload"
 .PHONY: upload
 upload ::
-	@echo "uploading ${FILE} course" ; \
-	  if [ ${FILE} != ${COURSE} ] ; then \
-	    cp ${FILE}.pdf ${COURSE}_course.pdf ; \
-	  fi ; \
-	  if [ -d "${HOME}/Dropbox" ] ; then \
-	    cp ${FILE}.pdf ${HOME}/Dropbox/Scicomp/Courses/ ; \
-	  fi
+	@echo "Uploading ${FILE} course" \
+	  && if [ ${FILE} != ${COURSE}_course ] ; then \
+	       cp ${FILE}.pdf ${COURSE}_course.pdf ; \
+	     fi \
+	  && if [ -d "${HOME}/Dropbox" ] ; then \
+	       echo ".. copying to dropbox" \
+	       && cp ${FILE}.pdf ${HOME}/Dropbox/Scicomp/Courses/ \
+	          ; \
+	     fi
 
 ##
 ## Cleaning

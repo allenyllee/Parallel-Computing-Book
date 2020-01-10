@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-9
+%%%% by Victor Eijkhout, copyright 2012-2020
 %%%%
 %%%% mpi.tex : leftover MPI topics
 %%%%
@@ -31,7 +31,7 @@ The maximum length of a key is given by the parameter
 You can delete a key with \indexmpiref{MPI_Info_delete}.
 
 There is a straightforward duplication of info objects:
-\indexmpiref{MPI_Info_dup}
+\indexmpiref{MPI_Info_dup}.
 
 You can also query the number of keys in an info object with
 \indexmpiref{MPI_Info_get_nkeys},
@@ -266,7 +266,7 @@ See also section~\ref{sec:mpi_attr}.
 \Level 1 {Processor name}
 
 You can query the \indexterm{hostname} of a processor with
-\indexmpiref{MPI_Get_processor_name}.
+\indexmpishow{MPI_Get_processor_name}.
 This name need not be unique between different processor ranks.
 
 You have to pass in the character storage:

@@ -31,21 +31,60 @@ customizations to tailor the solver to your specific problem.
 
 \Level 1 {Math background}
 
-The main solution method for linear systems
+Many scientific applications boil down to the solution of a system of
+linear equations at some point:
 \[ ?_x\colon Ax=b \]
-in PETSc is through
-so-called iterative solution methods. Instead of directly computing
+The elementary textbook way of solving this is through an
+\indexterm{LU factorization},
+also known as \indexterm{Gaussian elimination}:
+\[ LU\leftarrow A,\qquad Lz=b,\qquad Ux=z. \]
+While PETSc has support for this, its basic design is geared towards
+so-called iterative solution methods.
+Instead of directly computing
 the solution to the system, they compute a sequence of approximations
-that, with luck, converges to the true solution. Ideally, the sequence
-would stop when the distance to the true solution is small enough, but
-computing this is clearly not feasible. Instead, in each step the
-\indextermdef{residual}
-\[ r_i=Ax_i-b \]
-is computed, and the iteration is stopped if this is small enough.
+that, with luck, converges to the true solution:
+
+\begin{tabbing}
+  while \=not converged\\
+  \> $x_{i+1}\leftarrow f(x_i)$
+\end{tabbing}
+
+The interesting thing about iterative methods is that the iterative step
+only involved the \indexterm{matrix-vector product}:
+
+\begin{tabbing}
+  while \=not converged\\
+  \> $r_i = Ax_i-b$\\
+  \> $x_{i+1}\leftarrow f(r_i)$
+\end{tabbing}
+
+This \indexterm{residual} is also crucial in determining whether to stop the iteration:
+since we (clearly) can not measure the distance to the true solution, we use
+the size of the residual as a proxy measurement.
+
+The remaining point to know is that iterative methods feature a \indexterm{preconditioner}.
+Mathematically this is equivalent to transforming the linear system to
+\[ M\inv Ax=M\inv b \]
+so conceivably we could iterate on the preconditioned matrix and right-hand side.
+However, in practice we apply the preconditioner in each iteration:
+
+\begin{tabbing}
+  while \=not converged\\
+  \> $r_i = Ax_i-b$\\
+  \> $z_i = M\inv r_i$\\
+  \> $x_{i+1}\leftarrow f(z_i)$
+\end{tabbing}
+
+In this schematic presentation we have left the nature of the $f()$ update
+function unspecified. Here, many possibilities exist; the primary
+choice here if of the iterative method type, such as `conjugate gradients',
+`generalized minimum residual', or `bi-conjugate gradients stabilized'.
 
 \Level 1 {Solver objects}
 
-Create a KSP object:
+First we create a KSP object, which contains the coefficient matrix,
+and various parameters such as the desired accuracy,
+as well as method specific parameters:
 %
 \petscRoutineRef{KSPCreate}
 
@@ -55,6 +94,7 @@ KSP solver;
 KSPSetOperators(solver,A,A);
 KSPSolve(solver,rhs,sol);
 \end{lstlisting}
+using various default settings.
 
 Since neither
 solution nor solution speed is guaranteed, an iterative solver is

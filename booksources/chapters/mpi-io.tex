@@ -82,12 +82,12 @@ These modes can be added or bitwise-or'ed.
 
 You can delete a file with \indexmpishow{MPI_File_delete}.
 
-Buffers can be flushed with \indexmpishow{MPI_File_sync}.
+Buffers can be flushed with \indexmpishow{MPI_File_sync}, which is a collective call.
 
 \Level 0 {File reading and writing}
 
 The basic file operations, in between the open and close calls, are
-the POSIX-like calls
+the POSIX-like, non-collective, calls
 \begin{itemize}
 \item \indexmpiref{MPI_File_seek}. The \lstinline{whence} parameter can be:
   \begin{itemize}
@@ -97,8 +97,18 @@ the POSIX-like calls
   \item \indexmpidef{MPI_SEEK_END} The pointer is set to the end of
     the file plus offset.
   \end{itemize}
-\item \indexmpishow{MPI_File_read}
-\item \indexmpishow{MPI_File_write}
+\item \indexmpiref{MPI_File_write}. This routine writes the specified data
+  in the locations specified with the current file view. 
+  The number of items written is returned in the \indexmpishow{MPI_Status} argument;
+  all other fields of this argument are undefined.
+  It can not be used if the file
+  was opened with \indexmpishow{MPI_MODE_SEQUENTIAL}.
+\item \indexmpiref{MPI_File_read} This routine attempts to read the specified data
+  from the locations specified in the current file view. 
+  The number of items read is returned in the \indexmpishow{MPI_Status} argument;
+  all other fields of this argument are undefined.
+  It can not be used if the file
+  was opened with \indexmpishow{MPI_MODE_SEQUENTIAL}.
 \end{itemize}
 
 For thread safety it is good to combine seek and read/write operations:
@@ -204,15 +214,26 @@ you can also access non-contiguous areas in the file. For this you use
 %
 This call is collective, even if not all processes access the file.
 \begin{itemize}
-\item The \n{etype} describes the data type of the file, it needs to
-  be the same on all processes.
-\item The \n{filetype} describes how this process sees the file, so it
-  can differ between processes.
 \item The \n{disp} displacement parameters is measured in bytes. It
   can differ between processes. On sequential files such as tapes or
   network streams it does not make sense to set a displacement; for
   those the \indexmpidef{MPI_DISPLACEMENT_CURRENT} value can be
   used.
+\item The \n{etype} describes the data type of the file, it needs to
+  be the same on all processes.
+\item The \n{filetype} describes how this process sees the file, so it
+  can differ between processes.
+\item The \n{datarep} string can have the following values:
+  \begin{itemize}
+  \item \n{native}: data on disk is represented in exactly the same
+    format as in memory;
+  \item \n{internal}: data on disk is represented in whatever internal
+    format is used by the MPI implementation;
+  \item \n{external}: data on disk is represented using XDR portable
+    data formats.
+  \end{itemize}
+\item The \n{info} parameter is an \indexmpishow{MPI_Info} object,
+  \indexmpishow{MPI_INFO_NULL}.
 \end{itemize}
 
 \begin{figure}[ht]

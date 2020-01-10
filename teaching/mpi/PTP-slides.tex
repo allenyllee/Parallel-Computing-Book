@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the lecture slides for
 %%%% `Parallel Computing'
-%%%% by Victor Eijkhout, copyright 2012-9
+%%%% by Victor Eijkhout, copyright 2012-2020
 %%%%
 %%%% PTP-slides.tex: slides about point-to-point communication
 %%%%
@@ -72,8 +72,8 @@ if ( /* I am process A */ ) {
 \end{lstlisting}
 \end{frame}
 
-\frame[containsverbatim,label=send]{\mpiRoutineRef{MPI_Send}}
-\frame[containsverbatim,label=recv]{\mpiRoutineRef{MPI_Recv}}
+\protoslide{MPI_Send}
+\protoslide{MPI_Recv}
 
 \begin{frame}[containsverbatim]\frametitle{Status object}
   \begin{itemize}
@@ -89,9 +89,7 @@ if ( /* I am process A */ ) {
   \input ex:pingpong
 \end{exerciseframe}
 
-\begin{frame}[containsverbatim]
-  \mpiRoutineRef{MPI_Wtime}
-\end{frame}
+\protoslide{MPI_Wtime}
 
 \sectionframe{Distributed data}
 
@@ -329,8 +327,13 @@ Take another look: \[ y_i=x_{i-1}+x_i+x_{i+1}\colon i=1,\ldots,N-1 \]
 \begin{frame}[containsverbatim]\frametitle{Sendrecv}
   Instead of separate send and receive: use
 
-  \mpiRoutineRef{MPI_Sendrecv}
+  \lstinline{MPI_Sendrecv}
+
+  Combined calling sequence of send and receive;\\
+  execute such that no deadlock or sequentialization.
 \end{frame}
+
+\protoslide{MPI_Sendrecv}
 
 \begin{frame}{SPMD picture}
   What does process $p$ do?
@@ -358,7 +361,13 @@ sendrecv(from=predecessor,to=successor);
 the receive buffer.)
 \end{frame}
 
-\begin{frame}[containsverbatim]\frametitle{a point of programming style}
+\begin{frame}[containsverbatim]\frametitle{A point of programming style}
+  The previous slide had:
+  \begin{itemize}
+  \item a conditional for computing the sender and receiver rank;
+  \item a single Sendrecv call.
+  \end{itemize}
+  Also possible:
 \lstset{language=C}
 \begin{lstlisting}
 if ( /* i am first */ )
@@ -368,6 +377,7 @@ else if ( /* i am last */
 else 
   Sendrecv( to=right, from=left );
 \end{lstlisting}
+But:\\
 Code duplication is error-prone, also\\
 chance of deadlock by missing a case
 \end{frame}

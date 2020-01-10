@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-9
+%%%% by Victor Eijkhout, copyright 2012-2020
 %%%%
 %%%% petsc-objects.tex : petsc tangible-ish objects
 %%%%
@@ -286,7 +286,7 @@ PETSc matrices come in a number of types, sparse and dense being the
 most important ones. Another possibility is to have the matrix in
 operation form, where only the action $y\leftarrow Ax$ is defined.
 
-\Level  1 {Matrix creation}
+\Level 1 {Matrix creation}
 
 Creating a matrix also starts by specifying a communicator on which
 the matrix lives collectively:
@@ -461,9 +461,9 @@ MatGetArray
 MatRestoreArray
 \end{lstlisting}
 
-\Level 0 {Matrix operations}
+\Level 1 {Matrix operations}
 
-\Level 1 {Matrix-vector operations}
+\Level 2 {Matrix-vector operations}
 
 In the typical application of PETSc, solving large sparse linear
 systems of equations with iterative methods, matrix-vector operations
@@ -474,16 +474,16 @@ are most important. Foremost there is the matrix-vector product
 matrix product; for that use \indexpetscshow{MatMultHermitianTranspose}.)
 
 For the \ac{BLAS} \indextermtt{gemv} semantics
-$y\leftarrow \alpha Ax + beta y$,
-\indexpetscdef{MatMultAdd} computes
-$y\leftarrow z\leftarrow Ax +y $.
+$y\leftarrow \alpha Ax + \beta y$,
+\indexpetscref{MatMultAdd} computes
+$z\leftarrow Ax +y $.
 
-\Level 1 {Matrix-matrix operations}
+\Level 2 {Matrix-matrix operations}
 
 There is a number of matrix-matrix routines such as
 \indexpetscdef{MatMatMult}.
 
-\Level 0 {Submatrices}
+\Level 1 {Submatrices}
 \label{sec:petsc-submat}
 
 Given a parallel matrix, there are two routines for extracting submatrices:
@@ -494,7 +494,7 @@ Given a parallel matrix, there are two routines for extracting submatrices:
   submatrix on each rank.
 \end{itemize}
 
-\Level 0 {Shell matrices}
+\Level 1 {Shell matrices}
 
 In many scientific applications, a matrix stands for some operator,
 and we are not intrinsically interested in the matrix elements, but
@@ -547,14 +547,4 @@ argument, even though it's really a pointer variable.
 \Level 0 {Index sets and Vector Scatters}
 \label{sec:petsc-is}
 \label{sec:petsc-vs}
-
-\Level 0 {Options and profiling}
-\label{sec:petsc-options}
-
-\begin{pythonnote}
-  In Python, do not specify the initial hyphen of an option name.
-\begin{verbatim}
-hasn = PETSc.Options().hasName("n")
-\end{verbatim}
-\end{pythonnote}
 

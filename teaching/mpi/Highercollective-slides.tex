@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the lecture slides for
 %%%% `Parallel Computing'
-%%%% by Victor Eijkhout, copyright 2018-9
+%%%% by Victor Eijkhout, copyright 2018-2020
 %%%%
 %%%% Highercollective-slides.tex : more slides about collective operations
 %%%%
@@ -47,9 +47,7 @@ MPI_Isomething( <usual arguments>, MPI_Request *req);
   \end{itemize}
 \end{frame}
 
-\begin{frame}[containsverbatim]\frametitle{}
-\mpiRoutineRef{MPI_Ibcast}
-\end{frame}
+\protoslide{MPI_Ibcast}
 
 \begin{frame}[containsverbatim]\frametitle{Overlapping collectives}
   Independent collective and local operations:
@@ -98,9 +96,7 @@ MPI_Wait(request);
   \end{itemize}
 \end{frame}
 
-\begin{frame}
-  \mpiRoutineRef{MPI_Ibarrier}
-\end{frame}
+\protoslide{MPI_Ibarrier}
 
 \begin{frame}[containsverbatim]\frametitle{}
 \cverbatimsnippet{ibarrierpoll}
