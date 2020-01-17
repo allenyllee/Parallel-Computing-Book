@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-9
+%%%% by Victor Eijkhout, copyright 2012-2020
 %%%%
 %%%% mpi-running.tex : about running MPI programs
 %%%%
@@ -71,19 +71,13 @@ against a different MPI.
 \Level 1 {Initialization / finalization}
 \label{sec:mpi-init}
 
-To get a useful MPI program you need at least the calls
-\indexmpishow{MPI_Init} and \indexmpishow{MPI_Finalize} surrounding
-your code.
+Every (useful) MPI program has to start with \indextermbus{MPI}{initialization}
+through a call to
+\indexmpiref{MPI_Init}, and have
+\indexmpiref{MPI_Finalize} to finish the use of MPI in your program.
+The init call is different between the various languages.
 
-\begin{pythonnote}
-  There are no initialize and finalize calls: the \n{import} statement
-  performs the initialization.
-\end{pythonnote}
-
-Every MPI program has to start with \indextermbus{MPI}{initialization}
-through \indexmpiref{MPI_Init},
-%
-passing \indextermtt{argc} and \indextermtt{argv}, the arguments
+In~C, you can pass \indextermtt{argc} and \indextermtt{argv}, the arguments
 of a C language main program:
 \lstset{style=reviewcode,language=C}
  \begin{lstlisting}
@@ -94,15 +88,17 @@ int main(int argc,char **argv) {
 \end{lstlisting}
 (It is allowed to pass \n{NULL} for these arguments.)
 
-Note that the \indexmpishow{MPI_Init} call is one of the few that differs between C and Fortran:
-the C~routine takes the commandline arguments, which Fortran lacks.
+Fortran (before 2008) lacks this commandline argument handling,
+so \indexmpishow{MPI_Init} lacks those arguments.
+
+\begin{pythonnote}
+  There are no initialize and finalize calls: the \n{import} statement
+  performs the initialization.
+\end{pythonnote}
 
 This may look a bit like declaring `this is the parallel part of a
 program', but that's not true: again, the whole code is executed
 multiple times in parallel.
-
-The regular way to conclude an MPI program is through 
-\indexmpiref{MPI_Finalize}.
 
 \begin{exercise}
   \label{ex:hello2}
@@ -110,6 +106,12 @@ The regular way to conclude an MPI program is through
   to your code. Put three different print statements in your code: one before the init,
   one between init and finalize, and one after the finalize. Again explain the output.
 \end{exercise}
+
+\begin{remark}
+  For hybrid MPI-plus-threads programming there is also a call
+  \indexmpishow{MPI_Init_thread}. For that, see
+  section~\ref{sec:init-thread}.
+\end{remark}
 
 \Level 2 {Aborting an MPI run}
 

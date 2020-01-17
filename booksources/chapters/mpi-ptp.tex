@@ -248,15 +248,22 @@ If the amount of data received is not known a~priori, the
 can be found by 
 \indexmpiref{MPI_Get_count}:
 
-\begin{lstlisting}
-MPI_Get_count(&recv_status,MPI_INT,&recv_count);
-\end{lstlisting}
 This may be necessary since the \n{count} argument to \indexmpishow{MPI_Recv} is 
 the buffer size, not an indication of the actually expected number of
 data items.
 
-Note that unlike the above this is not directly a member of the status
-structure.
+Remarks.
+\begin{itemize}
+\item Unlike the above, this is not directly a member of the status
+  structure.
+\item The `count' returned is the number of elements of the specified
+  datatype. If this is a derived type
+  (section~\ref{sec:derived-types}) this is not the same as the number
+  of elementary datatype elements. For that, use
+  \indexmpiref{MPI_Get_elements} or
+  \indexmpixref{MPI_Get_elements_x}{MPI_Get_elements}
+  which returns the number of basic elements.
+\end{itemize}
 
 \Level 2 {Example: receiving from any source}
 

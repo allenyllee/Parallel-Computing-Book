@@ -1,9 +1,5 @@
 // mpit.c
 MPI_Init_thread(&argc,&argv,MPI_THREAD_SINGLE,&tlevel);
 MPI_T_init_thread(MPI_THREAD_SINGLE,&tlevel);
-
-MPI_Comm_size(MPI_COMM_WORLD,&nprocs);
-MPI_Comm_rank(MPI_COMM_WORLD,&procid);
-
 int npvar;
 MPI_T_pvar_get_num(&npvar);

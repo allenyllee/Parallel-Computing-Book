@@ -3,7 +3,7 @@
    %%%%
    %%%% This program file is part of the book and course
    %%%% "Parallel Computing"
-   %%%% by Victor Eijkhout, copyright 2013-7
+   %%%% by Victor Eijkhout, copyright 2013-2020
    %%%%
    %%%% onesidedbuild.c : put random data everywhere
    %%%%
@@ -41,12 +41,12 @@ int main(int argc,char **argv) {
   MPI_Win_create
     ( mytable,winsize,eltsize,MPI_INFO_NULL,comm,&the_window );
 
-#define NUMBERS 2
-  int targets[NUMBERS];
-  for (int inum=0; inum<NUMBERS; inum++) {
+#define HOWMANYWRITES 2
+  int targets[HOWMANYWRITES];
+  for (int iwrite=0; iwrite<HOWMANYWRITES; iwrite++) {
     float randomfraction = (rand() / (double)RAND_MAX);
     int other_process = (int) ( nprocs * randomfraction );
-    targets[inum] = other_process;
+    targets[iwrite] = other_process;
 
     /*
      * - Lock the window on the other process
@@ -84,13 +84,13 @@ int main(int argc,char **argv) {
   MPI_Win_free(&the_window);
 
   printf("[%d] wrote its id to:",procno);
-  for (int inum=0; inum<NUMBERS; inum++)
-    printf(" %d",targets[inum]);
+  for (int iwrite=0; iwrite<HOWMANYWRITES; iwrite++)
+    printf(" %d",targets[iwrite]);
   printf("\n");
   int nrecv = mytable[0];
   printf("[%d] received %d:",procno,nrecv);
-  for (int inum=1; inum<=nrecv; inum++)
-    printf(" %d",mytable[inum]);
+  for (int iwrite=1; iwrite<=nrecv; iwrite++)
+    printf(" %d",mytable[iwrite]);
   printf("\n");
 
   MPI_Barrier(comm);

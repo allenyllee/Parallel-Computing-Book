@@ -103,26 +103,26 @@ the POSIX-like, non-collective, calls
   all other fields of this argument are undefined.
   It can not be used if the file
   was opened with \indexmpishow{MPI_MODE_SEQUENTIAL}.
+\item If all processes execute a write at the same logical time, it is
+  better to use the collective call
+  \indexmpixref{MPI_File_write_all}{MPI_File_write}.
 \item \indexmpiref{MPI_File_read} This routine attempts to read the specified data
   from the locations specified in the current file view. 
   The number of items read is returned in the \indexmpishow{MPI_Status} argument;
   all other fields of this argument are undefined.
   It can not be used if the file
   was opened with \indexmpishow{MPI_MODE_SEQUENTIAL}.
+\item If all processes execute a read at the same logical time, it is
+  better to use the collective call
+  \indexmpixref{MPI_File_read_all}{MPI_File_read}.
 \end{itemize}
 
 For thread safety it is good to combine seek and read/write operations:
 \begin{itemize}
 \item \indexmpishow{MPI_File_read_at}: combine read and seek.
-\item \indexmpishow{MPI_File_write_at}: combine write and seek
-\end{itemize}
-
-Collective calls, performed by all processes in the communicator:
-\begin{itemize}
-\item \indexmpishow{MPI_File_read_all}
-\item \indexmpishow{MPI_File_write_all}
-\item \indexmpishow{MPI_File_read_at_all}
-\item \indexmpishow{MPI_File_write_at_all}
+  The collective variant is \indexmpishow{MPI_File_read_at_all}.
+\item \indexmpishow{MPI_File_write_at}: combine write and seekl
+  The collective variant is \indexmpishow{MPI_File_write_at_all}.
 \end{itemize}
 
 Using a shared file pointer the operations are:

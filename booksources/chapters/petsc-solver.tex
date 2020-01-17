@@ -44,19 +44,23 @@ Instead of directly computing
 the solution to the system, they compute a sequence of approximations
 that, with luck, converges to the true solution:
 
-\begin{tabbing}
-  while \=not converged\\
-  \> $x_{i+1}\leftarrow f(x_i)$
-\end{tabbing}
+\begin{quote}
+  \begin{tabbing}
+    while \=not converged\\
+    \> $x_{i+1}\leftarrow f(x_i)$
+  \end{tabbing}
+\end{quote}
 
 The interesting thing about iterative methods is that the iterative step
 only involved the \indexterm{matrix-vector product}:
 
-\begin{tabbing}
-  while \=not converged\\
-  \> $r_i = Ax_i-b$\\
-  \> $x_{i+1}\leftarrow f(r_i)$
-\end{tabbing}
+\begin{quote}
+  \begin{tabbing}
+    while \=not converged\\
+    \> $r_i = Ax_i-b$\\
+    \> $x_{i+1}\leftarrow f(r_i)$
+  \end{tabbing}
+\end{quote}
 
 This \indexterm{residual} is also crucial in determining whether to stop the iteration:
 since we (clearly) can not measure the distance to the true solution, we use
@@ -68,12 +72,14 @@ Mathematically this is equivalent to transforming the linear system to
 so conceivably we could iterate on the preconditioned matrix and right-hand side.
 However, in practice we apply the preconditioner in each iteration:
 
-\begin{tabbing}
-  while \=not converged\\
-  \> $r_i = Ax_i-b$\\
-  \> $z_i = M\inv r_i$\\
-  \> $x_{i+1}\leftarrow f(z_i)$
-\end{tabbing}
+\begin{quote}
+  \begin{tabbing}
+    while \=not converged\\
+    \> $r_i = Ax_i-b$\\
+    \> $z_i = M\inv r_i$\\
+    \> $x_{i+1}\leftarrow f(z_i)$
+  \end{tabbing}
+\end{quote}
 
 In this schematic presentation we have left the nature of the $f()$ update
 function unspecified. Here, many possibilities exist; the primary
@@ -86,15 +92,17 @@ First we create a KSP object, which contains the coefficient matrix,
 and various parameters such as the desired accuracy,
 as well as method specific parameters:
 %
-\petscRoutineRef{KSPCreate}
+\indexpetscref{KSPCreate}.
 
 After this, the basic scenario is:
 \begin{lstlisting}
+Vec rhs,sol;
 KSP solver;
 KSPSetOperators(solver,A,A);
 KSPSolve(solver,rhs,sol);
 \end{lstlisting}
-using various default settings.
+using various default settings. The vectors and the matrix have to be
+conformly partitioned.
 
 Since neither
 solution nor solution speed is guaranteed, an iterative solver is
@@ -110,7 +118,7 @@ subject to some tolerances:
   process may still be making.
 \end{itemize}
 
-\petscRoutineRef{KSPSetTolerances}
+These tolerances are set with \indexpetscref{KSPSetTolerances}.
 
 \Level 1 {Why did my solver stop? Did it work?}
 \label{sec:ksp-reason}
@@ -139,6 +147,11 @@ commandline option.)
 In case of successful convergence, you can use \indexpetscshow{KSPGetIterationNumber}
 to report how many
 iterations were taken.
+
+The following snippet analyzes the status of a \lstinline{KSP} object
+that has stopped iterating:
+%
+\cverbatimsnippet[code/petsc/c]{petscreasonreport}
 
 \Level 1 {Choice of iterator}
 

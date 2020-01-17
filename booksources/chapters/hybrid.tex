@@ -121,6 +121,7 @@ space is needed for the on-node communication.
 
 \Level 0 {Hybrid MPI-plus-threads execution}
 \label{sec:init-thread}
+\label{sec:ref:mpi-thread}
 
 In hybrid execution, the main question is whether all threads
 are allowed to make MPI calls. To determine this,
@@ -129,25 +130,30 @@ replace the \n{MPI_Init} call by
 \indexmpiref{MPI_Init_thread}
 %
 Here the \n{required} and \n{provided} parameters can take the following
-values:
-\begin{description}
-\item[\texttt{MPI\_THREAD\_SINGLE}]\indexmpi{MPI_THREAD_SINGLE} Only a
-  single thread will execute.
-\item[\texttt{MPI\_THREAD\_FUNNELLED}]\indexmpi{MPI_THREAD_FUNNELLED}
-  The program may use multiple threads, but only the main thread will
-  make MPI calls.
+(monotonically increasing) values:
+\begin{itemize}
+\item \indexmpidef{MPI_THREAD_SINGLE}: Only a single thread will
+  execute.
+\item\indexmpidef{MPI_THREAD_FUNNELLED}: The program may use multiple
+  threads, but only the main thread will make MPI calls.
 
-  The main thread is usually the one selected by the
-  \indexpragma{master} directive, but technically it is the only that
-  executes \indexmpishow{MPI_Init_thread}. If you call this routine in
-  a parallel region, the main thread may be different from the master.
-\item[\texttt{MPI\_THREAD\_SERIAL}]\indexmpi{MPI_THREAD_SERIAL} The
-  program may use multiple threads, all of which may make MPI calls,
-  but there will never be simultaneous MPI calls in more than one
-  thread.
-\item[\texttt{MPI\_THREAD\_MULTIPLE}]\indexmpi{MPI_THREAD_MULTIPLE}
-  Multiple threads may issue MPI calls, without restrictions.
-\end{description}
+    The main thread is usually the one selected by the
+    \indexpragma{master} directive, but technically it is the only that
+    executes \indexmpishow{MPI_Init_thread}. If you call this routine in
+    a parallel region, the main thread may be different from the master.
+\item\indexmpidef{MPI_THREAD_SERIAL}: The program may use multiple
+  threads, all of which may make MPI calls, but there will never be
+  simultaneous MPI calls in more than one thread.
+\item\indexmpidef{MPI_THREAD_MULTIPLE}: Multiple threads may issue MPI
+  calls, without restrictions.
+\end{itemize}
+
+After the initialization call, you can query the support level
+with \indexmpiref{MPI_Query_thread}.
+
+In case more than one thread performs communication, 
+\indexmpiref{MPI_Is_thread_main}
+can determine whether a thread is the main thread.
 
 \begin{tacc}
   The \indexterm{mvapich} implementation of MPI
@@ -158,6 +164,13 @@ export MV2_ENABLE_AFFINITY=0
   Another solution is to run your code like this:
 \begin{verbatim}
   ibrun tacc_affinity <my_multithreaded_mpi_executable
+\end{verbatim}
+  Intel MPI uses an environment variable to turn on thread support:
+\begin{verbatim}
+I_MPI_LIBRARY_KIND=<value>
+where
+release : multi-threaded with global lock
+release_mt : multi-threaded with per-object lock for thread-split  
 \end{verbatim}
 \end{tacc}
 

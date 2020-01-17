@@ -323,6 +323,15 @@
   \afterassignment\mpiIndexAndRef
   \edef\indexedroutine
 }
+\def\indexmpixref#1#2{\def\indexedroutine{#1}\def\displayedroutine{#2}%
+  %\mpiIndexBF -> \RoutineIndexBF{mpi}
+  \edef\tmp{%
+    \noexpand\lstinline+\indexedroutine+ (figure\noexpand~\noexpand\ref{ref:\displayedroutine})%
+    \noexpand\index[mpi]{%
+      \indexedroutine@{\catcode95=12 \noexpand\texttt{\indexedroutine}}|textbf}%
+  }%
+  \tmp
+}  
 \def\mpiIndexAndRef{\mpiIndexBF\RoutineRefDisplay}
 \def\mpiIndexBF{\RoutineIndexBF{mpi}}
 

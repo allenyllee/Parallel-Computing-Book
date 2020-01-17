@@ -315,7 +315,7 @@ Also:
   reports the how-manieth program we are in.
 \end{itemize}
 
-\Level 0 {Performance}
+\Level 0 {Performance, tools, and profiling}
 \label{sec:mpi-performance}
 
 In most of this book we talk about functionality of the MPI
@@ -333,6 +333,8 @@ However, since this is installation-dependent,
 you first need to query how much of the tools interface is provided.
 
 \cverbatimsnippet{mpit_init_q}
+
+\cverbatimsnippet{mpit_list}
 
 \index{MPI!tools interface|)}
 
@@ -602,38 +604,6 @@ Instead you would just synchronize the two processes involved.
   Give pseudo-code for a scheme where you synchronize the two
   processes through the exchange of a blocking zero-size message.
 \end{exercise}
-
-\Level 0 {Multi-threading}
-\label{sec:ref:mpi-thread}
-
-Hybrid MPI/threaded codes need to replace \indexmpishow{MPI_Init}
-by \indexmpiref{MPI_Init_thread}.
-With the \n{required} parameter the user requests a certain level of support,
-and MPI reports the actual capabilities in the \n{provided} parameter.
-
-The following constants are defined:
-\begin{itemize}
-\item \indexmpishow{MPI_THREAD_SINGLE}: each MPI process can only have
-  a single thread.
-\item \indexmpishow{MPI_THREAD_FUNNELED}: an MPI process can be
-  multithreaded, but all MPI calls need to be done from a single
-  thread.
-\item \indexmpishow{MPI_THREAD_SERIALIZED}: a processes can sustain
-  multiple threads that make MPI calls, but these threads can not be
-  simultaneous: they need to be for instance in an OpenMP
-  \indexterm{critical section}.
-\item \indexmpishow{MPI_THREAD_MULTIPLE}: processes can be fully
-  generally multi-threaded.
-\end{itemize}
-These values are monotonically increasing.
-
-After the initialization call, you can query the support level
-with \indexmpiref{MPI_Query_thread}.
-
-
-In case more than one thread performs communication, 
-\indexmpiref{MPI_Is_thread_main}
-can determine whether a thread is the main thread:
 
 \Level 0 {Shell interaction}
 

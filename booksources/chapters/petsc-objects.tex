@@ -114,7 +114,7 @@ corresponding to the current \indexpetscshow{PetscScalar}.
 For MPI calls, \indexpetscdef{MPIU_COMPLEX} is the MPI type
 corresponding to the current \indexpetscshow{PetscComplex}.
 
-\Level 0 {Vectors}
+\Level 0 {Vec: Vectors}
 
 Vectors are objects with a linear index. The elements of a vector are
 floating point numbers or complex numbers (see
@@ -280,7 +280,7 @@ VecRestoreArrayRead(in,&in_array);
 VecRestoreArray(out,&out_array);
 \end{lstlisting}
 
-\Level 0 {Matrices}
+\Level 0 {Mat: Matrices}
 
 PETSc matrices come in a number of types, sparse and dense being the
 most important ones. Another possibility is to have the matrix in
@@ -545,6 +545,37 @@ argument, even though it's really a pointer variable.
 \indexpetscref{DMDACreate2d}
 
 \Level 0 {Index sets and Vector Scatters}
+
+In the \ac{PDE} type of applications that PETSc was originally intended for,
+vector data can only be real or complex: there are no vector of integers.
+On the other hand, integers are used for indexing into vector,
+for instance for gathering boundary elements into a \indexterm{halo region},
+or for doing the \indextermsub{data}{transpose} of an \indexac{FFT} operation.
+
+To support this, PETSc has the following object types:
+\begin{itemize}
+\item An \lstinline{IS} object describes a set of integer indices;
+\item a \lstinline{VecScatter} object describes the correspondence between
+  a group of indices in an input vector and a group of indices in an output vector.
+\end{itemize}
+
+\Level 1 {IS: index sets}
 \label{sec:petsc-is}
+
+An \lstinline{IS} object contains a set of \indexpetscshow{PetscInt} values.
+It can be created with
+\begin{itemize}
+\item \indexpetscdef{ISCreate} for creating an empty set;
+\item \indexpetscdef{ISCreateStride} for a strided set;
+\item \indexpetscdef{ISCreateBlock} for a set of contiguous blocks,
+  placed at an explicitly given list of starting indices.
+\item \indexpetscshow{ISCreateGeneral} for an explicitly given list of indices.
+\end{itemize}
+After this, there are various query and set operations on index sets.
+
+You can read out the indices of a set by \indexpetscdef{ISGetIndices}
+and \indexpetscdef{ISRestoreIndices}.
+
+\Level 1 {VecScatter: all-to-all operations}
 \label{sec:petsc-vs}
 
