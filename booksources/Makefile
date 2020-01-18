@@ -14,7 +14,7 @@ info ::
 	@echo "to format the book"
 
 onepass :
-	TEXINPUTS=.:graphics//:mpireference:snippets:macros:graphics:hwloc:../teaching//:${TEXINPUTS} \
+	TEXINPUTS=.:graphics//:mpireference:snippets:macros:graphics:hwloc:..//:${TEXINPUTS} \
 	    pdflatex EijkhoutParComp
 pdf :
 	make onepass
@@ -28,5 +28,5 @@ info ::
 	@echo "Do: make clean"
 	@echo "to clean up temporary files"
 clean ::
-	@/bin/rm -f *.{aux,blg,idx,ilg,log,out,toc} *~ comment.cut \
+	@/bin/rm -f *.{aux,blg,idx,ilg,ind,log,out,toc} *~ comment.cut \
 	 exercises/*.tex
