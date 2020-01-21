@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-9
+%%%% by Victor Eijkhout, copyright 2012-2020
 %%%%
 %%%% mpi-io.tex : MPI/O
 %%%%
@@ -142,6 +142,32 @@ sending a receiving:
 \item But you can also set a `file view' to describe explicitly what
   elements in the file will be involved.
 \end{itemize}
+
+Just like there are blocking and non-blocking sends, there are also
+non-blocking writes and reads:
+\indexmpiref{MPI_File_iwrite},
+\indexmpidef{MPI_File_iread} 
+operations, that output an \indexmpishow{MPI_Request} object,
+which can then be tested with
+\indexmpishow{MPI_Wait} or \indexmpishow{MPI_Test}.
+
+Having a non-blocking version of
+\indexmpishow{MPI_File_write_all} is tricky because there is no collective version
+of \indexmpishow{MPI_Wait} or \indexmpishow{MPI_Test}.
+Therefore, there are two routines:
+\indexmpishow{MPI_File_write_all_begin}~/
+\indexmpishow{MPI_File_write_all_end}
+(and similarly
+\indexmpishow{MPI_File_read_all_begin}~/
+\indexmpishow{MPI_File_read_all_end})
+where the second routine blocks until the collective write/read
+has been concluded.
+
+\begin{remark}
+  So what is
+  \url{https://www.mpich.org/static/docs/latest/www3/MPI_File_iwrite_all.html}
+  ?
+\end{remark}
 
 File accesses:
 \begin{itemize}

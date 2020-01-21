@@ -4,7 +4,7 @@
  **** `Parallel programming with MPI and OpenMP'
  **** by Victor Eijkhout, eijkhout@tacc.utexas.edu
  ****
- **** copyright Victor Eijkhout 2012-9
+ **** copyright Victor Eijkhout 2012-2020
  ****
  **** sumsquares.cxx
  ****
@@ -69,7 +69,7 @@ int main(int argc,char **argv) {
   if (procno==0) {
     double fglobal = nglobal;
     proctext << "Global sum: " << global_sum
-	     << ", should be "
+	     << " should be "
 	     << (1./3.)*fglobal*fglobal*fglobal + (1./2.)*fglobal*fglobal + fglobal/6.;
     cerr << proctext.str() << "\n";
   }

@@ -215,7 +215,8 @@ run_rightsend :  rightsend
 	        success=0; \
 	      fi ; \
 	    done \
-	&& make --no-print-directory regress_success SUCCESS=$$success PROGRAM=$${program} \
+	&& make --no-print-directory SUCCESS=$${success} PROGRAM=$${program} \
+	        regress_success \
 	&& echo
 
 .PHONY: run_stridesend
@@ -228,9 +229,27 @@ run_stridesend :  stridesend
 	 && if [ $${errors} -gt 0 ] ; then export success=0; else \
 	      export success=$$(( ` cat $${program}.out0 | grep "Finished" | wc -l ` )) ; \
 	      fi \
-	&& make --no-print-directory regress_success SUCCESS=$${success} PROGRAM=$${program}\
+	&& make --no-print-directory SUCCESS=$${success} PROGRAM=$${program} \
+	        regress_success \
 	&& echo
 
+.PHONY: run_sumsquares
+REGRESSIONRUNS += run_sumsquares
+run_sumsquares :  sumsquares
+	@export atgram=$@ && export program=$${atgram##run_} \
+	&& make --no-print-directory run_start PROGRAM=$${program} NP=${NP} \
+	 && export np=${NP} \
+	 && export errors=$$((  `make --no-print-directory only_zero_out NP=np PROGRAM=$${program}` )) \
+	 && if [ $${errors} -gt 0 ] ; then export success=0; else \
+	      export values="` cat $${program}.out0 | awk '{print $$3 " " $$6}' ` " \
+	      && eval export success=`python ../course-support/relative.py $${values}` \
+	      ; \
+	    fi \
+	&& make --no-print-directory SUCCESS=$${success} PROGRAM=$${program} \
+	        regress_success \
+	&& echo
+foo :
+	bar
 only_zero_out :
 	@export error=0 \
 	&& for p in `seq 1 $$(( ${NP}-1 ))` ; do \

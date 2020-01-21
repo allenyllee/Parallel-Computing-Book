@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-9
+%%%% by Victor Eijkhout, copyright 2012-2020
 %%%%
 %%%% petsc-design.tex : a tutorial section
 %%%%
@@ -37,6 +37,15 @@ There are two points to emphasize here:
   so. Using PETSc will save you many, many, Many! hours of coding over
   developing everything yourself from scratch.
 \end{itemize}
+
+\begin{remark}
+  The PETSc library has hundreds of routines. In this chapter and the
+  next few we will only touch on a basic subset of these. The full
+  list of man pages can be found at
+  \url{https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/singleindex.html}. Each
+  man page comes with links to related routines, as well as (usually)
+  example codes for that routine.
+\end{remark}
 
 \Level 1 {What is in PETSc?}
 
@@ -224,7 +233,7 @@ mpirun -np 5 -machinefile mf \
   On TACC clusters, use \indextermtt{ibrun}.
 \end{taccnote}
 
-\Level 1 {Startup}
+\Level 1 {Initialization and finalization}
 \label{sec:petscinit}
 
 PETSc has an call that initializes both PETSc and MPI, so normally you
@@ -265,6 +274,9 @@ nprocs = comm.getSize(self)
 procno = comm.getRank(self)
 \end{verbatim}
 \end{pythonnote}
+
+The corresponding call to replace \indexmpishow{MPI_Finalize} is
+\indexpetscdef{PetscFinalize}.
 
 \Level 0 {PETSc installation}
 

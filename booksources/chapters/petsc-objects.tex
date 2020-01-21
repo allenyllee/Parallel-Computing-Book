@@ -571,6 +571,11 @@ It can be created with
   placed at an explicitly given list of starting indices.
 \item \indexpetscshow{ISCreateGeneral} for an explicitly given list of indices.
 \end{itemize}
+
+For example, to describe odd and even indices (on two processes):
+%
+\cverbatimsnippet{isoddeven}
+
 After this, there are various query and set operations on index sets.
 
 You can read out the indices of a set by \indexpetscdef{ISGetIndices}
@@ -579,3 +584,49 @@ and \indexpetscdef{ISRestoreIndices}.
 \Level 1 {VecScatter: all-to-all operations}
 \label{sec:petsc-vs}
 
+A \indexpetscdef{VecScatter} object is a generalization of an
+all-to-all operation. However, unlike MPI \indexmpishow{MPI_Alltoall},
+which formulates everything in terms of local buffers, a
+\lstinline{VecScatter} is more implicit in only describing indices in
+the input and output vectors.
+
+The \indexpetscref{VecScatterCreate} call has as arguments:
+\begin{itemize}
+\item An input vector. From this, the parallel layout is used; any
+  vector being scattered from should have this same layout.
+\item An \lstinline{IS} object describing what indices are being
+  scattered; if the whole vector is rearranged, \lstinline{NULL} can
+  be given.
+\item An output vector. From this, the parallel layout is used; any
+  vector being scattered into should have this same layout.
+\item An \lstinline{IS} object describing what indices are being
+  scattered into; if the whole vector is a target, \lstinline{NULL} can
+  be given.
+\end{itemize}
+
+As a simple example, the odd/even sets defined above can be used to
+move all components with even index to process zero, and the ones with
+odd index to process one:
+%
+\cverbatimsnippet{vsoddeven}
+
+Note that the index set is applied to the input vector, since it
+describes the components to be moved. The output vector uses
+\lstinline{NULL} since these components are placed in sequence.
+
+\begin{exercise}
+  Modify this example so that the components are still separated
+  odd/even, but now placed in descending order on each process.
+\end{exercise}
+
+\begin{exercise}
+  Can you extend this example so that process~$p$ receives
+  all indices that are multiples of~$p$? Is your solution correct if
+  \lstinline{Nglobal} is not a multiple of \lstinline{nprocs}?
+\end{exercise}
+
+\Level 2 {More VecScatter modes}
+
+There is an added complication, in that a \lstinline{VecScatter} can
+have both sequential and parallel input or output vectors.
+Scattering onto process zero is also a popular option.

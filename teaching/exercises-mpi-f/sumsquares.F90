@@ -5,7 +5,7 @@
 !**** `Parallel programming with MPI and OpenMP'
 !**** by Victor Eijkhout, eijkhout@tacc.utexas.edu
 !****
-!**** copyright Victor Eijkhout 2012-6
+!**** copyright Victor Eijkhout 2012-2020
 !****
 !**** MPI Exercise 
 !****
@@ -54,7 +54,7 @@ Program SumSquares
 !!!! your code here !!!!
        0,comm,ierr)
   if (procno==0) &
-       print *,"Global sum=",global_sum,", should be",&
+       print *,"Global sum=",global_sum," should be",&
        (2.d0*nglobal*nglobal*nglobal + 3.*nglobal*nglobal + nglobal)/6.d0
 
   call MPI_Finalize(ierr)

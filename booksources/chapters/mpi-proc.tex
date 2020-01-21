@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-9
+%%%% by Victor Eijkhout, copyright 2012-2020
 %%%%
 %%%% mpi-proc.tex : about point-to-point communication
 %%%%
@@ -82,7 +82,8 @@ own, but managers and workers can find each other regardless.
 The spawn routine returns the intercommunicator to the parent; the children
 can find it through \indexmpishow{MPI_Comm_get_parent}. The number of
 spawning processes can be found through
-\indexmpiref{MPI_Comm_remote_size} on the parent communicator.
+\indexmpishow{MPI_Comm_remote_size} on the parent communicator
+(see section~\ref{sec:mpi-inter-query}).
 
 \Level 1 {MPMD}
 

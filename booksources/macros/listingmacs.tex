@@ -193,6 +193,8 @@
     VecAXPY,VecCopy,VecDot,VecNorm,VecScale,VecView,
     VecSet,VecSetValue,VecSetValues,VecAssemblyBegin,VecAssemblyEnd,
     VecGetArray,VecRestoreArray,VecGetArrayRead,VecRestoreArrayRead,
+    ISCreate,ISSetType,ISDestroy,ISCreateBlock,ISCreateGeneral,ISCreateStride,
+    VecScatterCreate,VecScatterDestroy,VecScatterBegin,VecScatterEnd,
     DMDACreate2d,
   },emphstyle={[4]\color{red!40!black}\bfseries},
   emph={[5] %% PETSc keywords and macros
@@ -212,6 +214,6 @@
   emph={[6] %% PETSc types
     PetscComplex,PetscReal,PetscScalar,PetscInt,PetscErrorCode,PetscViewer,
     KSP,KSPConvergedReason,
-    Mat,PC,Vec,
+    Mat,PC,Vec,IS,VecScatter,
   },emphstyle={[6]\bfseries\color{blue}},
 }

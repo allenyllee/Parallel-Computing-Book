@@ -65,7 +65,7 @@ int main(int argc,char **argv) {
 	     0,comm);
   if (procno==0) {
     double fglobal = nglobal;
-    printf("Global sum: %e, should be %e\n",
+    printf("Global sum: %e should be %e\n",
 	   global_sum,fglobal*fglobal*fglobal/3. + fglobal*fglobal/2. + fglobal/6.);
   }
 

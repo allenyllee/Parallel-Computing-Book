@@ -1,0 +1,7 @@
+VecScatter separate;
+ierr = VecScatterCreate
+  (in,oddeven,out,NULL,&separate); CHKERRQ(ierr);
+ierr = VecScatterBegin
+  (separate,in,out,INSERT_VALUES,SCATTER_FORWARD); CHKERRQ(ierr);
+ierr = VecScatterEnd
+  (separate,in,out,INSERT_VALUES,SCATTER_FORWARD); CHKERRQ(ierr);
