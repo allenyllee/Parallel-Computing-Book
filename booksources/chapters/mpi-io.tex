@@ -125,12 +125,6 @@ For thread safety it is good to combine seek and read/write operations:
   The collective variant is \indexmpishow{MPI_File_write_at_all}.
 \end{itemize}
 
-Using a shared file pointer the operations are:
-\begin{itemize}
-\item \indexmpishow{MPI_File_read_shared}
-\item \indexmpishow{MPI_File_write_shared}
-\end{itemize}
-
 Writing to and reading from a parallel file is rather similar to
 sending a receiving:
 \begin{itemize}
@@ -168,12 +162,6 @@ has been concluded.
   \url{https://www.mpich.org/static/docs/latest/www3/MPI_File_iwrite_all.html}
   ?
 \end{remark}
-
-File accesses:
-\begin{itemize}
-\item \indexmpishow{MPI_File_read_ordered}
-\item \indexmpishow{MPI_File_write_ordered}
-\end{itemize}
 
 \Level 1 {Individual file pointers, contiguous writes}
 
@@ -296,6 +284,26 @@ More:
 \indexmpishow{MPI_File_get_size}
 \indexmpishow{MPI_File_preallocate}
 \indexmpishow{MPI_File_get_view}
+
+\Level 1 {Shared file pointers}
+
+It is possible to have a file pointer that is shared (and therefore identical)
+between all processes of the communicator that was used to open the file.
+This file pointer is set with \indexmpidef{MPI_File_seek_shared}.
+For reading and writing there are then two sets of routines:
+\begin{itemize}
+\item Individual accesses are done with \indexmpishow{MPI_File_read_shared}
+  and \indexmpishow{MPI_File_write_shared}.
+  Non-blocking variants are \indexmpishow{MPI_File_iread_shared}
+  and \indexmpishow{MPI_File_iwrite_shared}.
+\item Collective accesse are done with \indexmpishow{MPI_File_read_ordered}
+  and \indexmpishow{MPI_File_write_ordered}, which execute the operations
+  in order ascending by rank.
+\end{itemize}
+
+Shared file pointers require that the same view is used on all processes.
+Also, these operations are less efficient because of the need to maintain the
+shared pointer.
 
 \Level 0 {Consistency}
 

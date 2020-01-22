@@ -73,11 +73,12 @@
     % I/O
     MPI_File_open,MPI_File_close,MPI_File_delete,
     MPI_File_read,MPI_File_read_all,MPI_File_read_at,MPI_File_read_at_all,
-    MPI_File_read_ordered,MPI_File_read_shared,
+    MPI_File_read_ordered,MPI_File_read_shared,MPI_File_iread_shared,
     MPI_File_write,MPI_File_write_all,MPI_File_write_at,MPI_File_write_at_all,
-    MPI_File_write_ordered,MPI_File_write_shared,    
+    MPI_File_write_shared,MPI_File_iwrite_shared,MPI_File_write_ordered,
     MPI_File_set_view,MPI_File_get_view,MPI_File_set_size,MPI_File_get_size,
-    MPI_File_preallocate,MPI_File_seek,MPI_File_set_atomicity,MPI_File_sync,
+    MPI_File_preallocate,MPI_File_seek,MPI_File_seek_shared,
+    MPI_File_set_atomicity,MPI_File_sync,
     % one-sided
     MPI_Win_create,MPI_Win_create_dynamic,MPI_Win_allocate,MPI_Win_allocate_shared,
     MPI_Win_attach,MPI_Win_detach,
