@@ -4,26 +4,41 @@
 %%%%
 %%%% This text file is part of the lecture slides for
 %%%% `Parallel Computing'
-%%%% by Victor Eijkhout, copyright 2012-9
+%%%% by Victor Eijkhout, copyright 2012-2020
 %%%%
 %%%% Sharedmemory-slides.tex : slides about mpi shared memory
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\begin{frame}[containsverbatim]\frametitle{Why shared memory?}
+\begin{frame}[containsverbatim]\frametitle{Shared memory myths}
+  Myth:
+  \begin{quote}
+    MPI processes use network calls, whereas OpenMP threads access memory directly,
+    therefore OpenMP is more efficient for shared memory.
+  \end{quote}
+  Truth:
+  \begin{quote}
+    MPI implementations use copy operations when possible, whereas OpenMP
+    has thread overhead, and affinity/coherence problems.
+  \end{quote}
+  Main problem with MPI on shared memory: data duplication.
+\end{frame}
+
+\begin{frame}[containsverbatim]\frametitle{MPI shared memory}
   \begin{itemize}
-  \item Shared memory: two processes can access each other's
-    memory through \n{double*} (and such) pointers.
+  \item Shared memory access: two processes can access each other's
+    memory through \n{double*} (and such) pointers, if they are
+    on the same shared memory.
   \item Limitation: only window memory.
   \item Non-use case: remote update. This has all the problems of
-    traditional shared memory.
+    traditional shared memory (race conditions, consistency).
   \item Good use case: every process needs access to large read-only
     dataset\\ Example: ray tracing.
   \end{itemize}
 \end{frame}
 
-\begin{frame}[containsverbatim]\frametitle{Shared memory treatment in MPI}
+\begin{frame}[containsverbatim]\frametitle{Shared memory threatments in MPI}
   \begin{itemize}
   \item MPI uses optimizations for shared memory: copy instead of
     socket call
@@ -35,12 +50,12 @@
 \end{frame}
 
 \begin{frame}[containsverbatim]\frametitle{Shared memory per cluster node}
-\includegraphics[scale=.15]{ranger-node}
-\begin{itemize}
-\item Cluster node has shared memory
-\item Memory is attached to specific socket
-\item beware \ac{NUMA} effects
-\end{itemize}
+  \includegraphics[scale=.15]{ranger-node}
+  \begin{itemize}
+  \item Cluster node has shared memory
+  \item Memory is attached to specific socket
+  \item beware \ac{NUMA} effects
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[containsverbatim]\frametitle{Shared memory interface}

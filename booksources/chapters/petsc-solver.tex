@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-9
+%%%% by Victor Eijkhout, copyright 2012-2020
 %%%%
 %%%% petsc-solver.tex : linear system solvers
 %%%%
@@ -30,6 +30,7 @@ customizations to tailor the solver to your specific problem.
 \label{sec:petsc-ksp}
 
 \Level 1 {Math background}
+\label{sec:petsc-math}
 
 Many scientific applications boil down to the solution of a system of
 linear equations at some point:
@@ -169,8 +170,45 @@ Here are some values:
 
 \Level 1 {Preconditioners}
 
-Another part of an iterative solver is the
-\indextermdef{preconditioner}; think of it as an approximation to the inverse.
+Another part of an iterative solver is the \indextermdef{preconditioner}.
+The mathematical background of this
+is given in section~\ref{sec:petsc-math}.
+The preconditioner acts to make the coefficient matrix better conditioned,
+which will improve the convergence speed; it can even be that without
+a suitable preconditioner a solver will not converge at all.
+
+\Level 2 {Background}
+
+The mathematical requirement that the preconditioner~$M$
+satisfy $M\approx A$ can take two forms:
+\begin{enumerate}
+\item We form an explicit approximation to~$A\inv$; this is known as a
+  \indexterm{sparse approximate inverse}.
+\item We form an operator~$M$ (often given in factored or other
+  implicit) form, such that $M\approx A$, and solving a system $Mx=y$
+  for~$x$ can be done relatively quickly.
+\end{enumerate}
+
+In deciding on a preconditioner, we now have to balance the following factors.
+\begin{enumerate}
+\item What is the cost of constructing the preconditioner? This should
+  not be more than the gain in solution time of the iterative method.
+\item What is the cost per iteration of applying the preconditioner?
+  There is clearly no point in using a preconditioner that decreases
+  the number of iterations by a certain amount, but increases the cost
+  per iteration much more.
+\item Many preconditioners have parameter settings that make these
+  considerations even more complicated: low parameter values may give
+  a preconditioner that is cheaply to apply but does not improve
+  convergence much, while large parameter values make the application
+  more costly but decrease the number of iterations.
+\end{enumerate}
+
+\Level 2 {Usage}
+
+Unlike most of the other PETSc object types, a~\lstinline{PC} object
+is typically not explicitly created. Instead, it is created as part of
+the \lstinline{KSP} object, and can be retrieved from it.
 
 \begin{lstlisting}
 PC prec;
@@ -178,10 +216,54 @@ KSPGetPC(solver,&prec);
 PCSetType(prec,PCILU);
 \end{lstlisting}
 
-Some popular types:
+Beyond setting the type of the preconditioner, there are various
+type-specific routines for setting various parameters. Some of these
+can get quite tedious, and it is more convenient to set them through
+commandline options.
+
+\Level 2 {Types}
+
+Here are some of the available preconditioner types.
+
+As part of the \indexterm{hypre} package (which needs to be installed
+during configuration time), \lstinline{PCHYPRE},
+
+\Level 3 {Sparse approximate inverses}
+
+The inverse of a sparse matrix (at least, those from \acp{PDE}) is typically dense.
+Therefore, we aim to construct a \indexterm{sparse approximate inverse}.
+
+PETSc offers two such preconditioners, both of which require an external package.
 \begin{itemize}
-\item \lstinline{PCILU}: an approximate factorization
-\item \lstinline{PCSPAI}: an approximate inverse
+\item \lstinline{PCSPAI}. This is a preconditioner that can only be
+  used in single-processor runs, or as local solver in a block
+  preconditioner; section~\ref{sec:petsc-bjac}.
+\item As part of the \lstinline{PCHYPRE} package, the parallel variant
+  \indexterm{parasails} is available.
+\end{itemize}
+
+\Level 3 {Incomplete factorizations}
+
+The $LU$ factorization of a matrix stemming from \acp{PDE} problems
+has several practical problems:
+\begin{itemize}
+\item It takes (considerably) more storage space than the coefficient matrix, and
+\item it correspondingly takes more time to apply.
+\end{itemize}
+For instance, for a three-dimensional \ac{PDE} in $N$~variables, the coefficient matrix
+can take storage space~$7N$, while the $LU$ factorization takes~$O(N^{5/3})$.
+
+For this reason, often incompletely $LU$ factorizations are popular.
+\begin{itemize}
+\item PETSc has natively a \lstinline{PCILU} type, but this can only be used sequentially.
+\item As part of \emph{hypre}, \emph{pilut}\index{hypre!pilut} is a parallel ILU.
+\end{itemize}
+
+\Level 3 {Block methods}
+\label{sec:petsc-bjac}
+
+\begin{itemize}
+\item \lstinline{PCBJACOBI}: block Jacobi
 \item \lstinline{PCASM}: additive Schwarz method
 \end{itemize}
 

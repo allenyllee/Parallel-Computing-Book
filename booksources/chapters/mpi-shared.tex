@@ -4,20 +4,34 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-8
+%%%% by Victor Eijkhout, copyright 2012-2020
 %%%%
 %%%% mpi-shared.tex : about shared memory in MPI
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-The one-sided MPI calls (chapter~\ref{ch:mpi-onesided}) can be used to
-emulate shared memory. In this chapter we will look at the ways MPI
-can interact with the presence of actual shared memory. Many MPI
+Some programmers are under the impression that MPI would not be efficient on
+shared memory, since all operations are done through what looks like network calls.
+This is not correct: many MPI
 implementations have optimizations that detect shared memory and can
-exploit it, but that is not exposed to the programmer. The
-\indextermbus{MPI}{3} standard added routines that do give the programmer
-that knowledge.
+exploit it, so that data is copied, rather than going through a communication layer.
+(Conversely, programming systems for shared memory such as \indexterm{OpenMP}
+can actually have inefficiencies associated with thread handling.)
+The main inefficiency associated with using MPI on shared memory is then
+that processes can not actually share data.
+
+The one-sided MPI calls (chapter~\ref{ch:mpi-onesided}) can also be used to
+emulate shared memory, in the sense that an origin process can access data
+from a target process without the target's active involvement.
+However, these calls do not distinguish between actually shared memory
+and one-sided access across the network.
+
+In this chapter we will look at the ways MPI
+can interact with the presence of actual shared memory. 
+(This functionality was added in the \indextermbus{MPI}{3} standard.)
+This relies on the \indexmpishow{MPI_Win} windows concept, but
+otherwise uses direct access of other processes' memory.
 
 \Level 0 {Recognizing shared memory}
 \label{mpi-comm-split-type}
