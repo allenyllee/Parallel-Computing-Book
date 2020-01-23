@@ -280,6 +280,24 @@ VecRestoreArrayRead(in,&in_array);
 VecRestoreArray(out,&out_array);
 \end{lstlisting}
 
+There are some variants to the \lstinline{VecGetArray} operation:
+\begin{itemize}
+\item \indexpetscdef{VecReplaceArray} frees the memory of the
+  \lstinline{Vec} object, and replaces it with a different array. That
+  latter array needs to be allocated with
+  \indexpetscshow{PetscMalloc}.
+\item \indexpetscdef{VecPlaceArray} also installs a new array in the
+  vector, but it keeps the original array; this can be restored with
+  \indexpetscdef{VecResetArray}.
+\end{itemize}
+
+Putting the array of one vector into another has a common application,
+where you have a distributed vector, but want to apply PETSc operations
+to its local section as if it were a sequential vector. In that case
+you would create a sequential vector, and
+\indexpetscshow{VecPlaceArray} the contents of the distributed vector
+into it.
+
 \Level 0 {Mat: Matrices}
 
 PETSc matrices come in a number of types, sparse and dense being the
