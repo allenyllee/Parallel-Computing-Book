@@ -187,6 +187,13 @@ ascii output,
 but the routine call also use more general \lstinline{PetscViewer} objects, for
 instance to dump a vector to file.
 
+Here are a couple of representative vector routines:
+\begin{lstlisting}
+PetscReal lambda;
+ierr = VecNorm(y,NORM_2,&lambda); CHKERRQ(ierr);
+ierr = VecScale(y,1./lambda); CHKERRQ(ierr);  
+\end{lstlisting}
+
 \begin{exercise}
 Use the routines \indexpetscref{VecDot}, \indexpetscref{VecScale}
 and \indexpetscref{VecNorm} to compute the inner product of vectors
@@ -204,7 +211,10 @@ n \leftarrow \|x\|_2\\
 
 Setting elements of a traditional array is simple. Setting elements of
 a distributed array is harder.
-First of all, \indexpetscdef{VecSet} sets the vector to a constant value.
+First of all, \indexpetscdef{VecSet} sets the vector to a constant value:
+\begin{lstlisting}
+ierr = VecSet(x,1.); CHKERRQ(ierr);  
+\end{lstlisting}
 
 In the general case, setting elements in a PETSc vector is done
 through a

@@ -82,6 +82,18 @@ hasn = PETSc.Options().hasName("n")
 \end{verbatim}
 \end{pythonnote}
 
+\Level 0 {Timing and profiling}
+
+PETSc has a number of timing routines that make it unnecessary to
+use system routines such as \indextermtt{getrusage}
+or MPI routines such as \indexmpishow{MPI_Wtime}.
+The main (wall clock) timer is \indexpetscref{PetscTime}.
+Note the return type of \indexpetscdef{PetscLogDouble} which
+can have a different precision from \indexpetscshow{PetscReal}.
+
+The routine \indexpetscdef{PetscGetCPUTime} is less useful, since it measures only
+time spent in computation, and ignores things such as communication.
+
 \Level 0 {Memory management}
 
 Allocate the memory for a given pointer: \indexpetscdef{PetscNew},
