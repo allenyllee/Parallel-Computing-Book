@@ -11,7 +11,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\Level 0 {Error checking}
+\Level 0 {Error checking and debugging}
+
+\Level 1 {Error codes}
 
 PETSc performs a good amount of runtime error checking. Some of this
 is for internal consistency, but it can also detect certain
@@ -36,6 +38,20 @@ ierr = AnyPetscRoutine( arguments ); CHKERRQ(ierr);
   macros, and after expansion may interfere with
   \indextermbus{Fortran}{line length}.
 \end{fortrannote}
+
+\Level 1 {Memory corruption}
+
+PETSc has its own memory management (section~\ref{sec:petscmalloc})
+and this facilitates finding memory corruption errors.
+The macro \indexpetscdef{CHKMEMQ} (\indexpetscdef{CHKMEMA} in void functions)
+checks all memory that was allocated by PETSc,
+either internally or throug the allocation routines,
+for corruption. Sprinkling this macro through your code
+can detect memory problems before they lead to a \indexterm{segfault}.
+
+This testing is only done if the commandline argument
+\indextermtt{-malloc_debug} (\indextermtt{-malloc_test} in debug mode)
+is supplied, so it carries no overhead for production runs.
 
 \Level 0 {Printing}
 
@@ -95,6 +111,7 @@ The routine \indexpetscdef{PetscGetCPUTime} is less useful, since it measures on
 time spent in computation, and ignores things such as communication.
 
 \Level 0 {Memory management}
+\label{sec:petscmalloc}
 
 Allocate the memory for a given pointer: \indexpetscdef{PetscNew},
 allocate arbitrary memory with \indexpetscdef{PetscMalloc},

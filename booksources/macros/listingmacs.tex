@@ -172,7 +172,9 @@
   emph={[4] %% PETSc functions
     PetscInitialize,PetscFinalize,PetscSplitOwnership,
     PetscSynchronizedPrintf,PetscPrintf,PetscSynchronizedFlush,
-    PetscSplitOwnership,PetscMalloc,PetscNew,PetscFree,
+    PetscSplitOwnership,PetscNew,PetscFree,
+    PetscMalloc,PetscMalloc1,PetscMallocDump,PetscCalloc1,
+    PetscTime,PetscGetCPUTime,
     MatCreate,MatCreateSubMatrix,MatCreateSubMatrices,
     MatSetSizes,MatSizes,MatSetType,MatSetPreallocation,
     MatSetValue,MatSetValues,MatAssemblyBegin,MatAssemblyEnd,
@@ -212,10 +214,10 @@
     PETSC_VIEWER_STDOUT_WORLD,
     SCATTER_FORWARD,SCATTER_REVERSE,
     VECSEQ,VECMPI,
-    CHKERRQ,SETERRQ,CHKERRA,SETERRA,
+    CHKERRQ,SETERRQ,CHKERRA,SETERRA,CHKMEMQ,CHKMEMA,
   },emphstyle={[5]\color{green!60!black}},
   emph={[6] %% PETSc types
-    PetscComplex,PetscReal,PetscScalar,PetscInt,PetscErrorCode,PetscViewer,
+    PetscComplex,PetscReal,PetscScalar,PetscLogDouble,PetscInt,PetscErrorCode,PetscViewer,
     KSP,KSPConvergedReason,
     Mat,PC,Vec,IS,VecScatter,
   },emphstyle={[6]\bfseries\color{blue}},

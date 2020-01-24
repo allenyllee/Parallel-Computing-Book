@@ -1,4 +1,4 @@
-// commdup_all.c
+// commdupall.c
 ierr = MPI_Isend(&sdata,1,MPI_INT,right,1,comm,&(request[0])); CHK(ierr);
 function_start(comm,&ctx);
 ierr = MPI_Irecv(&rdata,1,MPI_INT,left,MPI_ANY_TAG,comm,&(request[1])); CHK(ierr);

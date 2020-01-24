@@ -2,7 +2,7 @@
 MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 MPI_Comm_rank(MPI_COMM_WORLD, &manager_rank);
 
-MPI_Attr_get(MPI_COMM_WORLD, MPI_UNIVERSE_SIZE,
+err = MPI_Comm_get_attr(MPI_COMM_WORLD, MPI_UNIVERSE_SIZE,
 	       (void*)&universe_sizep, &flag);
 if (!flag) {
   if (manager_rank==0) {

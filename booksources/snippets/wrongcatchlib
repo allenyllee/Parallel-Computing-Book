@@ -1,4 +1,4 @@
-// commdup_wrong.cxx
+// commdupwrong.cxx
 class library {
 private:
   MPI_Comm comm;

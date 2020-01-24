@@ -41,7 +41,7 @@ reserve space for a few extra processes, but that is
 installation-dependent (see below). However, there is a standard
 mechanism for querying whether such space has been reserved.  The
 attribute \indexmpidef{MPI_UNIVERSE_SIZE}, retrieved with
-\indexmpishow{MPI_Attr_get} (section~\ref{sec:mpi_attr}), will tell
+\indexmpishow{MPI_Comm_get_attr} (section~\ref{sec:mpi_attr}), will tell
 you to the total number of hosts available.
 
 If this option is not supported, you can determine yourself how many
@@ -67,7 +67,10 @@ but with a hostfile that has more than one host.
 \n{mpiexec} indicating the size of the comm universe. With the TACC
 jobs starter \indextermtt{ibrun} do the following:
 \begin{verbatim}
+# specific
 MY_MPIRUN_OPTIONS="-usize 8" ibrun -np 4 spawn_manager
+# more generic
+MY_MPIRUN_OPTIONS="-usize ${SLURM_NPROCS}" ibrun -np 4 spawn_manager
 \end{verbatim}
 \end{taccnote}
 The spawned program looks very much like a regular MPI program, with

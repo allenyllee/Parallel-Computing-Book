@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-9
+%%%% by Victor Eijkhout, copyright 2012-2020
 %%%%
 %%%% mpi-commbasic.tex : communicator basics
 %%%%
@@ -32,7 +32,7 @@ non-overtaking. This may lead to confusing situations, witness the following.
 First of all, here is code where the library stores the communicator
 of the calling program:
 %
-\cxxverbatimsnippet[examples/mpi/c/wrongcatchlib.cxx]{wrongcatchlib}
+\cxxverbatimsnippet[examples/mpi/c/commdupwrong.cxx]{wrongcatchlib}
 
 This models a main program that does a simple message exchange, and it
 makes two calls to library routines. Unbeknown to the user, the
@@ -60,7 +60,7 @@ communicator with
 and send all messages with respect to its duplicate. Now messages from the user
 code can never reach the library software, since they are on different communicators.
 
-\cverbatimsnippet[examples/mpi/c/rightcatchlib.c]{rightcatchlib}
+\cverbatimsnippet[examples/mpi/c/commdupright.cxx]{rightcatchlib}
 
 \pverbatimsnippet{catchlibp}
 
