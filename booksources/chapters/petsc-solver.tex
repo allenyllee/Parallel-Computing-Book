@@ -84,8 +84,9 @@ However, in practice we apply the preconditioner in each iteration:
 
 In this schematic presentation we have left the nature of the $f()$ update
 function unspecified. Here, many possibilities exist; the primary
-choice here if of the iterative method type, such as `conjugate gradients',
+choice here is of the iterative method type, such as `conjugate gradients',
 `generalized minimum residual', or `bi-conjugate gradients stabilized'.
+(We will go into direct solvers in section~\ref{sec:petsc-direct}.)
 
 \Level 1 {Solver objects}
 
@@ -225,8 +226,17 @@ commandline options.
 
 Here are some of the available preconditioner types.
 
-As part of the \indexterm{hypre} package (which needs to be installed
-during configuration time), \lstinline{PCHYPRE},
+The \indexterm{hypre} package
+(which needs to be installed during configuration time)
+contains itself several preconditioners.
+In your code, you can set the preconditioner to \lstinline{PCHYPRE},
+and use \indexpetscdef{PCHYPRESetType} to one of:
+euclid, pilut, parasails, boomeramg, ams, ads.
+However, since these preconditioners themselves have options,
+it is usually more convenient to use commandline options:
+\begin{verbatim}
+-pc_type hypre -pc_hypre_type xxxx
+\end{verbatim}
 
 \Level 3 {Sparse approximate inverses}
 
@@ -240,6 +250,9 @@ PETSc offers two such preconditioners, both of which require an external package
   preconditioner; section~\ref{sec:petsc-bjac}.
 \item As part of the \lstinline{PCHYPRE} package, the parallel variant
   \indexterm{parasails} is available.
+\begin{verbatim}
+-pc_type hypre -pc_hypre_type parasails
+\end{verbatim}
 \end{itemize}
 
 \Level 3 {Incomplete factorizations}
@@ -256,18 +269,66 @@ can take storage space~$7N$, while the $LU$ factorization takes~$O(N^{5/3})$.
 For this reason, often incompletely $LU$ factorizations are popular.
 \begin{itemize}
 \item PETSc has natively a \lstinline{PCILU} type, but this can only be used sequentially.
+  This may sound like a limitation, but in parallel it can still be used as the
+  subdomain solver in a block methods; section~\ref{sec:petsc-bjac}.
 \item As part of \emph{hypre}, \emph{pilut}\index{hypre!pilut} is a parallel ILU.
 \end{itemize}
 
 \Level 3 {Block methods}
 \label{sec:petsc-bjac}
 
+Certain preconditioners seem almost intrinsically sequential.
+For instance, an ILU solution is sequential between the variables.
+There is a modest amount of parallelism, but that is hard to explore.
+
+Taking a step back, one of the problems with parallel preconditioners
+lies in the cross-process connections in the matrix. If only those were not present,
+we could solve the linear system on each process independently.
+Well, since a preconditioner is an approximate solution to begin with,
+ignoring those connections only introduces an extra degree of approxomaticity.
+
+There are two preconditioners that operate on this notion:
 \begin{itemize}
-\item \lstinline{PCBJACOBI}: block Jacobi
-\item \lstinline{PCASM}: additive Schwarz method
+\item \lstinline{PCBJACOBI}: block Jacobi. Here each process solves locally the system
+  consisting of the matrix coefficients that couple the local variables.
+  In effect, each process solves an independent system on a subdomain.
+
+  The next question is then what solver is used on the subdomains.
+  Here any preconditioner can be used, in particular the ones that only
+  existed in a sequential version. Specifying all this in code gets tedious,
+  and it is usually easier to specify such a complicated solver through
+  commandline options:
+\begin{verbatim}
+-pc_type jacobi -sub_ksp_type preonly \
+    -sub_pc_type ilu -sub_pc_factor_levels 1 
+\end{verbatim}
+(Note that this also talks about a \n{sub_ksp}: the subdomain solver is in fact
+a \lstinline{KSP} object. By setting its type to \lstinline{preonly} we state that the
+solver should consist of solely applying its preconditioner.)
+
+  The block Jacobi preconditioner can asympotically only speed up the
+  system solution by a factor relating to the number of subdomains,
+  but in practice it can be quite valuable.
+\item \lstinline{PCASM}: additive Schwarz method. Here each process
+  solves locally a slightly larger system, based on the local
+  variables, and one (or a few) levels of connections to neighboring processes.
+  In effect, the processes solve system on overlapping subdomains.
+  %
+  This preconditioner can asympotically reduce the number of iterations to $O(1)$,
+  but that requires exact solutions on the subdomains, and in practice it may
+  not happen anyway.
 \end{itemize}
 
+\begin{figure}[ht]
+  \includegraphics[scale=.6]{bjacobi}
+  \caption{Illustration of block Jacobi and Additive Schwarz preconditioners}
+  \label{fig:bjacobi}
+\end{figure}
+Figure~\ref{fig:bjacobi} illustrates these preconditioners both in
+matrix and subdomain terms.
+
 \Level 0 {Direct solvers}
+\label{sec:petsc-direct}
 
 PETSc has some support for direct solvers, that is, variants of LU
 decomposition. In a sequential context, the \lstinline{PCLU}
@@ -308,7 +369,8 @@ options in your source code, or use this as a way of quickly
 experimenting with different possibilities. Example:
 
 \begin{verbatim}
-myprogram -ksp_type gmres -ksp_type_gmres_restart 20 -ksp_max_it 200 \
-  -pc_type ilu -pc_type_ilu_levels 3
+myprogram -ksp_max_it 200 \
+    -ksp_type gmres -ksp_type_gmres_restart 20  \
+    -pc_type ilu -pc_type_ilu_levels 3
 \end{verbatim}
 

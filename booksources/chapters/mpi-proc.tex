@@ -71,6 +71,8 @@ jobs starter \indextermtt{ibrun} do the following:
 MY_MPIRUN_OPTIONS="-usize 8" ibrun -np 4 spawn_manager
 # more generic
 MY_MPIRUN_OPTIONS="-usize ${SLURM_NPROCS}" ibrun -np 4 spawn_manager
+# using mpiexec:
+mpiexec -np 2 -usize ${SLURM_NPROCS} spawn_manager
 \end{verbatim}
 \end{taccnote}
 The spawned program looks very much like a regular MPI program, with
