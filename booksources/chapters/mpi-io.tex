@@ -22,10 +22,25 @@ sequentially.
 \item \ldots~but having every process open the same file for output is
   probably not a good idea.
 \item Based on the process rank it is easy enough to have
-  every process create a unique file, but that can put a lot of strain
+  every process create a unique file and merge these after the run,
+  but that can put a lot of strain
   on the file system, and it means you may have to post-process 
   to get all the data in one file.
 \end{itemize}
+
+\begin{tacc}
+  Each node has a private \verb+\tmp+ file system
+  (typically flash storage), to which
+  you can write files. Considerations:
+  \begin{itemize}
+  \item Since these drives are separate from the shared file system,
+    you don't have to worry about stress on the file servers.
+  \item These temporary file systems are wiped after your job finishes,
+    so you have to do the post-processing in your job script.
+  \item The capacity of these local drives are fairly limited;
+    see the userguide for exact numbers.
+  \end{itemize}
+\end{tacc}
 
 Wouldn't it be nice if there was a way to open one file in parallel,
 and have every process read from and write to its own location? That's
@@ -247,7 +262,7 @@ This call is collective, even if not all processes access the file.
     data formats.
   \end{itemize}
 \item The \n{info} parameter is an \indexmpishow{MPI_Info} object,
-  \indexmpishow{MPI_INFO_NULL}.
+  or \indexmpishow{MPI_INFO_NULL}. See section~\ref{sec:mpi-file-info} for more.
 \end{itemize}
 
 \begin{figure}[ht]
@@ -326,3 +341,30 @@ make CPPFLAGS="-DMPICH_IGNORE_CXX_SEEK -DMPICH_SKIP_MPICXX"
 and such.
 
 \index{MPI/O|)}
+
+\Level 0 {Review questions}
+
+\begin{tacc}
+\begin{exercise}
+    After your \indexterm{SLURM} job ends, you can copy
+    from the login node
+    the files you've written to \verb+\tmp+. T/F?    
+\end{exercise}
+\end{tacc}
+
+\begin{exercise}
+  File views (\indexmpishow{MPI_File_set_view}) are intended to
+  \begin{itemize}
+  \item write MPI derived types to file; without them you can only write
+    contiguous buffers;
+  \item prevent collisions in collective writes; they are not needed for
+    individual writes.
+  \end{itemize}
+  T/F?
+\end{exercise}
+
+\begin{exercise}
+  The sequence \indexmpishow{MPI_File_seek_shared}, \indexmpishow{MPI_File_read_shared}
+  can be replaced by \indexmpishow{MPI_File_seek}, \indexmpishow{MPI_File_read}
+  if you make what changes?
+\end{exercise}

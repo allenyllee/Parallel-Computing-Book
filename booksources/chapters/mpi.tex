@@ -28,7 +28,7 @@ Note that the output of the `get' routine is not allocated:
 it is a buffer that is passed. 
 The maximum length of a key is given by the parameter
 \indexmpidef{MPI_MAX_INFO_KEY}.
-You can delete a key with \indexmpiref{MPI_Info_delete}.
+You can delete a key from an info object with \indexmpiref{MPI_Info_delete}.
 
 There is a straightforward duplication of info objects:
 \indexmpiref{MPI_Info_dup}.
@@ -80,6 +80,37 @@ using the calls
 Copying a communicator with \indexmpishow{MPI_Comm_dup} would cause
 the info to be copied; to attach new information to the copy there is
 \indexmpidef{MPI_Comm_dup_with_info}.
+
+\Level 1 {File information}
+\label{sec:mpi-file-info}
+
+An \indexmpishow{MPI_Info} object can be passed to the following file routines:
+\begin{itemize}
+\item \indexmpishow{MPI_File_open}
+\item \indexmpishow{MPI_File_set_view}
+\item \indexmpishow{MPI_File_set_info}; collective.
+\end{itemize}
+
+The following keys are defined in the MPI-2 standard:
+\begin{itemize}
+\item \indexmpishow{access_style}: A comma separated list of one or
+  more of: \n{read_once}, \n{write_once}, \n{read_mostly},
+  \n{write_mostly}, \n{sequential}, \n{reverse_sequential}, \n{random}
+\item \indexmpishow{collective_buffering}: true or false; enables or disables buffering on collective I/O operations
+\item \indexmpishow{cb_block_size}: integer block size for collective buffering, in bytes
+\item \indexmpishow{cb_buffer_size}: integer buffer size for collective buffering, in bytes
+\item \indexmpishow{cb_nodes}: integer number of MPI processes used in collective buffering
+\item \indexmpishow{chunked}: a comma separated list of integers describing the dimensions of a multidimensional array to be accessed using subarrays, starting with the most significant dimension (1st in C, last in Fortran)
+\item \indexmpishow{chunked_item}: a comma separated list specifying the size of each array entry, in bytes
+\item \indexmpishow{chunked_size}: a comma separated list specifying the size of the subarrays used in chunking
+\item \indexmpishow{file_perm}: UNIX file permissions at time of creation, in octal
+\item \indexmpishow{io_node_list}: a comma separated list of I/O nodes to use
+\item \indexmpishow{nb_proc}: integer number of processes expected to access a file simultaneously
+\item \indexmpishow{num_io_nodes}: integer number of I/O nodes to use
+\item \indexmpishow{striping_factor}: integer number of I/O nodes/devices a file should be striped across
+\item \indexmpishow{striping_unit}: integer stripe size, in bytes
+\end{itemize}
+Additionally, file system-specific keys can exist.
 
 \Level 0 {Error handling}
 \label{sec:mpi:error}
