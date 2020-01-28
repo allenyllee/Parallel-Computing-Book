@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the lecture slides for
 %%%% `Parallel Computing'
-%%%% by Victor Eijkhout, copyright 2012-9
+%%%% by Victor Eijkhout, copyright 2012-2020
 %%%%
 %%%% Subcomm-slides.tex : slides about communicator manipulation
 %%%%
@@ -78,6 +78,8 @@ int MPI_Comm_split(MPI_Comm comm, int color, int key,
 \end{frame}
 
 \begin{frame}[containsverbatim]\frametitle{Row/column example}
+  Simulate a processor grid\\
+  create subcommunicator per column (or row):
 \begin{lstlisting}
 MPI_Comm_rank( MPI_COMM_WORLD, &procno );
 proc_i = procno % proc_column_length;
@@ -88,10 +90,12 @@ MPI_Comm_split( MPI_COMM_WORLD, proc_j, procno, &column_comm );
 
 MPI_Bcast( data, ... column_comm );
 \end{lstlisting}
+Food for thought: there are many columns,
+but only one \n{column_comm} variable. Why?
 \end{frame}
 
-\begin{frame}\frametitle{Row and column communicators}
-  \includegraphics[scale=.1]{procgrid-bcast}
+\begin{frame}[label=exprocgrid]\frametitle{Row and column communicators}
+  \includegraphics[scale=.4]{procgrid-bcast}
 
   Row and column broadcasts in subcommunicators
 \end{frame}
@@ -121,8 +125,10 @@ MPI_Bcast( data, ... column_comm );
 \begin{frame}[containsverbatim]\frametitle{More}
   \begin{itemize}
   \item Non-disjoint subcommunicators through process groups.
-  \item Intra-communicators and inter-communicators.
-  \item Process topologies: cartesian and graph.
+  \item Intra-communicators and inter-communicators.\\
+    These will come up later in the section about process management.
+  \item Process topologies: cartesian and graph.\\
+    There will also be a section about this, later.
   \end{itemize}
 \end{frame}
 

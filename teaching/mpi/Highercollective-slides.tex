@@ -23,7 +23,7 @@
 \begin{frame}[containsverbatim]\frametitle{Non-blocking collectives}
   \begin{itemize}
   \item Collectives are blocking.
-  \item Compare blocking sends:\\
+  \item Compare blocking/non-blocking sends:\\
     \indexmpishow{MPI_Send} $\rightarrow$ \indexmpishow{MPI_Isend}
   \item Non-blocking collectives:\\
     \indexmpishow{MPI_Bcast} $\rightarrow$ \indexmpishow{MPI_Ibcast}
@@ -61,6 +61,8 @@ MPI_Wait(request);
 \end{frame}
 
 \begin{exerciseframe}[procgridnonblock]
+  \hyperlink{exprocgrid}{\beamergotobutton{Earlier procgrid exercise}}
+
   \input ex:procgridnonblock
 \end{exerciseframe}
 

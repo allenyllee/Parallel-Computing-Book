@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the lecture slides for
 %%%% `Parallel Computing'
-%%%% by Victor Eijkhout, copyright 2012-9
+%%%% by Victor Eijkhout, copyright 2012-2020
 %%%%
 %%%% Data-slides.tex : slides about data types
 %%%%
@@ -133,6 +133,7 @@ Used to pick a regular subset of elements from an array.
 \end{frame}
 
 \begin{frame}{Different send and receive types}
+  Send and receive type can differ. Example:\\
   Sender type: vector\\ receiver type: contiguous or elementary
 
   \includegraphics[scale=.1]{data-vector-to-contiguous}
@@ -164,9 +165,15 @@ int MPI_Type_indexed(
   int count, int blocklens[], int displacements[],
   MPI_Datatype old_type, MPI_Datatype *newtype);
 \end{lstlisting}
-Also \n{hindexed} with byte offsets.
 \end{frame}
 
+\begin{frame}[containsverbatim]\frametitle{Hindexed type}
+  Similar to indexed but using byte offsets:\\
+  explicit memory address.
+
+  Example usage scenario: send linked list.\\
+  Use \indexmpiref{MPI_Get_address}
+\end{frame}
 
 \begin{frame}[containsverbatim]\frametitle{Heterogeneous: Structure type}
 \begin{lstlisting}

@@ -11,4 +11,4 @@ Fortran2008:
 MPI_Ibarrier(comm, request, ierror)
 Type(MPI_Comm),intent(int) :: comm
 TYPE(MPI_Request),intent(out) :: request
-INTEGER,intent(out) :: ierror
+INTEGER,intent(out),optional :: ierror

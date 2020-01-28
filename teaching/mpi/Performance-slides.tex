@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the lecture slides for
 %%%% `Parallel Computing'
-%%%% by Victor Eijkhout, copyright 2012-9
+%%%% by Victor Eijkhout, copyright 2012-2020
 %%%%
 %%%% Performance-slides.tex: MPI Performance issues
 %%%%
@@ -113,14 +113,23 @@ if (mytid==0) printf(``Time synchronized? %d->%d\n'',flag,*v);
   same buffer, happens regularly, it is possible to set up a
   \indextermsub{persistent}{communication}.
 
-  \n{MPI_Send_init}, \n{MPI_Recv_init}, \n{MPI_Start}
+  \begin{itemize}
+  \item \n{MPI_Send_init}
+  \item \n{MPI_Recv_init}
+  \item \n{MPI_Start}
+  \end{itemize}
+
 \end{frame}
 
 \begin{frame}[containsverbatim]{Buffering}
 
   \begin{itemize}
   \item MPI has internal buffers: copying costs performance
-  \item Use your own buffer: \n{MPI_Buffer_attach}, \n{MPI_Bsend}
+  \item Use your own buffer:
+    \begin{itemize}
+    \item \n{MPI_Buffer_attach}
+    \item \n{MPI_Bsend}
+    \end{itemize}
   \item Copying is also a problem for derived datatypes.
   \end{itemize}
 \end{frame}
@@ -131,8 +140,11 @@ if (mytid==0) printf(``Time synchronized? %d->%d\n'',flag,*v);
   \item Load balancers: \indexterm{ParMetis}, \indexterm{Zoltan}
   \item Graph topologies: \n{MPI_Dist_graph_adjacent}:\\
     allowed to reorder ranks for proximity
-  \item Neighborhood collectives: \n{MPI_Neighbor_allgather_v}\\
-    allow MPI to schedule optimally.
+  \item Neighborhood collectives allow MPI to schedule optimally.
+    \begin{itemize}
+    \item \n{MPI_Neighbor_allgather} (and \n{allgather_v})
+    \item \n{MPI_Neighbor_alltoall}
+    \end{itemize}
   \end{itemize}
 \end{frame}
 
