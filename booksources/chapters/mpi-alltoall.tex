@@ -46,6 +46,14 @@ rows:
 Conversely, the columns then denote the receive information:
 \[ \forall_j\colon C[i,j]>0\quad\hbox{if process $j$ receives from process $i$}. \]
 
+The typical application for such data transposition is in the \ac{FFT}
+algorithm, where it can take tens of percents of the running time on
+large clusters.
+
+We will consider
+another application of data transposition, namely \indexterm{radix sort},
+but we will do that in a couple of steps. First of all:
+
 \begin{exercise}
   \label{ex:radixsort1}
   In the initial stage of \indextermsub{radix}{sorting}, each process
@@ -54,11 +62,11 @@ Conversely, the columns then denote the receive information:
   elements they will receive from every other process.
 \end{exercise}
 
-On a larger scale, the typical application for the all-to-all
-operation is in the \ac{FFT} algorithm, where it can take tens of
-percents of the running time.
-
 \Level 1 {All-to-all-v}
+
+The major part of the \indexterm{radix sort} algorithm consist
+of every process sending some of its elements to
+each of the other processes.
 
 \begin{exercise}
   \label{ex:radixsort2}

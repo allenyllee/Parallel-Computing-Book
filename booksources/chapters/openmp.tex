@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-9
+%%%% by Victor Eijkhout, copyright 2012-2020
 %%%%
 %%%% openmp.tex : topics that have not been rolled into their
 %%%%              own chapter yet.
@@ -142,13 +142,13 @@ Other environment variables:
 \Level 0 {Timing}
 \label{sec:omp-timing}
 
-OpenMP has a wall clock timer routine \indexcommand{omp_get_wtime}
+OpenMP has a wall clock timer routine \indexompshow{omp_get_wtime}
 \begin{lstlisting}
 double omp_get_wtime(void);
 \end{lstlisting}
 The starting point is arbitrary and is different for each program run;
 however, in one run it is identical for all threads.
-This timer has a resolution given by \indexcommand{omp_get_wtick}.
+This timer has a resolution given by \indexompshow{omp_get_wtick}.
 
 \begin{exercise}
   Use the timing routines to demonstrate speedup from using

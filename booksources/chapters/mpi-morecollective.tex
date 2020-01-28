@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-9
+%%%% by Victor Eijkhout, copyright 2012-2020
 %%%%
 %%%% mpi-morecollective.tex : obscure stuff
 %%%%
@@ -22,7 +22,7 @@ library, but it is possible to define new operators.
 \label{sec:operator-list}
 
 The following is the list of \emph{pre-defined operators}\index{operator!predefined}
-\indexmpidef{MPI_OP} values.
+\indexmpidef{MPI_Op} values.
 
 {\catcode`\_=12 %pyskip
   \begin{tabular}{|lll|}
@@ -46,9 +46,40 @@ The following is the list of \emph{pre-defined operators}\index{operator!predefi
 \end{tabular}
 } %pyskip
 
-The \indexmpishow{MPI_MAXLOC} operation yields both the maximum and
-the rank on which it occurs. However, to use it the input should be an
-array of \n{real/int} structs, where the \n{int} is the rank of the number.
+\Level 2 {Minloc and maxloc}
+
+The \indexmpishow{MPI_MAXLOC} and \indexmpishow{MPI_MINLOC} operations
+yield both the maximum and the rank on which it occurs. Their result
+is a \lstinline{struct} of the data over which the reduction happens,
+and an int. 
+
+In C, the types to use in the reduction call are:
+\indexmpidef{MPI_FLOAT_INT},
+\indexmpidef{MPI_LONG_INT},
+\indexmpidef{MPI_DOUBLE_INT},
+\indexmpidef{MPI_SHORT_INT},
+\indexmpidef{MPI_2INT},
+\indexmpidef{MPI_LONG_DOUBLE_INT}.
+Likewise, the input needs to consist of such structures:
+the input should be an array of such struct types, where the \n{int} is
+the rank of the number.
+
+The Fortran interface to MPI was designed to use pre-Fortran90 features,
+so it is not using Fortran derived types (\lstinline{Type} keyword).
+Instead, all integer indices are stored in whatever the type is that is
+being reduced. The available result types are then
+\indexmpidef{MPI_2REAL},
+\indexmpidef{MPI_2DOUBLE_PRECISION},
+\indexmpidef{MPI_2INTEGER}.
+
+Likewise, the input needs to be arrays of such type. Consider this example:
+\lstset{language=Fortran}
+\begin{lstlisting}
+Real8,dimension(2,N) :: input,output
+call MPI_Reduce( input,output, N, MPI_2DOUBLE_PRECISION, &
+                 MPI_MAXLOC, root, comm )
+\end{lstlisting}
+\lstset{language=C}
 
 \Level 1 {User-defined operators}
 \label{sec:mpi-op-create}
@@ -71,8 +102,8 @@ FUNCTION USER_FUNCTION( INVEC(*), INOUTVEC(*), LEN, TYPE)
 INTEGER LEN, TYPE 
 \end{verbatim}
 
-{The python equivalent of such a function receives bare buffers as
-  arguments. Therefore, it is best to turn them first into NumPY array
+The python equivalent of such a function receives bare buffers as
+  arguments. Therefore, it is best to turn them first into NumPy arrays
   using \indextermtt{np.frombuffer}:
 %% figure out why plisting environment doesn't work here
 \begin{verbatim}
@@ -189,6 +220,15 @@ Non-blocking collectives offer a number of performance advantages:
 \indexmpiref{MPI_Iallreduce}
 
 \indexmpiref{MPI_Iallgather}
+
+\indexmpishow{MPI_Iallgather}, \indexmpishow{MPI_Iallgatherv},
+\indexmpishow{MPI_Iallreduce}, \indexmpishow{MPI_Ialltoall},
+\indexmpishow{MPI_Ialltoallv}, \indexmpishow{MPI_Ialltoallw},
+\indexmpishow{MPI_Ibarrier}, \indexmpishow{MPI_Ibcast},
+\indexmpishow{MPI_Iexscan}, \indexmpishow{MPI_Iscan},
+\indexmpishow{MPI_Iscatter}, \indexmpishow{MPI_Iscatterv},
+\indexmpishow{MPI_Ireduce}, \indexmpishow{MPI_Ireduce_scatter},
+\indexmpishow{MPI_Ireduce_scatter_block}.
 
 \Level 1 {Non-blocking barrier}
 \label{sec:ibarrier}
