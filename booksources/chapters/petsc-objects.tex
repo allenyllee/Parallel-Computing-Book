@@ -331,7 +331,7 @@ stores a \indexterm{block row}, that is, a contiguous set of matrix
 rows. It stores all elements in that block row.
 %
 \begin{figure}[ht]
-  \includegraphics[scale=.2]{parallel-matrix}
+  \includegraphics[scale=.12]{parallel-matrix}
   \caption{Matrix partitioning by block rows}
   \label{fig:parallel-matrix}
 \end{figure}
@@ -567,6 +567,13 @@ MatShellGetContext( A, &mystruct );
 \end{lstlisting}
 Somewhat confusingly, the Get routine also has a \lstinline{void*}
 argument, even though it's really a pointer variable.
+
+\Level 1 {Fourier transform}
+
+The \indexac{FFT} can be considered a matrix-vector multiplication.
+PETSc supports this by letting you create a matrix with \indexpetscdef{MatCreateFFT}.
+This requires that you add an FFT library, such as \indexterm{fftw},
+at configuration time; see section~\ref{sec:petsc-external}.
 
 \Level 0 {DMDA: distributed arrays}
 

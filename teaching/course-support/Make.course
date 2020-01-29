@@ -25,7 +25,7 @@ info::
 
 .PHONY: course onepass pdf inex
 onepass :
-	TEXINPUTS=.:..:../..:../taccstyle:../taccstyle/figures:../../chapters:../../exercises:../../graphics//:../../macros:../../hwloc:../../mpireference:../../snippets:../../../hpc-book-private/teaching:../../../hpc-book-private/graphics:../../../hpc-book-private/snippets:${TEXINPUTS}${EXTRATEXINPUTS} ${ENGINE} ${FILE}
+	TEXINPUTS=.:..:../course-support:../..:../taccstyle:../taccstyle/figures:../../chapters:../../exercises:../../graphics//:../../macros:../../hwloc:../../mpireference:../../snippets:../../../hpc-book-private/teaching:../../../hpc-book-private/graphics:../../../hpc-book-private/snippets:${TEXINPUTS}${EXTRATEXINPUTS} ${ENGINE} ${FILE}
 
 course pdf : inex
 	make onepass FILE=${FILE}

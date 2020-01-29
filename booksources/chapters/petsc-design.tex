@@ -315,3 +315,38 @@ performance.
   \n{real}, \n{complex}; \indexpetscoption{with-precision} has values
   \n{single}, \n{double}, \n{__float128}, \n{__fp16}.
 \end{itemize}
+
+\Level 1 {External packages}
+\label{sec:petsc-external}
+
+PETSc can extend its functionality through external packages such as
+\indexterm{mumps}, \indexterm{hypre}, \indexterm{fftw}. These can be
+specified in two ways:
+\begin{enumerate}
+\item Referring to an installation already on your system:
+\begin{verbatim}
+--with-hdf5-include=${TACC_HDF5_INC}
+--with-hf5_lib=${TACC_HDF5_LIB}
+\end{verbatim}
+\item By letting petsc download and install them itself:
+\begin{verbatim}
+--with-parmetis=1 --download-parmetis=1
+\end{verbatim}
+\end{enumerate}
+
+\begin{remark}
+  There are two packages that PETSc is capable of downloading and install,
+  but that you may want to avoid:
+  \begin{itemize}
+  \item \n{fblaslapack}: this gives you BLAS/LAPACK through the
+    Fortran `reference implementation'. If you have an optimized
+    version, such as Intel's \indexterm{mkl} available, this will give
+    much higher performance.
+  \item \n{mpich}: this installs a MPI implementation, which may be
+    required for your laptop. However, supercomputer clusters will
+    already have an MPI implementation that uses the high-speed
+    network. PETSc's downloaded version does not do that. Again,
+    finding and using the already installed software may greatly
+    improve your performance.
+  \end{itemize}
+\end{remark}

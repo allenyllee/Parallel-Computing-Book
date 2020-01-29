@@ -5,17 +5,20 @@
 #### Victor Eijkhout
 #### eijkhout@tacc.utexas.edu
 ####
-#### copyright Victor Eijkhout 2018
+#### copyright Victor Eijkhout 2018-2020
 ####
 #### Makefile for TAU instrumentation
 ####
 ################################################################
 
 info ::
+	@echo && echo "%%%% TAU options %%%%" && echo
+
+info ::
 	@echo "make taurun PROGRAM=<any prog> OPTIONS=<whatever>"
 taurun :
 	@if [ -z "${PROGRAM}" ] ; then \
-	   echo "Usage: make ibrun program option"; exit 1 ; fi
+	   echo "Usage: make taurun PROGRAM=yourprogram"; exit 1 ; fi
 	@export TAU_EXT="_${PROGRAM}" ; \
 	export TAU_DUMP_DIR=`pwd`/tautrace$$TAU_EXT ; \
 	  rm -rf $${TAU_DUMP_DIR}; mkdir -p $${TAU_DUMP_DIR} ; \
@@ -36,4 +39,4 @@ tau :
 	  tau2slog2 tau.trc tau.edf -o $$HOME/taulog$$TAU_EXT.slog2
 
 clean ::
-	@/bin/rm -f tautrace* taulog*
+	@/bin/rm -rf tautrace* taulog*

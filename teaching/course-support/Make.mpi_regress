@@ -21,8 +21,6 @@ sources :
 
 clean ::
 	@/bin/rm -f ${EXERCISES}
-
-clean ::
 	@rm -f *.out_total *.out[0-9]*
 
 ##
@@ -285,6 +283,8 @@ run_blockwrite run_blockadvance run_blockseek run_blockall run_viewwrite ::
 	    fi \
 	 && make --no-print-directory regress_success SUCCESS=$$success PROGRAM=$${program} \
 	 && echo
+clean ::
+	@rm -f blockwrite.dat
 
 .PHONY: run_randommax
 REGRESSIONRUNS += run_randommax

@@ -2,7 +2,7 @@
 ################################################################
 ####
 #### This makefile is part of `Parallel Programming in MPI and OpenMP'
-#### by Victor Eijkhout, copyright 2013-9
+#### by Victor Eijkhout, copyright 2013-2020
 #### eijkhout@tacc.utexas.edu
 ####
 #### Make include file for course programs
@@ -18,6 +18,10 @@ info ::
 	@echo "make sources: list all exercises"
 sources :
 	@echo ${EXERCISES}
+
+clean ::
+	@/bin/rm -f ${EXERCISES}
+	@rm -f regression.out
 
 ##
 ## regression

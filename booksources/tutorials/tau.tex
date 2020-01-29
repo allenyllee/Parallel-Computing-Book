@@ -114,4 +114,39 @@ The \n{slog2} file can then be viewed with \indextermtt{jumpshot}:
 jumpshot yourprogram.slog2
 \end{verbatim}
 
+\Level 1 {Sample output}
+
+\begin{figure}[ht]
+\includegraphics{tau-bucketblock}
+\caption{Trace of a bucket brigade broadcast}
+\label{fig:tau-bucketblock}
+\end{figure}
+
+%% \begin{figure}[ht]
+%% \includegraphics{tau-bucketpipe}
+%% \caption{Trace of a pipelined bucket brigade broadcast}
+%% \label{fig:tau-bucketpipe}
+%% \end{figure}
+
+Consider a very simple broadcast, executed by each processor (except for the first)
+receiving data from its predecessor and sending it to its successor.
+\begin{lstlisting}
+int sendto =
+    ( procno<nprocs-1 ? procno+1 : MPI_PROC_NULL )
+    ;
+int recvfrom =
+    ( procno>0 ? procno-1 : MPI_PROC_NULL )
+    ;
+
+MPI_Recv( leftdata,1,MPI_DOUBLE,recvfrom,0,comm,MPI_STATUS_IGNORE);
+myvalue = leftdata
+MPI_Send( myvalue,1,MPI_DOUBLE,sendto,0,comm);
+\end{lstlisting}
+
+Figure~\ref{fig:tau-bucketblock} illustrates this on 4~nodes with 4~processes each.
+\begin{itemize}
+\item You see all processes posting a receive pretty much simultaneously;
+\item but the conclusion of the receives happens in sequence.
+\end{itemize}
+
 \index{TAU|)}
