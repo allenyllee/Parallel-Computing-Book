@@ -332,8 +332,14 @@
   }%
   \tmp
 }  
+% repeat reference to already defined routine
+\def\indexmpirep#{\bgroup \ShowRoutinetrue \RoutineIndexStyle
+  \afterassignment\mpiIndexBF
+  \edef\indexedroutine
+}
 \def\mpiIndexAndRef{\mpiIndexBF\RoutineRefDisplay}
 \def\mpiIndexBF{\RoutineIndexBF{mpi}}
+\def\mpiIndexRM{\RoutineIndexRM{mpi}}
 
 %\usepackage{rotating}
 \usepackage{float}
@@ -358,6 +364,14 @@
     \noexpand\lstinline+\indexedroutine+ (figure\noexpand~\noexpand\ref{ref:\indexedroutine})%
     \noexpand\index[#1]{%
       \indexedroutine@{\catcode95=12 \noexpand\texttt{\indexedroutine}}|textbf}%
+  }%
+  \tmp
+}
+\def\RoutineIndexRM#1{%
+  \edef\tmp{%
+    \noexpand\lstinline+\indexedroutine+ (figure\noexpand~\noexpand\ref{ref:\indexedroutine})%
+    \noexpand\index[#1]{%
+      \indexedroutine@{\catcode95=12 \noexpand\texttt{\indexedroutine}}|textsl}%
   }%
   \tmp
 }

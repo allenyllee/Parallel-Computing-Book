@@ -316,8 +316,18 @@ or the function \indexmpiref{MPI_Get_version}.
 
 Some runtime (or installation dependendent) values are available as
 attributes through
-\indexmpishow{MPI_Comm_get_attr}.
+\indexmpiref{MPI_Comm_get_attr}.
 (The MPI-2 routine \indexmpidef{MPI_Attr_get} is deprecated).
+The flag parameter has two functions:
+\begin{itemize}
+\item it returns whether the attributed was found;
+\item if on entry it was set to false, the value parameter is ignored
+  and the routines only tests whether the key is present.
+\end{itemize}
+The return value parameter is subtle: while it is declared \lstinline{void*},
+it is actually the address of a \lstinline{void*} pointer.
+
+\cverbatimsnippet{gettagub}
 
 Attributes are:
 \begin{itemize}
