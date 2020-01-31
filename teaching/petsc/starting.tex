@@ -5,7 +5,7 @@
 %%%% `Introduction to the PETSc library'
 %%%% by Victor Eijkhout, eijkhout@tacc.utexas.edu
 %%%%
-%%%% copyright Victor Eijkhout 2012-8
+%%%% copyright Victor Eijkhout 2012-2020
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -108,26 +108,31 @@ ierr = VecCreate( comm,&vec ); CHKERRQ(ierr).
 (always good idea to catch that error code)
 \end{frame}
 
+\lstset{language=Fortran}
 \begin{frame}[containsverbatim]{About routine prototypes: Fortran}
 Prototype
 \begin{verbatim}
-MPI_Comm_size(comm, size, ierror)
-Type(MPI_Comm), INTENT(IN) :: comm
-INTEGER, INTENT(OUT) :: size
-INTEGER, OPTIONAL, INTENT(OUT) :: ierror
+Subroutine VecCreate( comm,v,ierr )
+Type(MPI_Comm) :: comm
+Vec            :: v
+PetscErrorCode :: ierr
 \end{verbatim}
 Use:
 \begin{verbatim}
 Type(MPI_Comm) :: comm = MPI_COMM_WORLD
-integer :: size
-CALL MPI_Comm_size( comm, size, ierr )
+Vec            :: v
+PetscErrorCode :: ierr
+
+call VecCreate(comm,v,ierr)
 \end{verbatim}
 \begin{itemize}
 \item Final parameter always error parameter. Do not forget!
-\item Most \n{MPI_...} types are \n{INTEGER}.
+\item MPI types are of often \lstinline{Type(MPI_Comm)} and such,
+\item PETSc datatypes are handled through the preprocessor.
 \end{itemize}
 \end{frame}
 
+\lstset{language=Python}
 \begin{frame}[containsverbatim]{About routine prototypes: Python}
 Prototype:
 \begin{verbatim}
@@ -145,7 +150,7 @@ MPI.Request.Waitall(requests)
 \end{verbatim}
 \end{frame}
 
-
+\lstset{language=C}
 \begin{details}
 \frame[containsverbatim]{\frametitle{Note to self}
 \begin{verbatim}

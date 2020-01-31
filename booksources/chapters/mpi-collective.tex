@@ -4,12 +4,22 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-9
+%%%% by Victor Eijkhout, copyright 2012-2020
 %%%%
 %%%% mpi-collective.tex : driver file for the collectives chapter
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+A certain class of MPI routines are called `collective', or more correctly:
+`collective on a communicator'.
+This means that if one in that communicator calls that routine,
+they all need to call that routine.
+In this chapter we will discuss collective routiens
+that are about combining the data on all processes
+in that communicator,
+but there are also operations such as opening a shared file
+that are collective.
 
 \Level 0 {Working with global information}
 \label{sec:collective}
@@ -209,4 +219,42 @@ Finally, there are some advanced topics in collectives.
 \input chapters/mpi-morecollective
 
 \input chapters/mpi-performcollective
+
+\Level 0 {Review questions}
+
+For all true/false questions, if you answer that a statement is false,
+give a one-line explanation.
+
+\begin{enumerate}
+
+\item MPI collectives can be sorted in at least the following categories
+  \begin{enumerate}
+  \item rooted vs rootless
+  \item using uniform buffer lengths vs variable length buffers
+  \item blocking vs non-blocking.
+  \end{enumerate}
+  Give examples of each type.  
+
+\item True or false: there are collective routines that do not
+  communicate user data. If true, give an example.
+
+\item True or false: an \lstinline{MPI_Scatter} call puts the same data on
+  each process.
+
+\item True or false: using the option \lstinline{MPI_IN_PLACE} you
+  only need space for a send buffer in \lstinline{MPI_Reduce}.
+
+\item True or false: using the option \lstinline{MPI_IN_PLACE} you
+  only need space for a send buffer in \lstinline{MPI_Gather}.
+
+\item Given a distributed array, with every processor storing
+\begin{lstlisting}
+double x[N]; // N can vary per processor
+\end{lstlisting}
+give the approximate MPI-based code that computes the maximum value
+in the array, and leaves the result on every processor.
+
+\item With data as in the previous question, given the code for
+normalizing the array.
+\end{enumerate}
 

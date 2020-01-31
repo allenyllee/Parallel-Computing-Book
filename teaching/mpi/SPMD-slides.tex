@@ -176,6 +176,7 @@ No compilation needed. Run:
 
 \sectionframe{We start learning MPI!}
 
+\begin{mpithree}
 \begin{frame}[containsverbatim]{MPI definitions}
 You need an include file:
 \begin{verbatim}
@@ -226,6 +227,7 @@ call MPI_Finalize()     ! F08 style
   very hard to recover from errors in parallel.\\
   Just ignore them~\ldots
 \end{frame}
+\end{mpithree}
 
 \begin{tacc}
 \begin{frame}[containsverbatim]{Python bindings}
@@ -277,6 +279,7 @@ errorcode = MPI_Comm_size( comm,&nprocs );
 (but forget about that error code most of the time)
 \end{frame}
 
+\begin{mpithree}
 \begin{frame}[containsverbatim]{About routine prototypes: Fortran}
 Prototype
 \lstset{language=Fortran}
@@ -302,6 +305,7 @@ CALL MPI_Comm_size( comm, size ) ! F2008 style
 \item Fortran2008: \n{MPI_...} types are \n{Type}.
 \end{itemize}
 \end{frame}
+\end{mpithree}
 
 \begin{frame}[containsverbatim]{About routine prototypes: Python}
 Prototype:

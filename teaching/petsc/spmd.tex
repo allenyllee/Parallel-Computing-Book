@@ -1,11 +1,11 @@
-% -*- latex
+% -*- latex -*-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%
 %%%% This TeX file is part of the tutorial
 %%%% `Introduction to the PETSc library'
 %%%% by Victor Eijkhout, eijkhout@tacc.utexas.edu
 %%%%
-%%%% copyright Victor Eijkhout 2012-9
+%%%% copyright Victor Eijkhout 2012-2020
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -19,19 +19,31 @@
 }
 
 \frame{\frametitle{Pure MPI}
-  \includegraphics[scale=.1]{mpi-node2}
+  \includegraphics[scale=.08]{mpi-node2}
 
   A node has multiple sockets, each with multiple cores.\\
   Pure MPI puts a process on each core: pretend shared memory doesn't exist.
 }
 
 \frame{\frametitle{Hybrid programming}
-  \includegraphics[scale=.1]{mpi-node3}
+  \includegraphics[scale=.08]{mpi-node3}
 
   Hybrid programming puts a process per node or per socket;\\
   further parallelism comes from threading.\\
   Not in this course\ldots
 }
+
+\begin{frame}{Multi-mode programming in PETSc}
+  PETSc is largely aimed at MPI programming; however
+  \begin{itemize}
+  \item You can of course use OpenMP in between PETSc calls;
+  \item there is suppose for GPUs
+\begin{taccnote}
+At the moment only on frontera: \n{module load petsc/3.12-rtx}.
+\end{taccnote}
+  \item OpenMP can be used in external packages.
+  \end{itemize}
+\end{frame}
 
 \begin{frame}{Terminology}
   `Processor' is ambiguous: is that a chip or one independent
@@ -109,7 +121,7 @@ module load python
 \end{frame}
 
 \begin{frame}{In a picture}
-  \includegraphics[scale=.4]{hello-parallel}
+  \includegraphics[scale=.3]{hello-parallel}
 \end{frame}
 
 \begin{frame}[containsverbatim]\frametitle{Process identification}

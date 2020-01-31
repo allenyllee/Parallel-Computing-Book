@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-7
+%%%% by Victor Eijkhout, copyright 2012-2020
 %%%%
 %%%% mpi-data.tex : discussion of MPI datatypes
 %%%%
@@ -38,4 +38,34 @@ are known as \indextermsub{derived}{datatypes}.
 \input chapters/mpi-moredata
 
 \index{datatype|)}
+
+\Level 0 {Review questions}
+
+For all true/false questions, if you answer that a statement is false,
+give a one-line explanation.
+
+\begin{enumerate}
+\item Give two examples of MPI derived datatypes. What parameters are used
+to describe them?
+
+\item Give a practical example where the sender uses a different type to send
+  than the receiver uses in the corresponding receive call. Name the types involved.
+
+\item Fortran only. True or false?
+  \begin{enumerate}
+  \item Array indices can be different between the send and receive buffer arrays.
+  \item It is allowed to send an array section.
+  \item You need to \lstinline{Reshapce} a multi-dimensional array
+    to linear shape before you can send it.
+  \item An allocatable array, when dimensioned and allocated, is
+    treated by MPI as if it were a normal static array, when used as
+    send buffer.
+  \item An allocatable array is allocated if you use it as the receive
+    buffer: it is filled with the incoming data.
+  \end{enumerate}
+\item Fortran only: how do you handle the case where you want to use
+  an allocatable array as receive buffer, but it has not been
+  allocated yet, and you do not know the size of the incoming data?
+
+\end{enumerate}
 

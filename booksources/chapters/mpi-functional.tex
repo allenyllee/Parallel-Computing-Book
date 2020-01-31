@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-9
+%%%% by Victor Eijkhout, copyright 2012-2020
 %%%%
 %%%% mpi-functional.tex : about functional parallelism
 %%%%
@@ -120,4 +120,27 @@ processor, which breaks the symmetry of the parallel run.
 Of course, at the end of a functionally parallel run you need to
 summarize the results, for instance printing out some total.
 The mechanisms for that you will learn next.
+
+\Level 0 {Review questions}
+
+For all true/false questions, if you answer that a statement is false,
+give a one-line explanation.
+
+\begin{exercise}
+  \label{ex:m1}
+  True or false: \n{mpicc} is a compiler.
+\end{exercise}
+
+\begin{exercise}
+  What is the function of a hostfile?
+\end{exercise}
+
+\begin{pcse}
+\begin{exercise}
+    An architecture is called `symmetric' or `uniform' if the
+    relation between any pair of processes is essentially the same.
+    In what way are MPI processes run on stampede symmetric; in what way
+    not?
+\end{exercise}
+\end{pcse}
 

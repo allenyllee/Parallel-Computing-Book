@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-9
+%%%% by Victor Eijkhout, copyright 2012-2020
 %%%%
 %%%% mpi-ptp.tex : about point-to-point communication
 %%%%
@@ -444,5 +444,67 @@ There is a persistent variant
 \indexmpiref{MPI_Bsend_init}
 of buffered sends, as with regular
 sends (section~\ref{sec:persistent}).
+
+\Level 0 {Review questions}
+
+For all true/false questions, if you answer that a statement is false,
+give a one-line explanation.
+
+\begin{enumerate}
+\item Describe a deadlock scenario involving three processors.
+
+\item True or false: a message sent with \lstinline{MPI_Isend} from one processor can be
+  received with an \lstinline{MPI_Recv} call on another processor.
+
+\item True or false: a message sent with \lstinline{MPI_Send} from one processor can be
+  received with an \lstinline{MPI_Irecv} on another processor.
+
+\item Why does the \lstinline{MPI_Irecv} call not have an \lstinline{MPI_Status} argument?
+
+%% one-sided
+\item What is the relation between the concepts of `origin', `target', `fence',
+  and `window' in one-sided communication.
+
+\item What are the three routines for one-sided data transfer?
+
+\lstset{
+  style=reviewcode,
+  language=C,
+}
+
+\item In the following fragments % in figures~\ref{fig:qblockc},\ref{fig:qblockf},
+  assume that all buffers have been
+  allocated with sufficient size. For each fragment note whether it
+  deadlocks or not. Discuss performance issues.
+
+%  \begin{figure}[p]
+    \lstset{language=C,basicstyle=\footnotesize\ttfamily}
+    \lstinputlisting{qblock1}
+    \lstinputlisting{qblock2}
+    \lstinputlisting{qblock3}
+    \lstinputlisting{qblock4}
+    \lstinputlisting{qblock5}
+  %%   \caption{Do these C codes deadlock?}
+  %%   \ref{fig:qblockc}
+  %% \end{figure}
+
+    \pagebreak
+    Fortran codes:
+    
+    \lstset{style=reviewcode,language=Fortran}
+
+%  \begin{figure}[p]
+  \lstset{language=Fortran,basicstyle=\footnotesize\ttfamily}
+  \lstinputlisting{qblock1f}
+  \lstinputlisting{qblock2f}
+  \lstinputlisting{qblock3f}
+  \lstinputlisting{qblock4f}
+  \lstinputlisting{qblock5f}
+  %%   \caption{Do these Fortran codes deadlock?}
+  %%   \ref{fig:qblockf}
+  %% \end{figure}
+
+
+\end{enumerate}
 
 \index{communication!two-sided|)}

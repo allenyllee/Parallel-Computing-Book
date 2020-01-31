@@ -9,6 +9,8 @@
 ####
 ################################################################
 
+info ::
+	@echo && echo "%%%% regression testing %%%%" && echo
 ##
 ## source listing
 ##
@@ -22,6 +24,19 @@ sources :
 clean ::
 	@/bin/rm -f ${EXERCISES}
 	@rm -f *.out_total *.out[0-9]*
+
+.PHONY: missing
+missing ::
+	@export sources=`make sources` \
+	&& m="" \
+	&& for s in $${sources} ; do \
+	     if [ `grep run_$${s} ../course-support/Make.mpi_regress | wc -l` -eq 0 ] ; then \
+	        m="$${m} $${s}" ; \
+	     fi ; \
+	   done \
+	&& if [ "$${m}" != "" ] ; then \
+	      echo "Missing regression tests: $${m}" ; \
+	   fi
 
 ##
 ## regression

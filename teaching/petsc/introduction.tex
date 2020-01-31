@@ -4,7 +4,7 @@
 %%%% This TeX file is part of the tutorial
 %%%% `Introduction to the PETSc library'
 %%%% Victor Eijkhout, eijkhout@tacc.utexas.edu
-%%%% copyright Victor Eijkhout 2012-6
+%%%% copyright Victor Eijkhout 2012-2020
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -51,6 +51,14 @@ Why use it? It's big, powerful, well supported.
   \end{itemize}
 }
 
+\frame{
+ \includegraphics[scale=.5]{petscwww}
+}
+
+\frame{
+ \includegraphics[scale=.45]{zoom}
+}
+
 \begin{frame}[containsverbatim]{Documentation and help}
 \begin{itemize}
 \item Web page: \url{http://www.mcs.anl.gov/petsc/}
@@ -64,14 +72,6 @@ et cetera
 \verb+$PETSC_DIR/include/petscmat.h+
 \end{itemize}
 \end{frame}
-
-\frame{
- \includegraphics[scale=.5]{petscwww}
-}
-
-\frame{
- \includegraphics[scale=.45]{zoom}
-}
 
 \begin{details}
 \frame[containsverbatim]{\frametitle{External packages}
@@ -130,7 +130,7 @@ Overloading:
 \begin{verbatim}
   MATMult(A,x,y); // y <- A x
 \end{verbatim}
-same for sequential, parallel, dense, sparse
+same for sequential, parallel, dense, sparse, FFT
 }
 
 \frame[containsverbatim]{\frametitle{Data hiding}
@@ -140,4 +140,6 @@ To support this uniform interface, the implementation is hidden:
 \end{verbatim}
 There are some direct access routines, but most of the time you don't
 need them.
+
+(And don't worry about function call overhead.)
 }

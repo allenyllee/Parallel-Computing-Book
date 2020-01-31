@@ -23,6 +23,17 @@
   \end{itemize}
 \end{frame}
 
+\begin{frame}{Technically}
+  Routines can be `collective on a communicator': 
+  \begin{itemize}
+  \item They involve a communicator;
+  \item if one process calls that routine, every process in that
+    communicator needs to call it
+  \item Mostly about combining data, but also opening shared files,
+    declaring `windows' for one-sided communication.
+  \end{itemize}
+\end{frame}
+
 \sectionframe{Concepts}
 
 \begin{frame}[containsverbatim]\frametitle{Collectives}
