@@ -216,3 +216,10 @@
   \egroup\nobreak
 }
 \let\indexmpiref\indexmpishow
+
+\newcommand\petscroutineslide[1]{
+  \begin{frame}[containsverbatim]{#1}
+    \footnotesize
+    \verbatiminput{#1}
+  \end{frame}
+}

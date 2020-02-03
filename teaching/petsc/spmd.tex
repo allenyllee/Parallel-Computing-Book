@@ -19,18 +19,18 @@
 }
 
 \frame{\frametitle{Pure MPI}
-  \includegraphics[scale=.08]{mpi-node2}
+  \includegraphics[scale=.06]{mpi-node2}
 
   A node has multiple sockets, each with multiple cores.\\
   Pure MPI puts a process on each core: pretend shared memory doesn't exist.
 }
 
 \frame{\frametitle{Hybrid programming}
-  \includegraphics[scale=.08]{mpi-node3}
+  \includegraphics[scale=.06]{mpi-node3}
 
   Hybrid programming puts a process per node or per socket;\\
   further parallelism comes from threading.\\
-  Not in this course\ldots
+  No use of threading in PETSc
 }
 
 \begin{frame}{Multi-mode programming in PETSc}
@@ -85,9 +85,9 @@ At the moment only on frontera: \n{module load petsc/3.12-rtx}.
 \begin{frame}[containsverbatim]{Do I need a supercomputer?}
   \begin{itemize}
   \item With \n{mpiexec} and such, you start a bunch of processes that
-    execute your MPI program.
+    execute your PETSc program.
   \item Does that mean that you need a cluster or a big multicore?
-  \item No! You can start a large number of MPI processes, even on
+  \item No! You can start a large number of processes, even on
     your laptop. The OS will use `time slicing'.
   \item Of course it will not be very efficient\ldots
   \end{itemize}
@@ -108,24 +108,13 @@ At the moment only on frontera: \n{module load petsc/3.12-rtx}.
   by a job scheduler.
 \end{frame}
 
-\begin{frame}[containsverbatim]{How to make exercises}
-  \begin{itemize}
-  \item Directory: \n{exercises-3.10-c} or \n{f} or (maybe) \n{p}
-  \item Type \n{make exercisename} to compile it
-  \item Python: setup once per session
-\begin{verbatim}
-module load python
-\end{verbatim}
-    No compilation needed. Run:\\ \n{ibrun python yourprogram}
-  \end{itemize}
-\end{frame}
-
 \begin{frame}{In a picture}
   \includegraphics[scale=.3]{hello-parallel}
 \end{frame}
 
 \begin{frame}[containsverbatim]\frametitle{Process identification}
-Every process has a number (with respect to a communicator)
+  \label{sl:ranksize}
+  Every process has a number (with respect to a communicator)
 \begin{verbatim}
 int MPI_Comm_rank( MPI_Comm comm, int *procno )
 int MPI_Comm_size( MPI_Comm comm, int *nprocs )

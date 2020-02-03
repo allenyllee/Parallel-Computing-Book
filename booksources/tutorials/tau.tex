@@ -105,31 +105,27 @@ paraprof tau_profile
 Viewing the traces takes a few steps:
 \begin{verbatim}
 cd tau_trace
-rm -f tau.trc tau.edf
+rm -f tau.trc tau.edf align.trc align.edf
 tau_treemerge.pl
-tau2slog2 tau.trc tau.edf -o yourprogram.slog2 
+tau_timecorrect tau.trc tau.edf align.trc align.edf
+tau2slog2 align.trc align.edf -o yourprogram.slog2
 \end{verbatim}
-The \n{slog2} file can then be viewed with \indextermtt{jumpshot}:
+If you skip the \indextermtt{tau_timecorrect} step, you can generate the
+\n{slog2} file by:
+\begin{verbatim}
+tau2slog2 tau.trc tau.edf -o yourprogram.slog2
+\end{verbatim}
+
+The \n{slog2} file can be viewed with \indextermtt{jumpshot}:
 \begin{verbatim}
 jumpshot yourprogram.slog2
 \end{verbatim}
 
 \Level 1 {Sample output}
 
-\begin{figure}[ht]
-\includegraphics[scale=.3]{tau-bucketblock}
-\caption{Trace of a bucket brigade broadcast}
-\label{fig:tau-bucketblock}
-\end{figure}
-
-%% \begin{figure}[ht]
-%% \includegraphics{tau-bucketpipe}
-%% \caption{Trace of a pipelined bucket brigade broadcast}
-%% \label{fig:tau-bucketpipe}
-%% \end{figure}
-
-Consider a very simple broadcast, executed by each processor (except for the first)
-receiving data from its predecessor and sending it to its successor.
+Let's consider a \indexterm{bucket brigade} implementation of a broadcast:
+each process sends its data to the next higher rank. 
+%
 \begin{lstlisting}
 int sendto =
     ( procno<nprocs-1 ? procno+1 : MPI_PROC_NULL )
@@ -143,10 +139,38 @@ myvalue = leftdata
 MPI_Send( myvalue,1,MPI_DOUBLE,sendto,0,comm);
 \end{lstlisting}
 
-Figure~\ref{fig:tau-bucketblock} illustrates this on 4~nodes with 4~processes each.
-\begin{itemize}
-\item You see all processes posting a receive pretty much simultaneously;
-\item but the conclusion of the receives happens in sequence.
-\end{itemize}
+We implement the bucket brigade
+with blocking sends and receives: each process waits to receive from its
+predecessor, before sending to its successor.
+%
+\cverbatimsnippet{bucketblock}
+%
+\begin{figure}[ht]
+\includegraphics[scale=.3]{tau-bucketblock}
+\caption{Trace of a bucket brigade broadcast}
+\label{fig:tau-bucketblock}
+\end{figure}
+%
+The TAU trace of this is in figure~\ref{fig:tau-bucketblock},
+using 4~nodes of 4~ranks each.
+We see that the processes within each node are fairly well synchronized,
+but there is less synchronization between the nodes.
+However, the bucket brigade then imposes its own synchronization on the processes
+because each has to wait for its predecessor, no matter if it posted
+the receive operation early.
+
+Next, we introduce pipelining into this operation:
+each send is broken up into parts, and these parts are sent
+and received with non-blocking calls.
+%
+\cverbatimsnippet{bucketpiperecv}
+%
+\begin{figure}[ht]
+\includegraphics[scale=.3]{tau-bucketpipe}
+\caption{Trace of a pipelined bucket brigade broadcast}
+\label{fig:tau-bucketpipe}
+\end{figure}
+%
+The TAU trace is in figure~\ref{fig:tau-bucketpipe}.
 
 \index{TAU|)}

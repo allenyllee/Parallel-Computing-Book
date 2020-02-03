@@ -54,11 +54,7 @@ Much like in C; uses cpp
 }
 
 \frame[containsverbatim]{\frametitle{Library setup, C}
-\begin{verbatim}
-  ierr = PetscInitialize(&argc,&argv,0,0); CHKERRQ(ierr); 
-// all the petsc work
-  ierr = PetscFinalize(); CHKERRQ(ierr);
-\end{verbatim}
+\cverbatimsnippet{petscinit}
 Can replace \verb+MPI_Init+
 
 General: Every routine has an error return. Catch that value!
@@ -86,11 +82,13 @@ from process zero.
 
 \begin{itemize}
 \item Start with the template code \n{hello.c}/\n{hello.F}
+\item (or see slide~\ref{sl:ranksize})
 \item Compile with \n{make hello}
 \item Part two: use \n{PetscSynchronizedPrintf}
 \end{itemize}
 \end{exerciseframe}
 
+\petscroutineslide{PetscPrintf}
 
 \begin{frame}[containsverbatim]{About routine prototypes: C/C++}
   \label{sec:protos}
@@ -137,16 +135,16 @@ call VecCreate(comm,v,ierr)
 Prototype:
 \begin{verbatim}
 # object method
-MPI.Comm.Send(self, buf, int dest, int tag=0)
+PETSc.Mat.setSizes(self, size, bsize=None)
 # class method
-MPI.Request.Waitall(type cls, requests, statuses=None)
+PETSc.Sys.Print(type cls, *args, **kwargs)
 \end{verbatim}
 Use:
 \begin{verbatim}
-from mpi4py import MPI
-comm = MPI.COMM_WORLD
-comm.Send(sendbuf,dest=other)
-MPI.Request.Waitall(requests)
+from petsc4py import PETSc
+PETSc.Sys.Print("detecting n option")
+A = PETSc.Mat().create(comm=comm)
+A.setSizes( ( (None,matrix_size), (None,matrix_size) ) )
 \end{verbatim}
 \end{frame}
 

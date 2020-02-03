@@ -110,13 +110,17 @@ All objects in Petsc are defined on a communicator;\\
 can only interact if on the same communicator
 \item
 Parallelism through MPI
+\item 
+Transparent: same code works sequential and parallel.
 \item
 No OpenMP used in the library:\\
 user can use shared memory programming.
 \item
 Likewise, threading is kept outside of PETSc code: not thread-safe.
-\item 
-Transparent: same code works sequential and parallel.
+\item Limited \ac{GPU} support; know what you're doing!
+\begin{taccnote}
+Only available on the Frontera RTX nodes (single precision).
+\end{taccnote}
 \end{itemize}
 
 }

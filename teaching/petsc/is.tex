@@ -4,7 +4,7 @@
 %%%% This TeX file is part of the tutorial
 %%%% `Introduction to the PETSc library'
 %%%% Victor Eijkhout, eijkhout@tacc.utexas.edu
-%%%% copyright Victor Eijkhout 2012-6
+%%%% copyright Victor Eijkhout 2012-2020
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -83,94 +83,11 @@ ierr = ISDestroy(&indices);
 
 \frame[containsverbatim]{\frametitle{Example: even and odd indices}
 \small
-\begin{verbatim}
-if (mytid==0) {
-  ierr = ISCreateStride
-    (MPI_COMM_SELF,(N+1)/2,0,2, &gindices);  // even
-} else {
-  ierr = ISCreateStride
-    (MPI_COMM_SELF,N/2,1,2, &gindices);  // odd
-}
-ierr = ISGetSize(gindices,&localsize); 
-/* create a vector with the requisite local size */
-ierr = VecCreate(MPI_COMM_WORLD,&in); 
-ierr = VecSetType(in,VECMPI); 
-ierr = VecSetSizes(in,localsize,N); 
-\end{verbatim}
+\cverbatimsnippet{isoddeven}
 }
 
-\frame[containsverbatim]{
-Create local target vectors:
+\frame[containsverbatim]{\frametitle{scattering odd and even}
 \small
-\begin{verbatim}
-/* create IS objects for the target locations */
-ierr = ISCreateStride
-  (MPI_COMM_SELF,localsize,0,1,&lindices); 
-/* output vector is local */
-ierr = VecCreate(MPI_COMM_SELF,&out); 
-ierr = VecSetType(out,VECSEQ); 
-ierr = VecSetSizes(out,localsize,localsize); 
-\end{verbatim}
+\cverbatimsnippet{vsoddeven}
 }
 
-\frame[containsverbatim]{
-Create and apply scatter:
-\small
-\begin{verbatim}
-  /* create a scatter from the source indices to target */
-  ierr = VecScatterCreate(in,gindices,out,lindices,&scatter); 
-  /* index sets are no longer needed */
-  ierr = ISDestroy(&gindices); 
-  ierr = ISDestroy(&gindices); 
-
-  ierr = VecScatterBegin
-(scatter,in,out,INSERT_VALUES,SCATTER_FORWARD); 
-  ierr = VecScatterEnd
-(scatter,in,out,INSERT_VALUES,SCATTER_FORWARD); 
-  VecView(out,0);
-\end{verbatim}
-}
-
-\frame[containsverbatim]{
-\tiny
-\begin{verbatim}
-Vector Object: 1 MPI processes
-  type: seq
-0
-2
-4
-6
-8
-10
-12
-14
-16
-18
-20
-Vector Object: 1 MPI processes
-  type: seq
-1
-3
-5
-7
-9
-11
-13
-15
-17
-19
-21
-\end{verbatim}
-}
-
-\frame[containsverbatim]{\frametitle{Same, but distributed output
-    vector}
-\begin{verbatim}
-/* create IS objects for the target locations */
-ierr = VecGetOwnershipRange(in,&myfirst,PETSC_NULL); 
-ierr = ISCreateStride
-  (MPI_COMM_SELF,localsize,myfirst,1,&lindices); 
-/* output vectors will have the same size & layout as input */
-ierr = VecDuplicate(in,&out); 
-\end{verbatim}
-}

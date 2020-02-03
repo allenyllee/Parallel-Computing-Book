@@ -5,7 +5,7 @@
 %%%% `Introduction to the PETSc library'
 %%%% by Victor Eijkhout, eijkhout@tacc.utexas.edu
 %%%%
-%%%% copyright Victor Eijkhout 2012-8
+%%%% copyright Victor Eijkhout 2012-2020
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -100,15 +100,23 @@ VecSet(Vec x,PetscScalar value);
 Set individual elements (global indexing!):
 \begin{verbatim}
 VecSetValue(Vec x,int row,PetscScalar value, InsertMode mode);
-VecSetValues(Vec x,int n,int *rows,PetscScalar *values,
-    InsertMode mode); // INSERT_VALUES or ADD_VALUES
 
 i = 1; v = 3.14;
 VecSetValue(x,i,v,INSERT_VALUES);
+
+call VecSetValue(x,i,v,INSERT_VALUES,ierr,e)
+\end{verbatim}
+}
+
+\frame[containsverbatim]{\frametitle{Setting values by block}
+Set individual elements (global indexing!):
+\begin{verbatim}
+VecSetValues(Vec x,int n,int *rows,PetscScalar *values,
+    InsertMode mode); // INSERT_VALUES or ADD_VALUES
+
 ii[0] = 1; ii[1] = 2; vv[0] = 2.7; vv[1] = 3.1;
 VecSetValues(x,2,ii,vv,INSERT_VALUES);
 
-call VecSetValue(x,i,v,INSERT_VALUES,ierr,e)
 ii(1) = 1; ii(2) = 2; vv(1) = 2.7; vv(2) = 3.1
 call VecSetValues(x,2,ii,vv,INSERT_VALUES,ierr,e)
 \end{verbatim}
