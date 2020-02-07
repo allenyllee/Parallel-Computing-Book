@@ -13,45 +13,50 @@
 
 \frame[containsverbatim]{\frametitle{Include files}
 C:
-\begin{verbatim}
+\begin{lstlisting}
 #include "petsc.h"
 int main(int argc,char **argv)
-\end{verbatim}
+\end{lstlisting}
 Fortran:
-\begin{verbatim}
+\lstset{language=Fortran}
+\begin{lstlisting}
 program basic
 #include <petsc/finclude/petsc.h>
   use petsc
   implicit none
-\end{verbatim}
+\end{lstlisting}
 Python:
-\begin{verbatim}
+\lstset{language=Python}
+\begin{lstlisting}
 from petsc4py import PETSc
-\end{verbatim}
+\end{lstlisting}
 }
 
+\lstset{language=C}
 \frame[containsverbatim]{\frametitle{Variable declarations, C}
-\begin{verbatim}
+\begin{lstlisting}
   KSP            solver;
   Mat            A;
   Vec            x,y;
   PetscInt       n = 20;
   PetscScalar    v;
   PetscReal      nrm;
-\end{verbatim}
+\end{lstlisting}
 Note Scalar vs Real
 }
+\lstset{language=Fortran}
 \frame[containsverbatim]{\frametitle{Variable declarations, F}
-\begin{verbatim}
+\begin{lstlisting}
   KSP            :: solver
   Mat            :: A
   Vec            :: x,y
   PetscInt       :: j(3)
   PetscScalar    :: mv
   PetscReal      :: nrm
-\end{verbatim}
+\end{lstlisting}
 Much like in C; uses cpp
 }
+\lstset{language=C}
 
 \frame[containsverbatim]{\frametitle{Library setup, C}
 \cverbatimsnippet{petscinit}
@@ -60,13 +65,14 @@ Can replace \verb+MPI_Init+
 General: Every routine has an error return. Catch that value!
 }
 
+\lstset{language=Fortran}
 \frame[containsverbatim]{\frametitle{Library setup, F}
-\begin{verbatim}
+\begin{lstlisting}
   call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       CHKERRQ(ier)
 // all the petsc work
   call PetscFinalize(ierr); CHKERRQ(ier)
-\end{verbatim}
+\end{lstlisting}
 Error code is now final parameter. This holds for every PETSc routine.
 
 \begin{itemize}
@@ -74,6 +80,27 @@ Error code is now final parameter. This holds for every PETSc routine.
 \item \n{CKKERRQ} in subprograms
 \end{itemize}
 }
+\lstset{language=C}
+
+\begin{frame}[containsverbatim]{A word about datatypes}
+PETSc programs can not mix single and double precision, nor real/complex:\\
+\lstinline{PetscScalar} is single/double/complex depending on the installation.
+
+Similarly, \lstinline{PetscInt} is 32/64 bit depending.
+
+Other scalar data types: \lstinline{PetscBool}, \lstinline{PetscErrorCode}
+
+\begin{taccnote}
+\begin{verbatim}
+module avail petsc
+
+module load petsc/3.12
+# other installations:
+3.12-single/complex/i64/complexi64
+\end{verbatim}
+\end{taccnote}
+
+\end{frame}
 
 \begin{exerciseframe}[hello]
 Look up the function \n{PetscPrintf} and print a message\\
@@ -93,41 +120,46 @@ from process zero.
 \begin{frame}[containsverbatim]{About routine prototypes: C/C++}
   \label{sec:protos}
 Prototype:
-\begin{verbatim}
+\begin{lstlisting}
 PetscErrorCode VecCreate(MPI_Comm comm,Vec *v);
-\end{verbatim}
+\end{lstlisting}
 Use:
-\begin{verbatim}
+\begin{lstlisting}
 PetscErrorCode ierr;
 MPI_Comm comm = MPI_COMM_WORLD;
 Vec v;
 ierr = VecCreate( comm,&vec ); CHKERRQ(ierr).
-\end{verbatim}
+\end{lstlisting}
 (always good idea to catch that error code)
 \end{frame}
 
 \lstset{language=Fortran}
 \begin{frame}[containsverbatim]{About routine prototypes: Fortran}
+\begin{multicols}{2}
+\footnotesize
 Prototype
-\begin{verbatim}
+\begin{lstlisting}
 Subroutine VecCreate( comm,v,ierr )
 Type(MPI_Comm) :: comm
 Vec            :: v
 PetscErrorCode :: ierr
-\end{verbatim}
+\end{lstlisting}
 Use:
-\begin{verbatim}
+\begin{lstlisting}
 Type(MPI_Comm) :: comm = MPI_COMM_WORLD
 Vec            :: v
 PetscErrorCode :: ierr
 
 call VecCreate(comm,v,ierr)
-\end{verbatim}
+\end{lstlisting}
+\columnbreak
 \begin{itemize}
 \item Final parameter always error parameter. Do not forget!
 \item MPI types are of often \lstinline{Type(MPI_Comm)} and such,
 \item PETSc datatypes are handled through the preprocessor.
 \end{itemize}
+\hbox{}\vfill\hbox{}
+\end{multicols}
 \end{frame}
 
 \lstset{language=Python}
@@ -176,6 +208,45 @@ leads to informative tracebacks.
 (Only in C, not in Fortran)
 }
 
+\begin{frame}[containsverbatim]{Example: function with error}
+\cverbatimsnippet{petscbacktrace}
+\end{frame}
+
+\begin{frame}[containsverbatim]{Example: error traceback}
+\footnotesize
+\begin{verbatim}
+[0]PETSC ERROR: We cannot go on like this
+[0]PETSC ERROR: See https://www.mcs.anl.gov/petsc/documentation/faq.html for trouble shooting.
+[0]PETSC ERROR: Petsc Release Version 3.12.2, Nov, 22, 2019
+[0]PETSC ERROR: backtrace on a [computer name]
+[0]PETSC ERROR: Configure options [all options]
+[0]PETSC ERROR: #1 this_function_bombs() line 20 in backtrace.c
+[0]PETSC ERROR: #2 main() line 30 in backtrace.c
+\end{verbatim}
+\end{frame}
+
+\begin{exerciseframe}[root]
+Start with \n{root.c}. Write a function that computes a square root,
+or displays an error on negative input:
+Look up the definition of \indexpetscshow{SETERRQ1}.
+\begin{lstlisting}
+  x = 1.5; ierr = square_root(x,&rootx); CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_WORLD,"Root of %f is %f\n",x,rootx);
+  x = -2.6; ierr = square_root(x,&rootx); CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_WORLD,"Root of %f is %f\n",x,rootx);
+\end{lstlisting}
+This should give as output:
+\begin{verbatim}
+Root of 1.500000 is 1.224745
+[0]PETSC ERROR: ----- Error Message ----------------------------------------------
+[0]PETSC ERROR: Cannot compute the root of -2.600000
+[...]
+[0]PETSC ERROR: #1 square_root() line 23 in root.c
+[0]PETSC ERROR: #2 main() line 39 in root.c
+\end{verbatim}
+Fortran: you need to set the \n{ierr} value yourself.
+\end{exerciseframe}
+
 \begin{frame}[containsverbatim]{Program parameters, C}
 (I'm leaving out the \n{CHKERRQ(ierr)} in the examples,\\
 but do use this in actual code)
@@ -207,6 +278,14 @@ Less elegant than \n{PetscPrintf} in C
 Note the \n{PETSC_NULL_XXX}: Fortran has strict type checking.
 }
 \end{details}
+
+\lstset{language=Python}
+\begin{frame}[containsverbatim]{Program parameters, Python}
+\begin{lstlisting}
+nlocal = PETSc.Options().getInt("n",10)
+\end{lstlisting}
+\end{frame}
+\lstset{language=C}
 
 \endinput
 

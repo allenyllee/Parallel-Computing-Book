@@ -91,6 +91,8 @@ that are real: for instance, the norm of a complex vector is a real
 number. For that reason, PETSc also has the type
 \indexpetscdef{PetscReal}. There is also an explicit \indexpetscdef{PetscComplex}.
 
+\Level 1 {Integers}
+
 Integers in PETSc are likewise of a size determined at installation
 time: \indexpetscdef{PetscInt} can be 32 or 64 bits. Furthermore,
 there is a \indexpetscdef{PetscErrorCode} type for catching the return
@@ -101,7 +103,7 @@ code of PETSc routines.
 Numbers of type \indexpetscshow{PetscComplex} have a precision
 matching \indexpetscshow{PetscReal}.
 
-Form a complex number as
+Form a complex number using \indexpetscdef{PETSC_i}:
 \begin{lstlisting}
 PetscComplex x = 1.0 + 2.0 * PETSC_i;
 \end{lstlisting}
@@ -206,6 +208,23 @@ n \leftarrow \|x\|_2\\
 \end{array}
 \]
 \end{exercise}
+
+\Level 2 {Split collectives}
+
+MPI is capable (in principle) of `overlapping computation and communication',
+or \indextermbus{latency}{hiding}. PETSc supports this
+by splitting norms and inner products into two phases.
+\begin{itemize}
+\item Start inner product~/ norm with \indexpetscdef{VecDotBegin}~/
+  \indexpetscdef{VecNormBegin};
+\item Conclude inner product~/ norm with \indexpetscdef{VecDotEnd}~/
+  \indexpetscdef{VecNormEnd};
+\end{itemize}
+Even if you achieve no overlap, it is possible to use these calls to
+combine a number of `collectives': do the \n{Begin} calls of one inner
+product and one norm; then do (in the same sequence) the \n{End} calls.
+This means that only a single reduction is performed on a two-word
+package, rather than two separate reductions on a single word.
 
 \Level 1 {Vector elements}
 
@@ -354,6 +373,10 @@ since a process stores a full block row you may expect the local column size
 to be the full matrix size, but that is not true.
 The exact definition will be discussed later, but for square matrices it is a safe
 strategy to let the local row and column size to be equal.
+
+Instead of querying a matrix size and creating vectors accordingly,
+the routine \indexpetscref{MatCreateVecs} can be used.
+(Sometimes this is even required; see section~\ref{sec:petscfft}.)
 
 \Level 1 {Nonzero structure}
 
@@ -569,11 +592,15 @@ Somewhat confusingly, the Get routine also has a \lstinline{void*}
 argument, even though it's really a pointer variable.
 
 \Level 1 {Fourier transform}
+\label{sec:petscfft}
 
 The \indexac{FFT} can be considered a matrix-vector multiplication.
 PETSc supports this by letting you create a matrix with \indexpetscdef{MatCreateFFT}.
 This requires that you add an FFT library, such as \indexterm{fftw},
 at configuration time; see section~\ref{sec:petsc-external}.
+
+FFT libraries may use padding, so vectors should be created with
+\indexpetscshow{MatCreateVecs}, not with an independent \indexpetscshow{VecSetSizes}.
 
 \Level 0 {DMDA: distributed arrays}
 
@@ -630,8 +657,8 @@ The \indexpetscref{VecScatterCreate} call has as arguments:
 \item An input vector. From this, the parallel layout is used; any
   vector being scattered from should have this same layout.
 \item An \lstinline{IS} object describing what indices are being
-  scattered; if the whole vector is rearranged, \lstinline{NULL} can
-  be given.
+  scattered; if the whole vector is rearranged, \lstinline{NULL}
+  (Fortran: \lstinline{PETSC_NULL_IS}) can be given.
 \item An output vector. From this, the parallel layout is used; any
   vector being scattered into should have this same layout.
 \item An \lstinline{IS} object describing what indices are being

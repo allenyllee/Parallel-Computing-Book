@@ -83,8 +83,9 @@
 
 \newenvironment
     {exerciseframe}[1][]
-    {\begin{frame}[containsverbatim]
-        \def\optfile{#1}
+    {\def\optfile{#1}
+      \ifx\optfile\empty\else\message{VLE EXERCISE #1}\index[programming]{#1}\fi
+      \begin{frame}[containsverbatim]
         \ifx\optfile\empty
         \frametitle{Exercise \arabic{excounter}}
         \else
@@ -123,12 +124,14 @@
 }
 
 %%%%
-%%%% Indexing disabled
+%%%% Indexing, mostly disabled
 %%%%
 
-% \input idxmacs
-%% \usepackage{makeidx}
-%% \makeindex
+\newenvironment{theindex}{}{}% slides don't normally have an index
+%\usepackage[makeindex]{imakeidx}
+\usepackage{imakeidx}
+\makeindex
+\makeindex[name=programming,title=Programming exercises]
 
 \let\indexterm\emph
 \let\indextermtt\n

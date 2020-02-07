@@ -227,7 +227,7 @@ writing to a temporary file.
 
 MPI operators (\indexmpishow{MPI_Op}) do not return an error code. In case of
 an error they call \indexmpishow{MPI_Abort}; if \indexmpishow{MPI_ERRORS_RETURN}
-is the error handler, errors may be silently ignore.
+is the error handler, error codes may be silently ignored.
 
 You can create your own error handler with
 \indexmpidef{MPI_Comm_create_errhandler}, which is then installed with

@@ -2,7 +2,7 @@
 ################################################################
 ####
 #### This makefile is part of `Parallel Programming in MPI and OpenMP'
-#### by Victor Eijkhout, copyright 2013-9
+#### by Victor Eijkhout, copyright 2013-2020
 #### eijkhout@tacc.utexas.edu
 ####
 #### Makefile for  MPI course exercises in Fortran2008

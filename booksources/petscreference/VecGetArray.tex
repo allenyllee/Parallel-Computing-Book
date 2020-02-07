@@ -16,27 +16,12 @@ Input Parameters
 x : the vector
 a : location of pointer to array obtained from VecGetArray()
 
-Fortran:
+Fortran90:
 #include <petsc/finclude/petscvec.h>
 use petscvec
 VecGetArrayF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
 (there is a Fortran77 version)
-
-Input Parameter
-x : vector
-
-Output Parameters
-xx_v- the Fortran90 pointer to the array
-ierr- error code
-
 VecRestoreArrayF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
-
-Input Parameters
-x : vector
-xx_v : the Fortran90 pointer to the array
-
-Output Parameter
-ierr : error code 
 
 Python:
 PETSc.Vec.getArray(self, readonly=False)

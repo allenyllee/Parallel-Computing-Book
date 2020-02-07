@@ -4,7 +4,7 @@
 ####
 #### This makefile is part of the source of 
 #### "Parallel Computing for Science and Engineering"
-#### by Victor Eijkhout, copyright 2013-9
+#### by Victor Eijkhout, copyright 2013-2020
 ####
 #### Make include file for clean rules
 ####
@@ -20,6 +20,7 @@ local_clean ::
 	@/bin/rm -rf *.o *~ *.gch a.out *.dSYM MULTI__* events.* *.mod \
 	    *.{a,aux,blg,idx,ilg,ind,log,mod,o,out,svn,toc} \
 	    idev[0-9]*.o[0-9]* ddt.o[0-9]* jobtest.o* tautrace_* \
+	    dcvserver.out \
 	    ${APPS}
 recursive_clean  :
 	@for d in * ; do \

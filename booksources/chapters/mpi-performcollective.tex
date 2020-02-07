@@ -4,7 +4,7 @@
 %%%%
 %%%% This text file is part of the source of 
 %%%% `Parallel Programming in MPI and OpenMP'
-%%%% by Victor Eijkhout, copyright 2012-9
+%%%% by Victor Eijkhout, copyright 2012-2020
 %%%%
 %%%% mpi-performcollective.tex : performance issues
 %%%%
@@ -117,3 +117,12 @@ of the network, sending to $P/4$ and $3P/4$ respectively.
 
   Make sure to test that the data is correctly propagated.
 \end{exercise}
+
+MPI implementations often have multiple algorithms, which they
+dynamicaly switch between. Sometimes you can determine the choice yourself
+through environment variables.
+
+\begin{taccnote}
+  For \indextermbus{Intel}{MPI}, see
+  \url{https://software.intel.com/en-us/mpi-developer-reference-linux-i-mpi-adjust-family-environment-variables}.
+\end{taccnote}

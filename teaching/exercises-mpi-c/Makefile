@@ -31,7 +31,7 @@ info ::
 	@echo "    support options:"
 	@echo "      bucketblock : N"
 
-include ../../makefiles/Make.compile
+include ../course-support/Make.compile
 
 .SECONDEXPANSION:
 ${EXERCISES} : $$@.o

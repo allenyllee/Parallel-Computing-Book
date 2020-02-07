@@ -4,7 +4,7 @@
 %%%% This TeX file is part of the tutorial
 %%%% `Introduction to the PETSc library'
 %%%% Victor Eijkhout, eijkhout@tacc.utexas.edu
-%%%% copyright Victor Eijkhout 2012-6
+%%%% copyright Victor Eijkhout 2012-2020
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -16,7 +16,7 @@ DMDAs are for storing vector field, not matrix.
 
 Support for different stencil types:
 
-\includegraphics[scale=.1]{starbox}
+\includegraphics[scale=.07]{starbox}
 }
 
 \frame[containsverbatim]{\frametitle{Ghost regions around processors}
@@ -24,7 +24,7 @@ A DMDA defines a global vector, which contains the elements of the grid,
 and a local vector for each processor which
 has space for "ghost points".
 
-\includegraphics[scale=.5]{ghost}
+\includegraphics[scale=.6]{ghost}
 }
 
 \frame[containsverbatim]{\frametitle{DMDA construction}
@@ -69,6 +69,7 @@ DMLocalToLocalBegin/End
 \frame[containsverbatim]{\frametitle{Associated matrix}
 Matrix that has knowledge of the grid:
 \begin{verbatim}
+DMSetUp(DM grid);
 DMCreateMatrix(DM grid,Mat *J)
 \end{verbatim}
 Set matrix values based on stencil:
@@ -79,14 +80,16 @@ MatSetValuesStencil(Mat mat,
   const PetscScalar v[],InsertMode addv)
 \end{verbatim}
 (ordering of row/col variables too complicated for \n{MatSetValues})
-
-Loop over local part of the grid:
-\begin{verbatim}
-DMDAGetCorners(DMDA da,
-  PetscInt *x,PetscInt *y,PetscInt *z,
-  PetscInt *m,PetscInt *n,PetscInt *p)
-\end{verbatim}
 }
+
+%% \begin{frame}[containsverbatim]{Looping over the grid}
+%% Loop over local part of the grid:
+%% \begin{verbatim}
+%% DMDAGetCorners(DMDA da,
+%%   PetscInt *x,PetscInt *y,PetscInt *z,
+%%   PetscInt *m,PetscInt *n,PetscInt *p)
+%% \end{verbatim}
+%% \end{frame}
 
 \begin{frame}[containsverbatim]{Grid info}
 \begin{verbatim}
@@ -104,10 +107,31 @@ typedef struct {
 \end{verbatim}
 \end{frame}
 
+\begin{frame}[containsverbatim]{Set values by stencil}
+\begin{lstlisting}
+DMDALocalInfo  info;
+ierr = DMDAGetLocalInfo(grid,&info);CHKERRQ(ierr);
+for (int j=info.ys; j<info.ys+info.ym; j++) {
+  for (int i=info.xs; i<info.xs+info.xm; i++) {
+    MatStencil  row = {0}, col[5 ] = {{0}};
+    PetscScalar v[ 5 ];
+    PetscInt    ncols = 0;
+    row.j        = j; row.i = i;
+    // diagonal element:
+    col[ncols].j = j; col[ncols].i = i; v[ncols++] = 4.;
+    /* boundaries: top row */
+    if (i>0)         {col[ncols].j = j;   col[ncols].i = i-1; v[ncols++] = -1.;}
+    /* boundary left and right */
+    if (j>0)         {col[ncols].j = j-1; col[ncols].i = i;   v[ncols++] = -1.;}
+    if (j<info.my-1) {col[ncols].j = j+1; col[ncols].i = i;   v[ncols++] = -1.;}
+[et cetera]    
+\end{lstlisting}
+\end{frame}
+
 \begin{frame}{DMPlex}
   Support for unstructured grids and node/edge/cell relations.
 
-  This is still preliminary (and therefore under-documented).
+  This is complicated and under-documented.
 \end{frame}
 
 \endinput

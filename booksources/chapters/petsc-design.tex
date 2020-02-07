@@ -246,6 +246,27 @@ section~\ref{sec:petsc-options}.
 
 \cverbatimsnippet{petscinit}
 
+There are two further arguments to \indexpetscshow{PetscInitialize}:
+\begin{enumerate}
+\item the name of an options database file; and
+\item a help string, that is displayed if you run your program with the \n{-h} option.
+\end{enumerate}
+
+\fverbatimsnippet{petscinitf}
+
+\begin{fortrannote}
+  \begin{itemize}
+  \item
+    The Fortran version has no arguments for commandline options;
+    it also doesn't take a help string.
+  \item If no help string is passed, give \lstinline{PETSC_NULL_CHARACTER} as argument.
+  \item If your main program is in~C, but some of your PETSc calls are
+    in Fortran files, it is necessary to call
+    \indexpetscdef{PetscInitializeFortran} after
+    \indexpetscshow{PetscInitialize}.
+  \end{itemize}
+\end{fortrannote}
+
 \begin{pythonnote}
   The following works if you don't need commandline options.
 \begin{verbatim}

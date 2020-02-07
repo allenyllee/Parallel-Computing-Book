@@ -1,4 +1,4 @@
-% -*- latex
+% -*- latex -*-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%
 %%%% This TeX file is part of the tutorial
@@ -9,6 +9,7 @@
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\lstset{language=C}
 \sectionframe{\texttt{Vec} datatype: vectors}
 
 %\subsection{Basic stuff}
@@ -18,44 +19,56 @@
 \frametitle{Create calls}
 \small
 Everything in PETSc is an object, with create and destroy calls:
-\begin{verbatim}
+\begin{lstlisting}
 VecCreate(MPI_Comm comm,Vec *v);
 VecDestroy(Vec *v);
 
 /* C */
 Vec V;
-VecCreate(MPI_COMM_SELF,&V);
+VecCreate(MPI_COMM_WORLD,&V);
 VecDestroy(&V);
+\end{lstlisting}
 
+\lstset{language=Fortran}
+\begin{lstlisting}
 ! Fortran
 Vec V
-call VecCreate(MPI_COMM_SELF,V,e)
+call VecCreate(MPI_COMM_WORLD,V,e)
 call VecDestroy(V,e)
-\end{verbatim}
+\end{lstlisting}
 Note: in Fortran there are no `star' arguments
 }
+\lstset{language=C}
+
+\lstset{language=Python}  
+\begin{frame}[containsverbatim]{Python}
+\begin{lstlisting}
+x = PETSc.Vec().create(comm=comm)
+x.setType(PETSc.Vec.Type.MPI)
+\end{lstlisting}
+\end{frame}
 
 \frame[containsverbatim]{\frametitle{More about vectors}
 A vector is a vector of \n{PetscScalar}s: there are no vectors of
 integers (see the \n{IS} datatype later)
 
 The vector object is not completely created in one call:
-\begin{verbatim}
+\begin{lstlisting}
 VecSetType(V,VECMPI) // or VECSEQ
 VecSetSizes(Vec v, int m, int M);
-\end{verbatim}
+\end{lstlisting}
 Other ways of creating: make more vectors like this one:
-\begin{verbatim}
+\begin{lstlisting}
 VecDuplicate(Vec v,Vec *w);
-\end{verbatim}
+\end{lstlisting}
 
 }
 \end{details}
 
 \frame[containsverbatim]{\frametitle{Parallel layout up to PETSc}
-\begin{verbatim}
+\begin{lstlisting}
 VecSetSizes(Vec v, int m, int M);
-\end{verbatim}
+\end{lstlisting}
 Local size can be specified as \n{PETSC_DECIDE}.
 
 \includegraphics[scale=.08]{veccreate2}
@@ -63,54 +76,69 @@ Local size can be specified as \n{PETSC_DECIDE}.
 
 \frame[containsverbatim]{\frametitle{Parallel layout specified}
 Local or global size in
-\begin{verbatim}
+\begin{lstlisting}
 VecSetSizes(Vec v, int m, int M);
-\end{verbatim}
+\end{lstlisting}
 Global size can be specified as \n{PETSC_DECIDE}.
 
 \includegraphics[scale=.08]{veccreate1}
 }
 
+\lstset{language=Python}  
+\begin{frame}[containsverbatim]{Python}
+\begin{lstlisting}
+x.setSizes([n,PETSc.DECIDE])
+x.setFromOptions()
+\end{lstlisting}
+\end{frame}
+\lstset{language=C}
+
 \begin{details}
+  %%%%
+  %%%% ownership querying
+  %%%%
 \frame[containsverbatim]{\frametitle{Query parallel layout}
 Query vector layout:
-\begin{verbatim}
+\begin{lstlisting}
 VecGetSize(Vec,PetscInt *globalsize)
 VecGetLocalSize(Vec,PetscInt *localsize)
 VecGetOwnershipRange(Vec x,PetscInt *low,PetscInt *high)
 VecGetOwnershipRange(x,low,high,ierr) ! F
-\end{verbatim}
+\end{lstlisting}
 \includegraphics[scale=.08]{veclayout}
-
+}
+\begin{frame}[containsverbatim]{Layout, regardless object}
 Query general layout:
-\begin{verbatim}
+\begin{lstlisting}
 PetscSplitOwnership(MPI_Comm comm,PetscInt *n,PetscInt *N);
 PetscSplitOwnership(comm,n,N,ierr) ! F
-\end{verbatim}
+\end{lstlisting}
 (get local/global given the other)
-}
+\end{frame}
 \end{details}
 
 \frame[containsverbatim]{\frametitle{Setting values}
 \small
 Set vector to constant value:
-\begin{verbatim}
+\begin{lstlisting}
 VecSet(Vec x,PetscScalar value);
-\end{verbatim}
+\end{lstlisting}
 Set individual elements (global indexing!):
-\begin{verbatim}
+\lstset{language=Fortran}
+\begin{lstlisting}
 VecSetValue(Vec x,int row,PetscScalar value, InsertMode mode);
 
 i = 1; v = 3.14;
 VecSetValue(x,i,v,INSERT_VALUES);
 
 call VecSetValue(x,i,v,INSERT_VALUES,ierr,e)
-\end{verbatim}
+\end{lstlisting}
 }
+\lstset{language=C}
 
 \frame[containsverbatim]{\frametitle{Setting values by block}
 Set individual elements (global indexing!):
-\begin{verbatim}
+\begin{lstlisting}
 VecSetValues(Vec x,int n,int *rows,PetscScalar *values,
     InsertMode mode); // INSERT_VALUES or ADD_VALUES
 
@@ -119,21 +147,21 @@ VecSetValues(x,2,ii,vv,INSERT_VALUES);
 
 ii(1) = 1; ii(2) = 2; vv(1) = 2.7; vv(2) = 3.1
 call VecSetValues(x,2,ii,vv,INSERT_VALUES,ierr,e)
-\end{verbatim}
+\end{lstlisting}
 }
 
 \frame[containsverbatim]{\frametitle{Setting values}
 No restrictions on parallelism;\\
 after setting, move values to appropriate processor:
-\begin{verbatim}
+\begin{lstlisting}
 VecAssemblyBegin(Vec x);
 VecAssemblyEnd(Vec x);
-\end{verbatim}
+\end{lstlisting}
 }
 
 \frame[containsverbatim]{\frametitle{Basic operations}
 \small
-\begin{verbatim}
+\begin{lstlisting}
 VecAXPY(Vec y,PetscScalar a,Vec x);   /* y <- y + a x */
 VecAYPX(Vec y,PetscScalar a,Vec x);   /* y <- a y + x */
 VecScale(Vec x, PetscScalar a);
@@ -151,7 +179,7 @@ VecMin(Vec x, int *idx, double *r);
 VecAbs(Vec x);
 VecReciprocal(Vec x);
 VecShift(Vec x,PetscScalar s);
-\end{verbatim}
+\end{lstlisting}
 }
 
 \begin{exerciseframe}[vec]
@@ -168,31 +196,47 @@ n \leftarrow \|x\|_2\\
 \end{exerciseframe}
 
 \begin{details}
-\frame[containsverbatim]{\frametitle{Getting values (C)}
-\small
+\begin{frame}[containsverbatim]{Split dot products and norms}
+  MPI is capable (in principle) of `overlapping computation and communication'.
+  \begin{itemize}
+  \item Start inner product~/ norm with \indexpetscshow{VecDotBegin}~/
+    \indexpetscshow{VecNormBegin};
+  \item Conclude inner product~/ norm with \indexpetscshow{VecDotEnd}~/
+    \indexpetscshow{VecNormEnd};
+  \end{itemize}
+  Also: start/end multiple norn/dotproduct operations.
+\end{frame}
+\end{details}
+
+\begin{details}
+\frame[containsverbatim]{\frametitle{Direct access to vector values (C)}
  Setting values is done without user access to the stored data\\
  Getting values is often not necessary: many operations provided.\\
-what if you do want access to the data?
-  \begin{itemize}
-  \item Create vector from user provided array:
-\begin{verbatim}
+ what if you do want access to the data?
+
+ Solution~1. Create vector from user provided array:
+\begin{lstlisting}
 VecCreateSeqWithArray(MPI_Comm comm,
   PetscInt n,const PetscScalar array[],Vec *V)
 VecCreateMPIWithArray(MPI_Comm comm,
   PetscInt n,PetscInt N,const PetscScalar array[],Vec *vv)
-\end{verbatim}
-\item Get the internal array (local only; see \n{VecScatter} for more general
-  mechanism):
-\begin{verbatim}
+\end{lstlisting}
+}
+
+\begin{frame}[containsverbatim]{Direct access'}
+  Solution~2.
+  Retrive the internal array:
+\begin{lstlisting}
 VecGetArray(Vec x,PetscScalar *a[])
 /* do something with the array */
 VecRestoreArray(Vec x,PetscScalar *a[])
-\end{verbatim}
-  \end{itemize}
-}
+\end{lstlisting}
+Note: local only; see \n{VecScatter} for more general
+mechanism)
+\end{frame}
 
 \frame[containsverbatim]{\frametitle{Getting values example}
-\begin{verbatim}
+\begin{lstlisting}
 int localsize,first,i;
 PetscScalar *a;
 VecGetLocalSize(x,&localsize);
@@ -201,20 +245,31 @@ VecGetArray(x,&a);
 for (i=0; i<localsize; i++)
   printf("Vector element %d : %e\n",first+i,a[i]);
 VecRestoreArray(x,&a);
-\end{verbatim}
+\end{lstlisting}
 Fortran: \n{PETSC_NULL_INTEGER}
 }
 
+\begin{frame}[containsverbatim]{More array juggling}
+  \begin{itemize}
+  \item
+    \indexpetscshow{VecPlaceArray}: replace the internal array;
+    the original can be restored with \indexpetscshow{VecRestoreArray}
+  \item \indexpetscshow{VecReplaceArray}: replace and free the internal array.
+  \end{itemize}
+\end{frame}
+
+\lstset{language=Fortran}
 \frame[containsverbatim]{\frametitle{Array handling in F90}
-\begin{verbatim}
+\begin{lstlisting}
     PetscScalar, pointer :: xx_v(:)
     ....
     call VecGetArrayF90(x,xx_v,ierr)
     a = xx_v(3)
     call VecRestoreArrayF90(x,xx_v,ierr)
-\end{verbatim}
+\end{lstlisting}
 More seperate F90 versions for `Get' routines\\
 (there are some ugly hacks for F77)
 }
 \end{details}
+\lstset{language=C}
 

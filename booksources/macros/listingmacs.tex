@@ -169,7 +169,7 @@
     MPI_User_function,MPI_Win,
     %% OMP directives
     for,sections,single,task,workshare,
-  },emphstyle={[3]\color{brown}\bfseries},
+  },emphstyle={[3]\color{yellow!30!brown}\bfseries},
   emph={[4] %% PETSc functions
     PetscInitialize,PetscFinalize,PetscSplitOwnership,
     PetscSynchronizedPrintf,PetscPrintf,PetscSynchronizedFlush,
@@ -194,12 +194,13 @@
     VecCreate,VecDestroy,VecDuplicate,VecXYZ,
     VecCreateSeqWithArray,VecCreateMPIWithArray,
     VecSetType,VecSetSizes,VecGetSize,VecGetLocalSize,VecGetOwnershipRange,
-    VecAXPY,VecCopy,VecDot,VecNorm,VecScale,VecView,
+    VecAXPY,VecCopy,VecDot,VecNorm,VecScale,
     VecSet,VecSetValue,VecSetValues,VecAssemblyBegin,VecAssemblyEnd,
     VecGetArray,VecRestoreArray,VecGetArrayRead,VecRestoreArrayRead,
     ISCreate,ISSetType,ISDestroy,ISCreateBlock,ISCreateGeneral,ISCreateStride,
     ISGetIndices,ISRestoreIndices,
     VecScatterCreate,VecScatterDestroy,VecScatterBegin,VecScatterEnd,
+    KSPView,MatView,VecView,
     DMDACreate2d,
   },emphstyle={[4]\color{red!40!black}\bfseries},
   emph={[5] %% PETSc keywords and macros
@@ -212,6 +213,7 @@
     PETSC_DIR,PETSC_ARCH,PETSC_COMM_WORLD,PETSC_i,
     PETSC_FALSE,PETSC_TRUE,PETSC_DECIDE,PETSC_DETERMINE,
     PETSC_MEMALIGN,
+    PETSC_NULL_CHARACTER,PETSC_NULL_INTEGER,PETSC_NULL_OBJECT,PETSC_NULL_IS,PETSC_NULL_VIEWER,
     PETSC_VIEWER_STDOUT_WORLD,
     SCATTER_FORWARD,SCATTER_REVERSE,
     VECSEQ,VECMPI,

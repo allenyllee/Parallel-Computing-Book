@@ -26,7 +26,8 @@ scheme is used.
   cause an error to be printed and the current routine to be
   terminated. Recursively this gives a traceback of where the error
   occurred.
-\item You can effect your own error return by using \indexpetscdef{SETERRQ}.
+\item You can effect your own error return by using \indexpetscref{SETERRQ}
+  \indexpetscdef{SETERRQ1}, \indexpetscdef{SETERRQ2}.
 \end{enumerate}
 \begin{lstlisting}
 PetscErrorCode ierr;
@@ -38,6 +39,59 @@ ierr = AnyPetscRoutine( arguments ); CHKERRQ(ierr);
   macros, and after expansion may interfere with
   \indextermbus{Fortran}{line length}.
 \end{fortrannote}
+
+Example. We write a routine that sets an error:
+\cverbatimsnippet{petscbacktrace}
+
+Running this gives, in process~zero, the output
+\begin{verbatim}
+[0]PETSC ERROR: We cannot go on like this
+[0]PETSC ERROR: See https://www.mcs.anl.gov/petsc/documentation/faq.html for trouble shooting.
+[0]PETSC ERROR: Petsc Release Version 3.12.2, Nov, 22, 2019
+[0]PETSC ERROR: backtrace on a [computer name]
+[0]PETSC ERROR: Configure options [all options]
+[0]PETSC ERROR: #1 this_function_bombs() line 20 in backtrace.c
+[0]PETSC ERROR: #2 main() line 30 in backtrace.c  
+\end{verbatim}
+
+\begin{fortrannote}
+  In Fortran the backtrace is not quite as elegant.
+  \fverbatimsnippet{petscbacktracef}
+\begin{verbatim}
+[0]PETSC ERROR: ----- Error Message ------------------------------
+[0]PETSC ERROR: We cannot go on like this
+[....]
+[0]PETSC ERROR: #1 User provided function() line 0 in User file
+\end{verbatim}
+\end{fortrannote}
+
+\begin{remark}
+  In this example, the use of \indexpetscshow{PETSC_COMM_SELF} indicates
+  that this error is individually generated on a process;
+  use \indexpetscshow{PETSC_COMM_WORLD} only if the same error would
+  be detected everywhere.
+\end{remark}
+
+\begin{exercise}
+  Look up the definition of \indexpetscshow{SETERRQ1}.
+  Write a routine to compute square roots that is used as follows:
+\begin{lstlisting}
+  x = 1.5; ierr = square_root(x,&rootx); CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_WORLD,"Root of %f is %f\n",x,rootx);
+  x = -2.6; ierr = square_root(x,&rootx); CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_WORLD,"Root of %f is %f\n",x,rootx);
+\end{lstlisting}
+This should give as output:
+\begin{verbatim}
+Root of 1.500000 is 1.224745
+[0]PETSC ERROR: ----- Error Message ----------------------------------------------
+[0]PETSC ERROR: Cannot compute the root of -2.600000
+[...]
+[0]PETSC ERROR: #1 square_root() line 23 in root.c
+[0]PETSC ERROR: #2 main() line 39 in root.c
+\end{verbatim}
+
+\end{exercise}
 
 \Level 1 {Memory corruption}
 
@@ -53,7 +107,12 @@ This testing is only done if the commandline argument
 \indextermtt{-malloc_debug} (\indextermtt{-malloc_test} in debug mode)
 is supplied, so it carries no overhead for production runs.
 
-\Level 0 {Printing}
+\Level 0 {Program output}
+
+PETSc has as variety of mechanisms to export or visualize program data.
+We will consider a few possibilities here.
+
+\Level 1 {Printing to the screen}
 
 Printing screen output in parallel is tricky. If two processes execute
 a print statement at more or less the same time there is no guarantee
@@ -67,6 +126,11 @@ information printed is the same on all processes, so it is enough if
 only one process, for instance process~0, prints it. This is done with
 \indexpetscref{PetscPrintf}.
 
+\begin{fortrannote}
+  The Fortran calls are only wrappers around C~routines, so you can 
+  use \verb+\n+ newline characters in the Fortran string argument
+  to \indexpetscshow{PetscPrintf}.
+\end{fortrannote}
 
 If all processes need to print, you can use
 \indexpetscref{PetscSynchronizedPrintf} that forces the
@@ -82,11 +146,31 @@ where for ordinary screen output you would use \n{stdout} for the file.
   specify it as in the C~calls.
 \end{pythonnote}
 
+\Level 1 {Viewing internal data structures}
+
+In order to export PETSc matrix or vector data structures
+there is a \indexpetscdef{PetscViewer} object type.
+This is a quite general concept of viewing: it encompasses ascii output to screen,
+binary dump to file, or communication to a running Matlab process.
+Calls such as  \indexpetscshow{MatView} or \indexpetscshow{KSPView}
+accept a \lstinline{PetscViewer} argument.
+
+Some viewers are predefined, such as
+\indexpetscdef{PETSC_VIEWER_STDOUT_WORLD} for ascii rendering to
+standard out. (In~C, specifying zero or \n{NULL} also uses this
+default viewer; for Fortran use \lstinline{PETSC_NULL_VIEWER}.)
+
+Writing to file is also a viewer.
+
+Some viewers, such as \indexpetscshow{KSPView} are mostly for
+diagnostic purposes.  Thus, it is most convenient to activiate them
+through commandline options such \indexpetscshow{-ksp_view}.
+
 \Level 0 {Commandline options}
 \label{sec:petsc-options}
 
 PETSc has as large number of commandline options, most of which we
-will discuss later. For now we only mention \n{-log_summary} which
+will discuss later. For now we only mention \indexpetscshow{-log_summary} which
 will print out profile of the time taken in various routines.
 For these options to be parsed, it is necessary to pass \n{argc,argv}
 to the \indexpetscshow{PetscInitialize} call.
@@ -132,5 +216,5 @@ Allocated memory is aligned to \indexpetscdef{PETSC_MEMALIGN}.
 
 The state of memory allocation can be written to file or standard out
 with \indexpetscdef{PetscMallocDump}. The commandline option
-\n{-malloc_dump} outputs all not-freed memory during
+\indexpetscshow{-malloc_dump} outputs all not-freed memory during
 \indexpetscshow{PetscFinalize}.
