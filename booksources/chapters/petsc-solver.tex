@@ -121,6 +121,8 @@ subject to some tolerances:
 \end{itemize}
 
 These tolerances are set with \indexpetscref{KSPSetTolerances}.
+In the next section we will see how you can determine which of these tolerances
+caused the solver to stop.
 
 \Level 1 {Why did my solver stop? Did it work?}
 \label{sec:ksp-reason}
@@ -157,17 +159,33 @@ that has stopped iterating:
 
 \Level 1 {Choice of iterator}
 
-There are many iterative methods, and it takes a few function calls to fully specify them:
+There are many iterative methods, and it may take a few function calls
+to fully specify them. The basic routine is \indexpetscref{KSPSetType},
+or use the option \indexpetscoption{ksp_type}.
 
-\petscRoutineRef{KSPSetType}
-
-Here are some values:
+Here are some values (the full list is in \indexpetscfile{petscksp.h}:
 \begin{itemize}
 \item \lstinline{KSPCG}: only for symmetric positive definite systems.
-\item \lstinline{KSPGMRES}: a minimization method that works fairly
-  generally; has high memory demands.
+  It has a cost of both work and storage that is constant in the number of iterations.
+
+  There are variants such as \lstinline{KSPPIPECG} that are mathematically equivalent,
+  but possibly higher performing at large scale.
+\item \lstinline{KSPGMRES}: a minimization method that works for nonsymmetric
+  and indefinite systems. However, to satisfy this theoretical property
+  it needs to store the full residual history to orthogonalize each
+  compute residual to, implying that storage
+  is linear, and work quadratic, in the number of iterations.
+  For this reason, GMRES is always used in a truncated variant, that regularly restarts
+  the orthogonalization. The restart length can be set with the routine
+  \indexpetscdef{KSPGMRESSetRestart} or the option \indexpetscoption{ksp_gmres_restart}.
 \item \lstinline{KSPBCGS}: a quasi-minimization method; uses less memory than GMRES.
 \end{itemize}
+
+Depending on the iterative method, there can be several routines to tune its workings.
+Especially if you're still experimenting with what method to choose,
+it may be more convenient to specify these choices through commandline options,
+rather than explicitly coded routines. In that case, a single call to
+\indexpetscshow{KSPSetFromOptions} is enough to incorporate those.
 
 \Level 1 {Preconditioners}
 
