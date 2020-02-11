@@ -1,0 +1,51 @@
+\begin{frame}[containsverbatim]{MPI definitions}
+\label{sl:mpi-header}
+You need an include file:
+\begin{verbatim}
+#include "mpi.h" // for C
+use mpi       ! for Fortran90
+use mpi_f08   ! for Fortran2008
+\end{verbatim}
+\begin{itemize}
+\item There are no real C++ bindings.
+\item True Fortran bindings as of the 2008 standard.
+\begin{tacc}
+Provided in Intel compiler:
+\begin{verbatim}
+module load intel/18.0.2
+\end{verbatim}
+or newer. Not in gcc7.
+\end{tacc}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[containsverbatim]{MPI Init / Finalize}
+Then put these calls around your code:
+\lstset{language=C}
+\begin{lstlisting}
+ierr = MPI_Init(&argc,&argv); // zeros allowed
+// your code
+ierr = MPI_Finalize();
+\end{lstlisting}
+and for Fortran:
+\lstset{language=Fortran}
+\begin{lstlisting}
+call MPI_Init(ierr) ! F90 style
+call MPI_Init()     ! F08 style
+! your code
+call MPI_Finalize(ierr) ! F90 style
+call MPI_Finalize()     ! F08 style
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}{About error codes}
+  MPI routines return an integer error code
+  \begin{itemize}
+  \item In C: function result. Can be ignored.
+  \item In Fortran: as optional (F08 only) parameter.
+  \item In Python: throwing exception.
+  \end{itemize}
+  There's actually not a lot you can do with an error code:\\
+  very hard to recover from errors in parallel.\\
+  Just ignore them~\ldots
+\end{frame}

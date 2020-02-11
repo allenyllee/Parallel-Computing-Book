@@ -16,26 +16,26 @@
 \frame[containsverbatim]{\frametitle{Matrix creation}
 \small
 The usual create/destroy calls:
-\begin{verbatim}
+\begin{lstlisting}
 MatCreate(MPI_Comm comm,Mat *A)
 MatDestroy(Mat *A)
-\end{verbatim}
+\end{lstlisting}
 Several more aspects to creation:
-\begin{verbatim}
+\begin{lstlisting}
 MatSetType(A,MATSEQAIJ) /* or MATMPIAIJ or MATAIJ */
 MatSetSizes(Mat A,int m,int n,int M,int N)
 MatSeqAIJSetPreallocation /* more about this later*/
   (Mat B,PetscInt nz,const PetscInt nnz[])
-\end{verbatim}
-Local or global size can be \n{PETSC_DECIDE} (as in the vector case)
+\end{lstlisting}
+Local or global size can be \lstinline{PETSC_DECIDE} (as in the vector case)
 }
 
 \frame[containsverbatim]{\frametitle{If you already have a CRS matrix}
-\begin{verbatim}
+\begin{lstlisting}
 PetscErrorCode  MatCreateSeqAIJWithArrays
   (MPI_Comm comm,PetscInt m,PetscInt n,
    PetscInt* i,PetscInt*j,PetscScalar *a,Mat *mat)
-\end{verbatim}
+\end{lstlisting}
 (also from triplets)
 
 Do not use this unless you interface to a legacy code. And even then\ldots
@@ -51,9 +51,9 @@ Do not use this unless you interface to a legacy code. And even then\ldots
   \item tell PETSc the matrix' sparsity structure\\ (do construction
     loop twice: once counting, once making)
   \item Re-allocating is expensive:
-\begin{verbatim}
+\begin{lstlisting}
 MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);
-\end{verbatim}
+\end{lstlisting}
   (is default) Otherwise:
 \begin{verbatim}
   [1]PETSC ERROR: Argument out of range
@@ -64,16 +64,16 @@ MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);
 }
 
 \frame[containsverbatim]{\frametitle{Sequential matrix  structure}
-\begin{verbatim}
+\begin{lstlisting}
 MatSeqAIJSetPreallocation
     (Mat B,PetscInt nz,const PetscInt nnz[])
-\end{verbatim}
+\end{lstlisting}
   \begin{itemize}
-  \item \n{nz} number of nonzeros per row\\ (or slight overestimate)
-  \item \n{nnz} array of row lengths (or overestimate)
+  \item \lstinline{nz} number of nonzeros per row\\ (or slight overestimate)
+  \item \lstinline{nnz} array of row lengths (or overestimate)
   \item considerable savings over dynamic allocation!
   \end{itemize}
-In Fortran use \n{PETSC_NULL_INTEGER} if not specifying \n{nnz} array
+In Fortran use \lstinline{PETSC_NULL_INTEGER} if not specifying \lstinline{nnz} array
 }
 
 \frame[containsverbatim]{\frametitle{Parallel matrix structure}
@@ -101,26 +101,26 @@ In Fortran use \n{PETSC_NULL_INTEGER} if not specifying \n{nnz} array
 
 \frame[containsverbatim]{\frametitle{Parallel matrix structure description}
   \begin{itemize}
-  \item \n{m,n} local size; \n{M,N} global. Note: If the matrix is
+  \item \lstinline{m,n} local size; \lstinline{M,N} global. Note: If the matrix is
     square, specify $m,n$ equal, even though distribution by block rows
-  \item \n{d_nz}: number of nonzeros per row in diagonal part
-  \item \n{o_nz}: number of nonzeros per row in off-diagonal part
-  \item \n{d_nnz}: array of numbers of nonzeros per row in diagonal part
-  \item \n{o_nnz}: array of numbers of nonzeros per row in off-diagonal part
+  \item \lstinline{d_nz}: number of nonzeros per row in diagonal part
+  \item \lstinline{o_nz}: number of nonzeros per row in off-diagonal part
+  \item \lstinline{d_nnz}: array of numbers of nonzeros per row in diagonal part
+  \item \lstinline{o_nnz}: array of numbers of nonzeros per row in off-diagonal part
   \end{itemize}
-\begin{verbatim}
+\begin{lstlisting}
 MatMPIAIJSetPreallocation
   (Mat B,
    PetscInt d_nz,const PetscInt d_nnz[],
    PetscInt o_nz,const PetscInt o_nnz[])
-\end{verbatim}
+\end{lstlisting}
 
-In Fortran use \n{PETSC_NULL_INTEGER} if not specifying arrays
+In Fortran use \lstinline{PETSC_NULL_INTEGER} if not specifying arrays
 }
 
 \begin{details}
 \frame[containsverbatim]{\frametitle{Matrix creation all in one}
-\begin{verbatim}
+\begin{lstlisting}
 MatCreateSeqAIJ(MPI_Comm comm,PetscInt m,PetscInt n,
   PetscInt nz,const PetscInt nnz[],Mat *A)
 MatCreateMPIAIJ(MPI_Comm comm,
@@ -128,64 +128,64 @@ MatCreateMPIAIJ(MPI_Comm comm,
   PetscInt d_nz,const PetscInt d_nnz[],
   PetscInt o_nz,const PetscInt o_nnz[],
   Mat *A)
-\end{verbatim}
+\end{lstlisting}
 }
 \end{details}
 
 \frame[containsverbatim]{\frametitle{Querying parallel structure}
 
 Matrix partitioned by block rows:
-\begin{verbatim}
+\begin{lstlisting}
 MatGetSize(Mat mat,PetscInt *M,PetscInt* N);
 MatGetLocalSize(Mat mat,PetscInt *m,PetscInt* n);
 MatGetOwnershipRange(Mat A,int *first row,int *last row);
-\end{verbatim}
+\end{lstlisting}
  In query functions, unneeded components can be specified as
- \n{PETSC_NULL}.\\
- Fortran: \n{PETSC_NULL_INTEGER}
+ \lstinline{PETSC_NULL}.\\
+ Fortran: \lstinline{PETSC_NULL_INTEGER}
 }
 
 \frame[containsverbatim]{\frametitle{Setting values}
 
 Set one value:
-\begin{verbatim}
+\begin{lstlisting}
 MatSetValue(Mat A,
   PetscInt i,PetscInt j,PetscScalar va,InsertMode mode)
-\end{verbatim}
-where insert mode is \n{INSERT_VALUES, ADD_VALUES}
+\end{lstlisting}
+where insert mode is \lstinline{INSERT_VALUES}, \lstinline{ADD_VALUES}
 
 Set block of values:
-\begin{verbatim}
+\begin{lstlisting}
 MatSetValues(Mat A,int m,const int idxm[],
     int n,const int idxn[],const PetscScalar values[],
     InsertMode mode)
-\end{verbatim}
-(\n{v} is row-oriented)
+\end{lstlisting}
+(\lstinline{v} is row-oriented)
 }
 
 \frame[containsverbatim]{
 Special case of the general case:
-\begin{verbatim}
+\begin{lstlisting}
 MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES); // C
 MatSetValues(A,1,i,1,j,v,INSERT_VALUES,e); ! F
-\end{verbatim}
+\end{lstlisting}
 }
 
 \frame[containsverbatim]{\frametitle{Assembling the matrix}
 Setting elements is independent of parallelism; move elements to
 proper processor:
-\begin{verbatim}
+\begin{lstlisting}
 MatAssemblyBegin(Mat A,MAT_FINAL_ASSEMBLY);
 MatAssemblyEnd(Mat A,MAT_FINAL_ASSEMBLY);
-\end{verbatim}
+\end{lstlisting}
 
 Cannot mix inserting/adding values: need to do assembly in between
-with \n{MAT_FLUSH_ASSEMBLY}
+with \lstinline{MAT_FLUSH_ASSEMBLY}
 }
 
 \begin{exerciseframe}[matvec]
   Pretend that you do not know how the matrix is created. Use
-  \n{MatGetOwnershipRange} or \n{MatGetLocalSize} to create a vector
+  \lstinline{MatGetOwnershipRange} or \lstinline{MatGetLocalSize} to create a vector
   with the same distribution, and then compute $y\leftarrow Ax$.
 
   (Part of the code has been disabled with \verb+#if 0+. We will get
@@ -198,21 +198,21 @@ with \n{MAT_FLUSH_ASSEMBLY}
   \item Values are often not needed: many matrix operations supported
   \item Matrix elements can only be obtained locally.
   \end{itemize}
-\begin{verbatim}
+\begin{lstlisting}
 PetscErrorCode  MatGetRow(Mat mat,
  PetscInt row,PetscInt *ncols,const PetscInt *cols[],
  const PetscScalar *vals[])
 PetscErrorCode MatRestoreRow(/* same parameters */
-\end{verbatim}
+\end{lstlisting}
 Note: for inspection only; possibly expensive.
 }
 
 \frame[containsverbatim]{\frametitle{Getting values (F)}
-\begin{verbatim}
+\begin{lstlisting}
   MatGetRow(A,row,ncols,cols,vals,ierr)
   MatRestoreRow(A,row,ncols,cols,vals,ierr)
-\end{verbatim}
-where \n{cols(maxcols), vals(maxcols)} are long enough arrays
+\end{lstlisting}
+where \lstinline{cols(maxcols), vals(maxcols)} are long enough arrays
 (allocated by the user)
 }
 
@@ -227,43 +227,43 @@ where \n{cols(maxcols), vals(maxcols)} are long enough arrays
 
 \frame[containsverbatim]{\frametitle{Other matrix types}
 
-\n{MATBAIJ} : blocked matrices (dof per node)
+\lstinline{MATBAIJ} : blocked matrices (dof per node)
 
 (see \n{PETSC_DIR/include/petscmat.h})
 
 Dense:
-\begin{verbatim}
+\begin{lstlisting}
 MatCreateSeqDense(PETSC_COMM_SELF,int m,int n,
   PetscScalar *data,Mat *A);
 MatCreateDense(MPI_Comm comm,
   PetscInt m,PetscInt n,PetscInt M,PetscInt N,
   PetscScalar *data,Mat *A)
-fg\end{verbatim}
+fg\end{lstlisting}
 Data argument optional:
-\n{PETSC_NULL} or \n{PETSC_NULL_SCALAR} causes allocation
+\lstinline{PETSC_NULL} or \lstinline{PETSC_NULL_SCALAR} causes allocation
 }
 \end{details}
 
 \frame[containsverbatim]{\frametitle{Matrix operations}
 Main operations are matrix-vector:
-\begin{verbatim}
+\begin{lstlisting}
 MatMult(Mat A,Vec in,Vec out);
 MatMultAdd
 MatMultTranspose
 MatMultTransposeAdd
-\end{verbatim}
+\end{lstlisting}
 
 Simple operations on matrices:
-\begin{verbatim}
+\begin{lstlisting}
 MatNorm
 
 MatScale
 MatDiagonalScale
-\end{verbatim}
+\end{lstlisting}
 }
 
 \frame[containsverbatim]{\frametitle{Some matrix-matrix operations}
-\begin{verbatim}
+\begin{lstlisting}
  MatMatMult(Mat,Mat,MatReuse,PetscReal,Mat*);
 
  MatPtAP(Mat,Mat,MatReuse,PetscReal,Mat*);
@@ -271,19 +271,19 @@ MatDiagonalScale
  MatMatMultTranspose(Mat,Mat,MatReuse,PetscReal,Mat*);
 
  MatAXPY(Mat,PetscScalar,Mat,MatStructure);
-\end{verbatim}
+\end{lstlisting}
 }
 
 \begin{details}
 \frame[containsverbatim]{\frametitle{Matrix viewers}
-\begin{verbatim}
+\begin{lstlisting}
 MatView(A,PETSC_VIEWER_STDOUT_WORLD);
 
 row 0: (0, 1)  (2, 0.333333)  (3, 0.25)  (4, 0.2)
 row 1: (0, 0.5)  (1, 0.333333)  (2, 0.25)  (3, 0.2)
 ....
-\end{verbatim}
-(Fortran: \n{PETSC_NULL_INTEGER})
+\end{lstlisting}
+(Fortran: \lstinline{PETSC_NULL_INTEGER})
   \begin{itemize}
   \item also invoked by \n{-mat_view}
   \item Sparse: only allocated positions listed
@@ -304,13 +304,13 @@ row 1: (0, 0.5)  (1, 0.333333)  (2, 0.25)  (3, 0.2)
     an object.
   \item Viewing through a socket, to Matlab or Mathematica, HDF5, VTK.
   \end{itemize}
-\begin{verbatim}
+\begin{lstlisting}
 PetscViewer fd;
 PetscViewerCreate( comm, &fd );
 PetscViewerSetType( fd,PETSCVIEWERVTK );
 MatView( A,fd );
 PetscViewerDestroy(fd);
-\end{verbatim}
+\end{lstlisting}
 }
 
 %% \begin{exerciseframe}[viewer]
@@ -322,7 +322,7 @@ PetscViewerDestroy(fd);
 \frame[containsverbatim]{\frametitle{Shell matrices}
 What if the matrix is a user-supplied operator, and not stored?
 
-\begin{verbatim}
+\begin{lstlisting}
 MatSetType(A,MATSHELL); /* or */
 MatCreateShell(MPI Comm comm,
     int m,int n,int M,int N,void *ctx,Mat *mat);
@@ -331,17 +331,17 @@ PetscErrorCode UserMult(Mat mat,Vec x,Vec y);
 
 MatShellSetOperation(Mat mat,MatOperation MATOP_MULT,
   (void(*)(void)) PetscErrorCode (*UserMult)(Mat,Vec,Vec));
-\end{verbatim}
-Inside iterative solvers, PETSc calls \n{MatMult(A,x,y)}: \\
+\end{lstlisting}
+Inside iterative solvers, PETSc calls \lstinline{MatMult(A,x,y)}: \\
 no difference between stored matrices and shell matrices
 }
 
 \frame[containsverbatim]{\frametitle{Shell matrix context}
 Shell matrices need custom data
-\begin{verbatim}
+\begin{lstlisting}
 MatShellSetContext(Mat mat,void *ctx);
 MatShellGetContext(Mat mat,void **ctx);
-\end{verbatim}
+\end{lstlisting}
 (This does not work in Fortran: use Common or Module
 or write interface block)
 
@@ -349,7 +349,7 @@ User program sets context, matmult routine accesses it
 }
 
 \frame[containsverbatim]{\frametitle{Shell matrix example}
-\begin{verbatim}
+\begin{lstlisting}
 ...
 MatSetType(A,MATSHELL);
 MatShellSetOperation(A,MATOP_MULT,(void*)&mymatmult);
@@ -363,35 +363,35 @@ PetscErrorCode mymatmult(Mat mat,Vec in,Vec out)
   /* compute out from in, using mystruct */
   PetscFunctionReturn(0);
 }
-\end{verbatim}
+\end{lstlisting}
 }
 
 %\subsection{More matrix topics}
 
 \frame[containsverbatim]{\frametitle{Submatrices}
 Extract one parallel submatrix:
-\begin{verbatim}
+\begin{lstlisting}
 MatGetSubMatrix(Mat mat,
   IS isrow,IS iscol,PetscInt csize,MatReuse cll,
   Mat *newmat)
-\end{verbatim}
+\end{lstlisting}
 Extract multiple single-processor matrices:
 {\small
-\begin{verbatim}
+\begin{lstlisting}
 MatGetSubMatrices(Mat mat,
   PetscInt n,const IS irow[],const IS icol[],MatReuse scall,
   Mat *submat[])
-\end{verbatim}
+\end{lstlisting}
 }
 Collective call, but different index sets per processor
 }
 
 \frame[containsverbatim]{\frametitle{Load balancing}
 
-\begin{verbatim}
+\begin{lstlisting}
 MatPartitioningCreate
     (MPI Comm comm,MatPartitioning *part);
-\end{verbatim}
+\end{lstlisting}
 Various packages for creating better partitioning: Chaco, Parmetis
 
 % MatCreateMPIAdj(MPI Comm comm,int mlocal,int n,const int ia[],const int ja[],
@@ -420,7 +420,7 @@ domain, gives matrix:
 
 \frame[containsverbatim]{\frametitle{Example: stencil matrices}
 \small
-\begin{verbatim}
+\begin{lstlisting}
 for ( i=0; i<m; i++ ) {
   for ( j=0; j<n; j++ ) {
     v = -1.0;  I = j + n*i;
@@ -438,13 +438,13 @@ for ( i=0; i<m; i++ ) {
     ierr = MatSetValues(mat,1,&I,1,&I,&v,INSERT_VALUES);
   }
 }
-\end{verbatim}
+\end{lstlisting}
 }
 \end{longversion}
 
 \frame[containsverbatim]{\frametitle{Matrices from user data}
 \footnotesize
-\begin{verbatim}
+\begin{lstlisting}
 MatCreateSeqAIJWithArrays(MPI_Comm comm,
   PetscInt m,PetscInt n,
   PetscInt* i,PetscInt*j,PetscScalar *a,Mat *mat)
@@ -457,7 +457,7 @@ MatCreateMPIAIJWithSplitArrays(MPI_Comm comm,
   PetscInt i[],PetscInt j[],PetscScalar a[],
   PetscInt oi[], PetscInt oj[],PetscScalar oa[],
   Mat *mat)
-\end{verbatim}
+\end{lstlisting}
 Data is copied in the 2nd case.
 }
 

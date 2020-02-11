@@ -49,8 +49,8 @@ x.setType(PETSc.Vec.Type.MPI)
 \end{frame}
 
 \frame[containsverbatim]{\frametitle{More about vectors}
-A vector is a vector of \n{PetscScalar}s: there are no vectors of
-integers (see the \n{IS} datatype later)
+A vector is a vector of \lstinline{PetscScalar}s: there are no vectors of
+integers (see the \lstinline{IS} datatype later)
 
 The vector object is not completely created in one call:
 \begin{lstlisting}
@@ -69,7 +69,7 @@ VecDuplicate(Vec v,Vec *w);
 \begin{lstlisting}
 VecSetSizes(Vec v, int m, int M);
 \end{lstlisting}
-Local size can be specified as \n{PETSC_DECIDE}.
+Local size can be specified as \lstinline{PETSC_DECIDE}.
 
 \includegraphics[scale=.08]{veccreate2}
 }
@@ -79,7 +79,7 @@ Local or global size in
 \begin{lstlisting}
 VecSetSizes(Vec v, int m, int M);
 \end{lstlisting}
-Global size can be specified as \n{PETSC_DECIDE}.
+Global size can be specified as \lstinline{PETSC_DECIDE}.
 
 \includegraphics[scale=.08]{veccreate1}
 }
@@ -183,8 +183,8 @@ VecShift(Vec x,PetscScalar s);
 }
 
 \begin{exerciseframe}[vec]
-Use the routines \n{VecDot}, \n{VecScale} and \n{VecNorm} to
-compute the inner product of vectors \n{x,y}, scale the vector~\n{x},
+Use the routines \lstinline{VecDot}, \lstinline{VecScale} and \lstinline{VecNorm} to
+compute the inner product of vectors \lstinline{x,y}, scale the vector~\lstinline{x},
 and check its norm:
 \[
 \begin{array}{l}
@@ -231,7 +231,7 @@ VecGetArray(Vec x,PetscScalar *a[])
 /* do something with the array */
 VecRestoreArray(Vec x,PetscScalar *a[])
 \end{lstlisting}
-Note: local only; see \n{VecScatter} for more general
+Note: local only; see \lstinline{VecScatter} for more general
 mechanism)
 \end{frame}
 
@@ -246,7 +246,7 @@ for (i=0; i<localsize; i++)
   printf("Vector element %d : %e\n",first+i,a[i]);
 VecRestoreArray(x,&a);
 \end{lstlisting}
-Fortran: \n{PETSC_NULL_INTEGER}
+Fortran: \lstinline{PETSC_NULL_INTEGER}
 }
 
 \begin{frame}[containsverbatim]{More array juggling}

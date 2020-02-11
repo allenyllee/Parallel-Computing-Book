@@ -28,10 +28,10 @@ has space for "ghost points".
 }
 
 \frame[containsverbatim]{\frametitle{DMDA construction}
-\begin{verbatim}
+\begin{lstlisting}
 DMDACreate2d(comm, bndx,bndy, type, M, N, m, n, 
   dof, s, lm[], ln[], DMDA *da)
-\end{verbatim}
+\end{lstlisting}
 \footnotesize
 \n{bndx,bndy} boundary behaviour: none/ghost/periodic
 
@@ -47,7 +47,7 @@ Use \n{PETSC_NULL} for the default)
 }
 
 \frame[containsverbatim]{\frametitle{Associated vectors}
-\begin{verbatim}
+\begin{lstlisting}
 DMCreateGlobalVector(DM grid,Vec *g);
 DMCreateLocalVector(DM grid,Vec *l);
 
@@ -62,37 +62,37 @@ DMLocalToGlobalBegin/End
 local -> global -> local :
 DMLocalToLocalBegin/End
     (DMDA da,Vec l1,InsertMode iora,Vec l2);
-\end{verbatim}
+\end{lstlisting}
 }
 
 
 \frame[containsverbatim]{\frametitle{Associated matrix}
 Matrix that has knowledge of the grid:
-\begin{verbatim}
+\begin{lstlisting}
 DMSetUp(DM grid);
 DMCreateMatrix(DM grid,Mat *J)
-\end{verbatim}
+\end{lstlisting}
 Set matrix values based on stencil:
-\begin{verbatim}
+\begin{lstlisting}
 MatSetValuesStencil(Mat mat,
   PetscInt m,const MatStencil idxm[],
   PetscInt n,const MatStencil idxn[],
   const PetscScalar v[],InsertMode addv)
-\end{verbatim}
+\end{lstlisting}
 (ordering of row/col variables too complicated for \n{MatSetValues})
 }
 
 %% \begin{frame}[containsverbatim]{Looping over the grid}
 %% Loop over local part of the grid:
-%% \begin{verbatim}
+%% \begin{lstlisting}
 %% DMDAGetCorners(DMDA da,
 %%   PetscInt *x,PetscInt *y,PetscInt *z,
 %%   PetscInt *m,PetscInt *n,PetscInt *p)
-%% \end{verbatim}
+%% \end{lstlisting}
 %% \end{frame}
 
 \begin{frame}[containsverbatim]{Grid info}
-\begin{verbatim}
+\begin{lstlisting}
 typedef struct {
   PetscInt         dim,dof,sw;
   PetscInt         mx,my,mz;    /* grid points in x,y,z */
@@ -104,7 +104,7 @@ typedef struct {
   DMDAStencilType  st;
   DM               da;
 } DMDALocalInfo;
-\end{verbatim}
+\end{lstlisting}
 \end{frame}
 
 \begin{frame}[containsverbatim]{Set values by stencil}
@@ -137,7 +137,7 @@ for (int j=info.ys; j<info.ys+info.ym; j++) {
 \endinput
 
 % \frame[containsverbatim]{\frametitle{Indexing, setting, getting values}
-% \begin{verbatim}
+% \begin{lstlisting}
 % PetscScalar **f,**u;
 % ...
 % DMDAVecGetArray(DMDA da,Vec local,(void*)u);
@@ -152,7 +152,7 @@ for (int j=info.ys; j<info.ys+info.ym; j++) {
 
 % DMDAGetCorners(DMDA da,int *x,int *y,int *z,int *m,int *n,int *p);
 % DMDAGetGhostCorners(DMDA da,int *x,int *y,int *z,int *m,int *n,int *p);
-% \end{verbatim}
+% \end{lstlisting}
 
 % (also global?)
 

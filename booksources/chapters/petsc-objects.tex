@@ -98,6 +98,19 @@ time: \indexpetscdef{PetscInt} can be 32 or 64 bits. Furthermore,
 there is a \indexpetscdef{PetscErrorCode} type for catching the return
 code of PETSc routines.
 
+For compatibility with other packages there are two more integer types:
+\begin{itemize}
+\item \indexpetscdef{PetscBLASInt} is the integer type used by the
+  \indexac{BLAS}/\indexac{LAPACK} library. This is 32-bits if the
+  \indexpetscshow{-download-blas-lapack} option is used, but it can be 64-bit if
+  \indexterm{MKL} is used. The routine \indexpetscdef{PetscBLASIntCast} casts a
+  \indexpetscshow{PetscInt} to \indexpetscshow{PetscBLASInt}, or returns
+  \indexpetscshow{PETSC_ERR_ARG_OUTOFRANGE} if it is too large.
+\item \indexpetscdef{PetscMPIInt} is the integer type of the MPI library, which is
+  always 32-bits.
+\end{itemize}
+Many other packages do not support 64-bit integers.
+
 \Level 1 {Complex}
 
 Numbers of type \indexpetscshow{PetscComplex} have a precision

@@ -122,11 +122,55 @@ but only one \n{column_comm} variable. Why?
   \cverbatimsnippet{commsplittype}
 \end{frame}
 
+\begin{mpithree}
+\begin{frame}{Inter-communicators}
+\label{sl:comm-inter}
+  \begin{itemize}
+  \item Communicators so far are of \indextermsubh{intra}{communicator} type.
+  \item Bridge between two communicators: \indextermsubh{inter}{communicator}.
+  \item Example: communicator with newly spawned processes
+  \end{itemize}  
+\end{frame}
+\end{mpithree}
+
+\begin{mpithree}
+\begin{frame}{In a picture}
+  \label{sl:intercomm-picture}
+  \includegraphics[scale=.6]{intercomm}
+
+  Illustration of ranks in an inter-communicator setup
+\end{frame}
+\end{mpithree}
+
+\begin{mpithree}
+\begin{frame}{Concepts}
+  \label{sl:intercomm-concepts}
+  \begin{itemize}
+  \item Two local communicators
+  \item The `peer' communicator that contains them
+  \item Leaders in each of them
+  \item An inter-communicator over the leaders.
+  \end{itemize}
+\end{frame}
+\end{mpithree}
+
+\begin{mpithree}
+\begin{frame}[containsverbatim]{Routines}
+  \label{sl:intercomm-routines}
+  \begin{itemize}
+  \item
+    \indexmpishow{MPI_Intercomm_create}: create
+  \item \indexmpishow{MPI_Comm_get_parent}: the other leader (see process management)
+  \item \indexmpishow{MPI_Comm_remote_size} 
+  \item \indexmpishow{MPI_Comm_remote_group}: query the other communicator
+  \item \indexmpishow{MPI_Comm_test_inter}: is this an inter or intra?
+  \end{itemize}
+\end{frame}
+\end{mpithree}
+
 \begin{frame}[containsverbatim]\frametitle{More}
   \begin{itemize}
   \item Non-disjoint subcommunicators through process groups.
-  \item Intra-communicators and inter-communicators.\\
-    These will come up later in the section about process management.
   \item Process topologies: cartesian and graph.\\
     There will also be a section about this, later.
   \end{itemize}

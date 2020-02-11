@@ -282,7 +282,8 @@ from petsc4py import PETSc
 \end{pythonnote}
 
 After initialization, you can use \indexmpishow{MPI_COMM_WORLD} or
-\indexpetscshow{PETSC_COMM_WORLD}:
+\indexpetscdef{PETSC_COMM_WORLD}
+(which is created by \indexmpishow{MPI_Comm_dup} and used internally by PETSc):
 
 \begin{lstlisting}
 MPI_Comm comm = PETSC_COMM_WORLD;

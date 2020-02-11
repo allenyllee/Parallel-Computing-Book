@@ -165,28 +165,28 @@ call VecCreate(comm,v,ierr)
 \lstset{language=Python}
 \begin{frame}[containsverbatim]{About routine prototypes: Python}
 Prototype:
-\begin{verbatim}
+\begin{lstlisting}
 # object method
 PETSc.Mat.setSizes(self, size, bsize=None)
 # class method
 PETSc.Sys.Print(type cls, *args, **kwargs)
-\end{verbatim}
+\end{lstlisting}
 Use:
-\begin{verbatim}
+\begin{lstlisting}
 from petsc4py import PETSc
 PETSc.Sys.Print("detecting n option")
 A = PETSc.Mat().create(comm=comm)
 A.setSizes( ( (None,matrix_size), (None,matrix_size) ) )
-\end{verbatim}
+\end{lstlisting}
 \end{frame}
 
 \lstset{language=C}
 \begin{details}
 \frame[containsverbatim]{\frametitle{Note to self}
-\begin{verbatim}
+\begin{lstlisting}
   PetscInitialize
     (&argc,&args,0,"Usage: prog -o1 v1 -o2 v2\n");
-\end{verbatim}
+\end{lstlisting}
 run as
 \begin{verbatim}
   ./program -help
@@ -198,11 +198,11 @@ Not available in Fortran
 
 \frame[containsverbatim]{\frametitle{Routine start/end, C}
 Debugging support:
-\begin{verbatim}
-PetscFunctionBeginUser;
+\begin{lstlisting}
+PetscFunctionBegin;
 // all statements
 PetscFunctionReturn(0);
-\end{verbatim}
+\end{lstlisting}
 leads to informative tracebacks.
 
 (Only in C, not in Fortran)
@@ -250,18 +250,19 @@ Fortran: you need to set the \n{ierr} value yourself.
 \begin{frame}[containsverbatim]{Program parameters, C}
 (I'm leaving out the \n{CHKERRQ(ierr)} in the examples,\\
 but do use this in actual code)
-\begin{verbatim}
+\begin{lstlisting}
 ierr = PetscOptionsGetInt
     (PETSC_NULL,PETSC_NULL,"-n",&n,&flag); CHKERRQ(ierr);
 ierr = PetscPrintf
     (comm,"Input parameter: %d\n",n); CHKERRQ(ierr);
-\end{verbatim}
+\end{lstlisting}
 Read commandline argument, print out from processor zero\\
 flag can be \n{PETSC_NULL}
 \end{frame}
 
+\lstset{language=Fortran}
 \frame[containsverbatim]{\frametitle{Program parameters, F}
-\begin{verbatim}
+\begin{lstlisting}
   character*80      msg
   call PetscOptionsGetInt(
     PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, &
@@ -269,7 +270,7 @@ flag can be \n{PETSC_NULL}
   write(msg,10) n
  10 format("Input parameter:",i5)
   call PetscPrintf(PETSC_COMM_WORLD,msg,ierr)
-\end{verbatim}
+\end{lstlisting}
 \begin{compat}
 \n{PETSC_NULL_BOOL} will be introduced after 3.10.2
 \end{compat}
@@ -277,6 +278,8 @@ Less elegant than \n{PetscPrintf} in C
 
 Note the \n{PETSC_NULL_XXX}: Fortran has strict type checking.
 }
+\lstset{language=C}
+
 \end{details}
 
 \lstset{language=Python}

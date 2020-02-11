@@ -486,12 +486,11 @@ run_onesidedbuild : onesidedbuild
 .PHONY: run_countdown
 REGRESSIONRUNS += run_countdown
 run_countdown : countdown
-	@make --no-print-directory run_start PROGRAM=$@ NP=${NP}
-	@export atgram=$@ ; export program=$${atgram##run_} ; \
-	 export success=1 ; \
-	 make --no-print-directory catchrun PROGRAM=countdown NP=${NP} \
-	   | ../course-support/catch_countdown.py || export success=$$? \
-	 && make --no-print-directory regress_success SUCCESS=$$success PROGRAM=$${program}
+	@export atgram=$@ && export program=$${atgram##run_} \
+	&& make --no-print-directory run_start PROGRAM=$${program} NP=${NP} \
+	&& cat $${program}.out_total | ../course-support/catch_countdown.py \
+	   || export success=$$? \
+	&& make --no-print-directory regress_success SUCCESS=$$success PROGRAM=$${program}
 
 .PHONY: run_rightgraph
 REGRESSIONRUNS += run_rightgraph
