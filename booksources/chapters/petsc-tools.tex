@@ -26,13 +26,15 @@ scheme is used.
   cause an error to be printed and the current routine to be
   terminated. Recursively this gives a traceback of where the error
   occurred.
-\item You can effect your own error return by using \indexpetscref{SETERRQ}
-  \indexpetscdef{SETERRQ1}, \indexpetscdef{SETERRQ2}.
-\end{enumerate}
 \begin{lstlisting}
 PetscErrorCode ierr;
 ierr = AnyPetscRoutine( arguments ); CHKERRQ(ierr);
 \end{lstlisting}
+
+\item You can effect your own error return by using \indexpetscref{SETERRQ}
+  \indexpetscdef{SETERRQ1}, \indexpetscdef{SETERRQ2}.
+\end{enumerate}
+
 \begin{fortrannote}
   In the main program, use \indexpetscdef{CHKERRA} and
   \indexpetscdef{SETERRA}. Also beware that these error `commands' are

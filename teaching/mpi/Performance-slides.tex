@@ -56,7 +56,7 @@ if (mytid==0) printf(``Time synchronized? %d->%d\n'',flag,*v);
 \end{frame}
 
 \begin{frame}[containsverbatim]{Your own profiling interface}
-  Every routine \n{MPI_Something} calls a routine \n{PMPI_Something} that 
+  Every routine \lstinline{MPI_Something} calls a routine \lstinline{PMPI_Something} that 
   does the actual work. You can now write your \n{MPI_...} routine
   which calls \indexmpishow{PMPI_...}, and inserting your own profiling calls.
 
@@ -88,7 +88,7 @@ if (mytid==0) printf(``Time synchronized? %d->%d\n'',flag,*v);
 
 \begin{frame}[containsverbatim]{Blocking versus non-blocking}
   \begin{itemize}
-  \item Non-blocking sends \n{MPI_Isend}/\n{Irecv} can be more
+  \item Non-blocking sends \lstinline{MPI_Isend}~/ \lstinline{MPI_Irecv} can be more
     efficient than blocking
   \item Also: allow overlap computation/communication (latency hiding)
   \item However: can usually not be considered a replacement.
@@ -114,9 +114,9 @@ if (mytid==0) printf(``Time synchronized? %d->%d\n'',flag,*v);
   \indextermsub{persistent}{communication}.
 
   \begin{itemize}
-  \item \n{MPI_Send_init}
-  \item \n{MPI_Recv_init}
-  \item \n{MPI_Start}
+  \item \lstinline{MPI_Send_init}
+  \item \lstinline{MPI_Recv_init}
+  \item \lstinline{MPI_Start}
   \end{itemize}
 
 \end{frame}
@@ -127,8 +127,8 @@ if (mytid==0) printf(``Time synchronized? %d->%d\n'',flag,*v);
   \item MPI has internal buffers: copying costs performance
   \item Use your own buffer:
     \begin{itemize}
-    \item \n{MPI_Buffer_attach}
-    \item \n{MPI_Bsend}
+    \item \lstinline{MPI_Buffer_attach}
+    \item \lstinline{MPI_Bsend}
     \end{itemize}
   \item Copying is also a problem for derived datatypes.
   \end{itemize}
@@ -138,12 +138,12 @@ if (mytid==0) printf(``Time synchronized? %d->%d\n'',flag,*v);
   \begin{itemize}
   \item Mapping problem to architecture sometimes not trivial
   \item Load balancers: \indexterm{ParMetis}, \indexterm{Zoltan}
-  \item Graph topologies: \n{MPI_Dist_graph_adjacent}:\\
+  \item Graph topologies: \lstinline{MPI_Dist_graph_adjacent}:\\
     allowed to reorder ranks for proximity
   \item Neighborhood collectives allow MPI to schedule optimally.
     \begin{itemize}
-    \item \n{MPI_Neighbor_allgather} (and \n{allgather_v})
-    \item \n{MPI_Neighbor_alltoall}
+    \item \lstinline{MPI_Neighbor_allgather} (and \lstinline{MPI_Neighbor_allgather_v})
+    \item \lstinline{MPI_Neighbor_alltoall}
     \end{itemize}
   \end{itemize}
 \end{frame}

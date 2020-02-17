@@ -272,7 +272,7 @@
 }
 \def\petscoptiontoindex{%\tracingmacros=2
   \edef\tmp{%
-    \noexpand\lstinline+-\indexedpetsc+%
+    \noexpand\lstinline+\noexpand-\indexedpetsc+%
     \noexpand\index[petsc]{-\indexedpetsc@{\catcode95=12 \noexpand\texttt{-\indexedpetsc}}}}%
   \tmp
   \egroup
@@ -310,15 +310,21 @@
 \def\indexpetscxref#1#2{\def\indexedroutine{#1}\def\displayedroutine{#2}%
   %\petscIndexBF -> \RoutineIndexBF{petsc}
   \edef\tmp{%
-    \noexpand\lstinline+\indexedroutine+ (figure\noexpand~\noexpand\ref{ref:\displayedroutine})%
+    \noexpand\lstinline+\indexedroutine+
+    (figure\noexpand~\noexpand\ref{ref:\displayedroutine})%
     \noexpand\index[petsc]{%
       \indexedroutine@{\catcode95=12 \noexpand\texttt{\indexedroutine}}|textbf}%
   }%
   \tmp
 }  
+\def\indexpetscrep#{\bgroup \ShowRoutinetrue \RoutineIndexStyle
+  \afterassignment\petscIndexRM
+  \edef\indexedroutine
+}
 
 \def\petscIndexAndRef{\petscIndexBF\RoutineRefDisplay}
 \def\petscIndexBF{\RoutineIndexBF{petsc}}
+\def\petscIndexRM{\RoutineIndexRM{petsc}}
 
 \def\indexmpiref#{\bgroup \ShowRoutinetrue \RoutineIndexStyle
   \afterassignment\mpiIndexAndRef
@@ -335,7 +341,7 @@
 }  
 % repeat reference to already defined routine
 \def\indexmpirep#{\bgroup \ShowRoutinetrue \RoutineIndexStyle
-  \afterassignment\mpiIndexBF
+  \afterassignment\mpiIndexRM
   \edef\indexedroutine
 }
 \def\mpiIndexAndRef{\mpiIndexBF\RoutineRefDisplay}

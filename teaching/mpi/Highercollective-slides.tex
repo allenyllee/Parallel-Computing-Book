@@ -20,7 +20,9 @@
 
 \sectionframe{Non-blocking collectives}
 
+\begin{mpithree}
 \begin{frame}[containsverbatim]\frametitle{Non-blocking collectives}
+  \label{sl:coll-nonblock-intro}
   \begin{itemize}
   \item Collectives are blocking.
   \item Compare blocking/non-blocking sends:\\
@@ -122,6 +124,7 @@ MPI_Wait(request);
   \item Frowny face: barrier completion takes much longer than you'd expect.
   \end{itemize}
 \end{frame}
+\end{mpithree}
 
 \endinput
 

@@ -19,8 +19,10 @@ C:
 
 // Initialize the random number generator
 srand((int)(mytid*(double)RAND_MAX/ntids));
-// compute a random number
+// compute a random float between [0,1]
 randomfraction = (rand() / (double)RAND_MAX);
+// compute random integer between [0,N-1]
+randomfraction = rand() % N;
 \end{verbatim}
 \begin{verbatim}
 Fortran:

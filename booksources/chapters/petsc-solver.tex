@@ -53,7 +53,7 @@ that, with luck, converges to the true solution:
 \end{quote}
 
 The interesting thing about iterative methods is that the iterative step
-only involved the \indexterm{matrix-vector product}:
+only involves the \indexterm{matrix-vector product}:
 
 \begin{quote}
   \begin{tabbing}
@@ -70,7 +70,7 @@ the size of the residual as a proxy measurement.
 The remaining point to know is that iterative methods feature a \indexterm{preconditioner}.
 Mathematically this is equivalent to transforming the linear system to
 \[ M\inv Ax=M\inv b \]
-so conceivably we could iterate on the preconditioned matrix and right-hand side.
+so conceivably we could iterate on the transformed matrix and right-hand side.
 However, in practice we apply the preconditioner in each iteration:
 
 \begin{quote}
@@ -145,7 +145,7 @@ reason in readable form; for instance
 \begin{lstlisting}
 KSPReasonView(solver,PETSC_VIEWER_STDOUT_WORLD);
 \end{lstlisting}
-(This can also be activated with the \n{-ksp_converged_reason}
+(This can also be activated with the \indexpetscoption{ksp_converged_reason}
 commandline option.)
 
 In case of successful convergence, you can use \indexpetscshow{KSPGetIterationNumber}
@@ -185,7 +185,7 @@ Depending on the iterative method, there can be several routines to tune its wor
 Especially if you're still experimenting with what method to choose,
 it may be more convenient to specify these choices through commandline options,
 rather than explicitly coded routines. In that case, a single call to
-\indexpetscshow{KSPSetFromOptions} is enough to incorporate those.
+\indexpetscrep{KSPSetFromOptions} is enough to incorporate those.
 
 \Level 1 {Preconditioners}
 

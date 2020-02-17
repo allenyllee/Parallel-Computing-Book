@@ -20,7 +20,7 @@
   \item \indexmpishow{MPI_Put}, \indexmpishow{MPI_Get}, \indexmpishow{MPI_Accumulate}
   \item Window commands: \indexmpishow{MPI_Win_create}, \indexmpishow{MPI_Win_allocate}
   \item Active target synchronization \indexmpishow{MPI_Win_fence}
-  \item \indexmpishow{MPI_Win_post}\n{/wait/start/complete}
+  \item \indexmpishow{MPI_Win_post}\lstinline{/wait/start/complete}
   \item Passive target synchronization \indexmpishow{MPI_Win_lock}~/
     \indexmpishow{MPI_Win_lock}
   \item Atomic operations: \indexmpishow{MPI_Fetch_and_op}
@@ -61,8 +61,8 @@ MPI_Win_create (void *base, MPI_Aint size,
   int disp_unit, MPI_Info info, MPI_Comm comm, MPI_Win *win)
 \end{lstlisting}
 \begin{itemize}
-\item \n{size}: in bytes
-\item \n{disp_unit}: \n{sizeof(type)}
+\item \lstinline{size}: in bytes
+\item \lstinline{disp_unit}: \lstinline{sizeof(type)}
 \item Also: \indexmpishow{MPI_Win_allocate}, can use dedicated fast memory.
 \end{itemize}
 Also call \indexmpishow{MPI_Win_free} when done. This is important!

@@ -96,7 +96,7 @@ How do we compute this?
   Example: normalizing a vector
   \[ y \leftarrow x/\|x\| \]
   \begin{itemize}
-  \item Vectors \n{x,y} are distributed: every process has certain
+  \item Vectors \lstinline{x,y} are distributed: every process has certain
     elements
   \item The norm calculation is an all-reduce: every process gets same
     value
@@ -119,7 +119,7 @@ How do we compute this?
 \begin{itemize}
 \item All processes have send and recv buffer
 \item (No root argument)
-\item \n{count} is number of items in the buffer: 1~for scalar.
+\item \lstinline{count} is number of items in the buffer: 1~for scalar.
 \item \indexmpishow{MPI_Datatype} is \indexmpishow{MPI_INT}, \indexmpishow{MPI_REAL8} et cetera.
 \item \indexmpishow{MPI_Op} is \indexmpishow{MPI_SUM}, \indexmpishow{MPI_MAX} et cetera.
 \end{itemize}
@@ -175,8 +175,8 @@ A couple more.
   General principle: buffer argument is address in memory of the data.
   \begin{itemize}
   \item Buffer is void pointer: 
-  \item write \n{&x} or \n{(void*)&x} for scalar
-  \item write \n{x} or \n{(void*)x} for array
+  \item write \lstinline{&x} or \lstinline{(void*)&x} for scalar
+  \item write \lstinline{x} or \lstinline{(void*)x} for array
   \end{itemize}
 \end{frame}
 
@@ -184,8 +184,8 @@ A couple more.
   General principle: buffer argument is address in memory of the data.
   \begin{itemize}
   \item Fortran always passes by reference:
-  \item write \n{x} for scalar
-  \item write \n{x} for array
+  \item write \lstinline{x} for scalar
+  \item write \lstinline{x} for array
   \end{itemize}
 \end{frame}
 
@@ -193,7 +193,7 @@ A couple more.
   For many routines there are two variants:
   \begin{itemize}
   \item lowercase: can send Python objects;\\
-    output is \n{return} result\\
+    output is \lstinline{return} result\\
 \begin{verbatim}
 result = comm.recv(...)
 \end{verbatim}
@@ -262,10 +262,10 @@ int MPI_Reduce
    MPI_Op op, int root, MPI_Comm comm)
 \end{lstlisting}
 \begin{itemize}
-\item Buffers: \n{sendbuf}, \n{recvbuf} are ordinary variables/arrays.
-\item Every process has data in its \n{sendbuf},\\
-  Root combines it in \n{recvbuf} (ignored on non-root processes).
-\item \n{count} is number of items in the buffer: 1~for scalar.
+\item Buffers: \lstinline{sendbuf}, \lstinline{recvbuf} are ordinary variables/arrays.
+\item Every process has data in its \lstinline{sendbuf},\\
+  Root combines it in \lstinline{recvbuf} (ignored on non-root processes).
+\item \lstinline{count} is number of items in the buffer: 1~for scalar.
 \item \indexmpishow{MPI_Op} is \indexmpishow{MPI_SUM}, \indexmpishow{MPI_MAX} et cetera.
 \end{itemize}
 \end{frame}
@@ -290,13 +290,13 @@ int MPI_Bcast(
 \end{lstlisting}
 \begin{itemize}
 \item All processes call with the same argument list
-\item \n{root} is the rank of the process doing the broadcast
+\item \lstinline{root} is the rank of the process doing the broadcast
 \item Each process allocates buffer space;\\
   root explicitly fills in values,\\
   all others receive values through broadcast call.
 \item Datatype is \indexmpishow{MPI_FLOAT}, \indexmpishow{MPI_INT} et cetera, different
   between C/Fortran.
-\item \n{comm} is usually \indexmpishow{MPI_COMM_WORLD}
+\item \lstinline{comm} is usually \indexmpishow{MPI_COMM_WORLD}
 \end{itemize}
 \end{frame}
 
@@ -341,7 +341,7 @@ int MPI_Scatter
 }
 \begin{itemize}
 \item Compare buffers to \hyperlink{reduce}{\beamergotobutton{reduce}}
-\item Scatter: the \n{sendcount} / Gather: the \n{recvcount}:\\
+\item Scatter: the \lstinline{sendcount} / Gather: the \lstinline{recvcount}:\\
 this is not, as you might expect, the total length of the
 buffer; instead, it is the amount of data to/from each process.
 \end{itemize}

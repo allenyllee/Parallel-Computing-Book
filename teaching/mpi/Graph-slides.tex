@@ -84,14 +84,14 @@ int MPI_Dist_graph_create
     MPI_Comm *comm_dist_graph)
 \end{lstlisting}
 \begin{itemize}
-\item \n{nsources} how many processes described? (Usually~1)
-\item \n{sources} the processes being described (Usually
+\item \lstinline{nsources} how many processes described? (Usually~1)
+\item \lstinline{sources} the processes being described (Usually
   \indexmpishow{MPI_Comm_rank} value)
-\item \n{degrees} how many processes to send to
-\item \n{destinations} their ranks
-\item \n{weights}: usually set to \indexmpishow{MPI_UNWEIGHTED}.
-\item \n{info}: \indexmpishow{MPI_INFO_NULL} will do
-\item \n{reorder}: 1~if dynamically reorder processes
+\item \lstinline{degrees} how many processes to send to
+\item \lstinline{destinations} their ranks
+\item \lstinline{weights}: usually set to \indexmpishow{MPI_UNWEIGHTED}.
+\item \lstinline{info}: \indexmpishow{MPI_INFO_NULL} will do
+\item \lstinline{reorder}: 1~if dynamically reorder processes
 \end{itemize}
 \end{frame}
 
@@ -103,7 +103,7 @@ int MPI_Neighbor_allgather
     MPI_Comm comm)
 \end{lstlisting}
 Like an ordinary \indexmpishow{MPI_Allgather}, but\\
-the receive buffer has a length \n{degree}.
+the receive buffer has a length \lstinline{degree}.
 \end{frame}
 
 \begin{exerciseframe}[rightgraph]

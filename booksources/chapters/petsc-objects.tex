@@ -52,7 +52,7 @@ distributions in $i$ and~$j$ direction, which can be
 independent. Since a matrix is distributed by rows,
 \lstinline{MatGetOwnershipRange} only gives a row range.
 
-\verbatimsnippet{splitownersnip}
+\cverbatimsnippet{splitownersnip}
 
 While PETSc objects are implemented using local memory on each
 process, conceptually they act like global objects, with a global
@@ -101,7 +101,7 @@ code of PETSc routines.
 For compatibility with other packages there are two more integer types:
 \begin{itemize}
 \item \indexpetscdef{PetscBLASInt} is the integer type used by the
-  \indexac{BLAS}/\indexac{LAPACK} library. This is 32-bits if the
+  \indexac{BLAS}~/ \indexac{LAPACK} library. This is 32-bits if the
   \indexpetscshow{-download-blas-lapack} option is used, but it can be 64-bit if
   \indexterm{MKL} is used. The routine \indexpetscdef{PetscBLASIntCast} casts a
   \indexpetscshow{PetscInt} to \indexpetscshow{PetscBLASInt}, or returns
@@ -267,9 +267,9 @@ VecSetValues(x,2,ii,vv,INSERT_VALUES);
 
 \lstset{language=Fortran}
 \begin{lstlisting}
-call VecSetValue(x,i,v,INSERT_VALUES,ierr,e)
+call VecSetValue(x,i,v,INSERT_VALUES,ierr)
 ii(1) = 1; ii(2) = 2; vv(1) = 2.7; vv(2) = 3.1
-call VecSetValues(x,2,ii,vv,INSERT_VALUES,ierr,e)
+call VecSetValues(x,2,ii,vv,INSERT_VALUES,ierr)
 \end{lstlisting}
 \lstset{language=C}
 
@@ -617,7 +617,50 @@ FFT libraries may use padding, so vectors should be created with
 
 \Level 0 {DMDA: distributed arrays}
 
-\indexpetscref{DMDACreate2d}
+Distributed arrays make it easier to construct the coefficient matrix
+of an operator that is defined as a \indexterm{stencil}
+on a 1/2/3-dimensional \indextermsub{Cartesian}{grid}.
+
+The main creation routine exists in three variants that mostly
+differ their number of parameters.
+For instance, \indexpetscref{DMDACreate2d} has parameters along the
+\lstinline{x,y} axes.
+However, \indexpetscdef{DMDACreate1d} has no parameter for the stencil type,
+since in 1D those are all the same, or for the process distribution.
+
+Once you have a grid, can create its associated matrix:
+\begin{lstlisting}
+DMSetUp(grid);
+DMCreateMatrix(grid,&A)
+\end{lstlisting}
+
+After you define a \indexpetscshow{DM} object, each process has a contiguous
+subdomain out of the total grid.
+You can query its size and location with \indexpetscdef{DMDAGetCorners},
+or query that and all other information with \indexpetscdef{DMDAGetLocalInfo},
+which returns an \indexpetscdef{DMDALocalInfo} object.
+
+With this subdomain information you can then start to create the coefficient matrix:
+\begin{lstlisting}
+DM grid;
+PetscInt i_first,j_first,i_local,j_local;
+DMDAGetCorners(grid,&i_first,&j_first,NULL,&i_local,&j_local,NULL);
+for ( PetscInt i_index=i_first; i_index<i_first+i_local; i_index++) {
+  for ( PetscInt j_index=j_first; j_index<j_first+j_local; j_index++) {
+  // construct coefficients for domain point (i_index,j_index)
+  }
+}
+\end{lstlisting}
+Note that indexing here is in terms of the grid, not in terms of the matrix.
+
+For a simple example, consider 1-dimensional smoothing.
+From \indexpetscshow{DMDAGetCorners} we need only the parameters in $i$-direction:
+%
+\cverbatimsnippet{dmda1corners}
+
+We then use a single loop to set elements for the local range in $i$-direction:
+%
+\cverbatimsnippet{dmda1stencil}
 
 \Level 0 {Index sets and Vector Scatters}
 

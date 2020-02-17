@@ -5,7 +5,8 @@ try :
         print("Universe query returned None")
         universe_size = nprocs + 4
     else:
-        print("World has {} ranks in a universe of {}".format(nprocs,universe_size))
+        print("World has {} ranks in a universe of {}"\
+              .format(nprocs,universe_size))
 except :
     print("Exception querying universe size")
     universe_size = nprocs + 4

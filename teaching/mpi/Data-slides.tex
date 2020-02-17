@@ -18,7 +18,7 @@
   \begin{itemize}
   \item \indexmpishow{MPI_Type_contiguous}\n{/vector/indexed/struct}
     \indexmpishow{MPI_Type_create_subarray}
-  \item \indexmpishow{MPI_Pack}\n{/Unpack}
+  \item \indexmpishow{MPI_Pack}~/ \indexmpishow{MPI_Unpack}
   \item F90 types
   \end{itemize}
 \end{frame}
@@ -35,7 +35,7 @@
   \begin{itemize}
   \item Send real or imaginary parts out of complex array.
   \item Gather/scatter cyclicly.
-  \item Send \n{struct} or \n{Type} data.
+  \item Send \lstinline{struct} or \lstinline{Type} data.
   \end{itemize}
   MPI allows for recursive construction of data types.
 \end{frame}
@@ -93,7 +93,7 @@ MPI_Type_free ( &newtype );
 Type(MPI_Datatype) :: newtype ! F2008
 Integer            :: newtype ! F90
 \end{lstlisting}
-The \n{oldtype} can be elementary or derived.\\
+The \lstinline{oldtype} can be elementary or derived.\\
 Recursively constructed types.
 \end{frame}
 \end{mpithree}
@@ -106,8 +106,8 @@ int MPI_Type_contiguous(
 \end{lstlisting}
   \includegraphics[scale=.06]{data-contiguous}
 
-This one is indistinguishable from just sending \n{count} instances
-of the \n{old_type}.
+This one is indistinguishable from just sending \lstinline{count} instances
+of the \lstinline{old_type}.
 \end{frame}
 
 \begin{frame}[containsverbatim]\frametitle{Example: non-contiguous data}
